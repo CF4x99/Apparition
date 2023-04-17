@@ -889,7 +889,7 @@ Align115Rings(type)
 
 	foreach(ring in rings)
 	{
-		if(ring.position == (num - 1) || !isDefined(ring.target))
+		if(ring.var_b1c02d8a clientfield::get("bryce_cake") == (num - 1)/*ring.position == (num - 1)*/ || !isDefined(ring.target))
 			continue;
 		
 		ring.position = (num - 1);

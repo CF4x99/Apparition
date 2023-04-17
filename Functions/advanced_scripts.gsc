@@ -1182,15 +1182,21 @@ SpiralStaircase(size)
     
     if(isDefined(level.SpiralStaircase) && level.SpiralStaircase.size)
     {
+        level.SpiralStaircaseDeleting = true;
+
         for(a = 0; a < level.SpiralStaircase.size; a++)
             if(isDefined(level.SpiralStaircase[a]))
             {
-                level.SpiralStaircase[a] delete();
+                level.SpiralStaircase[a] Launch(VectorScale(AnglesToForward(level.SpiralStaircase[a].angles), 255));
+                level.SpiralStaircase[a] thread deleteAfter(5);
 
                 wait 0.01;
             }
         
+        wait 5;
+
         level.SpiralStaircase = [];
+        level.SpiralStaircaseDeleting = undefined;
     }
     else
     {
@@ -1199,8 +1205,7 @@ SpiralStaircase(size)
         if(!isDefined(level.SpiralStaircase))
             level.SpiralStaircase = [];
         
-        level.SpiralStaircase[0] = SpawnScriptModel(self.origin, model, (-28, self.angles[1], 90));
-        self SetOrigin(self.origin);
+        level.SpiralStaircase[0] = SpawnScriptModel(self TraceBullet(), model, (-28, self.angles[1], 90));
         
         for(a = 1; a < size; a++)
         {

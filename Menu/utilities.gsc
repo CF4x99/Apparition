@@ -329,14 +329,14 @@ SetIncSlider(dir)
     menu = self getCurrent();
     curs = self getCursor();
     
-    inc = self.menu["items"][menu].intincrement[curs];
+    val = self.menu["items"][menu].intincrement[curs];
     max = self.menu["items"][menu].incslidermax[curs];
     min = self.menu["items"][menu].incslidermin[curs];
     
-    if((self.menu_SS[menu][curs] < max) && (self.menu_SS[menu][curs] + inc) > max || (self.menu_SS[menu][curs] > min) && (self.menu_SS[menu][curs] - inc) < min)
-        self.menu_SS[menu][curs] = ((self.menu_SS[menu][curs] < max) && (self.menu_SS[menu][curs] + inc) > max) ? max : min;
+    if((self.menu_SS[menu][curs] < max) && (self.menu_SS[menu][curs] + val) > max || (self.menu_SS[menu][curs] > min) && (self.menu_SS[menu][curs] - val) < min)
+        self.menu_SS[menu][curs] = ((self.menu_SS[menu][curs] < max) && (self.menu_SS[menu][curs] + val) > max) ? max : min;
     else
-        self.menu_SS[menu][curs] += (dir > 0) ? inc : (inc * -1);
+        self.menu_SS[menu][curs] += (dir > 0) ? val : (val * -1);
     
     if((self.menu_SS[menu][curs] > max) || (self.menu_SS[menu][curs] < min))
         self.menu_SS[menu][curs] = (self.menu_SS[menu][curs] > max) ? min : max;

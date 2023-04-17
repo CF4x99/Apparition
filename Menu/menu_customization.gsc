@@ -125,20 +125,20 @@ MoveMenuControlled()
     self SoftUnlockMenu();
 }
 
-MoveMenu(inc, axis)
+MoveMenu(val, axis)
 {
-    if(inc < 0)
+    if(val < 0)
     {
-        if((self.menu[axis] + inc) < self.menu[axis + "Min"])
-            inc = ((self.menu[axis] - self.menu[axis + "Min"]) * -1);
+        if((self.menu[axis] + val) < self.menu[axis + "Min"])
+            val = ((self.menu[axis] - self.menu[axis + "Min"]) * -1);
     }
     else
     {
-        if((self.menu[axis] + inc) > self.menu[axis + "Max"])
-            inc = (self.menu[axis + "Max"] - self.menu[axis]);
+        if((self.menu[axis] + val) > self.menu[axis + "Max"])
+            val = (self.menu[axis + "Max"] - self.menu[axis]);
     }
     
-    inc = Int(inc);
+    val = Int(val);
     keys = GetArrayKeys(self.menu["ui"]);
 
     for(a = 0; a < keys.size; a++)
@@ -151,10 +151,10 @@ MoveMenu(inc, axis)
                 {
                     foreach(value in self.menu["ui"][keys[a]])
                         if(isDefined(value))
-                            value.x += inc;
+                            value.x += val;
                 }
                 else
-                    self.menu["ui"][keys[a]].x += inc;
+                    self.menu["ui"][keys[a]].x += val;
             }
             
             if(axis == "Y")
@@ -163,15 +163,15 @@ MoveMenu(inc, axis)
                 {
                     foreach(value in self.menu["ui"][keys[a]])
                         if(isDefined(value))
-                            value.y += inc;
+                            value.y += val;
                 }
                 else
-                    self.menu["ui"][keys[a]].y += inc;
+                    self.menu["ui"][keys[a]].y += val;
             }
         }
     }
     
-    self.menu[axis] += inc;
+    self.menu[axis] += val;
     self SaveMenuTheme();
 }
 
@@ -211,20 +211,20 @@ MenuWidthControlled()
     self SoftUnlockMenu();
 }
 
-MenuWidth(inc)
+MenuWidth(val)
 {
-    if(inc < 0)
+    if(val < 0)
     {
-        if((self.menu["MenuWidth"] + inc) < self.menu["MenuWidthMin"])
-            inc = (self.menu["MenuWidthMin"] - self.menu["MenuWidth"]);
+        if((self.menu["MenuWidth"] + val) < self.menu["MenuWidthMin"])
+            val = (self.menu["MenuWidthMin"] - self.menu["MenuWidth"]);
     }
     else
     {
-        if((self.menu["MenuWidth"] + inc) > self.menu["MenuWidthMax"])
-            inc = (self.menu["MenuWidthMax"] - self.menu["MenuWidth"]);
+        if((self.menu["MenuWidth"] + val) > self.menu["MenuWidthMax"])
+            val = (self.menu["MenuWidthMax"] - self.menu["MenuWidth"]);
     }
 
-    self.menu["MenuWidth"] += inc;
+    self.menu["MenuWidth"] += val;
 
     huds = ["background", "banners", "scroller", "NativeBar"];
 

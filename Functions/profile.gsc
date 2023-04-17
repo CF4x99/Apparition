@@ -183,6 +183,7 @@ CompleteDailyChallenges(player)
         player AddPlayerStat(TableLookup("gamedata/stats/zm/statsmilestones4.csv", 0, a, 4), Int(TableLookup("gamedata/stats/zm/statsmilestones4.csv", 0, a, 2)));
 
     wait 0.1;
+    
     UploadStats(player);
 }
 
