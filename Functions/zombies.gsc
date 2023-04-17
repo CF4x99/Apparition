@@ -494,6 +494,88 @@ ZombieRagdoll()
     level.ZombieRagdoll = isDefined(level.ZombieRagdoll) ? undefined : true;
 }
 
+StackZombies()
+{
+    level.StackZombies = isDefined(level.StackZombies) ? undefined : true;
+
+    if(isDefined(level.StackZombies))
+    {
+        while(isDefined(level.StackZombies))
+        {
+            zombies = GetAITeamArray(level.zombie_team);
+
+            for(a = 0; a < zombies.size; a++)
+            {
+                if(!isDefined(zombies[a]) || !IsAlive(zombies[a]) || isDefined(zombies[a].stacked) || !zombies[a] CanControl())
+                    continue;
+                
+                tag = "tag_origin"; //Had to choose a tag that doesn't move/rotate
+                tagCheck = zombies[a] GetTagOrigin(tag); //Gonna be used to make sure it's a valid tag for the ai
+                offset = (0, 0, 70); //(x, y, z) offset for the given tag
+
+                if(!isDefined(tagCheck))
+                {
+                    tag = "tag_body"; //Backup tag for ai that don't have the default tag given
+                    tagCheck = zombies[a] GetTagOrigin(tag);
+                }
+
+                if(!isDefined(tagCheck)) //If the backup tag can't be used for the AI, then it will be skipped
+                    continue;
+                
+                bottom = zombies[a];
+
+                for(b = 0; b < zombies.size; b++)
+                {
+                    if(!isDefined(zombies[b]) || !IsAlive(zombies[b]) || isDefined(zombies[b].stacked) || !zombies[a] CanControl())
+                        continue;
+                    
+                    top = zombies[b];
+                }
+
+                if(isDefined(bottom) && isDefined(top) && isDefined(tag))
+                {
+                    top LinkTo(bottom, tag, offset);
+                    bottom thread StackedZombieWatcher(top);
+
+                    top.stacked = true;
+                    bottom.stacked = true;
+                }
+            }
+
+            wait 1;
+        }
+    }
+    else
+    {
+        zombies = GetAITeamArray(level.zombie_team);
+
+        for(a = 0; a < zombies.size; a++)
+        {
+            if(!isDefined(zombies[a]) || !IsAlive(zombies[a]) || !isDefined(zombies[a].stacked))
+                continue;
+            
+            zombies[a] Unlink();
+            zombies[a].stacked = undefined;
+        }
+
+        level notify("EndStackZombies");
+    }
+}
+
+StackedZombieWatcher(top)
+{
+    if(!isDefined(self) || !IsAlive(self) || !isDefined(top) || !IsAlive(top))
+        return;
+    
+    level endon("EndStackZombies");
+    top endon("death");
+
+    self waittill("death");
+
+    if(isDefined(top) && IsAlive(top))
+        top Unlink();
+}
+
 ZombiesDeathEffect()
 {
     level.ZombiesDeathEffect = isDefined(level.ZombiesDeathEffect) ? undefined : true;

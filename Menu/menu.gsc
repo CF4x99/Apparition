@@ -69,6 +69,7 @@ runMenuIndex(menu)
                     self addOptBool(self.menu["DisableOptionCounter"], "Disable Option Counter", ::DisableOptionCounter);
                 }
 
+                self addOptBool(self.menu["MenuBlur"], "Menu Blur", ::MenuBlur);
                 self addOptBool(self.menu["DisableMenuWM"], "Disable Watermark", ::DisableMenuWM);
                 self addOptBool(self.menu["LargeCursor"], "Large Cursor", ::LargeCursor);
             break;
@@ -852,6 +853,7 @@ runMenuIndex(menu)
                 self addOptBool(level.DisappearingZombies, "Disappearing Zombies", ::DisappearingZombies);
                 self addOptBool(level.ExplodingZombies, "Exploding Zombies", ::ExplodingZombies);
                 self addOptBool(level.ZombieRagdoll, "Zombie Ragdoll", ::ZombieRagdoll);
+                self addOptBool(level.StackZombies, "Stack Zombies", ::StackZombies);
                 self addOpt("Zombie Effects", ::newMenu, "Zombie Effects");
                 self addOpt("Detach Heads", ::DetachZombieHeads);
             break;
@@ -1201,6 +1203,9 @@ MenuOptionsPlayer(menu, player)
                 if(isDefined(level.MenuSpawnPoints) && level.MenuSpawnPoints.size)
                     self addOptIncSlider("Official Spawn Points", ::OfficialSpawnPoint, 0, 0, (level.MenuSpawnPoints.size - 1), 1, player);
                 
+                if(isDefined(level.menuTeleports) && isDefined(level.menuTeleports[ReturnMapName(level.script)]) && level.menuTeleports[ReturnMapName(level.script)].size)
+                    self addOpt(ReturnMapName(level.script) + " Teleports", ::newMenu, ReturnMapName(level.script) + " Teleports " + player GetEntityNumber());
+                
                 self addOpt("Entity Teleports", ::newMenu, "Entity Teleports " + player GetEntityNumber());
                 self addOptSlider("Teleport", ::TeleportPlayer, "Crosshairs;Sky", player);
                 self addOptBool(player.TeleportGun, "Teleport Gun", ::TeleportGun, player);
@@ -1212,6 +1217,15 @@ MenuOptionsPlayer(menu, player)
                     self addOpt("Teleport To Self", ::TeleportPlayer, player, self);
                     self addOpt("Teleport To Player", ::TeleportPlayer, self, player);
                 }
+            break;
+        
+        case ReturnMapName(level.script) + " Teleports":
+            self addMenu(menu, ReturnMapName(level.script) + " Teleports");
+                if(isDefined(level.menuTeleports) && isDefined(level.menuTeleports[ReturnMapName(level.script)]) && level.menuTeleports[ReturnMapName(level.script)].size)
+                    for(a = 0; a < level.menuTeleports[ReturnMapName(level.script)].size; a += 2)
+                        self addOpt(level.menuTeleports[ReturnMapName(level.script)][a], ::TeleportPlayer, level.menuTeleports[ReturnMapName(level.script)][(a + 1)], player);
+                else
+                    self addOpt("No " + ReturnMapName(level.script) + " Teleports Found");
             break;
         
         case "Entity Teleports":            
@@ -2149,6 +2163,9 @@ openMenu1(menu)
     
     self.menu["currentMenu"] = menu;
     self drawText();
+
+    if(isDefined(self.menu["MenuBlur"]))
+        self SetBlur(self.menu["MenuBlurValue"], 0.1);
     
     self.menuState["isInMenu"] = true;
 }
@@ -2280,6 +2297,7 @@ closeMenu1()
     }
     
     destroyAll(self.menu["ui"]);
+    self SetBlur(0, 0.1);
     
     self.menuState["isInMenu"] = undefined;
 }
