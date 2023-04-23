@@ -425,8 +425,12 @@ CleanString(string)
     
     for(a = 0; a < string.size; a++)
     {
+        //List of strings/chars what will be removed from the final string output
         strings = ["specialty", "zombie", "zm", "t7", "t6", "p7", "zmb", "zod", "ai", "g", "bg", "perk", "player", "weapon", "wpn", "aat", "bgb", "visionset", "equip", "craft", "der", "viewmodel", "mod", "fxanim", "moo", "moon", "zmhd", "fb", "bc", "asc", "vending"];
         
+        //This will replace any '_' found in the string
+        replacement = " ";
+
         if(!isInArray(strings, string[a]))
         {
             for(b = 0; b < string[a].size; b++)
@@ -436,7 +440,7 @@ CleanString(string)
                     str += ToUpper(string[a][b]);
             
             if(a != (string.size - 1))
-                str += " ";
+                str += replacement;
         }
     }
     

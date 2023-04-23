@@ -603,3 +603,13 @@ DetachZombieHeads()
     for(a = 0; a < zombies.size; a++)
         zombies[a] DetachAll();
 }
+
+ServerClearCorpses()
+{
+    corpse_array = GetCorpseArray();
+
+    if(isDefined(corpse_array) && corpse_array.size)
+        for(a = 0; a < corpse_array.size; a++)
+            if(isDefined(corpse_array[a]))
+                corpse_array[a] delete();
+}

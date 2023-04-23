@@ -728,9 +728,14 @@ runMenuIndex(menu)
 
             self addMenu(menu, "Craftables");
 
-                for(a = 0; a < craftables.size; a++)
-                    if(craftables[a] != "open_table" && !IsSubStr(craftables[a], "ritual_"))
-                        self addOpt(CleanString(craftables[a]), ::CollectCraftableParts, craftables[a]);
+                if(!IsAllCraftablesCollected())
+                {
+                    for(a = 0; a < craftables.size; a++)
+                        if(craftables[a] != "open_table" && !IsSubStr(craftables[a], "ritual_") && !IsCraftableCollected(craftables[a]))
+                            self addOpt(CleanString(craftables[a]), ::CollectCraftableParts, craftables[a]);
+                }
+                else
+                    self addOpt("No Craftables Found");
             break;
         
         case "Zombie Traps":
@@ -856,6 +861,7 @@ runMenuIndex(menu)
                 self addOptBool(level.StackZombies, "Stack Zombies", ::StackZombies);
                 self addOpt("Zombie Effects", ::newMenu, "Zombie Effects");
                 self addOpt("Detach Heads", ::DetachZombieHeads);
+                self addOpt("Clear All Corpses", ::ServerClearCorpses);
             break;
         
         case "AI Spawner":
@@ -940,9 +946,12 @@ runMenuIndex(menu)
             break;
         
         case "Zombie Animations":
+
+            //These are base animations that will work on every map
             anims = ["ai_zombie_base_ad_attack_v1", "ai_zombie_base_ad_attack_v2", "ai_zombie_base_ad_attack_v3", "ai_zombie_base_ad_attack_v4", "ai_zombie_taunts_4"];
             notifies = ["attack_anim", "attack_anim", "attack_anim", "attack_anim", "taunt_anim"];
 
+            //These are the animations that are map specific
             if(ReturnMapName(level.script) == "Origins")
             {
                 add_anims = ["ai_zombie_mech_ft_burn_player", "ai_zombie_mech_exit", "ai_zombie_mech_exit_hover", "ai_zombie_mech_arrive"];
@@ -1259,9 +1268,9 @@ MenuOptionsPlayer(menu, player)
                 self addOpt("Unlock All Achievements", ::UnlockAchievements, player);
                 self addOpt("Clan Tag Options", ::newMenu, "Clan Tag Options " + player GetEntityNumber());
                 self addOpt("Custom Stats", ::newMenu, "Custom Stats " + player GetEntityNumber());
+                self addOpt("EE Stats", ::newMenu, "EE Stats " + player GetEntityNumber());
                 self addOptIncSlider("Rank", ::SetPlayerRank, (player.pers["plevel"] > 10) ? 36 : 1, (player.pers["plevel"] > 10) ? 36 : 1, (player.pers["plevel"] > 10) ? 1000 : 35, 1, player);
                 self addOptIncSlider("Prestige", ::SetPlayerPrestige, 0, 0, 10, 1, player);
-                self addOptBool(player GetDStat("PlayerStatsList", "DARKOPS_GENESIS_SUPER_EE", "StatValue"), "Complete All Easter Eggs", ::CompleteAllEasterEggs, player);
                 self addOpt("Complete Daily Challenges", ::CompleteDailyChallenges, player);
                 self addOptSlider("Weapon Rank", ::PlayerWeaponRanks, "Max;Reset", player);
             break;
@@ -1318,6 +1327,23 @@ MenuOptionsPlayer(menu, player)
                     self addOpt(ReturnMapName(level.mapNames[a]), ::newMenu, "Map Stats " + level.mapNames[a] + " " + player GetEntityNumber());
             break;
         
+        case "EE Stats":
+            stats = ["DARKOPS_GENESIS_SUPER_EE", "darkops_zod_ee", "darkops_factory_ee", "darkops_castle_ee", "darkops_island_ee", "darkops_stalingrad_ee", "darkops_genesis_ee", "darkops_zod_super_ee", "darkops_factory_super_ee", "darkops_castle_super_ee", "darkops_island_super_ee", "darkops_stalingrad_super_ee"];
+
+            self addMenu(menu, "EE Stats");
+
+            for(a = 0; a < stats.size; a++)
+            {
+                statTok = StrTok(stats[a], "_");
+                map = ReturnMapName("zm_" + ToLower(statTok[1]));
+
+                if(IsSubStr(stats[a], "super"))
+                    map += " Super";
+
+                self addOptBool(player GetDStat("PlayerStatsList", stats[a], "StatValue"), map + " EE", ::PlayerBoolStat, stats[a], player);
+            }
+            break;
+
         case "Weaponry":
             self addMenu(menu, "Weaponry");
                 self addOpt("Weapon Options", ::newMenu, "Weapon Options " + player GetEntityNumber());

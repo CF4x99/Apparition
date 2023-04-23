@@ -168,13 +168,9 @@ SetPlayerRank(rank, player)
     UploadStats(player);
 }
 
-CompleteAllEasterEggs(player)
+PlayerBoolStat(stat, player)
 {
-    stats = ["DARKOPS_GENESIS_SUPER_EE", "darkops_zod_ee", "darkops_factory_ee", "darkops_castle_ee", "darkops_island_ee", "darkops_stalingrad_ee", "darkops_genesis_ee", "darkops_zod_super_ee", "darkops_factory_super_ee", "darkops_castle_super_ee", "darkops_island_super_ee", "darkops_stalingrad_super_ee"];
-    value = !Int(player GetDStat("PlayerStatsList", "DARKOPS_GENESIS_SUPER_EE", "StatValue"));
-    
-    foreach(stat in stats)
-        player SetDStat("PlayerStatsList", stat, "StatValue", value);
+    player SetDStat("PlayerStatsList", stat, "StatValue", !Int(player GetDStat("PlayerStatsList", stat, "StatValue")));
 }
 
 CompleteDailyChallenges(player)

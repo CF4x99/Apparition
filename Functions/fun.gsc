@@ -123,8 +123,8 @@ ZombieCounter(player)
 
         while(isDefined(player.ZombieCounter))
         {
-            if(player GetLUIMenuData(player.ZombieCounterHud, "text") != "Alive: " + zombie_utility::get_current_zombie_count() + "\nRemaining: " + level.zombie_total)
-                player SetLUIMenuData(player.ZombieCounterHud, "text", "Alive: " + zombie_utility::get_current_zombie_count() + "\nRemaining: " + level.zombie_total);
+            if(player GetLUIMenuData(player.ZombieCounterHud, "text") != "Alive: " + zombie_utility::get_current_zombie_count() + "\nRemaining For Round: " + level.zombie_total)
+                player SetLUIMenuData(player.ZombieCounterHud, "text", "Alive: " + zombie_utility::get_current_zombie_count() + "\nRemaining For Round: " + level.zombie_total);
             
             player lui::set_color(player.ZombieCounterHud, level.RGBFadeColor);
 

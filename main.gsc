@@ -254,9 +254,11 @@ DefineMenuArrays()
     
     map = ReturnMapName(level.script);
 
-    if(map != "Unknown")
+    if(map != "Unknown") //Feel free to add your own custom teleport locations
     {
         level.menuTeleports = [];
+        
+        //[<teleport location name>, <(x, y, z) origin>]
 
         if(map == "Origins")
             level.menuTeleports["Origins"] = ["Spawn", (2698.43, 5290.48, -346.219), "The Crazy Place", (10334.5, -7891.93, -411.875), "Robot Head: Odin", (-6759.17, -6541.72, 159.375), "Robot Head: Thor", (-6223.59, -6547.65, 159.375), "Robot Head: Freya", (-5699.83, -6540.03, 159.375), "Prison", (-3142.11, 1125.09, -63.875)];

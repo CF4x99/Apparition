@@ -439,9 +439,39 @@ SpawnBot()
 
 CollectCraftableParts(craftable)
 {
+    menu = self getCurrent();
+    curs = self getCursor();
+
 	foreach(part in level.zombie_include_craftables[craftable].a_piecestubs)
 		if(isDefined(part.pieceSpawn))
 			self zm_craftables::player_take_piece(part.pieceSpawn);
+    
+    wait 0.05;
+
+    self RefreshMenu(menu, curs);
+}
+
+IsCraftableCollected(craftable)
+{
+    if(craftable == "open_table")
+        return true;
+    
+    foreach(part in level.zombie_include_craftables[craftable].a_piecestubs)
+        if(isDefined(part.pieceSpawn.model))
+            return false;
+    
+    return true;
+}
+
+IsAllCraftablesCollected()
+{
+    craftables = GetArrayKeys(level.zombie_include_craftables);
+
+    for(a = 0; a < craftables.size; a++)
+        if(isDefined(craftables[a]) && craftables[a] != "open_table" && !IsCraftableCollected(craftables[a]))
+            return false;
+    
+    return true;
 }
 
 SetBoxPrice(price)
