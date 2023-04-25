@@ -335,6 +335,43 @@ ZombiesToCrosshairsLoop()
     }
 }
 
+DisableZombieCollision()
+{
+    level.DisableZombieCollision = isDefined(level.DisableZombieCollision) ? undefined : true;
+
+    if(isDefined(level.DisableZombieCollision))
+    {
+        while(isDefined(level.DisableZombieCollision))
+        {
+            zombies = GetAITeamArray(level.zombie_team);
+
+            for(a = 0; a < zombies.size; a++)
+            {
+                if(!isDefined(zombies[a]) || !IsAlive(zombies[a]) || isDefined(zombies[a].DisableCollision))
+                    continue;
+                
+                zombies[a] SetPlayerCollision(0);
+                zombies[a].DisableCollision = true;
+            }
+
+            wait 0.1;
+        }
+    }
+    else
+    {
+        zombies = GetAITeamArray(level.zombie_team);
+
+        for(a = 0; a < zombies.size; a++)
+        {
+            if(!isDefined(zombies[a]) || !IsAlive(zombies[a]))
+                continue;
+            
+            zombies[a] SetPlayerCollision(1);
+            zombies[a].DisableCollision = undefined;
+        }
+    }
+}
+
 DisableZombiePush()
 {
     level.DisableZombiePush = isDefined(level.DisableZombiePush) ? undefined : true;

@@ -402,7 +402,7 @@ runMenuIndex(menu)
                 self addOptBool(isDefined(level.a_e_slow_areas), "Mud Slowdown", ::MudSlowdown);
                 self addOpt("Soul Boxes", ::newMenu, "Soul Boxes");
                 self addOpt("Challenges", ::newMenu, "Origins Challenges");
-                self addOpt("Puzzles", ::newMenu, "Origins Puzzles");
+                self addOpt("Staff Puzzles", ::newMenu, "Origins Puzzles");
             break;
         
         case "Origins Generators":
@@ -550,7 +550,38 @@ runMenuIndex(menu)
         case "Der Eisendrache Scripts":
             self addMenu(menu, "Der Eisendrache Scripts");
                 self addOptBool(level flag::get("power_on"), "Turn On Power", ::ActivatePower);
-                self addOpt("Feed Dragons", ::FeedDragons);
+                self addOptBool(level flag::get("soul_catchers_charged"), "Feed Dragons", ::FeedDragons);
+
+                if(level flag::get("soul_catchers_charged"))
+                    self addOpt("Bow Quests", ::newMenu, "Bow Quests");
+            break;
+        
+        case "Bow Quests":
+            self addMenu(menu, "Bow Quests");
+                self addOpt("Fire", ::newMenu, "Fire Bow");
+            break;
+        
+        case "Fire Bow":
+            //level.var_c62829c7 <- player bound to fire quest
+
+            self addMenu(menu, "Fire");
+                self addOptBool(isDefined(level.var_714fae39), "Initiate Quest", ::InitFireBow);
+
+                if(isDefined(level.var_714fae39))
+                {
+                    if(isDefined(level.var_c62829c7))
+                    {
+                        self addOptBool((level flag::get("rune_prison_obelisk") && !isDefined(level.MagmaRock)), "Shoot Magma Rock", ::MagmaRock);
+                        self addOptBool(AllRunicCirclesCharged(), "Activate & Charge Runic Circles", ::RunicCircles);
+                        self addOptBool(IsClockFireplaceComplete(), "Complete Fireplace Step", ::ClockFireplaceStep);
+                        self addOptBool(level flag::get("rune_prison_repaired"), "Collect Repaired Arrows", ::CollectRepairedFireArrows);
+                    }
+                    else
+                    {
+                        self addOpt("");
+                        self addOpt("Quest Hasn't Been Bound Yet");
+                    }
+                }
             break;
         
         case "Shadows Of Evil Scripts":
@@ -664,6 +695,7 @@ runMenuIndex(menu)
                 self addOptBool(level.SuperJump, "Super Jump", ::SuperJump);
                 self addOptBool((GetDvarInt("bg_gravity") == 200), "Low Gravity", ::LowGravity);
                 self addOptBool((GetDvarString("g_speed") == "500"), "Super Speed", ::SuperSpeed);
+                self addOptIncSlider("Timescale", ::ServerSetTimeScale, 0.1, GetDvarInt("timescale"), 5, 0.1);
                 self addOpt("Set Round", ::NumberPad, "Set Round", ::SetRound);
                 self addOptBool(level.AntiQuit, "Anti-Quit", ::AntiQuit);
                 self addOptBool(level.AntiJoin, "Anti-Join", ::AntiJoin);
@@ -848,6 +880,7 @@ runMenuIndex(menu)
                 self addOpt("Model", ::newMenu, "Zombie Model Manipulation");
                 self addOpt("Animations", ::newMenu, "Zombie Animations");
                 self addOptBool((GetDvarString("ai_disableSpawn") == "1"), "Disable Spawning", ::DisableZombieSpawning);
+                self addOptBool(level.DisableZombieCollision, "Disable Collision", ::DisableZombieCollision);
                 self addOptBool(level.DisableZombiePush, "Disable Push", ::DisableZombiePush);
                 self addOptBool(level.ZombiesInvisibility, "Invisibility", ::ZombiesInvisibility);
                 self addOptBool((GetDvarString("g_ai") == "0"), "Freeze", ::FreezeZombies);

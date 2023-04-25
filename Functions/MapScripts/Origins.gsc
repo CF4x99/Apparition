@@ -507,6 +507,18 @@ function_fbbc8608(str_hint, var_7ca2c2ae)
 	self luinotifyevent(&"trial_complete", 3, &"ZM_TOMB_CHALLENGE_COMPLETED", str_hint, var_7ca2c2ae);
 }
 
+
+
+
+
+
+
+
+
+
+
+//Ice Staff
+
 CompleteIceTiles()
 {
 	if(level flag::get("ice_puzzle_1_complete"))
@@ -590,6 +602,15 @@ CompleteIceTombstones()
 	self RefreshMenu(menu, curs);
 }
 
+
+
+
+
+
+
+
+//Wind Staff
+
 CompleteWindRings()
 {
 	if(level flag::get("air_puzzle_1_complete"))
@@ -671,6 +692,16 @@ CompleteWindSmoke()
 	
 	self RefreshMenu(menu, curs);
 }
+
+
+
+
+
+
+
+
+
+//Fire Staff
 
 ComepleteFireCauldrons()
 {
@@ -784,6 +815,19 @@ CompleteFireTorches()
 	self RefreshMenu(menu, curs);
 }
 
+
+
+
+
+
+
+
+
+
+
+
+//Lightning Staff
+
 CompleteLightningSong()
 {
 	if(level flag::get("electric_puzzle_1_complete"))
@@ -855,6 +899,12 @@ CompleteLightningDials()
 	
 	self RefreshMenu(menu, curs);
 }
+
+//End Staff Puzzles
+
+
+
+
 
 Align115Rings(type)
 {

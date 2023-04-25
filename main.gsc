@@ -189,7 +189,7 @@ onPlayerSpawned()
             self thread AntiEndGame();
     }
 
-    level flag::wait_till("initial_blackscreen_passed");
+    //level flag::wait_till("initial_blackscreen_passed");
     
     if(self IsHost())
     {

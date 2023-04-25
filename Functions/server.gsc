@@ -14,6 +14,14 @@ SuperSpeed()
     SetDvar("g_speed", (GetDvarString("g_speed") == level.GSpeed) ? "500" : level.GSpeed);
 }
 
+ServerSetTimeScale(timescale)
+{
+    if(GetDvarInt("timescale") == timescale)
+        return;
+    
+    SetDvar("timescale", timescale);
+}
+
 SetRound(round)
 {
     round--;
