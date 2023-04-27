@@ -559,6 +559,9 @@ runMenuIndex(menu)
         case "Bow Quests":
             self addMenu(menu, "Bow Quests");
                 self addOpt("Fire", ::newMenu, "Fire Bow");
+                self addOpt("Lightning", ::newMenu, "Lightning Bow");
+                self addOpt("Void", ::newMenu, "Void Bow");
+                self addOpt("Wolf", ::newMenu, "Wolf Bow");
             break;
         
         case "Fire Bow":
@@ -575,6 +578,53 @@ runMenuIndex(menu)
                         self addOptBool(AllRunicCirclesCharged(), "Activate & Charge Runic Circles", ::RunicCircles);
                         self addOptBool(IsClockFireplaceComplete(), "Complete Fireplace Step", ::ClockFireplaceStep);
                         self addOptBool(level flag::get("rune_prison_repaired"), "Collect Repaired Arrows", ::CollectRepairedFireArrows);
+                    }
+                    else
+                    {
+                        self addOpt("");
+                        self addOpt("Quest Hasn't Been Bound Yet");
+                    }
+                }
+            break;
+        
+        case "Lightning Bow":
+            //level.var_f8d1dc16 <- player bound to lightning quest
+
+            trig = GetEnt("aq_es_weather_vane_trig", "targetname");
+
+            self addMenu(menu, "Lightning");
+                self addOptBool(!isDefined(trig), "Initiate Quest", ::InitLightningBow);
+
+                if(!isDefined(trig))
+                {
+                    if(isDefined(level.var_f8d1dc16))
+                    {
+                        self addOptBool(AreBeaconsLit(), "Light Beacons", ::LightningBeacons);
+                        self addOptBool(level flag::get("elemental_storm_wallrun"), "Wallrun Step", ::LightningWallrun);
+                        self addOptBool(LightningBeaconsCharged(), "Fill Urns & Charge Beacons", ::LightningChargeBeacons);
+                        self addOptBool(level flag::get("elemental_storm_repaired"), "Charge & Collect Arrows", ::ChargeLightningArrows);
+                    }
+                    else
+                    {
+                        self addOpt("");
+                        self addOpt("Quest Hasn't Been Bound Yet");
+                    }
+                }
+            break;
+        
+        case "Void Bow":
+            //level.var_6e68c0d8 <- player bound to void quest
+
+            self addMenu(menu, "Void");
+                self addOptBool(IsDemonSymbolDestroyed(), "Initiate Quest", ::InitVoidBow);
+
+                if(IsDemonSymbolDestroyed())
+                {
+                    if(isDefined(level.var_6e68c0d8))
+                    {
+                        self addOptBool(level flag::get("demon_gate_seal"), "Release Demon Urn", ::ReleaseDemonUrn);
+                        self addOptBool(IsAllFossilsTriggered(), "Trigger Fossil Heads", ::TriggerDemonFossils);
+                        self addOptBool(level flag::get("demon_gate_crawlers"), "Feed Demon Urn", ::FeedDemonUrn);
                     }
                     else
                     {

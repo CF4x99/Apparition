@@ -60,7 +60,8 @@ InitFireBow()
     if(isDefined(clock))
         MagicBullet(GetWeapon("elemental_bow"), clock.origin, clock.origin + (0, 5, 0), self);
 
-    wait 0.1;
+    while(!isDefined(level.var_714fae39) || !level.var_714fae39)
+        wait 0.1;
 
     self RefreshMenu(menu, curs);
 }
@@ -285,7 +286,9 @@ CollectRepairedFireArrows()
     curs = self getCursor();
     
     MagmaBall = struct::get("quest_reforge_rune_prison", "targetname");
-    MagmaBall.var_67b5dd94 notify("trigger", level.var_c62829c7);
+
+    if(isDefined(MagmaBall))
+        MagmaBall.var_67b5dd94 notify("trigger", level.var_c62829c7);
 
     level waittill(#"hash_79d94608");
 
@@ -298,4 +301,463 @@ CollectRepairedFireArrows()
         wait 0.1;
     
     self RefreshMenu(menu, curs);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Lightning Bow Quest
+
+InitLightningBow()
+{
+    trig = GetEnt("aq_es_weather_vane_trig", "targetname");
+
+    if(!isDefined(trig))
+        return;
+
+    if(isDefined(level.InitLightningBow))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    level.InitLightningBow = true;
+    
+    menu = self getCurrent();
+    curs = self getCursor();
+
+    if(isDefined(trig))
+        MagicBullet(GetWeapon("elemental_bow"), trig.origin, trig.origin + (0, 0, 5), self);
+
+    while(isDefined(trig))
+        wait 0.1;
+
+    self RefreshMenu(menu, curs);
+}
+
+LightningBeacons()
+{
+    if(AreBeaconsLit())
+        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+    
+    if(isDefined(level.LightningBeacons))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    level.LightningBeacons = true;
+
+    menu = self getCurrent();
+    curs = self getCursor();
+
+    beacons = GetEntArray("aq_es_beacon_trig", "script_noteworthy");
+
+    for(a = 0; a < beacons.size; a++)
+    {
+        if(!isDefined(beacons[a]))
+            continue;
+        
+        MagicBullet(GetWeapon("elemental_bow"), beacons[a].origin + (0, 0, 5), beacons[a].origin, level.var_f8d1dc16);
+
+        wait 0.1;
+    }
+
+    while(!AreBeaconsLit())
+        wait 0.1;
+
+    self RefreshMenu(menu, curs);
+}
+
+AreBeaconsLit()
+{
+    beacons = GetEntArray("aq_es_beacon_trig", "script_noteworthy");
+
+    for(a = 0; a < beacons.size; a++)
+    {
+        if(!isDefined(beacons[a]))
+            continue;
+        
+        s_beacon = struct::get(beacons[a].target);
+        
+        if(!s_beacon.var_41f52afd clientfield::get("beacon_fx"))
+            return false;
+    }
+
+    return true;
+}
+
+LightningWallrun()
+{
+    if(level flag::get("elemental_storm_wallrun"))
+        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+    
+    if(isDefined(level.LightningWallrun))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    if(!AreBeaconsLit())
+        return self iPrintlnBold("^1ERROR: ^7Beacons Must Be Lit First");
+    
+    level.LightningWallrun = true;
+
+    menu = self getCurrent();
+    curs = self getCursor();
+
+    trigs = GetEntArray("aq_es_wallrun_trigger", "targetname");
+
+    for(a = 0; a < trigs.size; a++)
+    {
+        if(!isDefined(trigs[a]) || level.var_f8d1dc16.var_a4f04654 >= 4)
+            continue;
+        
+        trigs[a] notify("trigger", level.var_f8d1dc16);
+    }
+
+    while(!level flag::get("elemental_storm_wallrun"))
+        wait 0.1;
+
+    self RefreshMenu(menu, curs);
+}
+
+LightningChargeBeacons()
+{
+    if(LightningBeaconsCharged())
+        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+    
+    if(isDefined(level.LightningChargeBeacons))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    if(!level flag::get("elemental_storm_wallrun"))
+        return self iPrintlnBold("^1ERROR: ^7Wallrun Step Must Be Completed First");
+    
+    level.LightningChargeBeacons = true;
+
+    menu = self getCurrent();
+    curs = self getCursor();
+
+    if(!level flag::get("elemental_storm_batteries"))
+    {
+        beacons = GetEntArray("aq_es_battery_volume", "script_noteworthy");
+
+        for(a = 0; a < beacons.size; a++)
+        {
+            if(!isDefined(beacons[a]))
+                continue;
+            
+            while(!isDefined(beacons[a].b_activated) || !beacons[a].b_activated)
+            {
+                beacons[a] notify("killed");
+
+                wait 0.1;
+            }
+
+            wait 0.1;
+        }
+
+        level.var_f8d1dc16 thread LightningMissileCharger();
+    }
+
+
+    bTrigs = GetEntArray("aq_es_beacon_trig", "script_noteworthy");
+
+    for(a = 0; a < bTrigs.size; a++)
+    {
+        if(!isDefined(bTrigs[a]) || isDefined(bTrigs[a].var_d5d05f50) && bTrigs[a].var_d5d05f50)
+            continue;
+        
+        MagicBullet(GetWeapon("elemental_bow"), bTrigs[a].origin + (0, 0, 500), bTrigs[a].origin, level.var_f8d1dc16);
+
+        wait 0.1;
+    }
+
+    while(!LightningBeaconsCharged())
+        wait 0.1;
+    
+    self RefreshMenu(menu, curs);
+}
+
+LightningMissileCharger()
+{
+    used = [];
+
+    while(!LightningBeaconsCharged())
+    {
+        self waittill("missile_fire", projectile, weapon);
+
+        chosen = undefined;
+        charged = GetEntArray("aq_es_battery_volume_charged", "script_noteworthy");
+
+        for(a = 0; a < charged.size; a++)
+        {
+            if(!isDefined(charged[a]) || isInArray(used, a) || isDefined(chosen))
+                continue;
+            
+            chosen = true;
+            used[used.size] = a;
+            projectile.var_8f88d1fd = charged[a];
+            level.var_f8d1dc16.var_55301590 = charged[a];
+        }
+
+        projectile.var_e4594d27 = true;
+    }
+}
+
+LightningBeaconsCharged()
+{
+    return (level flag::get("elemental_storm_batteries") && level flag::get("elemental_storm_beacons_charged"));
+}
+
+ChargeLightningArrows()
+{
+    if(level flag::get("elemental_storm_repaired"))
+        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+    
+    if(isDefined(level.ChargeLightningArrows))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    if(!LightningBeaconsCharged())
+        return self iPrintlnBold("^1ERROR: ^7Urns Must Filled & Beacons Need To Be Charged First");
+
+    level.ChargeLightningArrows = true;
+
+    menu = self getCurrent();
+    curs = self getCursor();
+
+    storm = struct::get("quest_reforge_elemental_storm");
+
+    if(isDefined(storm))
+        storm.var_67b5dd94 notify("trigger", level.var_f8d1dc16);
+
+    wait 18;
+
+    if(isDefined(storm))
+        storm.var_67b5dd94 notify("trigger", level.var_f8d1dc16);
+
+    while(!level flag::get("elemental_storm_repaired"))
+        wait 0.1;
+    
+    self RefreshMenu(menu, curs);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Void Bow Quest
+
+InitVoidBow()
+{
+    if(IsDemonSymbolDestroyed())
+        return;
+    
+    if(isDefined(level.InitVoidBow))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    level.InitVoidBow = true;
+
+    menu = self getCurrent();
+    curs = self getCursor();
+
+    symbol = GetEnt("aq_dg_gatehouse_symbol_trig", "targetname");
+
+    if(isDefined(symbol))
+        MagicBullet(GetWeapon("elemental_bow"), symbol.origin, symbol.origin + (0, 0, 5), self);
+
+    while(!IsDemonSymbolDestroyed())
+        wait 0.1;
+
+    self RefreshMenu(menu, curs);
+}
+
+IsDemonSymbolDestroyed()
+{
+    return (level clientfield::get("quest_state_demon") > 0 || isDefined(level.InitVoidBow));
+}
+
+ReleaseDemonUrn()
+{
+    if(level flag::get("demon_gate_seal"))
+        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+    
+    if(isDefined(level.ReleaseDemonUrn))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    level.ReleaseDemonUrn = true;
+
+    menu = self getCurrent();
+    curs = self getCursor();
+
+    level flag::set("demon_gate_seal"); //Hate doing it this way. But, nothing will get skipped over by doing it like this.
+
+    wait 5;
+
+    urn = struct::get("aq_dg_urn_struct", "targetname");
+    urn.var_67b5dd94 notify("trigger", level.var_6e68c0d8);
+
+    while(!level flag::get("demon_gate_seal"))
+        wait 0.1;
+    
+    self RefreshMenu(menu, curs);
+
+    wait 3;
+
+    level.ReleaseDemonUrn = undefined;
+}
+
+TriggerDemonFossils()
+{
+    if(!level flag::get("demon_gate_seal") || level clientfield::get("quest_state_demon") < 2)
+        return self iPrintlnBold("^1ERROR: ^7The Demon Urn Must Be Released First");
+    
+    if(IsAllFossilsTriggered())
+        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+    
+    if(isDefined(level.TriggerDemonFossils))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    level.TriggerDemonFossils = true;
+
+    menu = self getCurrent();
+    curs = self getCursor();
+
+    fossils = GetEntArray("aq_dg_fossil", "script_noteworthy");
+
+    for(a = 0; a < fossils.size; a++)
+    {
+        if(!isDefined(fossils[a]))
+            continue;
+        
+        fossils[a].var_67b5dd94 notify("trigger", level.var_6e68c0d8);
+
+        wait 0.1;
+    }
+
+    while(!IsAllFossilsTriggered())
+        wait 0.1;
+    
+    self RefreshMenu(menu, curs);
+}
+
+IsAllFossilsTriggered()
+{
+    fossils = GetEntArray("aq_dg_fossil", "script_noteworthy");
+
+    if(isDefined(fossils) && fossils.size)
+        return false;
+    
+    return true;
+}
+
+FeedDemonUrn()
+{
+    if(!IsAllFossilsTriggered() || level clientfield::get("quest_state_demon") < 3)
+        return self iPrintlnBold("^1ERROR: ^7All Fossil Heads Must Be Triggered First");
+    
+    if(level flag::get("demon_gate_crawlers"))
+        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+    
+    if(isDefined(level.FeedDemonUrn))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    level.FeedDemonUrn = true;
+
+    menu = self getCurrent();
+    curs = self getCursor();
+
+    urnTrig = GetEnt("aq_dg_trophy_room_trig", "targetname");
+
+    if(isDefined(urnTrig))
+        urnTrig notify("trigger", level.var_6e68c0d8);
+
+    wait 0.1;
+
+    urn = GetEnt("aq_dg_demonic_circle_volume", "targetname");
+
+    while(urn.var_e1f456ae < 6)
+    {
+        SpawnSacrificedZombie();
+
+        wait 0.5;
+    }
+
+    while(!level flag::get("demon_gate_crawlers"))
+        wait 0.1;
+    
+    if(isDefined(level.EESpawnedZM) && level.EESpawnedZM.size)
+    {
+        for(a = 0; a < level.EESpawnedZM.size; a++)
+        {
+            if(!isDefined(level.EESpawnedZM[a]) || !IsAlive(level.EESpawnedZM[a]))
+                continue;
+            
+            level.EESpawnedZM[a] Hide();
+            level.EESpawnedZM[a] DoDamage(level.EESpawnedZM[a].health + 666, level.EESpawnedZM[a].origin);
+        }
+    }
+    
+    self RefreshMenu(menu, curs);
+}
+
+SpawnSacrificedZombie()
+{
+    if(!isDefined(level.EESpawnedZM))
+        level.EESpawnedZM = [];
+    
+    zombie = zombie_utility::spawn_zombie(level.zombie_spawners[0]);
+
+	if(isDefined(zombie))
+    {
+        wait 0.1;
+
+        zombie endon("death");
+
+        level.EESpawnedZM[level.EESpawnedZM.size] = zombie;
+        zombie zombie_utility::makezombiecrawler(true);
+
+        goalEnt = GetEnt("aq_dg_demonic_circle_volume", "targetname");
+        target = goalEnt.origin;
+
+        linker = Spawn("script_origin", zombie.origin);
+        linker.origin = zombie.origin;
+        linker.angles = zombie.angles;
+
+        zombie LinkTo(linker);
+        linker MoveTo(target, 0.01);
+        
+        linker waittill("movedone");
+
+        zombie Unlink();
+        linker delete();
+
+        zombie LinkTo(goalEnt);
+        
+        zombie.completed_emerging_into_playable_area = 1;
+        zombie.find_flesh_struct_string = "find_flesh";
+        zombie.ai_state = "find_flesh";
+        zombie notify("zombie_custom_think_done", "find_flesh");
+    }
 }
