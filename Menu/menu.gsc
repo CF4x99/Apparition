@@ -1200,6 +1200,8 @@ MenuOptionsPlayer(menu, player)
     
     weapons = ["Assault Rifles", "Sub Machine Guns", "Light Machine Guns", "Sniper Rifles", "Shotguns", "Pistols", "Launchers", "Specials"];
     weaponsVar = ["assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special"];
+
+    mapStr = ReturnMapName(level.script);
     
     switch(newmenu)
     {
@@ -1295,8 +1297,8 @@ MenuOptionsPlayer(menu, player)
                 if(isDefined(level.MenuSpawnPoints) && level.MenuSpawnPoints.size)
                     self addOptIncSlider("Official Spawn Points", ::OfficialSpawnPoint, 0, 0, (level.MenuSpawnPoints.size - 1), 1, player);
                 
-                if(isDefined(level.menuTeleports) && isDefined(level.menuTeleports[ReturnMapName(level.script)]) && level.menuTeleports[ReturnMapName(level.script)].size)
-                    self addOpt(ReturnMapName(level.script) + " Teleports", ::newMenu, ReturnMapName(level.script) + " Teleports " + player GetEntityNumber());
+                if(isDefined(level.menuTeleports) && isDefined(level.menuTeleports[mapStr]) && level.menuTeleports[mapStr].size)
+                    self addOpt(mapStr + " Teleports", ::newMenu, mapStr + " Teleports " + player GetEntityNumber());
                 
                 self addOpt("Entity Teleports", ::newMenu, "Entity Teleports " + player GetEntityNumber());
                 self addOptSlider("Teleport", ::TeleportPlayer, "Crosshairs;Sky", player);
@@ -1309,15 +1311,6 @@ MenuOptionsPlayer(menu, player)
                     self addOpt("Teleport To Self", ::TeleportPlayer, player, self);
                     self addOpt("Teleport To Player", ::TeleportPlayer, self, player);
                 }
-            break;
-        
-        case ReturnMapName(level.script) + " Teleports":
-            self addMenu(menu, ReturnMapName(level.script) + " Teleports");
-                if(isDefined(level.menuTeleports) && isDefined(level.menuTeleports[ReturnMapName(level.script)]) && level.menuTeleports[ReturnMapName(level.script)].size)
-                    for(a = 0; a < level.menuTeleports[ReturnMapName(level.script)].size; a += 2)
-                        self addOpt(level.menuTeleports[ReturnMapName(level.script)][a], ::TeleportPlayer, level.menuTeleports[ReturnMapName(level.script)][(a + 1)], player);
-                else
-                    self addOpt("No " + ReturnMapName(level.script) + " Teleports Found");
             break;
         
         case "Entity Teleports":            
@@ -1890,6 +1883,18 @@ MenuOptionsPlayer(menu, player)
                             for(b = 0; b < mapStats.size; b++)
                                 self addOptBool(isInArray(player.CustomStatsArray, mapStats[b] + "_" + level.mapNames[a]), CleanString(mapStats[b]), ::AddToCustomStats, mapStats[b] + "_" + level.mapNames[a], player);
                     }
+                }
+
+                if(newmenu == map + " Teleports")
+                {
+                    error404 = false;
+
+                    self addMenu(menu, mapStr + " Teleports");
+                        if(isDefined(level.menuTeleports) && isDefined(level.menuTeleports[mapStr]) && level.menuTeleports[mapStr].size)
+                            for(a = 0; a < level.menuTeleports[mapStr].size; a += 2)
+                                self addOpt(level.menuTeleports[mapStr][a], ::TeleportPlayer, level.menuTeleports[mapStr][(a + 1)], player);
+                        else
+                            self addOpt("No " + mapStr + " Teleports Found");
                 }
 
                 if(error404)

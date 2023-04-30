@@ -159,7 +159,7 @@ UnlimitedAmmo(type, player)
 {
     player notify("EndUnlimitedAmmo");
     player endon("EndUnlimitedAmmo");
-    
+
     if(type != "Disable")
     {
         player endon("disconnect");

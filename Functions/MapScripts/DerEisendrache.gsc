@@ -747,14 +747,14 @@ SpawnSacrificedZombie()
 
         zombie LinkTo(linker);
         linker MoveTo(target, 0.01);
-        
+
         linker waittill("movedone");
 
         zombie Unlink();
         linker delete();
 
         zombie LinkTo(goalEnt);
-        
+
         zombie.completed_emerging_into_playable_area = 1;
         zombie.find_flesh_struct_string = "find_flesh";
         zombie.ai_state = "find_flesh";

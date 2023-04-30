@@ -1,8 +1,5 @@
 
 /*
-	TO DO:
-		- Force Aligning 115 Rings Is Buggy
-	
 	UPGRADE STAFFS:
 
 	[X] = Can Be Completed With Apparition
