@@ -614,24 +614,26 @@ runMenuIndex(menu)
         
         case "Void Bow":
             //level.var_6e68c0d8 <- player bound to void quest
+            symDestroyed = level IsDemonSymbolDestroyed();
 
             self addMenu(menu, "Void");
-                self addOptBool(IsDemonSymbolDestroyed(), "Initiate Quest", ::InitVoidBow);
+                self addOpt("Removed For The Time Being");
+                /*self addOptBool(symDestroyed, "Initiate Quest", ::InitVoidBow);
 
-                if(IsDemonSymbolDestroyed())
+                if(symDestroyed)
                 {
                     if(isDefined(level.var_6e68c0d8))
                     {
                         self addOptBool(level flag::get("demon_gate_seal"), "Release Demon Urn", ::ReleaseDemonUrn);
-                        self addOptBool(IsAllFossilsTriggered(), "Trigger Fossil Heads", ::TriggerDemonFossils);
-                        self addOptBool(level flag::get("demon_gate_crawlers"), "Feed Demon Urn", ::FeedDemonUrn);
+                        //self addOptBool(IsAllFossilsTriggered(), "Trigger Fossil Heads", ::TriggerDemonFossils);
+                        //self addOptBool(level flag::get("demon_gate_crawlers"), "Feed Demon Urn", ::FeedDemonUrn);
                     }
                     else
                     {
                         self addOpt("");
                         self addOpt("Quest Hasn't Been Bound Yet");
                     }
-                }
+                }*/
             break;
         
         case "Shadows Of Evil Scripts":
@@ -1873,7 +1875,7 @@ MenuOptionsPlayer(menu, player)
 
                 for(a = 0; a < level.mapNames.size; a++)
                 {
-                    if(IsSubStr(newmenu, level.mapNames[a]))
+                    if(IsSubStr(newmenu, "Map Stats " + level.mapNames[a]) || newmenu == "Map Stats " + level.mapNames[a])
                     {
                         error404 = false;
 
@@ -1885,7 +1887,7 @@ MenuOptionsPlayer(menu, player)
                     }
                 }
 
-                if(newmenu == map + " Teleports")
+                if(IsSubStr(newmenu, mapStr + " Teleports") || newmenu == mapStr + " Teleports")
                 {
                     error404 = false;
 
