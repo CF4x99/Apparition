@@ -1,35 +1,39 @@
 /*
-    Menu: Apparition
-    Developer: CF4_99
-    Version: 1.0.5
-    Project Start Date: 6/10/21
+    Menu:                 Apparition
+    Developer:            CF4_99
+    Version:              1.0.5
+    Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
     
     Menu Source & Current Update: https://github.com/CF4x99/Apparition
     Make sure you check my github link for updates. This menu is updated often.
 
-    Discord: CF4_99#9999
-    YouTube: https://www.youtube.com/c/CF499
-    https://discord.gg/MXT
+    IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
+
+    Discord:    CF4_99#9999
+    YouTube:    https://www.youtube.com/c/CF499
+    MXT Server: https://discord.gg/MXT
 
     If you are using Crafty's Compiler/Injector, make sure you have the latest build. If not, you will get a syntax error.
     Latest Build: https://github.com/LJW-Dev/Black-Ops-3-GSC-Compiler/releases/tag/1.0
 
 
     Controls:
-        Open: Aim & Knife
-        Scroll: Aim/Shoot Or Actionslots 1 & 2(Controller Users: Dpad up/down)
-        Slider Scroll: Actionslot 3 & 4(Controller Users: Dpad left/right)
-        Select: Use Button(PlayStation Controller: Square || Xbox Controller: X)
-        Go Back/Exit: Knife
+        - Apparition: Aim & Knife
+        - Quick Menu: Aim & Secondary Offhand Button
+        - Scroll: Aim/Shoot Or Actionslots 1 & 2(Controller Users: Dpad up/down)
+        - Slider Scroll: Actionslot 3 & 4(Controller Users: Dpad left/right)
+        - Select: Use Button(PlayStation Controller: Square || Xbox Controller: X)
+        - Go Back/Exit: Knife
     
 
-    Credits: 
+    Credits:
+        - CF4_99 ~ Project Developer
         - Extinct ~ Ideas, Suggestions, Constructive Criticism, Spec-Nade, and LUI Hud
         - CraftyCritter ~ BO3 Compiler
         - ItsFebiven ~ Some Ideas and Suggestions
 
-    If you use any scripts from this project, or make an edit, leave credits.
+    IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
 
 
@@ -76,6 +80,8 @@
 
 
     If you find any bugs, or come across something that you feel isn't working as it should, please message me on discord.
+
+    IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
     Discord: CF4_99#9999
 */

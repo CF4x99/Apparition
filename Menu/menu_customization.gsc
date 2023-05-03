@@ -426,7 +426,7 @@ LoadMenuVars() //Pre-Set Menu Variables.
         self.menu["MenuBlur"] = (dvarSep[9] == "Enable") ? true : undefined;
         self.menu["DisableQM"] = (dvarSep[10] == "Enable") ? true : undefined;
         
-        if(dvarSep[10] == "Rainbow")
+        if(dvarSep[11] == "Rainbow")
             self thread SmoothRainbowTheme();
         else
         {
