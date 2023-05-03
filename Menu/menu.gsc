@@ -1984,9 +1984,11 @@ menuMonitor()
                                 self drawText();
                             }
 
-                            self.menu["ui"]["QMScroller"][0] thread hudMoveXY(self.menu["ui"]["bannerQM"].x - (self.menu["ui"]["QMBG"][self.menu["cursQM"][menu]].width / 2), self.menu["ui"]["QMBG"][self.menu["cursQM"][menu]].y, 0);
-                            self.menu["ui"]["QMScroller"][1] thread hudMoveY(self.menu["ui"]["QMBG"][self.menu["cursQM"][menu]].y, 0);
-                            self.menu["ui"]["QMScroller"][1] SetShaderValues(undefined, self.menu["ui"]["QMBG"][self.menu["cursQM"][menu]].width, undefined);
+                            for(a = 0; a < self.menu["ui"]["QMScroller"].size; a++)
+                                self.menu["ui"]["QMScroller"][a].y = self.menu["ui"]["QMBG"][self.menu["cursQM"][menu]].y;
+                            
+                            self.menu["ui"]["QMScroller"][0] SetShaderValues(undefined, self.menu["ui"]["QMBG"][self.menu["cursQM"][menu]].width, undefined);
+                            self.menu["ui"]["QMScroller"][1] SetShaderValues(undefined, (self.menu["ui"]["QMBG"][self.menu["cursQM"][menu]].width + 2), undefined);
                         }
 
                         self PlaySoundToPlayer("uin_alert_lockon", self);
@@ -2179,18 +2181,18 @@ drawText()
             if(isDefined(self.menu["items"][self getCurrent()].slider[(start + a)]) || isDefined(self.menu["items"][self getCurrent()].incslider[(start + a)]))
                 optStr = isDefined(self.menu["items"][self getCurrent()].slider[(start + a)]) ? optStr + " < " + self.menu_S[self getCurrent()][(start + a)][self.menu_SS[self getCurrent()][(start + a)]] + " > [" + (self.menu_SS[self getCurrent()][(start + a)] + 1) + "/" + self.menu_S[self getCurrent()][(start + a)].size + "]" : optStr + " < " + self.menu_SS[self getCurrent()][(start + a)] + " >";
 
-            self.menu["ui"]["textQM"][(start + a)] = self createText("default", 1.1, 5, optStr, "CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, (self.menu["YQM"]) + (a * 20), 1, (isDefined(self.menu["items"][self getCurrent()].bool[(start + a)]) && isDefined(self.menu_B[self getCurrent()][(start + a)]) && self.menu_B[self getCurrent()][(start + a)]) ? divideColor(0, 255, 0) : (1, 1, 1));
-            self.menu["ui"]["QMBG"][(start + a)] = self createRectangle("CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, self.menu["YQM"] + (a * 20), ShaderTextWidth(optStr), 18, (0, 0, 0), 1, 0.8, "white");
+            self.menu["ui"]["textQM"][(start + a)] = self createText("default", 1.1, 5, optStr, "CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, (self.menu["YQM"]) + (a * 21), 1, (isDefined(self.menu["items"][self getCurrent()].bool[(start + a)]) && isDefined(self.menu_B[self getCurrent()][(start + a)]) && self.menu_B[self getCurrent()][(start + a)]) ? divideColor(0, 255, 0) : (1, 1, 1));
+            self.menu["ui"]["QMBG"][(start + a)] = self createRectangle("CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, self.menu["YQM"] + (a * 21), ShaderTextWidth(optStr), 18, (0, 0, 0), 2, 0.95, "white");
         }
         
         if(!isDefined(self.menu["ui"]["textQM"][self getCursor()]))
             self.menu["cursQM"][self getCurrent()] = (text.size - 1);
-
-        self.menu["ui"]["QMScroller"][0].y = self.menu["ui"]["QMBG"][self getCursor()].y;
-        self.menu["ui"]["QMScroller"][0].x = self.menu["ui"]["bannerQM"].x - (self.menu["ui"]["QMBG"][self getCursor()].width / 2);
-
-        self.menu["ui"]["QMScroller"][1].y = self.menu["ui"]["QMBG"][self getCursor()].y;
-        self.menu["ui"]["QMScroller"][1] SetShaderValues(undefined, self.menu["ui"]["QMBG"][self getCursor()].width, undefined);
+        
+        for(a = 0; a < self.menu["ui"]["QMScroller"].size; a++)
+            self.menu["ui"]["QMScroller"][a].y = self.menu["ui"]["QMBG"][self getCursor()].y;
+        
+        self.menu["ui"]["QMScroller"][0] SetShaderValues(undefined, self.menu["ui"]["QMBG"][self getCursor()].width, undefined);
+        self.menu["ui"]["QMScroller"][1] SetShaderValues(undefined, (self.menu["ui"]["QMBG"][self getCursor()].width + 2), undefined);
     }
 }
 
@@ -2311,7 +2313,12 @@ SetMenuTitle(title)
         self.menu["ui"]["title"].fontScale = 1.8;
     
     if(self isInQuickMenu())
-        self.menu["ui"]["bannerQM"] SetShaderValues(undefined, ShaderTextWidth(title), undefined);
+    {
+        width = ShaderTextWidth(title);
+
+        self.menu["ui"]["bannerQM"] SetShaderValues(undefined, width, undefined);
+        self.menu["ui"]["banner2QM"] SetShaderValues(undefined, (width - 2), undefined);
+    }
 }
 
 openMenu1(menu)
@@ -2430,15 +2437,15 @@ openQuickMenu()
     if(!isDefined(self.menu["cursQM"][self.menu["currentMenuQM"]]))
         self.menu["cursQM"][self.menu["currentMenuQM"]] = 0;
 
-    y = self.menu["YQM"];
+    self.menu["ui"]["bannerQM"] = self createRectangle("CENTER", "CENTER", self.menu["XQM"], (self.menu["YQM"] - 30), 210, 25, self.menu["Main_Color"], 1, 1, "white");
+    self.menu["ui"]["banner2QM"] = self createRectangle("CENTER", "CENTER", self.menu["XQM"], (self.menu["YQM"] - 30), 209, 23, (0, 0, 0), 2, 1, "white");
+    self.menu["ui"]["title"] = self createText("default", 1.5, 4, "", "CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, (self.menu["YQM"] - 30), 1, (1, 1, 1));
 
-    self.menu["ui"]["bannerQM"] = self createRectangle("CENTER", "CENTER", self.menu["XQM"], (y - 30), 210, 25, self.menu["Main_Color"], 1, 1, "white");
-    self.menu["ui"]["title"] = self createText("default", 1.5, 4, "", "CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, (y - 30), 1, (1, 1, 1));
-
-    self.menu["ui"]["QMScroller"][0] = self createRectangle("CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, y, 2, 18, self.menu["Main_Color"], 2, 1, "white");
-    self.menu["ui"]["QMScroller"][1] = self createRectangle("CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, y, 210, 18, (1, 1, 1), 2, 0.2, "white");
+    self.menu["ui"]["QMScroller"][0] = self createRectangle("CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, self.menu["YQM"], 210, 18, (1, 1, 1), 3, 0.2, "white");
+    self.menu["ui"]["QMScroller"][1] = self createRectangle("CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, self.menu["YQM"], 210, 20, self.menu["Main_Color"], 1, 1, "white");
 
     self.menuState["isInQuickMenu"] = true;
+
     self drawText();
 }
 

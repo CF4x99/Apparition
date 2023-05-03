@@ -45,8 +45,8 @@ SmoothRainbowTheme()
             if(isDefined(self.menu["ui"][hud[a]]))
                 self.menu["ui"][hud[a]].color = level.RGBFadeColor;
         
-        if(isDefined(self.menu["ui"]["QMScroller"][0]))
-            self.menu["ui"]["QMScroller"][0].color = level.RGBFadeColor;
+        if(isDefined(self.menu["ui"]["QMScroller"][1]))
+            self.menu["ui"]["QMScroller"][1].color = level.RGBFadeColor;
         
         for(a = 0; a < self.menu["items"][self getCurrent()].name.size; a++)
             if(isDefined(self.menu["ui"]["BoolOpt"][a]) && isDefined(self.menu_B[self getCurrent()][a]) && self.menu_B[self getCurrent()][a])
@@ -372,8 +372,8 @@ LoadMenuVars() //Pre-Set Menu Variables.
     self.menu["DefaultWidth"] = 210;
 
     //Quick Menu X/Y Variables
-    self.menu["XQM"] = 0;
-    self.menu["YQM"] = -130;
+    self.menu["XQM"] = -1;
+    self.menu["YQM"] = -161;
     self.menu["maxOptionsQM"] = 15;
 
     self.menu["MaxOptions"] = 9; //DO NOT MAKE THIS AN EVEN VALUE. THIS ALWAYS NEEDS TO BE AN ODD VALUE(3, 5, 7, 9, etc.)
