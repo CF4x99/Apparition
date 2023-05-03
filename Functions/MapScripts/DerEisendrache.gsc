@@ -595,7 +595,8 @@ InitVoidBow()
 
 IsDemonSymbolDestroyed()
 {
-    return (level clientfield::get("quest_state_demon") > 0 || isDefined(level.InitVoidBow));
+    //return (level clientfield::get("quest_state_demon") > 0 || isDefined(level.InitVoidBow));
+    return isDefined(level.InitVoidBow); //The check above can cause a crash. So just settling with this for now.
 }
 
 ReleaseDemonUrn()

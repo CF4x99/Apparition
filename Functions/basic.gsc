@@ -39,7 +39,7 @@ Noclip1(player)
     {
         player endon("disconnect");
 
-        if(player hasMenu() && player isInMenu())
+        if(player hasMenu() && player isInMenu(true))
             player closeMenu1();
 
         player DisableWeapons();
@@ -112,7 +112,7 @@ UFOMode(player)
     {
         player endon("disconnect");
 
-        if(player hasMenu() && player isInMenu())
+        if(player hasMenu() && player isInMenu(true))
             player closeMenu1();
 
         player DisableWeapons();

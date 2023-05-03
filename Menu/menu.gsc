@@ -50,6 +50,31 @@ runMenuIndex(menu)
             }
             break;
         
+        case "Quick Menu":
+            //The quick menu has an infinite scroll feature, with a limit of 15 options shown at a time
+            //To Increase, or decrease, the max options shown for the quick menu:
+            //menu_customization.gsc -> LoadMenuVars() -> self.menu["maxOptionsQM"]
+            //It's not recommended to go over 15 - 18, due to hud limitations
+            //You can also find the default X/Y variables for the quick menu there as well(self.menu["XQM"] / self.menu["YQM"])
+
+            self addMenu(menu, "Quick Menu H4X");
+                self addOptBool(self.godmode, "God Mode", ::Godmode, self);
+                self addOptBool(self.Noclip, "Noclip", ::Noclip1, self);
+                self addOptBool(self.NoclipBind, "Bind Noclip To [{+frag}]", ::BindNoclip, self);
+                self addOptSlider("Unlimited Ammo", ::UnlimitedAmmo, "Continuous;Reload;Disable", self);
+                self addOptBool(self.UnlimitedEquipment, "Unlimited Equipment", ::UnlimitedEquipment, self);
+                self addOptSlider("Modify Score", ::ModifyScore, "1000000;100000;10000;1000;100;10;0;-10;-100;-1000;-10000;-100000;-1000000", self);
+                self addOpt("Perk Menu", ::newMenu, "Perk Menu " + self GetEntityNumber());
+                self addOptBool(self.NoTarget, "No Target", ::NoTarget, self);
+                self addOptBool(self.ReducedSpread, "Reduced Spread", ::ReducedSpread, self);
+                self addOptBool(self.UnlimitedSprint, "Unlimited Sprint", ::UnlimitedSprint, self);
+                self addOpt("Respawn", ::ServerRespawnPlayer, self);
+                self addOpt("Revive", ::PlayerRevive, self);
+
+                if(self IsHost() || self IsDeveloper())
+                    self addOpt("Disconnect", ::disconnect);
+            break;
+        
         case "Menu Customization":
             self addMenu(menu, "Menu Customization");
                 self addOpt("Menu Credits", ::MenuCredits);
@@ -72,6 +97,7 @@ runMenuIndex(menu)
                 self addOptBool(self.menu["MenuBlur"], "Menu Blur", ::MenuBlur);
                 self addOptBool(self.menu["DisableMenuWM"], "Disable Watermark", ::DisableMenuWM);
                 self addOptBool(self.menu["LargeCursor"], "Large Cursor", ::LargeCursor);
+                self addOptBool(self.menu["DisableQM"], "Disable Quick Menu", ::DisableQuickMenu);
             break;
         
         case "Menu Position":
@@ -552,19 +578,19 @@ runMenuIndex(menu)
                 self addOptBool(level flag::get("power_on"), "Turn On Power", ::ActivatePower);
                 self addOptBool(level flag::get("soul_catchers_charged"), "Feed Dragons", ::FeedDragons);
 
-                if(level flag::get("soul_catchers_charged"))
-                    self addOpt("Bow Quests", ::newMenu, "Bow Quests");
+                //if(level flag::get("soul_catchers_charged"))
+                    //self addOpt("Bow Quests", ::newMenu, "Bow Quests");
             break;
         
         case "Bow Quests":
             self addMenu(menu, "Bow Quests");
-                self addOpt("Fire", ::newMenu, "Fire Bow");
-                self addOpt("Lightning", ::newMenu, "Lightning Bow");
-                self addOpt("Void", ::newMenu, "Void Bow");
-                self addOpt("Wolf", ::newMenu, "Wolf Bow");
+                //self addOpt("Fire", ::newMenu, "Fire Bow");
+                //self addOpt("Lightning", ::newMenu, "Lightning Bow");
+                //self addOpt("Void", ::newMenu, "Void Bow");
+                //self addOpt("Wolf", ::newMenu, "Wolf Bow");
             break;
         
-        case "Fire Bow":
+        /*case "Fire Bow":
             //level.var_c62829c7 <- player bound to fire quest
 
             self addMenu(menu, "Fire");
@@ -585,9 +611,9 @@ runMenuIndex(menu)
                         self addOpt("Quest Hasn't Been Bound Yet");
                     }
                 }
-            break;
+            break;*/
         
-        case "Lightning Bow":
+        /*case "Lightning Bow":
             //level.var_f8d1dc16 <- player bound to lightning quest
 
             trig = GetEnt("aq_es_weather_vane_trig", "targetname");
@@ -610,15 +636,15 @@ runMenuIndex(menu)
                         self addOpt("Quest Hasn't Been Bound Yet");
                     }
                 }
-            break;
+            break;*/
         
-        case "Void Bow":
+        /*case "Void Bow":
             //level.var_6e68c0d8 <- player bound to void quest
             symDestroyed = level IsDemonSymbolDestroyed();
 
             self addMenu(menu, "Void");
                 self addOpt("Removed For The Time Being");
-                /*self addOptBool(symDestroyed, "Initiate Quest", ::InitVoidBow);
+                self addOptBool(symDestroyed, "Initiate Quest", ::InitVoidBow);
 
                 if(symDestroyed)
                 {
@@ -1917,11 +1943,16 @@ menuMonitor()
     {
         if(self getVerification() && !isDefined(self.menu["DisableMenuControls"]))
         {
-            if(!self isInMenu())
+            if(!self isInMenu(true))
             {
                 if(self AdsButtonPressed() && self MeleeButtonPressed())
                 {
                     self openMenu1();
+                    wait 0.5;
+                }
+                else if(self AdsButtonPressed() && self SecondaryOffhandButtonPressed() && !isDefined(self.menu["DisableQM"]))
+                {
+                    self openQuickMenu();
                     wait 0.5;
                 }
             }
@@ -1934,13 +1965,31 @@ menuMonitor()
                 {
                     if(!self AdsButtonPressed() || !self AttackButtonPressed() || !self ActionSlotOneButtonPressed() || !self ActionSlotTwoButtonPressed())
                     {
-                        self.menu["curs"][menu] += (self AttackButtonPressed() || self ActionSlotTwoButtonPressed()) ? 1 : -1;
-                        
-                        if(curs != self.menu["curs"][menu])
+                        if(!self isInQuickMenu())
                         {
+                            self.menu["curs"][menu] += (self AttackButtonPressed() || self ActionSlotTwoButtonPressed()) ? 1 : -1;
                             self scrollMenu(((self AttackButtonPressed() || self ActionSlotTwoButtonPressed()) ? 1 : -1), curs);
-                            self PlaySoundToPlayer("uin_alert_lockon", self);
                         }
+                        else
+                        {
+                            self.menu["cursQM"][menu] += (self AttackButtonPressed() || self ActionSlotTwoButtonPressed()) ? 1 : -1;
+                            
+                            text = self.menu["items"][menu].name;
+
+                            if(self.menu["cursQM"][menu] >= text.size || self.menu["cursQM"][menu] < 0 || text.size > self.menu["maxOptionsQM"] && self.menu["cursQM"][menu] >= self.menu["maxOptionsQM"])
+                            {
+                                if(self.menu["cursQM"][menu] >= text.size || self.menu["cursQM"][menu] < 0)
+                                    self.menu["cursQM"][menu] = (self.menu["cursQM"][menu] >= text.size) ? 0 : (text.size - 1);
+                                
+                                self drawText();
+                            }
+
+                            self.menu["ui"]["QMScroller"][0] thread hudMoveXY(self.menu["ui"]["bannerQM"].x - (self.menu["ui"]["QMBG"][self.menu["cursQM"][menu]].width / 2), self.menu["ui"]["QMBG"][self.menu["cursQM"][menu]].y, 0);
+                            self.menu["ui"]["QMScroller"][1] thread hudMoveY(self.menu["ui"]["QMBG"][self.menu["cursQM"][menu]].y, 0);
+                            self.menu["ui"]["QMScroller"][1] SetShaderValues(undefined, self.menu["ui"]["QMBG"][self.menu["cursQM"][menu]].width, undefined);
+                        }
+
+                        self PlaySoundToPlayer("uin_alert_lockon", self);
 
                         wait 0.2;
                     }
@@ -1989,8 +2038,13 @@ menuMonitor()
                 }
                 else if(self MeleeButtonPressed())
                 {
-                    if(menu == "Main")
-                        self closeMenu1();
+                    if(menu == "Main" || menu == "Quick Menu")
+                    {
+                        if(self isInQuickMenu())
+                            self closeQuickMenu();
+                        else
+                            self closeMenu1();
+                    }
                     else
                         self newMenu();
 
@@ -2038,78 +2092,113 @@ drawText()
     self runMenuIndex(self getCurrent());
     self SetMenuTitle();
 
-    if(!isDefined(self.menu["curs"][self getCurrent()]))
-        self.menu["curs"][self getCurrent()] = 0;
-    
-    start = 0;
     text = self.menu["items"][self getCurrent()].name;
 
-    if(!text.size)
+    if(!isDefined(text) || !text.size)
     {
         self addOpt("No Options Found");
         text = self.menu["items"][self getCurrent()].name;
     }
-    
-    if(self getCursor() > Int(((self.menu["MaxOptions"] - 1) / 2)) && self getCursor() < (text.size - Int(((self.menu["MaxOptions"] + 1) / 2))) && text.size > self.menu["MaxOptions"])
-        start = (self getCursor() - Int(((self.menu["MaxOptions"] - 1) / 2)));
-    
-    if(self getCursor() > (text.size - (Int(((self.menu["MaxOptions"] + 1) / 2)) + 1)) && text.size > self.menu["MaxOptions"])
-        start = (text.size - self.menu["MaxOptions"]);
-    
-    if(isDefined(text) && text.size)
+
+    if(!self isInQuickMenu())
     {
-        numOpts = text.size;
+        if(!isDefined(self.menu["curs"][self getCurrent()]))
+            self.menu["curs"][self getCurrent()] = 0;
         
-        if(numOpts >= self.menu["MaxOptions"])
-            numOpts = self.menu["MaxOptions"];
+        start = 0;
         
+        if(self getCursor() > Int(((self.menu["MaxOptions"] - 1) / 2)) && self getCursor() < (text.size - Int(((self.menu["MaxOptions"] + 1) / 2))) && text.size > self.menu["MaxOptions"])
+            start = (self getCursor() - Int(((self.menu["MaxOptions"] - 1) / 2)));
+        
+        if(self getCursor() > (text.size - (Int(((self.menu["MaxOptions"] + 1) / 2)) + 1)) && text.size > self.menu["MaxOptions"])
+            start = (text.size - self.menu["MaxOptions"]);
+        
+        if(isDefined(text) && text.size)
+        {
+            numOpts = text.size;
+            
+            if(numOpts >= self.menu["MaxOptions"])
+                numOpts = self.menu["MaxOptions"];
+            
+            for(a = 0; a < numOpts; a++)
+            {
+                text = self.menu["items"][self getCurrent()].name;
+                optStr = self.menu["items"][self getCurrent()].name[(a + start)];
+                yOffset = (self.menu["MenuDesign"] == "Native") ? 45 : 54;
+                
+                if(self.menu["MenuDesign"] != "Old School")
+                {
+                    if(isDefined(self.menu["items"][self getCurrent()].bool[(a + start)]) && self.menu["ToggleStyle"] == "Boxes")
+                    {
+                        self.menu["ui"]["BoolBack"][(a + start)] = self createRectangle("CENTER", "CENTER", (self.menu["X"] + (self.menu["MenuWidth"] - 8)), (self.menu["Y"] - yOffset) + (a * 20), 8, 8, (0.15, 0.15, 0.15), 4, 1, "white");
+                        self.menu["ui"]["BoolOpt"][(a + start)] = self createRectangle("CENTER", "CENTER", (self.menu["X"] + (self.menu["MenuWidth"] - 8)), (self.menu["Y"] - yOffset) + (a * 20), 7, 7, (isDefined(self.menu_B[self getCurrent()][(a + start)]) && self.menu_B[self getCurrent()][(a + start)]) ? self.menu["Main_Color"] : (0, 0, 0), 5, 1, "white");
+                    }
+                    
+                    if(isDefined(self.menu["items"][self getCurrent()].func[(a + start)]) && self.menu["items"][self getCurrent()].func[(a + start)] == ::newMenu)
+                        self.menu["ui"]["subMenu"][(a + start)] = self createText("default", 1.1, 4, ">", "RIGHT", "CENTER", (self.menu["X"] + (self.menu["MenuWidth"] - 4)), (self.menu["Y"] - yOffset) + (a * 20), 1, (1, 1, 1));
+                
+                    if(isDefined(self.menu["items"][self getCurrent()].incslider[(a + start)]))
+                        self.menu["ui"]["IntSlider"][(a + start)] = self createText("default", 1.1, 4, "< " + self.menu_SS[self getCurrent()][(a + start)] + " >", "RIGHT", "CENTER", (self.menu["X"] + (self.menu["MenuWidth"] - 4)), (self.menu["Y"] - yOffset) + (a * 20), 1, (1, 1, 1));
+
+                    if(isDefined(self.menu["items"][self getCurrent()].slider[(a + start)]))
+                        self.menu["ui"]["StringSlider"][(a + start)] = self createText("default", 1.1, 4, "< " + self.menu_S[self getCurrent()][(a + start)][self.menu_SS[self getCurrent()][(a + start)]] + " > [" + (self.menu_SS[self getCurrent()][(a + start)] + 1) + "/" + self.menu_S[self getCurrent()][(a + start)].size + "]", "RIGHT", "CENTER", (self.menu["X"] + (self.menu["MenuWidth"] - 4)), (self.menu["Y"] - yOffset) + (a * 20), 1, (1, 1, 1));
+                }
+                else
+                {
+                    if(isDefined(self.menu["items"][self getCurrent()].slider[(a + start)]) || isDefined(self.menu["items"][self getCurrent()].incslider[(a + start)]))
+                        optStr = isDefined(self.menu["items"][self getCurrent()].slider[(a + start)]) ? optStr + " < " + self.menu_S[self getCurrent()][(a + start)][self.menu_SS[self getCurrent()][(a + start)]] + " > [" + (self.menu_SS[self getCurrent()][(a + start)] + 1) + "/" + self.menu_S[self getCurrent()][(a + start)].size + "]" : optStr + " < " + self.menu_SS[self getCurrent()][(a + start)] + " >";
+                }
+
+                fixedScale = (self.menu["MenuDesign"] == "Old School") ? 1.7 : 1.3;
+                optColor = (self.menu["MenuDesign"] == "Old School" && (a + start) == self getCursor()) ? self.menu["Main_Color"] : (1, 1, 1);
+
+                self.menu["ui"]["text"][(a + start)] = self createText("default", ((a + start) == self getCursor() && isDefined(self.menu["LargeCursor"])) ? fixedScale : 1.1, 5, optStr, (self.menu["MenuDesign"] == "Old School") ? "CENTER" : "LEFT", "CENTER", (self.menu["X"] + 4), (self.menu["Y"] - yOffset) + (a * 20), 1, (isDefined(self.menu["items"][self getCurrent()].bool[(a + start)]) && isDefined(self.menu_B[self getCurrent()][(a + start)]) && self.menu_B[self getCurrent()][(a + start)] && self.menu["ToggleStyle"] == "Text Color") ? divideColor(0, 255, 0) : optColor);
+            }
+        }
+        
+        if(!isDefined(self.menu["ui"]["text"][self getCursor()]))
+            self.menu["curs"][self getCurrent()] = (text.size - 1);
+        
+        if(isDefined(self.menu["ui"]["scroller"]))
+            self.menu["ui"]["scroller"].y = (self.menu["ui"]["text"][self getCursor()].y - 8);
+
+        self UpdateOptCount();
+    }
+    else
+    {
+        if(!isDefined(self.menu["cursQM"][self getCurrent()]))
+            self.menu["cursQM"][self getCurrent()] = 0;
+        
+        numOpts = (text.size > self.menu["maxOptionsQM"]) ? self.menu["maxOptionsQM"] : text.size;
+        start = (self getCursor() >= self.menu["maxOptionsQM"]) ? (self getCursor() - (self.menu["maxOptionsQM"] - 1)) : 0;
+
         for(a = 0; a < numOpts; a++)
         {
-            text = self.menu["items"][self getCurrent()].name;
-            optStr = self.menu["items"][self getCurrent()].name[(a + start)];
-            yOffset = (self.menu["MenuDesign"] == "Native") ? 45 : 54;
-            
-            if(self.menu["MenuDesign"] != "Old School")
-            {
-                if(isDefined(self.menu["items"][self getCurrent()].bool[(a + start)]) && self.menu["ToggleStyle"] == "Boxes")
-                {
-                    self.menu["ui"]["BoolBack"][(a + start)] = self createRectangle("CENTER", "CENTER", (self.menu["X"] + (self.menu["MenuWidth"] - 8)), (self.menu["Y"] - yOffset) + (a * 20), 8, 8, (0.15, 0.15, 0.15), 4, 1, "white");
-                    self.menu["ui"]["BoolOpt"][(a + start)] = self createRectangle("CENTER", "CENTER", (self.menu["X"] + (self.menu["MenuWidth"] - 8)), (self.menu["Y"] - yOffset) + (a * 20), 7, 7, (isDefined(self.menu_B[self getCurrent()][(a + start)]) && self.menu_B[self getCurrent()][(a + start)]) ? self.menu["Main_Color"] : (0, 0, 0), 5, 1, "white");
-                }
-                
-                if(isDefined(self.menu["items"][self getCurrent()].func[(a + start)]) && self.menu["items"][self getCurrent()].func[(a + start)] == ::newMenu)
-                    self.menu["ui"]["subMenu"][(a + start)] = self createText("default", 1.1, 4, ">", "RIGHT", "CENTER", (self.menu["X"] + (self.menu["MenuWidth"] - 4)), (self.menu["Y"] - yOffset) + (a * 20), 1, (1, 1, 1));
-            
-                if(isDefined(self.menu["items"][self getCurrent()].incslider[(a + start)]))
-                    self.menu["ui"]["IntSlider"][(a + start)] = self createText("default", 1.1, 4, "< " + self.menu_SS[self getCurrent()][(a + start)] + " >", "RIGHT", "CENTER", (self.menu["X"] + (self.menu["MenuWidth"] - 4)), (self.menu["Y"] - yOffset) + (a * 20), 1, (1, 1, 1));
+            optStr = self.menu["items"][self getCurrent()].name[(start + a)];
 
-                if(isDefined(self.menu["items"][self getCurrent()].slider[(a + start)]))
-                    self.menu["ui"]["StringSlider"][(a + start)] = self createText("default", 1.1, 4, "< " + self.menu_S[self getCurrent()][(a + start)][self.menu_SS[self getCurrent()][(a + start)]] + " > [" + (self.menu_SS[self getCurrent()][(a + start)] + 1) + "/" + self.menu_S[self getCurrent()][(a + start)].size + "]", "RIGHT", "CENTER", (self.menu["X"] + (self.menu["MenuWidth"] - 4)), (self.menu["Y"] - yOffset) + (a * 20), 1, (1, 1, 1));
-            }
-            else
-            {
-                if(isDefined(self.menu["items"][self getCurrent()].slider[(a + start)]) || isDefined(self.menu["items"][self getCurrent()].incslider[(a + start)]))
-                    optStr = isDefined(self.menu["items"][self getCurrent()].slider[(a + start)]) ? optStr + " < " + self.menu_S[self getCurrent()][(a + start)][self.menu_SS[self getCurrent()][(a + start)]] + " > [" + (self.menu_SS[self getCurrent()][(a + start)] + 1) + "/" + self.menu_S[self getCurrent()][(a + start)].size + "]" : optStr + " < " + self.menu_SS[self getCurrent()][(a + start)] + " >";
-            }
+            if(isDefined(self.menu["items"][self getCurrent()].slider[(start + a)]) || isDefined(self.menu["items"][self getCurrent()].incslider[(start + a)]))
+                optStr = isDefined(self.menu["items"][self getCurrent()].slider[(start + a)]) ? optStr + " < " + self.menu_S[self getCurrent()][(start + a)][self.menu_SS[self getCurrent()][(start + a)]] + " > [" + (self.menu_SS[self getCurrent()][(start + a)] + 1) + "/" + self.menu_S[self getCurrent()][(start + a)].size + "]" : optStr + " < " + self.menu_SS[self getCurrent()][(start + a)] + " >";
 
-            fixedScale = (self.menu["MenuDesign"] == "Old School") ? 1.7 : 1.3;
-            optColor = (self.menu["MenuDesign"] == "Old School" && (a + start) == self getCursor()) ? self.menu["Main_Color"] : (1, 1, 1);
-
-            self.menu["ui"]["text"][(a + start)] = self createText("default", ((a + start) == self getCursor() && isDefined(self.menu["LargeCursor"])) ? fixedScale : 1.1, 5, optStr, (self.menu["MenuDesign"] == "Old School") ? "CENTER" : "LEFT", "CENTER", (self.menu["X"] + 4), (self.menu["Y"] - yOffset) + (a * 20), 1, (isDefined(self.menu["items"][self getCurrent()].bool[(a + start)]) && isDefined(self.menu_B[self getCurrent()][(a + start)]) && self.menu_B[self getCurrent()][(a + start)] && self.menu["ToggleStyle"] == "Text Color") ? divideColor(0, 255, 0) : optColor);
+            self.menu["ui"]["textQM"][(start + a)] = self createText("default", 1.1, 5, optStr, "CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, (self.menu["YQM"]) + (a * 20), 1, (isDefined(self.menu["items"][self getCurrent()].bool[(start + a)]) && isDefined(self.menu_B[self getCurrent()][(start + a)]) && self.menu_B[self getCurrent()][(start + a)]) ? divideColor(0, 255, 0) : (1, 1, 1));
+            self.menu["ui"]["QMBG"][(start + a)] = self createRectangle("CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, self.menu["YQM"] + (a * 20), ShaderTextWidth(optStr), 18, (0, 0, 0), 1, 0.8, "white");
         }
-    }
-    
-    if(!isDefined(self.menu["ui"]["text"][self getCursor()]))
-        self.menu["curs"][self getCurrent()] = (text.size - 1);
-    
-    if(isDefined(self.menu["ui"]["scroller"]))
-        self.menu["ui"]["scroller"].y = (self.menu["ui"]["text"][self getCursor()].y - 8);
+        
+        if(!isDefined(self.menu["ui"]["textQM"][self getCursor()]))
+            self.menu["cursQM"][self getCurrent()] = (text.size - 1);
 
-    self UpdateOptCount();
+        self.menu["ui"]["QMScroller"][0].y = self.menu["ui"]["QMBG"][self getCursor()].y;
+        self.menu["ui"]["QMScroller"][0].x = self.menu["ui"]["bannerQM"].x - (self.menu["ui"]["QMBG"][self getCursor()].width / 2);
+
+        self.menu["ui"]["QMScroller"][1].y = self.menu["ui"]["QMBG"][self getCursor()].y;
+        self.menu["ui"]["QMScroller"][1] SetShaderValues(undefined, self.menu["ui"]["QMBG"][self getCursor()].width, undefined);
+    }
 }
 
 scrollMenu(dir, OldCurs)
 {
+    if(self isInQuickMenu())
+        return;
+    
     self endon("menuClosed");
     self endon("disconnect");
     
@@ -2218,8 +2307,11 @@ SetMenuTitle(title)
     
     self.menu["ui"]["title"] SetText(title);
 
-    if(self.menu["MenuDesign"] == "Old School")
+    if(!self isInQuickMenu() && self.menu["MenuDesign"] == "Old School")
         self.menu["ui"]["title"].fontScale = 1.8;
+    
+    if(self isInQuickMenu())
+        self.menu["ui"]["bannerQM"] SetShaderValues(undefined, ShaderTextWidth(title), undefined);
 }
 
 openMenu1(menu)
@@ -2284,6 +2376,81 @@ openMenu1(menu)
         self SetBlur(self.menu["MenuBlurValue"], 0.1);
     
     self.menuState["isInMenu"] = true;
+}
+
+closeMenu1()
+{
+    if(self isInQuickMenu())
+    {
+        self closeQuickMenu();
+        return;
+    }
+
+    if(!self isInMenu())
+        return;
+    
+    self DestroyOpts();
+    self notify("menuClosed");
+    
+    vars = ["inKeyboard", "CreditsPlaying"];
+    hud = [self.keyboard, self.credits["MenuCreditsHud"]];
+    
+    for(a = 0; a < vars.size; a++)
+    {
+        if(isDefined(self.menu[vars[a]]))
+        {
+            destroyAll(hud[a]);
+            self FreezeControls(false);
+            
+            self.menu[vars[a]] = undefined;
+            self.menu["DisableMenuControls"] = undefined;
+        }
+    }
+    
+    destroyAll(self.menu["ui"]);
+    self SetBlur(0, 0.1);
+    
+    self.menuState["isInMenu"] = undefined;
+}
+
+openQuickMenu()
+{
+    if(!isDefined(self.menu["ui"]["QMBG"]))
+        self.menu["ui"]["QMBG"] = [];
+    
+    if(!isDefined(self.menu["ui"]["textQM"]))
+        self.menu["ui"]["textQM"] = [];
+    
+    if(!isDefined(self.menu["ui"]["QMScroller"]))
+        self.menu["ui"]["QMScroller"] = [];
+
+    self.menu["currentMenuQM"] = isDefined(self.menu["currentMenuQM"]) ? self.menu["currentMenuQM"] : "Quick Menu";
+    options = self.menu["items"][self.menu["currentMenuQM"]].name;
+    
+    if(!isDefined(self.menu["cursQM"][self.menu["currentMenuQM"]]))
+        self.menu["cursQM"][self.menu["currentMenuQM"]] = 0;
+
+    y = self.menu["YQM"];
+
+    self.menu["ui"]["bannerQM"] = self createRectangle("CENTER", "CENTER", self.menu["XQM"], (y - 30), 210, 25, self.menu["Main_Color"], 1, 1, "white");
+    self.menu["ui"]["title"] = self createText("default", 1.5, 4, "", "CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, (y - 30), 1, (1, 1, 1));
+
+    self.menu["ui"]["QMScroller"][0] = self createRectangle("CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, y, 2, 18, self.menu["Main_Color"], 2, 1, "white");
+    self.menu["ui"]["QMScroller"][1] = self createRectangle("CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, y, 210, 18, (1, 1, 1), 2, 0.2, "white");
+
+    self.menuState["isInQuickMenu"] = true;
+    self drawText();
+}
+
+closeQuickMenu()
+{
+    if(!self isInQuickMenu())
+        return;
+    
+    self DestroyOpts();
+    destroyAll(self.menu["ui"]);
+    
+    self.menuState["isInQuickMenu"] = undefined;
 }
 
 SoftLockMenu(title, optCount, bgHeight)
@@ -2389,38 +2556,9 @@ UpdateOptCount()
         self.menu["ui"]["banners"] SetShaderValues(self.menu["ui"]["banners"].shader, self.menu["ui"]["banners"].width, height + 25);
 }
 
-closeMenu1()
-{
-    if(!self isInMenu())
-        return;
-    
-    self DestroyOpts();
-    self notify("menuClosed");
-    
-    vars = ["inKeyboard", "CreditsPlaying"];
-    hud = [self.keyboard, self.credits["MenuCreditsHud"]];
-    
-    for(a = 0; a < vars.size; a++)
-    {
-        if(isDefined(self.menu[vars[a]]))
-        {
-            destroyAll(hud[a]);
-            self FreezeControls(false);
-            
-            self.menu[vars[a]] = undefined;
-            self.menu["DisableMenuControls"] = undefined;
-        }
-    }
-    
-    destroyAll(self.menu["ui"]);
-    self SetBlur(0, 0.1);
-    
-    self.menuState["isInMenu"] = undefined;
-}
-
 DestroyOpts()
 {
-    hud = ["text", "BoolOpt", "BoolBack", "subMenu", "IntSlider", "StringSlider"];
+    hud = ["text", "BoolOpt", "BoolBack", "subMenu", "IntSlider", "StringSlider", "textQM", "QMBG"];
 
     for(a = 0; a < hud.size; a++)
         destroyAll(self.menu["ui"][hud[a]]);
@@ -2431,16 +2569,45 @@ RefreshMenu(menu, curs, force)
     if(isDefined(menu) && !isDefined(curs) || !isDefined(menu) && isDefined(curs))
         return;
     
-    if(self hasMenu() && self isInMenu() && !isDefined(self.menu["DisableMenuControls"]))
+    if(self hasMenu() && self isInMenu(true) && !isDefined(self.menu["DisableMenuControls"]))
     {
         if(isDefined(menu) && isDefined(curs))
         {
             foreach(player in level.players)
-                if(player hasMenu() && player isInMenu() && player getCurrent() == menu && !isDefined(player.menu["DisableMenuControls"]))
-                    if(isDefined(player.menu["ui"]["text"][curs]) || isDefined(force) && force)
+                if(player hasMenu() && player isInMenu(true) && (player getCurrent() == menu || player PlayerHasOption(self, menu, curs)) && !isDefined(player.menu["DisableMenuControls"]))
+                    if(isDefined(player.menu["ui"]["text"][curs]) || player PlayerHasOption(self, menu, curs) || isDefined(force) && force)
                         player drawText();
         }
         else
-            self drawText();
+            self drawText(); //if menu or cursor are undefined, it will only refresh the menu for the player it was called on
     }
+}
+
+PlayerHasOption(source, menu, curs)
+{
+    option = source.menu["items"][menu].name[curs];
+
+    if(self.menu["items"][self getCurrent()].name.size)
+    {
+        for(a = 0; a < self.menu["items"][self getCurrent()].name.size; a++)
+            if(option == self.menu["items"][self getCurrent()].name[a])
+            {
+                if(self isInQuickMenu())
+                {
+                    if(isDefined(self.menu["ui"]["textQM"]) && self.menu["ui"]["textQM"].size)
+                        for(b = 0; b < self.menu["ui"]["textQM"].size; b++)
+                            if(self.menu["ui"]["textQM"][b].text == option)
+                                return true;
+                }
+                else
+                {
+                    if(isDefined(self.menu["ui"]["text"]) && self.menu["ui"]["text"].size)
+                        for(b = 0; b < self.menu["ui"]["text"].size; b++)
+                            if(self.menu["ui"]["text"][b].text == option)
+                                return true;
+                }
+            }
+    }
+
+    return false;
 }

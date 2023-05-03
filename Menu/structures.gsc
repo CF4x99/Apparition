@@ -9,6 +9,9 @@ MenuArrays(menu)
     if(!isDefined(self.menuParent))
         self.menuParent = [];
     
+    if(!isDefined(self.menuParentQM))
+        self.menuParentQM = [];
+    
     if(!isDefined(self.menu["curs"]))
         self.menu["curs"] = [];
     

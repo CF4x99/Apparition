@@ -24,7 +24,7 @@ setVerification(a, player, msg)
     player iPrintlnBold("Your Status Has Been Set To ^2" + player.menuState["verification"]);
     player.menuParent = [];
 
-    if(player isInMenu())
+    if(player isInMenu(true))
         player closeMenu1();
     
     player.menu["currentMenu"] = "";

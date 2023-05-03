@@ -9,6 +9,7 @@ createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
     textElem.sort = sort;
     textElem.alpha = alpha;
     textElem.color = color;
+    textElem.text = text;
 
     textElem hud::SetPoint(align, relative, x, y);
     textElem SetText(text);
@@ -45,6 +46,7 @@ createServerText(font, fontSize, sort, text, align, relative, x, y, alpha, color
     textElem.sort = sort;
     textElem.alpha = alpha;
     textElem.color = color;
+    textElem.text = text;
 
     textElem hud::SetPoint(align, relative, x, y);
     textElem SetText(text);
@@ -127,6 +129,30 @@ createServerRectangle(align, relative, x, y, width, height, color, sort, alpha, 
 
 SetShaderValues(shader, width, height)
 {
+    if(!isDefined(shader))
+    {
+        if(!isDefined(self.shader))
+            return;
+        
+        shader = self.shader;
+    }
+    
+    if(!isDefined(width))
+    {
+        if(!isDefined(self.width))
+            return;
+        
+        width = self.width;
+    }
+    
+    if(!isDefined(height))
+    {
+        if(!isDefined(self.height))
+            return;
+        
+        height = self.height;
+    }
+    
     self.shader = shader;
     self.width = width;
     self.height = height;
@@ -264,9 +290,14 @@ destroyAfter(time)
         self destroy();
 }
 
-isInMenu()
+isInMenu(allowQM)
 {
-    return isDefined(self.menuState["isInMenu"]);
+    return (isDefined(self.menuState["isInMenu"]) || self isInQuickMenu() && allowQM);
+}
+
+isInQuickMenu()
+{
+    return isDefined(self.menuState["isInQuickMenu"]);
 }
 
 isInArray(arry, text)
@@ -294,17 +325,20 @@ ArrayRemove(arry, value)
 
 getCurrent()
 {
-    return self.menu["currentMenu"];
+    return self isInQuickMenu() ? self.menu["currentMenuQM"] : self.menu["currentMenu"];
 }
 
 getCursor()
 {
-    return self.menu["curs"][self getCurrent()];
+    return self isInQuickMenu() ? self.menu["cursQM"][self getCurrent()] : self.menu["curs"][self getCurrent()];
 }
 
 setCursor(curs)
 {
-    self.menu["curs"][self getCurrent()] = curs;
+    if(!self isInQuickMenu())
+        self.menu["curs"][self getCurrent()] = curs;
+    else
+        self.menu["cursQM"][self getCurrent()] = curs;
 }
 
 SetSlider(dir)
@@ -321,7 +355,12 @@ SetSlider(dir)
     if(isDefined(self.menu["ui"]["StringSlider"][curs]))
         self.menu["ui"]["StringSlider"][curs] SetText("< " + self.menu_S[menu][curs][self.menu_SS[menu][curs]] + " > [" + (self.menu_SS[menu][curs] + 1) + "/" + self.menu_S[menu][curs].size + "]");
     else
-        self.menu["ui"]["text"][curs] SetText(self.menu["items"][self getCurrent()].name[curs] + " < " + self.menu_S[menu][curs][self.menu_SS[menu][curs]] + " > [" + (self.menu_SS[menu][curs] + 1) + "/" + self.menu_S[menu][curs].size + "]");
+    {
+        if(!self isInQuickMenu())
+            self.menu["ui"]["text"][curs] SetText(self.menu["items"][self getCurrent()].name[curs] + " < " + self.menu_S[menu][curs][self.menu_SS[menu][curs]] + " > [" + (self.menu_SS[menu][curs] + 1) + "/" + self.menu_S[menu][curs].size + "]");
+        else
+            self drawText(); //Needed To Resize Option Backgrounds & Refresh Sliders
+    }
 }
 
 SetIncSlider(dir)
@@ -344,7 +383,12 @@ SetIncSlider(dir)
     if(isDefined(self.menu["ui"]["IntSlider"][curs]))
         self.menu["ui"]["IntSlider"][curs] SetText("< " + self.menu_SS[menu][curs] + " >");
     else
-        self.menu["ui"]["text"][curs] SetText(self.menu["items"][self getCurrent()].name[curs] + " < " + self.menu_SS[menu][curs] + " >");
+    {
+        if(!self isInQuickMenu())
+            self.menu["ui"]["text"][curs] SetText(self.menu["items"][self getCurrent()].name[curs] + " < " + self.menu_SS[menu][curs] + " >");
+        else
+            self drawText(); //Needed To Resize Option Backgrounds & Refresh Sliders
+    }
 }
 
 newMenu(menu, dontSave, i1)
@@ -355,18 +399,29 @@ newMenu(menu, dontSave, i1)
     if(!isDefined(menu))
     {
         menu = self BackMenu();
-        self.menuParent[(self.menuParent.size - 1)] = undefined;
+        
+        if(!self isInQuickMenu())
+            self.menuParent[(self.menuParent.size - 1)] = undefined;
+        else
+            self.menuParentQM[(self.menuParentQM.size - 1)] = undefined;
     }
     else
     {
         if(!isDefined(dontSave) || isDefined(dontSave) && !dontSave)
         {
-            self.menuParent[self.menuParent.size] = self getCurrent();
+            if(!self isInQuickMenu())
+                self.menuParent[self.menuParent.size] = self getCurrent();
+            else
+                self.menuParentQM[self.menuParentQM.size] = self getCurrent();
+            
             self MenuArrays(self BackMenu());
         }
     }
     
-    self.menu["currentMenu"] = menu;
+    if(!self isInQuickMenu())
+        self.menu["currentMenu"] = menu;
+    else
+        self.menu["currentMenuQM"] = menu;
 
     if(IsSubStr(menu, "Weapon Options")) //Submenus that should be refreshed when player switches weapons
     {
@@ -401,7 +456,7 @@ WatchMenuWeaponSwitch(player)
 
 BackMenu()
 {
-    return self.menuParent[(self.menuParent.size - 1)];
+    return !self isInQuickMenu() ? self.menuParent[(self.menuParent.size - 1)] : self.menuParentQM[(self.menuParentQM.size - 1)];
 }
 
 isConsole()
@@ -412,6 +467,20 @@ isConsole()
 disconnect()
 {
     ExitLevel(false);
+}
+
+ShaderTextWidth(string) //This isn't near perfect. This will also depend on text scale, and font. Works best when text is centered with shader
+{
+    if(!isDefined(string) || !string.size)
+        return 1;
+    
+    width = 0;
+    multiplier = 6;
+
+    for(a = 0; a < string.size; a++)
+        width += multiplier;
+    
+    return width;
 }
 
 CleanString(string)

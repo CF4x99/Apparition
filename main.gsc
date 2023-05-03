@@ -1,7 +1,7 @@
 /*
     Menu: Apparition
     Developer: CF4_99
-    Version: 1.0.4
+    Version: 1.0.5
     Project Start Date: 6/10/21
     Initial Release Date: 1/29/23
     
@@ -213,7 +213,7 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName = "Apparition";
-    level.menuVersion = "1.0.4";
+    level.menuVersion = "1.0.5";
 
     level.MenuStatus = ["None", "Verified", "VIP", "Co-Host", "Admin", "Host", "Developer"];
     level.AutoVerify = 0;
@@ -380,7 +380,6 @@ ApparitionWelcomeMessage()
     
     self.WelcomeDisplay = true;
     
-
     //Only displays when the player is verified, and isn't in the menu.
     //Can be disabled in Menu Customization
     //If you want to disable by default: menu_customization.gsc -> LoadMenuVars() -> self.menu["DisableMenuWM"] = undefined; <- Change to true
@@ -388,16 +387,21 @@ ApparitionWelcomeMessage()
     while(1)
     {
         if(!isDefined(self.MenuWatermark) && !isDefined(self.menu["DisableMenuWM"]))
-            self.MenuWatermark = self LUI_createText("", 2, 129, 650, 1023, (0, 0, 0));
+            self.MenuWatermark = self LUI_createText("", 2, 129, 635, 1023, (0, 0, 0));
         
-        if(isDefined(self.MenuWatermark) && (isDefined(self.menu["DisableMenuWM"]) || self isInMenu() || !self hasMenu()))
+        if(isDefined(self.MenuWatermark) && (isDefined(self.menu["DisableMenuWM"]) || self isInMenu(true) || !self hasMenu()))
         {
             self CloseLUIMenu(self.MenuWatermark);
             self.MenuWatermark = undefined;
         }
+
+        string = "Status: " + self.menuState["verification"] + "\n[{+speed_throw}] & [{+melee}] To Open";
+
+        if(!isDefined(self.menu["DisableQM"]))
+            string += "\n[{+speed_throw}] & [{+smoke}] To Open Quick Menu";
         
-        if(isDefined(self.MenuWatermark) && self GetLUIMenuData(self.MenuWatermark, "text") != "Status: " + self.menuState["verification"] + "\n[{+speed_throw}] & [{+melee}] To Open")
-            self SetLUIMenuData(self.MenuWatermark, "text", "Status: " + self.menuState["verification"] + "\n[{+speed_throw}] & [{+melee}] To Open");
+        if(isDefined(self.MenuWatermark) && self GetLUIMenuData(self.MenuWatermark, "text") != string)
+            self SetLUIMenuData(self.MenuWatermark, "text", string);
         
         if(isDefined(self.MenuWatermark))
             self lui::set_color(self.MenuWatermark, level.RGBFadeColor);

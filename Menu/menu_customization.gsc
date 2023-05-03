@@ -39,11 +39,14 @@ SmoothRainbowTheme()
     
     while(isDefined(self.SmoothRainbowTheme))
     {
-        hud = ["banners", "scroller"];
+        hud = ["banners", "scroller", "bannerQM"];
 
         for(a = 0; a < hud.size; a++)
             if(isDefined(self.menu["ui"][hud[a]]))
                 self.menu["ui"][hud[a]].color = level.RGBFadeColor;
+        
+        if(isDefined(self.menu["ui"]["QMScroller"][0]))
+            self.menu["ui"]["QMScroller"][0].color = level.RGBFadeColor;
         
         for(a = 0; a < self.menu["items"][self getCurrent()].name.size; a++)
             if(isDefined(self.menu["ui"]["BoolOpt"][a]) && isDefined(self.menu_B[self getCurrent()][a]) && self.menu_B[self getCurrent()][a])
@@ -342,6 +345,12 @@ LargeCursor()
     self SaveMenuTheme();
 }
 
+DisableQuickMenu()
+{
+    self.menu["DisableQM"] = isDefined(self.menu["DisableQM"]) ? undefined : true;
+    self SaveMenuTheme();
+}
+
 SaveMenuTheme()
 {
     design = self.menu["MenuDesign"] + ";" + self.menu["ToggleStyle"] + ";" + self.menu["X"] + ";" + self.menu["Y"] + ";" + self.menu["MenuWidth"] + ";" + self.menu["MaxOptions"] + ";";
@@ -349,6 +358,7 @@ SaveMenuTheme()
     design += isDefined(self.menu["DisableMenuWM"]) ? "Disable;" : "Enable;";
     design += isDefined(self.menu["LargeCursor"]) ? "Enable;" : "Disable;";
     design += isDefined(self.menu["MenuBlur"]) ? "Enable;" : "Disable;";
+    design += isDefined(self.menu["DisableQM"]) ? "Enable;" : "Disable;";
     design += isDefined(self.SmoothRainbowTheme) ? "Rainbow" : self.menu["Main_Color"];
     
     SetDvar("MenuTheme" + self GetXUID(), design);
@@ -360,6 +370,11 @@ LoadMenuVars() //Pre-Set Menu Variables.
     self.menu["DefaultX"] = -406;
     self.menu["DefaultY"] = -66;
     self.menu["DefaultWidth"] = 210;
+
+    //Quick Menu X/Y Variables
+    self.menu["XQM"] = 0;
+    self.menu["YQM"] = -130;
+    self.menu["maxOptionsQM"] = 15;
 
     self.menu["MaxOptions"] = 9; //DO NOT MAKE THIS AN EVEN VALUE. THIS ALWAYS NEEDS TO BE AN ODD VALUE(3, 5, 7, 9, etc.)
 
@@ -390,6 +405,9 @@ LoadMenuVars() //Pre-Set Menu Variables.
     //Change 'undefined' to 'true' if you want to enable menu blur by default
     self.menu["MenuBlur"] = undefined;
 
+    //Change 'undefined' to 'true' if you want to disable the quick menu by default
+    self.menu["DisableQM"] = undefined;
+
     //Loading Saved Menu Variables
     dvar = GetDvarString("MenuTheme" + self GetXUID());
     dvarSep = StrTok(dvar, ";");
@@ -406,12 +424,13 @@ LoadMenuVars() //Pre-Set Menu Variables.
         self.menu["DisableMenuWM"] = (dvarSep[7] == "Disable") ? true : undefined;
         self.menu["LargeCursor"] = (dvarSep[8] == "Enable") ? true : undefined;
         self.menu["MenuBlur"] = (dvarSep[9] == "Enable") ? true : undefined;
+        self.menu["DisableQM"] = (dvarSep[10] == "Enable") ? true : undefined;
         
         if(dvarSep[10] == "Rainbow")
             self thread SmoothRainbowTheme();
         else
         {
-            SetDvar(self GetXUID() + level.menuName + "Color", dvarSep[10]);
+            SetDvar(self GetXUID() + level.menuName + "Color", dvarSep[11]);
             self.menu["Main_Color"] = GetDvarVector1(self GetXUID() + level.menuName + "Color");
         }
     }
