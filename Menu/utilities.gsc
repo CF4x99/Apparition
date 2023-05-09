@@ -9,10 +9,9 @@ createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
     textElem.sort = sort;
     textElem.alpha = alpha;
     textElem.color = color;
-    textElem.text = text;
 
     textElem hud::SetPoint(align, relative, x, y);
-    textElem SetText(text);
+    textElem SetTextString(text);
     
     return textElem;
 }
@@ -46,10 +45,9 @@ createServerText(font, fontSize, sort, text, align, relative, x, y, alpha, color
     textElem.sort = sort;
     textElem.alpha = alpha;
     textElem.color = color;
-    textElem.text = text;
 
     textElem hud::SetPoint(align, relative, x, y);
-    textElem SetText(text);
+    textElem SetTextString(text);
     
     return textElem;
 }
@@ -125,6 +123,15 @@ createServerRectangle(align, relative, x, y, width, height, color, sort, alpha, 
     uiElement hud::SetPoint(align, relative, x, y);
     
     return uiElement;
+}
+
+SetTextString(text)
+{
+    if(!isDefined(self) || !isDefined(text))
+        return;
+    
+    self.text = text;
+    self SetText(text);
 }
 
 SetShaderValues(shader, width, height)
@@ -353,11 +360,11 @@ SetSlider(dir)
         self.menu_SS[menu][curs] = (self.menu_SS[menu][curs] > max) ? 0 : max;
     
     if(isDefined(self.menu["ui"]["StringSlider"][curs]))
-        self.menu["ui"]["StringSlider"][curs] SetText("< " + self.menu_S[menu][curs][self.menu_SS[menu][curs]] + " > [" + (self.menu_SS[menu][curs] + 1) + "/" + self.menu_S[menu][curs].size + "]");
+        self.menu["ui"]["StringSlider"][curs] SetTextString("< " + self.menu_S[menu][curs][self.menu_SS[menu][curs]] + " > [" + (self.menu_SS[menu][curs] + 1) + "/" + self.menu_S[menu][curs].size + "]");
     else
     {
         if(!self isInQuickMenu())
-            self.menu["ui"]["text"][curs] SetText(self.menu["items"][self getCurrent()].name[curs] + " < " + self.menu_S[menu][curs][self.menu_SS[menu][curs]] + " > [" + (self.menu_SS[menu][curs] + 1) + "/" + self.menu_S[menu][curs].size + "]");
+            self.menu["ui"]["text"][curs] SetTextString(self.menu["items"][self getCurrent()].name[curs] + " < " + self.menu_S[menu][curs][self.menu_SS[menu][curs]] + " > [" + (self.menu_SS[menu][curs] + 1) + "/" + self.menu_S[menu][curs].size + "]");
         else
             self drawText(); //Needed To Resize Option Backgrounds & Refresh Sliders
     }
@@ -381,11 +388,11 @@ SetIncSlider(dir)
         self.menu_SS[menu][curs] = (self.menu_SS[menu][curs] > max) ? min : max;
     
     if(isDefined(self.menu["ui"]["IntSlider"][curs]))
-        self.menu["ui"]["IntSlider"][curs] SetText("< " + self.menu_SS[menu][curs] + " >");
+        self.menu["ui"]["IntSlider"][curs] SetTextString("< " + self.menu_SS[menu][curs] + " >");
     else
     {
         if(!self isInQuickMenu())
-            self.menu["ui"]["text"][curs] SetText(self.menu["items"][self getCurrent()].name[curs] + " < " + self.menu_SS[menu][curs] + " >");
+            self.menu["ui"]["text"][curs] SetTextString(self.menu["items"][self getCurrent()].name[curs] + " < " + self.menu_SS[menu][curs] + " >");
         else
             self drawText(); //Needed To Resize Option Backgrounds & Refresh Sliders
     }
@@ -573,7 +580,7 @@ SetTextFX(text, time)
     if(!isDefined(time))
         time = 3;
 
-    self SetText(text);
+    self SetTextString(text);
     self thread hudFade(1, 0.5);
     self SetCOD7DecodeFX(Int((1.5 * 25)), Int((time * 1000)), 1000);
     wait time;
@@ -587,7 +594,7 @@ PulseFXText(text, hud)
     if(!isDefined(text) || !isDefined(hud))
         return;
     
-    hud SetText(text);
+    hud SetTextString(text);
     
     while(isDefined(hud))
     {
@@ -606,7 +613,7 @@ RandomPosText(text, hud)
     if(!isDefined(text) || !isDefined(hud))
         return;
     
-    hud SetText(text);
+    hud SetTextString(text);
     
     while(isDefined(hud))
     {
@@ -626,7 +633,7 @@ PulsingText(text, hud)
     if(!isDefined(text) || !isDefined(hud))
         return;
     
-    hud SetText(text);
+    hud SetTextString(text);
     savedFontScale = hud.FontScale;
     
     while(isDefined(hud))
@@ -654,7 +661,7 @@ FadingTextEffect(text, hud)
     if(!isDefined(text) || !isDefined(hud))
         return;
     
-    hud SetText(text);
+    hud SetTextString(text);
     hud.color = divideColor(RandomInt(255), RandomInt(255), RandomInt(255));
 
     while(isDefined(hud))
@@ -689,7 +696,7 @@ Keyboard(title, func, player)
     if(isDefined(self.menu["ui"]["scroller"]))
         self.menu["ui"]["scroller"] hudScaleOverTime(0.1, 16, 16);
     
-    self SoftLockMenu(title, "", (self.menu["MenuDesign"] == "Native") ? 120 : 140);
+    self SoftLockMenu(title, "", (self.menu["MenuDesign"] == "Right Side") ? 1000 : 140);
     
     letters = [];
     self.keyboard = [];
@@ -750,7 +757,7 @@ Keyboard(title, func, player)
             if(string.size < stringLimit)
             {
                 string += lettersTok[cursX][cursY];
-                self.keyboard["string"] SetText(string);
+                self.keyboard["string"] SetTextString(string);
             }
             else
                 self iPrintlnBold("^1ERROR: ^7Max String Size Reached");
@@ -762,7 +769,7 @@ Keyboard(title, func, player)
             if(string.size < stringLimit)
             {
                 string += " ";
-                self.keyboard["string"] SetText(string);
+                self.keyboard["string"] SetTextString(string);
             }
             else
                 self iPrintlnBold("^1ERROR: ^7Max String Size Reached");
@@ -796,7 +803,7 @@ Keyboard(title, func, player)
                     backspace += string[a];
 
                 string = backspace;
-                self.keyboard["string"] SetText(string);
+                self.keyboard["string"] SetTextString(string);
 
                 wait 0.1;
             }
@@ -829,7 +836,7 @@ NumberPad(title, func, player, param)
     if(isDefined(self.menu["ui"]["scroller"]))
         self.menu["ui"]["scroller"] hudScaleOverTime(0.1, 15, 15);
 
-    self SoftLockMenu(title, "", (self.menu["MenuDesign"] == "Native") ? 50 : 70);
+    self SoftLockMenu(title, "", (self.menu["MenuDesign"] == "Right Side") ? 1000 : 70);
     
     letters = [];
     self.keyboard = [];
@@ -869,7 +876,7 @@ NumberPad(title, func, player, param)
             if(string.size < stringLimit)
             {
                 string += letters[cursX];
-                self.keyboard["string"] SetText(string);
+                self.keyboard["string"] SetTextString(string);
             }
             else
                 self iPrintlnBold("^1ERROR: ^7Max String Size Reached");
@@ -898,7 +905,7 @@ NumberPad(title, func, player, param)
                     backspace += string[a];
                 
                 string = backspace;
-                self.keyboard["string"] SetText(string);
+                self.keyboard["string"] SetTextString(string);
 
                 wait 0.1;
             }
@@ -1162,7 +1169,7 @@ MenuCredits()
     if(isDefined(self.menu["ui"]["scroller"]))
         self.menu["ui"]["scroller"].alpha = 0;
     
-    self SoftLockMenu("Press [{+melee}] To Exit Menu Credits", "", 155);
+    self SoftLockMenu("Press [{+melee}] To Exit Menu Credits", "", (self.menu["MenuDesign"] == "Right Side") ? 1000 : 155);
     
     MenuTextStartCredits = [
     "^1" + level.menuName,
@@ -1261,7 +1268,7 @@ CreditsFadeIn(text, time)
     if(!isDefined(self))
         return;
     
-    self SetText(text);
+    self SetTextString(text);
     self thread hudFade(1, time);
     self SetCOD7DecodeFX(37, 5000, 1000);
     
