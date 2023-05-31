@@ -180,12 +180,12 @@ ApplyShellShock(shock, player)
             break;
     }
 
-    player ShellShock(shock, self.ShellShockTime);
+    player ShellShock(shock, player.ShellShockTime);
 }
 
-SetShellShockTime(time)
+SetShellShockTime(time, player)
 {
-    self.ShellShockTime = time;
+    player.ShellShockTime = time;
 }
 
 SpinPlayer(player)
@@ -262,10 +262,50 @@ AttachSelfToPlayer(player)
         self Unlink();
 }
 
+PlayerMountCamera(tag, player)
+{
+    if(isDefined(player.SpecNade) && !isDefined(player.PlayerMountCamera))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Spec-Nade Is Enabled");
+    
+    if(isDefined(player.DropCamera) && !isDefined(player.PlayerMountCamera))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Drop Camera Is Enabled");
+    
+    if(tag != "Disable")
+    {
+        if(isDefined(player.PlayerMountCamera))
+        {
+            player CameraActivate(false);
+        
+            if(isDefined(player.camlinker))
+                player.camlinker delete();
+        }
+
+        player.PlayerMountCamera = true;
+
+        player.camlinker = SpawnScriptModel((player GetTagOrigin(tag) + (AnglesToForward(player GetPlayerAngles()) * 9)), "tag_origin");
+        player.camlinker LinkToBlendToTag(player, tag);
+
+        player CameraSetPosition(player.camlinker);
+        player CameraActivate(true);
+    }
+    else
+    {
+        player CameraActivate(false);
+        
+        if(isDefined(player.camlinker))
+            player.camlinker delete();
+        
+        player.PlayerMountCamera = undefined;
+    }
+}
+
 PlayerDropCamera(player)
 {
     if(isDefined(player.SpecNade) && !isDefined(player.DropCamera))
         return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Spec-Nade Is Enabled");
+    
+    if(isDefined(player.PlayerMountCamera) && !isDefined(player.DropCamera))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Mount Camera Is Enabled");
     
     player.DropCamera = isDefined(player.DropCamera) ? undefined : true;
 
@@ -274,7 +314,6 @@ PlayerDropCamera(player)
         player.camlinker = SpawnScriptModel(player GetTagOrigin("j_head"), "tag_origin");
 
         player CameraSetPosition(player.camlinker);
-        //player CameraSetLookAt(grenade);
         player CameraActivate(true);
 
         player.camlinker Launch(VectorScale(AnglesToForward(self GetPlayerAngles()), 10));
@@ -286,6 +325,22 @@ PlayerDropCamera(player)
         if(isDefined(player.camlinker))
             player.camlinker delete();
     }
+}
+
+JumpScarePlayer(player)
+{
+    if(isDefined(player.JumpScarePlayer))
+        return;
+    player.JumpScarePlayer = true;
+
+    player.var_92fcfed8 = player OpenLUIMenu((ReturnMapName(level.script) == "Shadows Of Evil") ? "JumpScare" : "JumpScare-Tomb");
+
+    wait 0.55;
+
+    if(isDefined(player.var_92fcfed8))
+        player CloseLUIMenu(player.var_92fcfed8);
+    
+    player.JumpScarePlayer = undefined;
 }
 
 FakeDerank(player)

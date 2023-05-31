@@ -32,8 +32,8 @@ setVerification(a, player, msg)
     
     player runMenuIndex("Main");
 
-    if(self hasMenu())
-        self thread ApparitionWelcomeMessage();
+    if(player hasMenu())
+        player thread ApparitionWelcomeMessage();
 }
 
 SetVerificationAllPlayers(a, msg)

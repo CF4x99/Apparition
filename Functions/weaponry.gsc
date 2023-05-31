@@ -23,7 +23,7 @@ DropCurrentWeapon(type, player)
         player SetWeaponAmmoStock(player GetCurrentWeapon(), stock);
 
         if(!IsSubStr(weapon.name, "_knife"))
-            player SwitchToWeaponImmediate(weapon);
+            player SetSpawnWeapon(weapon, true);
     }
 }
 
@@ -55,12 +55,9 @@ PackCurrentWeapon(player)
 			force_attachments = ArrayCombine(force_attachments, packed_attachments, 0, 0);
 		}
 
-		newWeapon = GetWeapon(newWeapon.rootweapon.name, force_attachments);
-
-		if(!isDefined(camo))
-			camo = 0;
-        
+        camo = 0;
         acvi = 0;
+		newWeapon = GetWeapon(newWeapon.rootweapon.name, force_attachments);
 		weapon_options = player CalcWeaponOptions(camo, 0, 0);
 	}
 	else
@@ -76,7 +73,76 @@ PackCurrentWeapon(player)
     player TakeWeapon(player GetCurrentWeapon());
     player GiveWeapon(newWeapon, weapon_options, acvi);
     player GiveStartAmmo(newWeapon);
-    player SwitchToWeaponImmediate(newWeapon);
+    player SetSpawnWeapon(newWeapon, true);
+}
+
+GivePlayerAttachment(attachment, player)
+{
+    weapon = player GetCurrentWeapon();
+    attachments = weapon.attachments;
+    
+    if(isInArray(attachments, attachment)) //If the weapon has the attachment, it will be removed
+    {
+        attachments = ArrayRemove(attachments, attachment);
+    }
+    else //If the weapon doesn't have the attachment, it will be added
+    {
+        if(attachments.size > 7)
+            return self iPrintlnBold("^1ERROR: ^7Attachment Limit Reached");
+        
+        if(!IsValidCombination(attachments, attachment))
+        {
+            if(isDefined(player.CorrectInvalidCombo)) //Auto-Correct invalid attachment combinations
+            {
+                invalid = GetInvalidAttachments(attachments, attachment);
+
+                if(isDefined(invalid) && invalid.size)
+                    for(a = 0; a < invalid.size; a++)
+                        attachments = ArrayRemove(attachments, invalid[a]);
+            }
+            else
+                return self iPrintlnBold("^1ERROR: ^7Invalid Attachment Combination");
+        }
+        
+        array::add(attachments, attachment, 0);
+    }
+
+    newWeapon = GetWeapon(weapon.rootweapon.name, attachments);
+    
+    player TakeWeapon(weapon);
+    player GiveWeapon(newWeapon);
+    player SetSpawnWeapon(newWeapon, true);
+}
+
+IsValidCombination(attachments, attachment)
+{
+    valid = ReturnAttachmentCombinations(attachment);
+    tokens = StrTok(valid, " ");
+
+    for(a = 0; a < attachments.size; a++)
+        if(!isInArray(tokens, attachments[a]))
+            return false;
+    
+    return true;
+}
+
+GetInvalidAttachments(attachments, attachment)
+{
+    valid = ReturnAttachmentCombinations(attachment);
+    tokens = StrTok(valid, " ");
+
+    invalid = [];
+
+    for(a = 0; a < attachments.size; a++)
+        if(!isInArray(tokens, attachments[a]))
+            array::add(invalid, attachments[a], 0);
+    
+    return invalid;
+}
+
+CorrectInvalidCombo(player)
+{
+    player.CorrectInvalidCombo = isDefined(player.CorrectInvalidCombo) ? undefined : true;
 }
 
 SetPlayerCamo(camo, player)
@@ -87,7 +153,7 @@ SetPlayerCamo(camo, player)
     
     player TakeWeapon(weap);
     player GiveWeapon(weap, weapon, NewWeapon);
-    player SwitchToWeaponImmediate(weap);
+    player SetSpawnWeapon(weap, true);
 }
 
 FlashingCamo(player)
@@ -137,7 +203,7 @@ GivePlayerWeapon(weapon, player)
     player GiveStartAmmo(weapon);
 
     if(!IsSubStr(weapon.name, "_knife"))
-        player SwitchToWeaponImmediate(weapon);
+        player SetSpawnWeapon(weapon, true);
 }
 
 HasWeapon1(weapon)

@@ -10,7 +10,10 @@ Aimbot(player)
 
         if(isDefined(player.AimingRequired) && !player AdsButtonPressed() || isDefined(player.Noclip) || isDefined(player.UFOMode) || isDefined(player.ControllableZombie) || isDefined(player.AC130))
             enemy = undefined;
-        
+
+        if(isDefined(enemy) && isDefined(player.AimbotDistanceCheck) && Distance(player.origin, enemy.origin) > player.AimbotDistance)
+            enemy = undefined;
+
         if(isDefined(enemy))
         {
             origin = (player.AimBoneTag == "Best") ? enemy GetTagOrigin(player ScanForBestTag(enemy)) : enemy GetTagOrigin(player.AimBoneTag);
@@ -97,6 +100,11 @@ AimBoneTag(tag, player)
     player.AimBoneTag = tag;
 }
 
+AimbotDistance(distance, player)
+{
+    player.AimbotDistance = distance;
+}
+
 AimbotOptions(a, player)
 {
     switch(a)
@@ -119,9 +127,14 @@ AimbotOptions(a, player)
         
         case 5:
             player.PlayableAreaCheck = isDefined(player.PlayableAreaCheck) ? undefined : true;
+            break;
         
         case 6:
             player.AutoFire = isDefined(player.AutoFire) ? undefined : true;
+            break;
+        
+        case 7:
+            player.AimbotDistanceCheck = isDefined(player.AimbotDistanceCheck) ? undefined : true;
             break;
         
         default:

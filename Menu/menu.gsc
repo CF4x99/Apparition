@@ -880,44 +880,9 @@ runMenuIndex(menu)
             break;
         
         case "Mystery Box Weapons":
-            arr = [];
-            weaps = GetArrayKeys(level.zombie_weapons);
-            weaponsVar = ["assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special"];
-            equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
-            keys = GetArrayKeys(equipment);
-            
             self addMenu(menu, "Weapons");
-                self addOptBool(IsAllWeaponsInBox(), "Enable All", ::EnableAllWeaponsInBox);
-
-                if(isDefined(weaps) && weaps.size)
-                {
-                    for(a = 0; a < weaps.size; a++)
-                    {
-                        if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
-                        {
-                            string = weaps[a].name;
-
-                            if(MakeLocalizedString(weaps[a].displayname) != "")
-                                string = weaps[a].displayname;
-                            
-                            if(!IsInArray(arr, string))
-                            {
-                                arr[arr.size] = string;
-                                self addOptBool(IsWeaponInBox(weaps[a]), string, ::SetBoxWeaponState, weaps[a]);
-                            }
-                        }
-                    }
-                }
-                
-                self addOptBool(IsWeaponInBox(GetWeapon("minigun")), "Death Machine", ::SetBoxWeaponState, GetWeapon("minigun"));
-                self addOptBool(IsWeaponInBox(GetWeapon("defaultweapon")), "Default Weapon", ::SetBoxWeaponState, GetWeapon("defaultweapon"));
-
-                if(isDefined(keys) && keys.size)
-                {
-                    foreach(index, weapon in GetArrayKeys(level.zombie_weapons))
-                        if(isInArray(equipment, weapon))
-                            self addOptBool(IsWeaponInBox(weapon), weapon.displayname, ::SetBoxWeaponState, weapon);
-                }
+                self addOpt("Normal", ::newMenu, "Mystery Box Normal Weapons");
+                self addOpt("Upgraded", ::newMenu, "Mystery Box Upgraded Weapons");
             break;
         
         case "Joker Model":
@@ -1127,6 +1092,7 @@ runMenuIndex(menu)
                 self addOpt("Disconnect", ::disconnect);
                 self addOptBool((GetDvarInt("migration_forceHost") == 1), "Force Host", ::ForceHost);
                 self addOptBool(level.GEntityProtection, "G_Entity Crash Protection", ::GEntityProtection);
+                self addOptBool((GetDvarString("ui_lobbyDebugVis") == "1"), "DevGui Info", ::DevGUIInfo);
             break;
         
         case "All Players":
@@ -1221,19 +1187,11 @@ MenuOptionsPlayer(menu, player)
 {
     self endon("disconnect");
     
-    newmenu = "";
-    sepmenu = StrTok(menu, " " + player GetEntityNumber());
-
-    for(a = 0; a < sepmenu.size; a++)
-    {
-        newmenu += sepmenu[a];
-
-        if(a != (sepmenu.size - 1))
-            newmenu += " ";
-    }
+    newmenu = CleanMenuName(menu);
     
     weapons = ["Assault Rifles", "Sub Machine Guns", "Light Machine Guns", "Sniper Rifles", "Shotguns", "Pistols", "Launchers", "Specials"];
     weaponsVar = ["assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special"];
+    weaponAttachTypes = ["Optic", "Rig", "Mod"]; //gamedata\weapons\common\attachmenttable.csv
 
     mapStr = ReturnMapName(level.script);
     
@@ -1457,8 +1415,7 @@ MenuOptionsPlayer(menu, player)
         case "Weaponry":
             self addMenu(menu, "Weaponry");
                 self addOpt("Weapon Options", ::newMenu, "Weapon Options " + player GetEntityNumber());
-                self addOptIncSlider("Weapon Camo", ::SetPlayerCamo, 0, 0, 138, 1, player);
-                self addOptBool(player.FlashingCamo, "Flashing Camo", ::FlashingCamo, player);
+                self addOpt("Attachments", ::newMenu, "Weapon Attachments " + player GetEntityNumber());
                 self addOpt("Weapon AAT", ::newMenu, "Weapon AAT " + player GetEntityNumber());
                 self addOpt("");
                 self addOpt("Equipment", ::newMenu, "Equipment Menu " + player GetEntityNumber());
@@ -1472,7 +1429,18 @@ MenuOptionsPlayer(menu, player)
                 self addOpt("Take Current Weapon", ::TakeCurrentWeapon, player);
                 self addOpt("Take All Weapons", ::TakePlayerWeapons, player);
                 self addOptSlider("Drop Current Weapon", ::DropCurrentWeapon, "Take;Don't Take", player);
+                self addOpt("");
+                self addOptIncSlider("Camo", ::SetPlayerCamo, 0, 0, 138, 1, player);
+                self addOptBool(player.FlashingCamo, "Flashing Camo", ::FlashingCamo, player);
                 self addOptBool(player zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()), "Pack 'a' Punch Current Weapon", ::PackCurrentWeapon, player);
+            break;
+        
+        case "Weapon Attachments":
+            self addMenu(menu, "Attachments");
+                self addOptBool(player.CorrectInvalidCombo, "Correct Invalid Combinations", ::CorrectInvalidCombo, player);
+                
+                for(a = 0; a < weaponAttachTypes.size; a++)
+                    self addOpt(weaponAttachTypes[a], ::newMenu, weaponAttachTypes[a] + " " + player GetEntityNumber());
             break;
         
         case "Weapon AAT":
@@ -1596,6 +1564,7 @@ MenuOptionsPlayer(menu, player)
                     }
                 }
             break;
+        
         case "Equipment Bullets":
             include_equipment = GetArrayKeys(level.zombie_include_equipment);
             equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
@@ -1737,6 +1706,9 @@ MenuOptionsPlayer(menu, player)
             if(!isDefined(player.AimBoneTag))
                 player.AimBoneTag = "Best";
             
+            if(!isDefined(player.AimbotDistance))
+                player.AimbotDistance = 100;
+            
             self addMenu(menu, "Aimbot Menu");
                 self addOptBool(player.Aimbot, "Aimbot", ::Aimbot, player);
                 self addOptSlider("Bone Tag", ::AimBoneTag, "Best;" + level.boneTags, player);
@@ -1746,6 +1718,10 @@ MenuOptionsPlayer(menu, player)
                 self addOptBool(player.VisibilityCheck, "Visibility Check", ::AimbotOptions, 4, player);
                 self addOptBool(player.PlayableAreaCheck, "Playable Area Check", ::AimbotOptions, 5, player);
                 self addOptBool(player.AutoFire, "Auto-Fire", ::AimbotOptions, 6, player);
+                self addOptBool(player.AimbotDistanceCheck, "Distance Check", ::AimbotOptions, 7, player);
+
+                if(isDefined(player.AimbotDistanceCheck))
+                    self addOptIncSlider("Distance", ::AimbotDistance, 100, 100, 1000, 100, player);
             break;
         
         case "Options":
@@ -1801,8 +1777,8 @@ MenuOptionsPlayer(menu, player)
             break;
         
         case "Malicious Options":
-            if(!isDefined(self.ShellShockTime))
-                self.ShellShockTime = 1;
+            if(!isDefined(player.ShellShockTime))
+                player.ShellShockTime = 1;
             
             self addMenu(menu, "Malicious Options");
                 self addOpt("Disable Actions", ::newMenu, "Disable Actions " + player GetEntityNumber());
@@ -1811,12 +1787,17 @@ MenuOptionsPlayer(menu, player)
                 self addOpt("Mortar Strike", ::MortarStrikePlayer, player);
                 self addOptBool(player.FlashLoop, "Flash Loop", ::FlashLoop, player);
                 self addOptSlider("Shellshock", ::ApplyShellShock, "Concussion Grenade;Zombie Death;Explosion", player);
-                self addOptIncSlider("Shellshock Time", ::SetShellShockTime, 1, 1, 30, 1);
+                self addOptIncSlider("Shellshock Time", ::SetShellShockTime, 1, 1, 30, 1, player);
                 self addOptBool(player.SpinPlayer, "Spin Player", ::SpinPlayer, player);
                 self addOptBool(player.BlackScreen, "Black Screen", ::BlackScreenPlayer, player);
                 self addOptBool(player.FakeLag, "Fake Lag", ::FakeLag, player);
                 self addOptBool(self.AttachToPlayer, "Attach Self To Player", ::AttachSelfToPlayer, player);
+                self addOptSlider("Mount Camera", ::PlayerMountCamera, "Disable;" + level.boneTags, player);
                 self addOptBool(player.DropCamera, "Drop Camera", ::PlayerDropCamera, player);
+
+                if(ReturnMapName(level.script) == "Shadows Of Evil" || ReturnMapName(level.script) == "Origins")
+                    self addOpt("Jump Scare", ::JumpScarePlayer, player);
+                
                 self addOpt("Fake Derank", ::FakeDerank, player);
                 self addOpt("Fake Damage", ::FakeDamagePlayer, player);
                 self addOpt("Crash Game", ::CrashPlayer, player);
@@ -1901,6 +1882,79 @@ MenuOptionsPlayer(menu, player)
                     self addOptBool(player HasWeapon1(GetWeapon("defaultweapon")), "Default Weapon", ::GivePlayerWeapon, GetWeapon("defaultweapon"), player);
                 }
             }
+            else if(isInArray(weaponAttachTypes, newmenu))
+            {
+                attachmentFound = 0;
+                weapon = player GetCurrentWeapon();
+
+                self addMenu(menu, newmenu);
+                    for(a = 0; a < 44; a++)
+                    {
+                        type = ReturnAttachmentType(a);
+
+                        if(type != ToLower(newmenu))
+                            continue;
+                        
+                        attachment = ReturnAttachment(a);
+                        name = ReturnAttachmentName(attachment);
+
+                        if(!isInArray(weapon.supportedAttachments, attachment) || attachment == "dw")
+                            continue;
+                        
+                        self addOptBool(isInArray(weapon.attachments, attachment), name, ::GivePlayerAttachment, attachment, player);
+
+                        attachmentFound++;
+                    }
+
+                    if(!attachmentFound)
+                        self addOpt("No Supported Attachments Found");
+            }
+            else if(newmenu == "Mystery Box Normal Weapons" || newmenu == "Mystery Box Upgraded Weapons")
+            {
+                arr = [];
+                weaponsVar = ["assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special"];
+                type = (newmenu == "Mystery Box Normal Weapons") ? level.zombie_weapons : level.zombie_weapons_upgraded;
+                weaps = GetArrayKeys(type);
+
+                self addMenu(menu, newmenu);
+                self addOptBool(IsAllWeaponsInBox(type), "Enable All", ::EnableAllWeaponsInBox, type);
+
+                if(isDefined(weaps) && weaps.size)
+                {
+                    for(a = 0; a < weaps.size; a++)
+                    {
+                        if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a]))))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
+                        {
+                            string = weaps[a].name;
+
+                            if(MakeLocalizedString(weaps[a].displayname) != "")
+                                string = weaps[a].displayname;
+                            
+                            if(!IsInArray(arr, string))
+                            {
+                                arr[arr.size] = string;
+                                self addOptBool(IsWeaponInBox(weaps[a]), string, ::SetBoxWeaponState, weaps[a]);
+                            }
+                        }
+                    }
+                }
+                
+                if(newmenu == "Mystery Box Normal Weapons")
+                {
+                    equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
+                    keys = GetArrayKeys(equipment);
+
+                    self addOptBool(IsWeaponInBox(GetWeapon("minigun")), "Death Machine", ::SetBoxWeaponState, GetWeapon("minigun"));
+                    self addOptBool(IsWeaponInBox(GetWeapon("defaultweapon")), "Default Weapon", ::SetBoxWeaponState, GetWeapon("defaultweapon"));
+
+                    if(isDefined(keys) && keys.size)
+                    {
+                        foreach(index, weapon in GetArrayKeys(level.zombie_weapons))
+                            if(isInArray(equipment, weapon))
+                                self addOptBool(IsWeaponInBox(weapon), weapon.displayname, ::SetBoxWeaponState, weapon);
+                    }
+                }
+            }
             else
             {
                 error404 = true;
@@ -1943,6 +1997,10 @@ MenuOptionsPlayer(menu, player)
 
 menuMonitor()
 {
+    if(isDefined(self.menuMonitor))
+        return;
+    self.menuMonitor = true;
+    
     self endon("disconnect");
     
     while(1)
@@ -2113,6 +2171,13 @@ drawText()
         if(!isDefined(self.menu["curs"][self getCurrent()]))
             self.menu["curs"][self getCurrent()] = 0;
         
+        hud = ["text", "BoolOpt", "BoolBack", "subMenu", "IntSlider", "StringSlider"];
+
+        foreach(str in hud)
+            for(a = 0; a < text.size; a++)
+                if(!isDefined(self.menu["ui"][str][a]))
+                    self.menu["ui"][str][a] = "";
+        
         start = 0;
         
         if(self getCursor() > Int(((self.menu["MaxOptions"] - 1) / 2)) && self getCursor() < (text.size - Int(((self.menu["MaxOptions"] + 1) / 2))) && text.size > self.menu["MaxOptions"])
@@ -2180,6 +2245,13 @@ drawText()
         if(!isDefined(self.menu["cursQM"][self getCurrent()]))
             self.menu["cursQM"][self getCurrent()] = 0;
         
+        hud = ["textQM", "QMBG"];
+
+        foreach(str in hud)
+            for(a = 0; a < text.size; a++)
+                if(!isDefined(self.menu["ui"][str][a]))
+                    self.menu["ui"][str][a] = "";
+        
         numOpts = (text.size > self.menu["maxOptionsQM"]) ? self.menu["maxOptionsQM"] : text.size;
         start = (self getCursor() >= self.menu["maxOptionsQM"]) ? (self getCursor() - (self.menu["maxOptionsQM"] - 1)) : 0;
 
@@ -2224,7 +2296,11 @@ scrollMenu(dir, OldCurs)
         OldCurs = curs;
 
         if(arry.size > self.menu["MaxOptions"])
+        {
             self RefreshMenu();
+            
+            return;
+        }
     }
     else if(curs < (arry.size - Int(((self.menu["MaxOptions"] + 1) / 2))) && (OldCurs > Int(((self.menu["MaxOptions"] - 1) / 2))) || (curs > Int(((self.menu["MaxOptions"] - 1) / 2))) && OldCurs < (arry.size - Int(((self.menu["MaxOptions"] + 1) / 2))))
     {
@@ -2590,7 +2666,12 @@ DestroyOpts()
     hud = ["text", "BoolOpt", "BoolBack", "subMenu", "IntSlider", "StringSlider", "textQM", "QMBG"];
 
     for(a = 0; a < hud.size; a++)
+    {
         destroyAll(self.menu["ui"][hud[a]]);
+
+        for(b = 0; b < self.menu["ui"][hud[a]].size; b++)
+            self.menu["ui"][hud[a]] = ArrayRemove(self.menu[hud[a]], self.menu[hud[a]][b]);
+    }
 }
 
 RefreshMenu(menu, curs, force)

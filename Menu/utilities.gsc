@@ -430,7 +430,9 @@ newMenu(menu, dontSave, i1)
     else
         self.menu["currentMenuQM"] = menu;
 
-    if(IsSubStr(menu, "Weapon Options")) //Submenus that should be refreshed when player switches weapons
+    refresh = ["Weapon Options", "Optic", "Rig", "Mod"];
+
+    if(isInArray(refresh, CleanMenuName(menu))) //Submenus that should be refreshed when player switches weapons
     {
         tokens = StrTok(menu, " ");
 
@@ -451,14 +453,35 @@ WatchMenuWeaponSwitch(player)
     player endon("disconnect");
     player endon("menuClosed");
     player endon("EndSwitchWeaponMonitor");
+
+    refresh = ["Weapon Options", "Optic", "Rig", "Mod"];
     
-    while(IsSubStr(player getCurrent(), "Weapon Options"))
+    while(isInArray(refresh, CleanMenuName(player getCurrent())))
     {
         self waittill("weapon_change", newWeapon);
         
-        if(IsSubStr(player getCurrent(), "Weapon Options"))
+        if(isInArray(refresh, CleanMenuName(player getCurrent())))
             player RefreshMenu(player getCurrent(), player getCursor(), true);
     }
+}
+
+CleanMenuName(menu)
+{
+    tokens = StrTok(menu, " ");
+    player = GetPlayerFromEntityNumber(Int(tokens[(tokens.size - 1)]));
+    
+    newmenu = "";
+    sepmenu = StrTok(menu, " " + player GetEntityNumber());
+
+    for(a = 0; a < sepmenu.size; a++)
+    {
+        newmenu += sepmenu[a];
+
+        if(a != (sepmenu.size - 1))
+            newmenu += " ";
+    }
+
+    return newmenu;
 }
 
 BackMenu()
@@ -1151,6 +1174,11 @@ GEntityProtection()
 
         wait 0.01;
     }
+}
+
+DevGUIInfo()
+{
+    SetDvar("ui_lobbyDebugVis", (GetDvarString("ui_lobbyDebugVis") == "1") ? "0" : "1");
 }
 
 GetGroundPos(position)

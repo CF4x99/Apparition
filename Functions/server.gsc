@@ -612,59 +612,75 @@ SetBoxWeaponState(weapon, upgraded)
     level.CustomRandomWeaponWeights = ::CustomBoxWeight;
 }
 
-IsAllWeaponsInBox()
+IsAllWeaponsInBox(type)
 {
-    weaps = GetArrayKeys(level.zombie_weapons);
+    weaps = GetArrayKeys(type);
     weaponsVar = ["assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special"];
-    equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
-    equipmentCombined = GetArrayKeys(equipment);
-
+    
     for(a = 0; a < weaps.size; a++)
-        if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
+    {
+        class = (type == level.zombie_weapons_upgraded) ? zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a])) : zm_utility::GetWeaponClassZM(weaps[a]);
+
+        if(IsInArray(weaponsVar, ToLower(CleanString(class))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
             if(!IsWeaponInBox(weaps[a]))
                 return false;
+    }
     
-    if(!IsWeaponInBox(GetWeapon("minigun")))
-        return false;
-    
-    if(!IsWeaponInBox(GetWeapon("defaultweapon")))
-        return false;
+    if(type != level.zombie_weapons_upgraded)
+    {
+        equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
+        equipmentCombined = GetArrayKeys(equipment);
 
-    if(isDefined(equipmentCombined) && equipmentCombined.size)
-        for(a = 0; a < weaps.size; a++)
-            if(isInArray(equipment, weaps[a]))
-                if(!IsWeaponInBox(weaps[a]))
-                    return false;
+        if(!IsWeaponInBox(GetWeapon("minigun")))
+            return false;
+        
+        if(!IsWeaponInBox(GetWeapon("defaultweapon")))
+            return false;
+
+        if(isDefined(equipmentCombined) && equipmentCombined.size)
+            for(a = 0; a < weaps.size; a++)
+                if(isInArray(equipment, weaps[a]))
+                    if(!IsWeaponInBox(weaps[a]))
+                        return false;
+    }
     
     return true;
 }
 
-EnableAllWeaponsInBox()
+EnableAllWeaponsInBox(type)
 {
     if(IsAllWeaponsInBox())
         level.customBoxWeapons = [];
     else
     {
-        weaps = GetArrayKeys(level.zombie_weapons);
+        weaps = GetArrayKeys(type);
         weaponsVar = ["assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special"];
-        equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
-        keys = GetArrayKeys(equipment);
-
+        
         for(a = 0; a < weaps.size; a++)
-            if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
+        {
+            class = (type == level.zombie_weapons_upgraded) ? zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a])) : zm_utility::GetWeaponClassZM(weaps[a]);
+
+            if(IsInArray(weaponsVar, ToLower(CleanString(class))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
                 if(!IsWeaponInBox(weaps[a]))
                     level.customBoxWeapons[level.customBoxWeapons.size] = weaps[a];
+        }
         
-        if(!IsWeaponInBox(GetWeapon("minigun")))
-            level.customBoxWeapons[level.customBoxWeapons.size] = GetWeapon("minigun");
-        
-        if(!IsWeaponInBox(GetWeapon("defaultweapon")))
-            level.customBoxWeapons[level.customBoxWeapons.size] = GetWeapon("defaultweapon");
+        if(type != level.zombie_weapons_upgraded)
+        {
+            equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
+            keys = GetArrayKeys(equipment);
 
-        if(isDefined(keys) && keys.size)
-            for(a = 0; a < weaps.size; a++)
-                if(isInArray(equipment, weaps[a]) && !IsWeaponInBox(weaps[a]))
-                    level.customBoxWeapons[level.customBoxWeapons.size] = weaps[a];
+            if(!IsWeaponInBox(GetWeapon("minigun")))
+                level.customBoxWeapons[level.customBoxWeapons.size] = GetWeapon("minigun");
+            
+            if(!IsWeaponInBox(GetWeapon("defaultweapon")))
+                level.customBoxWeapons[level.customBoxWeapons.size] = GetWeapon("defaultweapon");
+
+            if(isDefined(keys) && keys.size)
+                for(a = 0; a < weaps.size; a++)
+                    if(isInArray(equipment, weaps[a]) && !IsWeaponInBox(weaps[a]))
+                        level.customBoxWeapons[level.customBoxWeapons.size] = weaps[a];
+        }
     }
 }
 
