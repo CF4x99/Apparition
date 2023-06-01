@@ -694,6 +694,11 @@ SetBoxJokerModel(model)
     level.chest_joker_model = model;
 }
 
+SetMapSpawn(plyer, type)
+{
+    SetDvar(level.script + "Spawn" + (Int(StrTok(plyer, "Player ")[0]) - 1), (type == "Set") ? self.origin : "");
+}
+
 ShootToRevive()
 {
     level.ShootToRevive = isDefined(level.ShootToRevive) ? undefined : true;

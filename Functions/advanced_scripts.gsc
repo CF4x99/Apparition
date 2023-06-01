@@ -454,12 +454,23 @@ ArtilleryStrike()
     
     while(1)
     {
-        goalPos.origin = self TraceBullet();
+        trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+            
+        origin = trace["position"];
+        surface = trace["surfacetype"];
+        
+        goalPos.origin = origin;
 
         if(self UseButtonPressed() || self AttackButtonPressed())
         {
-            targetPos = goalPos.origin;
-            break;
+            if(surface != "none")
+            {
+                targetPos = goalPos.origin;
+
+                break;
+            }
+            else
+                self iPrintlnBold("^1ERROR: ^7Invalid Surface");
         }
         
         if(self MeleeButtonPressed())
@@ -495,6 +506,17 @@ ArtilleryStrike()
 
 Tornado()
 {
+    if(!isDefined(level.TornadoSpawned))
+    {
+        trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+        
+        origin = trace["position"];
+        surface = trace["surfacetype"];
+
+        if(surface == "none")
+            return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
+    }
+    
     level.TornadoSpawned = isDefined(level.TornadoSpawned) ? undefined : true;
 
     if(!isDefined(level.TornadoSpawned))
@@ -507,8 +529,7 @@ Tornado()
 
         return;
     }
-    
-    origin = self TraceBullet();
+
     ents = GetEntArray("script_model", "classname");
 
     for(a = 0; a < ents.size; a++)
@@ -901,7 +922,7 @@ AnyoneNearDoor(door)
     return false;
 }
 
-ControllableZombie()
+ControllableZombie(team)
 {
     if(isDefined(self.ControllableZombie))
         return;
@@ -945,7 +966,7 @@ ControllableZombie()
         self SetPlayerAngles(zombie.angles);
         
         zombie.ignore_find_flesh = 1;
-        zombie.team = "none";
+        zombie.team = (team == "Friendly") ? self.team : level.zombie_team;
         zombie thread zombie_utility::set_zombie_run_cycle("sprint");
 
         while(!zombie CanControl() && IsAlive(zombie))
@@ -1168,8 +1189,6 @@ SpiralStaircase(size)
     for(a = 0; a < level.MenuModels.size; a++)
         if(IsSubStr(level.MenuModels[a], "vending_doubletap") || IsSubStr(level.MenuModels[a], "vending_sleight"))
             model = level.MenuModels[a];
-    
-    self iPrintlnBold(level.MenuModels[a]);
 
     if(!isInArray(level.MenuModels, model))
         return self iPrintlnBold("^1ERROR: ^7Couldn't Spawn Spiral Staircase");
@@ -1188,6 +1207,7 @@ SpiralStaircase(size)
             if(isDefined(level.SpiralStaircase[a]))
             {
                 level.SpiralStaircase[a] Launch(VectorScale(AnglesToForward(level.SpiralStaircase[a].angles), 255));
+                level.SpiralStaircase[a] NotSolid();
                 level.SpiralStaircase[a] thread deleteAfter(5);
 
                 wait 0.01;
@@ -1200,12 +1220,20 @@ SpiralStaircase(size)
     }
     else
     {
+        trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+    
+        origin = trace["position"];
+        surface = trace["surfacetype"];
+
+        if(surface == "none")
+            return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
+        
         level.SpiralStaircaseSpawning = true;
 
         if(!isDefined(level.SpiralStaircase))
             level.SpiralStaircase = [];
         
-        level.SpiralStaircase[0] = SpawnScriptModel(self TraceBullet(), model, (-28, self.angles[1], 90));
+        level.SpiralStaircase[0] = SpawnScriptModel(origin, model, (-28, self.angles[1], 90));
         
         for(a = 1; a < size; a++)
         {

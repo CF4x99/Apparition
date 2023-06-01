@@ -195,8 +195,15 @@ onPlayerSpawned()
             self thread AntiEndGame();
     }
 
+    for(a = 0; a < level.players.size; a++)
+        if(level.players[a] == self)
+            myIndex = a;
+
+    if(GetDvarString(level.script + "Spawn" + myIndex) != "")
+        self SetOrigin(GetDvarVector1(level.script + "Spawn" + myIndex));
+
     level flag::wait_till("initial_blackscreen_passed");
-    
+
     if(self IsHost())
     {
         level thread DefineMenuArrays();
@@ -395,22 +402,30 @@ ApparitionWelcomeMessage()
         if(!isDefined(self.MenuInstructions) && !isDefined(self.menu["DisableMenuInstructions"]))
             self.MenuInstructions = self LUI_createText("", 2, 129, 635, 1023, (0, 0, 0));
         
-        if(isDefined(self.MenuInstructions) && (isDefined(self.menu["DisableMenuInstructions"]) || self isInMenu(true) || !self hasMenu()))
+        if(isDefined(self.MenuInstructions) && (isDefined(self.menu["DisableMenuInstructions"]) || !self hasMenu()))
         {
             self CloseLUIMenu(self.MenuInstructions);
             self.MenuInstructions = undefined;
         }
 
-        string = "Status: " + self.menuState["verification"] + "\n[{+speed_throw}] & [{+melee}] To Open";
+        if(!self isInMenu(true))
+        {
+            string = "Status: " + self.menuState["verification"] + "\n[{+speed_throw}] & [{+melee}] To Open";
 
-        if(!isDefined(self.menu["DisableQM"]))
-            string += "\n[{+speed_throw}] & [{+smoke}] To Open Quick Menu";
+            if(!isDefined(self.menu["DisableQM"]))
+                string += "\n[{+speed_throw}] & [{+smoke}] To Open Quick Menu";
+        }
+        else
+            string = "[{+attack}]/[{+speed_throw}] - Scroll\n[{+actionslot 3}]/[{+actionslot 4}] - Slider Left/Right\n[{+melee}] - Go Back/Exit";
         
         if(isDefined(self.MenuInstructions) && self GetLUIMenuData(self.MenuInstructions, "text") != string)
             self SetLUIMenuData(self.MenuInstructions, "text", string);
         
         if(isDefined(self.MenuInstructions))
             self lui::set_color(self.MenuInstructions, level.RGBFadeColor);
+        
+        if(isDefined(self.MenuInstructions) && self GetLUIMenuData(self.MenuInstructions, "y") != 635)
+            self SetLUIMenuData(self.MenuInstructions, "y", 635);
 
         wait 0.01;
     }

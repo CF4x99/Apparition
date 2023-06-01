@@ -424,8 +424,16 @@ ShootPowerUps(player)
         {
             player waittill("weapon_fired");
 
+            trace = BulletTrace(player GetWeaponMuzzlePoint(), player GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 0, player);
+            
+            origin = trace["position"];
+            surface = trace["surfacetype"];
+
+            if(surface == "none")
+                continue;
+
             powerups = GetArrayKeys(level.zombie_include_powerups);
-            player SpawnPowerUp(powerups[RandomInt(powerups.size)], player TraceBullet());
+            player SpawnPowerUp(powerups[RandomInt(powerups.size)], origin);
         }
     }
     else
@@ -450,15 +458,21 @@ CodJumper(player)
                 else
                     player.codboxes = [];
                 
-                start = player TraceBullet();
                 color = Pow(2, RandomInt(3));
+                trace = BulletTrace(player GetWeaponMuzzlePoint(), player GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 0, player);
+                
+                origin = trace["position"];
+                surface = trace["surfacetype"];
 
-                for(a = 0; a < 3; a++)
-                    for(b = 0; b < 4; b++)
-                    {
-                        player.codboxes[player.codboxes.size] = SpawnScriptModel(GetGroundPos(start + ((a * 20), (b * 10), 0)), "p7_zm_power_up_max_ammo", (0, 0, 0));
-                        player.codboxes[(player.codboxes.size - 1)] clientfield::set("powerup_fx", Int(color));
-                    }
+                if(surface != "none")
+                {
+                    for(a = 0; a < 3; a++)
+                        for(b = 0; b < 4; b++)
+                        {
+                            player.codboxes[player.codboxes.size] = SpawnScriptModel(GetGroundPos(origin + ((a * 20), (b * 10), 0)), "p7_zm_power_up_max_ammo", (0, 0, 0));
+                            player.codboxes[(player.codboxes.size - 1)] clientfield::set("powerup_fx", Int(color));
+                        }
+                }
             }
             
             if(isDefined(player.codboxes) && player.codboxes.size)
@@ -622,7 +636,7 @@ GrapplingGun(player)
             
             trace = BulletTrace(player GetWeaponMuzzlePoint(), player GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 0, player);
             
-            pos = trace["position"];
+            origin = trace["position"];
             surface = trace["surfacetype"];
             
             if(surface != "none")
@@ -630,7 +644,7 @@ GrapplingGun(player)
                 ent = SpawnScriptModel(player.origin, "tag_origin");
 
                 player PlayerLinkTo(ent);
-                ent MoveTo(pos, 1);
+                ent MoveTo(origin, 1);
 
                 ent waittill("movedone");
                 player Unlink();

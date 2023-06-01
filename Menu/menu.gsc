@@ -93,7 +93,7 @@ runMenuIndex(menu)
                         self addOpt("Menu Width", ::newMenu, "Menu Width");
                     }
 
-                    self addOptSlider("Toggle Style", ::ToggleStyle, "Boxes;Text Color");
+                    self addOptSlider("Toggle Style", ::ToggleStyle, "Boxes;Text;Text Color");
                     self addOptIncSlider("Max Options", ::MenuMaxOptions, 3, 9, (self.menu["MenuDesign"] == "Right Side") ? 11 : 9, 2); //Do Not Change These Values.
 
                     if(self.menu["MenuDesign"] != "Right Side")
@@ -203,7 +203,7 @@ runMenuIndex(menu)
                 if(ReturnMapName(level.script) != "Moon" && ReturnMapName(level.script) != "Origins")
                     self addOptBool(level.MoonDoors, "Moon Doors", ::MoonDoors);
 
-                self addOpt("Controllable Zombie", ::ControllableZombie);
+                self addOptSlider("Controllable Zombie", ::ControllableZombie, "Friendly;Enemy");
                 self addOptBool(self.BodyGuard, "Body Guard", ::BodyGuard);
                 self addOptIncSlider("Spiral Staircase", ::SpiralStaircase, 5, 5, 50, 1);
                 self addOptBool(level.DesolidifyDebris, "Desolidify Debris", ::DesolidifyDebris);
@@ -1093,6 +1093,13 @@ runMenuIndex(menu)
                 self addOptBool((GetDvarInt("migration_forceHost") == 1), "Force Host", ::ForceHost);
                 self addOptBool(level.GEntityProtection, "G_Entity Crash Protection", ::GEntityProtection);
                 self addOptBool((GetDvarString("ui_lobbyDebugVis") == "1"), "DevGui Info", ::DevGUIInfo);
+                self addOpt("Custom Map Spawns", ::newMenu, "Custom Map Spawns");
+            break;
+        
+        case "Custom Map Spawns":
+            self addMenu(menu, "Custom Map Spawns");
+                self addOptSlider("Set Map Spawn Location", ::SetMapSpawn, "Player 1;Player 2;Player 3;Player 4", "Set");
+                self addOptSlider("Clear Map Spawn Location", ::SetMapSpawn, "Player 1;Player 2;Player 3;Player 4", "Clear");
             break;
         
         case "All Players":
@@ -2171,13 +2178,6 @@ drawText()
         if(!isDefined(self.menu["curs"][self getCurrent()]))
             self.menu["curs"][self getCurrent()] = 0;
         
-        hud = ["text", "BoolOpt", "BoolBack", "subMenu", "IntSlider", "StringSlider"];
-
-        foreach(str in hud)
-            for(a = 0; a < text.size; a++)
-                if(!isDefined(self.menu["ui"][str][a]))
-                    self.menu["ui"][str][a] = "";
-        
         start = 0;
         
         if(self getCursor() > Int(((self.menu["MaxOptions"] - 1) / 2)) && self getCursor() < (text.size - Int(((self.menu["MaxOptions"] + 1) / 2))) && text.size > self.menu["MaxOptions"])
@@ -2202,10 +2202,15 @@ drawText()
                 
                 if(self.menu["MenuDesign"] != "Old School")
                 {
-                    if(isDefined(self.menu["items"][self getCurrent()].bool[(a + start)]) && self.menu["ToggleStyle"] == "Boxes")
+                    if(isDefined(self.menu["items"][self getCurrent()].bool[(a + start)]) && (self.menu["ToggleStyle"] == "Boxes" || self.menu["ToggleStyle"] == "Text"))
                     {
-                        self.menu["ui"]["BoolBack"][(a + start)] = self createRectangle("CENTER", "CENTER", (self.menu["MenuDesign"] == "Right Side") ? (self.menu["X"] + 7) : (self.menu["X"] + (self.menu["MenuWidth"] - 8)), (self.menu["Y"] - yOffset) + (a * sepMultiplier), 8, 8, (0.15, 0.15, 0.15), 4, 1, "white");
-                        self.menu["ui"]["BoolOpt"][(a + start)] = self createRectangle("CENTER", "CENTER", (self.menu["MenuDesign"] == "Right Side") ? (self.menu["X"] + 7) : (self.menu["X"] + (self.menu["MenuWidth"] - 8)), (self.menu["Y"] - yOffset) + (a * sepMultiplier), 7, 7, (isDefined(self.menu_B[self getCurrent()][(a + start)]) && self.menu_B[self getCurrent()][(a + start)]) ? self.menu["Main_Color"] : (0, 0, 0), 5, 1, "white");
+                        if(self.menu["ToggleStyle"] == "Boxes")
+                        {
+                            self.menu["ui"]["BoolBack"][(a + start)] = self createRectangle("CENTER", "CENTER", (self.menu["MenuDesign"] == "Right Side") ? (self.menu["X"] + 7) : (self.menu["X"] + (self.menu["MenuWidth"] - 8)), (self.menu["Y"] - yOffset) + (a * sepMultiplier), 8, 8, (0.15, 0.15, 0.15), 4, 1, "white");
+                            self.menu["ui"]["BoolOpt"][(a + start)] = self createRectangle("CENTER", "CENTER", (self.menu["MenuDesign"] == "Right Side") ? (self.menu["X"] + 7) : (self.menu["X"] + (self.menu["MenuWidth"] - 8)), (self.menu["Y"] - yOffset) + (a * sepMultiplier), 7, 7, (isDefined(self.menu_B[self getCurrent()][(a + start)]) && self.menu_B[self getCurrent()][(a + start)]) ? self.menu["Main_Color"] : (0, 0, 0), 5, 1, "white");
+                        }
+                        else
+                            self.menu["ui"]["BoolOpt"][(a + start)] = self createText("default", 1.1, 4, (isDefined(self.menu_B[self getCurrent()][(a + start)]) && self.menu_B[self getCurrent()][(a + start)]) ? "ON" : "OFF", (self.menu["MenuDesign"] == "Right Side") ? "LEFT" : "RIGHT", "CENTER", (self.menu["MenuDesign"] == "Right Side") ? (self.menu["X"] + 4) : (self.menu["X"] + (self.menu["MenuWidth"] - 4)), (self.menu["Y"] - yOffset) + (a * sepMultiplier), 1, (1, 1, 1));
                     }
                     
                     if(self.menu["MenuDesign"] != "Right Side")
@@ -2227,7 +2232,7 @@ drawText()
                 fixedScale = (self.menu["MenuDesign"] == "Old School") ? 1.7 : 1.3;
                 optColor = (self.menu["MenuDesign"] == "Old School" && (a + start) == self getCursor()) ? self.menu["Main_Color"] : (1, 1, 1);
 
-                optX = (self.menu["MenuDesign"] == "Right Side" && isDefined(self.menu["items"][self getCurrent()].bool[(a + start)]) && self.menu["ToggleStyle"] == "Boxes") ? (self.menu["X"] + 15) : (self.menu["X"] + 4);
+                optX = (self.menu["MenuDesign"] == "Right Side" && isDefined(self.menu["items"][self getCurrent()].bool[(a + start)]) && (self.menu["ToggleStyle"] == "Boxes" || self.menu["ToggleStyle"] == "Text")) ? ((self.menu["ToggleStyle"] == "Text") ? (self.menu["X"] + 20) : (self.menu["X"] + 15)) : (self.menu["X"] + 4);
                 self.menu["ui"]["text"][(a + start)] = self createText("default", ((a + start) == self getCursor() && isDefined(self.menu["LargeCursor"])) ? fixedScale : 1.1, 5, optStr, (self.menu["MenuDesign"] == "Old School") ? "CENTER" : "LEFT", "CENTER", (self.menu["MenuDesign"] == "Right Side") ? optX : (self.menu["X"] + 4), (self.menu["Y"] - yOffset) + (a * sepMultiplier), 1, (isDefined(self.menu["items"][self getCurrent()].bool[(a + start)]) && isDefined(self.menu_B[self getCurrent()][(a + start)]) && self.menu_B[self getCurrent()][(a + start)] && self.menu["ToggleStyle"] == "Text Color") ? divideColor(0, 255, 0) : optColor);
             }
         }
@@ -2244,13 +2249,6 @@ drawText()
     {
         if(!isDefined(self.menu["cursQM"][self getCurrent()]))
             self.menu["cursQM"][self getCurrent()] = 0;
-        
-        hud = ["textQM", "QMBG"];
-
-        foreach(str in hud)
-            for(a = 0; a < text.size; a++)
-                if(!isDefined(self.menu["ui"][str][a]))
-                    self.menu["ui"][str][a] = "";
         
         numOpts = (text.size > self.menu["maxOptionsQM"]) ? self.menu["maxOptionsQM"] : text.size;
         start = (self getCursor() >= self.menu["maxOptionsQM"]) ? (self getCursor() - (self.menu["maxOptionsQM"] - 1)) : 0;
@@ -2274,6 +2272,18 @@ drawText()
         
         self.menu["ui"]["QMScroller"][0] SetShaderValues(undefined, self.menu["ui"]["QMBG"][self getCursor()].width, undefined);
         self.menu["ui"]["QMScroller"][1] SetShaderValues(undefined, (self.menu["ui"]["QMBG"][self getCursor()].width + 2), undefined);
+    }
+
+    hud = ["text", "BoolOpt", "BoolBack", "subMenu", "IntSlider", "StringSlider"];
+
+    foreach(str in hud)
+    {
+        if(!isDefined(self.menu["ui"][str][self getCursor()]))
+            continue;
+        
+        for(a = 0; a < text.size; a++)
+            if(!isDefined(self.menu["ui"][str][a]))
+                self.menu["ui"][str][a] = "";
     }
 }
 
@@ -2323,10 +2333,15 @@ scrollMenu(dir, OldCurs)
         
         if(self.menu["MenuDesign"] != "Old School")
         {
-            if(isDefined(self.menu["items"][self getCurrent()].bool[(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) && self.menu["ToggleStyle"] == "Boxes")
+            if(isDefined(self.menu["items"][self getCurrent()].bool[(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) && (self.menu["ToggleStyle"] == "Boxes" || self.menu["ToggleStyle"] == "Text"))
             {
-                self.menu["ui"]["BoolBack"][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))] = self createRectangle("CENTER", "CENTER", (self.menu["MenuDesign"] == "Right Side") ? (self.menu["X"] + 7) : (self.menu["X"] + (self.menu["MenuWidth"] - 8)), self.menu["ui"]["text"][curs].y + (((self.menu["MaxOptions"] * (sepMultiplier / 2)) - (sepMultiplier / 2)) * dir), 8, 8, (0.15, 0.15, 0.15), 4, 0, "white");
-                self.menu["ui"]["BoolOpt"][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))] = self createRectangle("CENTER", "CENTER", (self.menu["MenuDesign"] == "Right Side") ? (self.menu["X"] + 7) : (self.menu["X"] + (self.menu["MenuWidth"] - 8)), self.menu["ui"]["text"][curs].y + (((self.menu["MaxOptions"] * (sepMultiplier / 2)) - (sepMultiplier / 2)) * dir), 7, 7, (isDefined(self.menu_B[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) && self.menu_B[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) ? self.menu["Main_Color"] : (0, 0, 0), 5, 0, "white");
+                if(self.menu["ToggleStyle"] == "Boxes")
+                {
+                    self.menu["ui"]["BoolBack"][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))] = self createRectangle("CENTER", "CENTER", (self.menu["MenuDesign"] == "Right Side") ? (self.menu["X"] + 7) : (self.menu["X"] + (self.menu["MenuWidth"] - 8)), self.menu["ui"]["text"][curs].y + (((self.menu["MaxOptions"] * (sepMultiplier / 2)) - (sepMultiplier / 2)) * dir), 8, 8, (0.15, 0.15, 0.15), 4, 0, "white");
+                    self.menu["ui"]["BoolOpt"][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))] = self createRectangle("CENTER", "CENTER", (self.menu["MenuDesign"] == "Right Side") ? (self.menu["X"] + 7) : (self.menu["X"] + (self.menu["MenuWidth"] - 8)), self.menu["ui"]["text"][curs].y + (((self.menu["MaxOptions"] * (sepMultiplier / 2)) - (sepMultiplier / 2)) * dir), 7, 7, (isDefined(self.menu_B[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) && self.menu_B[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) ? self.menu["Main_Color"] : (0, 0, 0), 5, 0, "white");
+                }
+                else
+                    self.menu["ui"]["BoolOpt"][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))] = self createText("default", 1.1, 4, (isDefined(self.menu_B[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) && self.menu_B[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) ? "ON" : "OFF", (self.menu["MenuDesign"] == "Right Side") ? "LEFT" : "RIGHT", "CENTER", (self.menu["MenuDesign"] == "Right Side") ? (self.menu["X"] + 4) : (self.menu["X"] + (self.menu["MenuWidth"] - 4)), self.menu["ui"]["text"][curs].y + (((self.menu["MaxOptions"] * (sepMultiplier / 2)) - (sepMultiplier / 2)) * dir), 0, (1, 1, 1));
             }
             
             if(self.menu["MenuDesign"] != "Right Side")
@@ -2345,7 +2360,7 @@ scrollMenu(dir, OldCurs)
         if((isDefined(self.menu["items"][self getCurrent()].slider[(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) || isDefined(self.menu["items"][self getCurrent()].incslider[(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))])) && (self.menu["MenuDesign"] == "Right Side" || self.menu["MenuDesign"] == "Old School"))
             optStr = isDefined(self.menu["items"][self getCurrent()].slider[(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) ? optStr + " < " + self.menu_S[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))][self.menu_SS[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]] + " > [" + (self.menu_SS[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))] + 1) + "/" + self.menu_S[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))].size + "]" : optStr + " < " + self.menu_SS[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))] + " >";
 
-        optX = (self.menu["MenuDesign"] == "Right Side" && isDefined(self.menu["items"][self getCurrent()].bool[(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) && self.menu["ToggleStyle"] == "Boxes") ? (self.menu["X"] + 15) : (self.menu["X"] + 4);
+        optX = (self.menu["MenuDesign"] == "Right Side" && isDefined(self.menu["items"][self getCurrent()].bool[(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) && (self.menu["ToggleStyle"] == "Boxes" || self.menu["ToggleStyle"] == "Text")) ? ((self.menu["ToggleStyle"] == "Text") ? (self.menu["X"] + 20) : (self.menu["X"] + 15)) : (self.menu["X"] + 4);
         self.menu["ui"]["text"][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))] = self createText("default", 1.1, 5, optStr, (self.menu["MenuDesign"] == "Old School") ? "CENTER" : "LEFT", "CENTER", (self.menu["MenuDesign"] == "Right Side") ? optX : (self.menu["X"] + 4), (self.menu["ui"]["text"][curs].y + (((self.menu["MaxOptions"] * (sepMultiplier / 2)) - (sepMultiplier / 2)) * dir)), 0, (isDefined(self.menu["items"][self getCurrent()].bool[(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) && isDefined(self.menu_B[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) && self.menu_B[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))] && self.menu["ToggleStyle"] == "Text Color") ? divideColor(0, 255, 0) : (1, 1, 1));
         
         for(a = 0; a < hud.size; a++)
@@ -2668,9 +2683,7 @@ DestroyOpts()
     for(a = 0; a < hud.size; a++)
     {
         destroyAll(self.menu["ui"][hud[a]]);
-
-        for(b = 0; b < self.menu["ui"][hud[a]].size; b++)
-            self.menu["ui"][hud[a]] = ArrayRemove(self.menu[hud[a]], self.menu[hud[a]][b]);
+        self.menu["ui"][hud[a]] = [];
     }
 }
 

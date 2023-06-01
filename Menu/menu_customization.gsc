@@ -10,7 +10,7 @@ MenuTheme(color)
             self.menu["ui"][hud[a]] hudFadeColor(color, 1);
     
     for(a = 0; a < self.menu["items"][self getCurrent()].name.size; a++)
-        if(isDefined(self.menu["ui"]["BoolOpt"][a]) && isDefined(self.menu_B[self getCurrent()][a]) && self.menu_B[self getCurrent()][a])
+        if(isDefined(self.menu["ui"]["BoolOpt"][a]) && isDefined(self.menu_B[self getCurrent()][a]) && self.menu_B[self getCurrent()][a] && self.menu["ToggleStyle"] != "Text")
             self.menu["ui"]["BoolOpt"][a] hudFadeColor(color, 1);
     
     if(self.menu["MenuDesign"] == "Old School")
@@ -49,7 +49,7 @@ SmoothRainbowTheme()
             self.menu["ui"]["QMScroller"][1].color = level.RGBFadeColor;
         
         for(a = 0; a < self.menu["items"][self getCurrent()].name.size; a++)
-            if(isDefined(self.menu["ui"]["BoolOpt"][a]) && isDefined(self.menu_B[self getCurrent()][a]) && self.menu_B[self getCurrent()][a])
+            if(isDefined(self.menu["ui"]["BoolOpt"][a]) && isDefined(self.menu_B[self getCurrent()][a]) && self.menu_B[self getCurrent()][a] && self.menu["ToggleStyle"] != "Text")
                 self.menu["ui"]["BoolOpt"][a].color = level.RGBFadeColor;
         
         if(self.menu["MenuDesign"] == "Old School")

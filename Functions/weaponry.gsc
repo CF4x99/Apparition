@@ -80,6 +80,9 @@ GivePlayerAttachment(attachment, player)
 {
     weapon = player GetCurrentWeapon();
     attachments = weapon.attachments;
+
+    if(isDefined(player.aat[player aat::get_nonalternate_weapon(weapon)]))
+        aat = player.aat[player aat::get_nonalternate_weapon(weapon)];
     
     if(isInArray(attachments, attachment)) //If the weapon has the attachment, it will be removed
     {
@@ -87,9 +90,6 @@ GivePlayerAttachment(attachment, player)
     }
     else //If the weapon doesn't have the attachment, it will be added
     {
-        if(attachments.size > 7)
-            return self iPrintlnBold("^1ERROR: ^7Attachment Limit Reached");
-        
         if(!IsValidCombination(attachments, attachment))
         {
             if(isDefined(player.CorrectInvalidCombo)) //Auto-Correct invalid attachment combinations
@@ -105,6 +105,9 @@ GivePlayerAttachment(attachment, player)
         }
         
         array::add(attachments, attachment, 0);
+
+        if(attachments.size > 8)
+            return self iPrintlnBold("^1ERROR: ^7Attachment Limit Reached");
     }
 
     newWeapon = GetWeapon(weapon.rootweapon.name, attachments);
@@ -112,6 +115,9 @@ GivePlayerAttachment(attachment, player)
     player TakeWeapon(weapon);
     player GiveWeapon(newWeapon);
     player SetSpawnWeapon(newWeapon, true);
+
+    if(isDefined(aat))
+        player aat::acquire(newWeapon, aat);
 }
 
 IsValidCombination(attachments, attachment)

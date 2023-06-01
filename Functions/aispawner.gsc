@@ -246,6 +246,14 @@ dog_spawn_factory_logic(favorite_enemy)
 //Margwa
 ServerSpawnMargwa()
 {
+	trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+    
+	origin = trace["position"];
+	surface = trace["surfacetype"];
+
+	if(surface == "none")
+		return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
+	
 	s_location = (self.AISpawnLocation == "Crosshairs") ? self TraceBullet() : self.origin;
 
 	level.var_b398aafa[0].script_forcespawn = 1;
@@ -569,6 +577,14 @@ function_7085a2e4(einflictor, eattacker, idamage, idflags, smeansofdeath, weapon
 //Civil Protector
 ServerSpawnCivilProtector()
 {
+	trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+    
+	origin = trace["position"];
+	surface = trace["surfacetype"];
+
+	if(surface == "none")
+		return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
+	
 	v_ground_position = (self.AISpawnLocation == "Crosshairs") ? self TraceBullet() : self.origin;
 
 	var_36e9b69a = v_ground_position + VectorScale((0, 0, 1), 650);
@@ -996,6 +1012,14 @@ zombie_setup_attack_properties_raps()
 //Mechz
 ServerSpawnMechz()
 {
+	trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+    
+	origin = trace["position"];
+	surface = trace["surfacetype"];
+
+	if(surface == "none")
+		return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
+	
 	flyin = 0;
 	s_location = (self.AISpawnLocation == "Crosshairs") ? self TraceBullet() : self.origin;
 
@@ -1420,6 +1444,14 @@ function_bb048b27()
 //Sentinel Drone
 ServerSpawnSentinelDrone()
 {
+	trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+    
+	origin = trace["position"];
+	surface = trace["surfacetype"];
+
+	if(surface == "none")
+		return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
+	
 	s_location = (self.AISpawnLocation == "Crosshairs") ? self TraceBullet() : self.origin;
 	s_location += (0, 0, 25);
 	ai = function_fded8158(level.var_fda4b3f3[0]);
@@ -2181,6 +2213,14 @@ ServerSpawnMangler()
 	if(!isDefined(var_19764360))
 		return;
 	
+	trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+    
+	origin = trace["position"];
+	surface = trace["surfacetype"];
+
+	if(surface == "none")
+		return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
+	
 	s_location = (self.AISpawnLocation == "Crosshairs") ? self TraceBullet() : self.origin;
 	ai = function_665a13cd(level.var_6bca5baa[0]);
 
@@ -2330,7 +2370,6 @@ function_89976d94(v_pos)
 //Spiders
 ServerSpawnSpider()
 {
-	s_loc = self GetAISpawnLocation();
 	var_4b55c671 = GetVehicleArray("zombie_spider", "targetname");
 
 	var_19764360 = spider_get_favorite_enemy();
