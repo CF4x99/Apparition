@@ -194,14 +194,16 @@ ModifyScore(score, player)
 {
     score = Int(score);
 
-    if(score >= 0)
+    if(score > 0)
         player zm_score::add_to_player_score(score);
-    else if(score <= 0)
+    else if(score < 0)
         player zm_score::minus_to_player_score((score * -1));
     else
     {
-        player.score = 0;
-        player.pers["score"] = 0;
+        if(player.score > 0)
+            player zm_score::minus_to_player_score(player.score);
+        else if(player.score < 0)
+            player zm_score::add_to_player_score((player.score * -1));
     }
 }
 

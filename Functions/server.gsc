@@ -70,12 +70,20 @@ AntiEndGame()
 
     if(isDefined(level.AntiEndGame))
     {
-        level.hostforcedend = true;
-        level.forcedend = true;
-        level.gameended = true;
-        
-        foreach(player in level.players)
-            player thread WatchForEndRound();
+        while(isDefined(level.AntiEndGame))
+        {
+            foreach(player in level.players)
+            {
+                if(isDefined(player.AntiEndGameHandler))
+                    continue;
+                
+                player.AntiEndGameHandler = true;
+
+                player thread WatchForEndRound();
+            }
+            
+            wait 0.01;
+        }
     }
     else
     {
@@ -84,6 +92,9 @@ AntiEndGame()
         level.hostforcedend = false;
         level.forcedend = false;
         level.gameended = false;
+
+        foreach(player in level.players)
+            player.AntiEndGameHandler = undefined;
     }
 }
 
@@ -94,6 +105,15 @@ WatchForEndRound()
 
     while(isDefined(level.AntiEndGame))
     {
+        if(level.hostforcedend)
+            level.hostforcedend = false;
+        
+        if(level.forcedend)
+            level.forcedend = false;
+        
+        if(level.gameended)
+            level.gameended = false;
+
         self waittill("menuresponse", menu, response);
 
         if(response == "endround" || response == "killserverpc" || response == "endgame")
@@ -103,14 +123,21 @@ WatchForEndRound()
                 level.hostforcedend = false;
                 level.forcedend = false;
                 level.gameended = false;
+
                 wait 0.1;
 
                 level thread globallogic::forceEnd();
             }
             else
             {
-                self iPrintlnBold("^1ERROR: ^7" + level.menuName + " Blocked End Game Response");
+                level.hostforcedend = true;
+                level.forcedend = true;
+                level.gameended = true;
+
+                self iPrintlnBold("^1ERROR: ^2" + level.menuName + " ^7Blocked End Game Response");
                 bot::get_host_player() iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^2" + CleanName(self getName()) + " ^7Tried To End The Game");
+
+                wait 0.5; //buffer
             }
         }
     }
@@ -351,6 +378,9 @@ OpenAllDoors()
 
 IsAllDoorsOpen()
 {
+    if(isDefined(level.MoonDoors))
+        return true;
+    
     types = ["zombie_door", "zombie_airlock_buy", "zombie_debris"];
 
     for(a = 0; a < types.size; a++)
@@ -459,6 +489,19 @@ CollectCraftableParts(craftable)
     self RefreshMenu(menu, curs);
 }
 
+CollectCraftablePart(part)
+{
+    menu = self getCurrent();
+    curs = self getCursor();
+
+    if(isDefined(part.pieceSpawn))
+        self zm_craftables::player_take_piece(part.pieceSpawn);
+    
+    wait 0.05;
+
+    self RefreshMenu(menu, curs);
+}
+
 IsCraftableCollected(craftable)
 {
     if(craftable == "open_table")
@@ -467,6 +510,14 @@ IsCraftableCollected(craftable)
     foreach(part in level.zombie_include_craftables[craftable].a_piecestubs)
         if(isDefined(part.pieceSpawn.model))
             return false;
+    
+    return true;
+}
+
+IsPartCollected(part)
+{
+    if(isDefined(part.pieceSpawn.model))
+        return false;
     
     return true;
 }

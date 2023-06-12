@@ -1,7 +1,7 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.0.8
+    Version:              1.0.9
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
     
@@ -226,7 +226,7 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName = "Apparition";
-    level.menuVersion = "1.0.8";
+    level.menuVersion = "1.0.9";
 
     level.MenuStatus = ["None", "Verified", "VIP", "Co-Host", "Admin", "Host", "Developer"];
     level.AutoVerify = 0;

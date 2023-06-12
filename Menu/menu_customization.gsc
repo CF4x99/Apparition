@@ -13,7 +13,7 @@ MenuTheme(color)
         if(isDefined(self.menu["ui"]["BoolOpt"][a]) && isDefined(self.menu_B[self getCurrent()][a]) && self.menu_B[self getCurrent()][a] && self.menu["ToggleStyle"] != "Text")
             self.menu["ui"]["BoolOpt"][a] hudFadeColor(color, 1);
     
-    if(self.menu["MenuDesign"] == "Old School")
+    if(self.menu["MenuDesign"] == "Old School" && !self isInQuickMenu())
     {
         if(isDefined(self.menu["ui"]["text"][self getCursor()]))
             self.menu["ui"]["text"][self getCursor()] hudFadeColor(color, 1);
@@ -52,7 +52,7 @@ SmoothRainbowTheme()
             if(isDefined(self.menu["ui"]["BoolOpt"][a]) && isDefined(self.menu_B[self getCurrent()][a]) && self.menu_B[self getCurrent()][a] && self.menu["ToggleStyle"] != "Text")
                 self.menu["ui"]["BoolOpt"][a].color = level.RGBFadeColor;
         
-        if(self.menu["MenuDesign"] == "Old School")
+        if(self.menu["MenuDesign"] == "Old School" && !self isInQuickMenu())
         {
             if(isDefined(self.menu["ui"]["text"][self getCursor()]))
                 self.menu["ui"]["text"][self getCursor()].color = (isDefined(self.menu["items"][self getCurrent()].bool[self getCursor()]) && isDefined(self.menu_B[self getCurrent()][self getCursor()]) && self.menu_B[self getCurrent()][self getCursor()] && self.menu["ToggleStyle"] == "Text Color") ? divideColor(0, 255, 0) : level.RGBFadeColor;

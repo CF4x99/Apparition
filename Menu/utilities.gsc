@@ -524,8 +524,8 @@ CleanString(string)
     
     for(a = 0; a < string.size; a++)
     {
-        //List of strings/chars what will be removed from the final string output
-        strings = ["specialty", "zombie", "zm", "t7", "t6", "p7", "zmb", "zod", "ai", "g", "bg", "perk", "player", "weapon", "wpn", "aat", "bgb", "visionset", "equip", "craft", "der", "viewmodel", "mod", "fxanim", "moo", "moon", "zmhd", "fb", "bc", "asc", "vending"];
+        //List of strings what will be removed from the final string output
+        strings = ["specialty", "zombie", "zm", "t7", "t6", "p7", "zmb", "zod", "ai", "g", "bg", "perk", "player", "weapon", "wpn", "aat", "bgb", "visionset", "equip", "craft", "der", "viewmodel", "mod", "fxanim", "moo", "moon", "zmhd", "fb", "bc", "asc", "vending", "part"];
         
         //This will replace any '_' found in the string
         replacement = " ";
@@ -983,7 +983,7 @@ isDown()
 
 isZombie()
 {
-    return isDefined(self.is_zombie) && self.is_zombie;
+    return (isDefined(self.is_zombie) && self.is_zombie);
 }
 
 isPlayerLinked(exclude)
@@ -1179,6 +1179,11 @@ GEntityProtection()
 DevGUIInfo()
 {
     SetDvar("ui_lobbyDebugVis", (GetDvarString("ui_lobbyDebugVis") == "1") ? "0" : "1");
+}
+
+DisableFog()
+{
+    SetDvar("r_fog", (GetDvarString("r_fog") == "0") ? "1" : "0");
 }
 
 GetGroundPos(position)

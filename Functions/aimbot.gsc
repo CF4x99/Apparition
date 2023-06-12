@@ -18,20 +18,34 @@ Aimbot(player)
         {
             origin = (player.AimBoneTag == "Best") ? enemy GetTagOrigin(player ScanForBestTag(enemy)) : enemy GetTagOrigin(player.AimBoneTag);
 
-            if(!isDefined(origin)) //Needed for AI that don't have the targeted bone tag(i.e. Spiders)
-                origin = enemy GetTagOrigin("tag_body");
+            if(!isDefined(origin)) //If the tag origin for the target tag can't be found, this will test the given tags to see if one can be used
+            {
+                tags = ["tag_body", "j_ankle_ri", "j_ankle_le", "pelvis", "j_mainroot", "j_spinelower", "j_spine4", "j_neck", "j_head"];
+
+                for(a = 0; a < tags.size; a++)
+                {
+                    test = enemy GetTagOrigin(tags[a]);
+
+                    if(isDefined(test))
+                        origin = enemy GetTagOrigin("tag_body");
+                }
+            }
 
             if(isDefined(origin))
             {
-                if(isDefined(player.AimSnap))
+                if(player.AimbotType == "Snap")
+                {
                     player SetPlayerAngles(VectorToAngles(origin - player GetEye()));
 
-                if(isDefined(player.ShootThruWalls) && (isDefined(player.AutoFire) || player AttackButtonPressed()))
-                    MagicBullet(player GetCurrentWeapon(), origin + (5, 0, 0), origin, player);
+                    if(isDefined(player.AutoFire))
+                        player FireGun();
+                }
+                else if(player.AimbotType == "Silent")
+                {
+                    if(isDefined(player.AutoFire) || player AttackButtonPressed())
+                        MagicBullet(player GetCurrentWeapon(), origin + (5, 0, 0), origin, player);
+                }
             }
-
-            if(isDefined(player.AutoFire))
-                player FireGun();
         }
 
         wait 0.01;
@@ -91,8 +105,19 @@ isFiring1()
 
 FireGun()
 {
+    if(self GetCurrentWeapon().name == "none" || !self GetWeaponAmmoClip(self GetCurrentWeapon()) || self IsReloading() || self isOnLadder() || self IsMantling() || self IsSwitchingWeapons() || self IsMeleeing() || self IsSprinting())
+        return;
+    
     MagicBullet(self GetCurrentWeapon(), self GetWeaponMuzzlePoint(), self TraceBullet(), self);
-    wait self GetCurrentWeapon().fireTime;
+    self SetWeaponAmmoClip(self GetCurrentWeapon(), (self GetWeaponAmmoClip(self GetCurrentWeapon()) - 1));
+    self WeaponPlayEjectBrass();
+
+    wait (self GetCurrentWeapon().fireTime / 2);
+}
+
+AimbotType(type, player)
+{
+    player.AimbotType = type;
 }
 
 AimBoneTag(tag, player)
@@ -114,26 +139,18 @@ AimbotOptions(a, player)
             break;
         
         case 2:
-            player.AimSnap = isDefined(player.AimSnap) ? undefined : true;
-            break;
-        
-        case 3:
-            player.ShootThruWalls = isDefined(player.ShootThruWalls) ? undefined : true;
-            break;
-        
-        case 4:
             player.VisibilityCheck = isDefined(player.VisibilityCheck) ? undefined : true;
             break;
         
-        case 5:
+        case 3:
             player.PlayableAreaCheck = isDefined(player.PlayableAreaCheck) ? undefined : true;
             break;
         
-        case 6:
+        case 4:
             player.AutoFire = isDefined(player.AutoFire) ? undefined : true;
             break;
         
-        case 7:
+        case 5:
             player.AimbotDistanceCheck = isDefined(player.AimbotDistanceCheck) ? undefined : true;
             break;
         

@@ -489,14 +489,14 @@ ArtilleryStrike()
         for(a = -1; a < 2; a += 2)
             for(b = 0; b < 5; b++)
             {
-                MagicBullet(GetWeapon("launcher_standard"), targetPos, targetPos - (0, b * (a * 25), 2500));
+                MagicBullet(GetWeapon("launcher_standard"), targetPos, targetPos - (0, b * (a * 25), 2500), self);
                 wait 0.25;
             }
 
         for(a = -1; a < 2; a += 2)
             for(b = 0; b < 5; b++)
             {
-                MagicBullet(GetWeapon("launcher_standard"), targetPos, targetPos - (b * (a * 25), 0, 2500));
+                MagicBullet(GetWeapon("launcher_standard"), targetPos, targetPos - (b * (a * 25), 0, 2500), self);
                 wait 0.25;
             }
     }
@@ -770,15 +770,21 @@ SpawnableArray(spawn)
 
 MoonDoors()
 {
+    if(!isDefined(level.MoonDoors) && !IsAllDoorsOpen())
+    {
+        menu = self getCurrent();
+        curs = self getCursor();
+
+        self OpenAllDoors();
+    }
+    
     level.MoonDoors = isDefined(level.MoonDoors) ? undefined : true;
+
+    if(isDefined(menu) && isDefined(curs))
+        self RefreshMenu(menu, curs);
     
     if(isDefined(level.MoonDoors))
-    {
-        if(!IsAllDoorsOpen())
-            self OpenAllDoors();
-        
         thread OpenCloseMoonDoors();
-    }
     else
     {
         types = ["zombie_door", "zombie_airlock_buy", "zombie_debris"];
@@ -1175,7 +1181,7 @@ GetBodyGuardTarget(player)
     {
         zombieOrigin = zombies[a] GetCentroid();
 
-        if(zombies[a] == self || Distance(player.origin, zombieOrigin) > 500 || !player DamageConeTrace(zombies[a] GetCentroid()) || isDefined(zombie) && Distance(player.origin, zombieOrigin) > Distance(player.origin, zombie.origin))
+        if(zombies[a] == self || !zm_behavior::inplayablearea(zombies[a]) || Distance(player.origin, zombieOrigin) > 500 || !player DamageConeTrace(zombies[a] GetCentroid()) || isDefined(zombie) && Distance(player.origin, zombieOrigin) > Distance(player.origin, zombie.origin))
             continue;
         
         zombie = zombies[a];

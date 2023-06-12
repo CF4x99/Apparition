@@ -77,8 +77,24 @@ TeleportEntity(location, ent)
 {
     if(!isDefined(ent) || !isDefined(level.SavedMapEntities) || isDefined(level.SavedMapEntities) && !level.SavedMapEntities.size)
         return;
-
-    ent.origin = (location == "Self") ? self.origin : self TraceBullet();
+    
+    switch(location)
+    {
+        case "Self":
+            ent.origin = self.origin;
+            break;
+        
+        case "Crosshairs":
+            ent.origin = self TraceBullet();
+            break;
+        
+        case "Self To Entity":
+            self SetOrigin(ent.origin);
+            break;
+        
+        default:
+            break;
+    }
 }
 
 EntityResetOrigin(ent)

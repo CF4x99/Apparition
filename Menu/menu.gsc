@@ -51,11 +51,15 @@ runMenuIndex(menu)
             break;
         
         case "Quick Menu":
-            //The quick menu has an infinite scroll feature, with a limit of 15 options shown at a time
-            //To Increase, or decrease, the max options shown for the quick menu:
-            //menu_customization.gsc -> LoadMenuVars() -> self.menu["maxOptionsQM"]
-            //It's not recommended to go over 15 - 18, due to hud limitations
-            //You can also find the default X/Y variables for the quick menu there as well(self.menu["XQM"] / self.menu["YQM"])
+            /*
+                The quick menu has an infinite scroll feature, with a limit of 15 options shown at a time.
+                
+                To Increase, or decrease, the max options shown for the quick menu:
+                    menu_customization.gsc -> LoadMenuVars() -> self.menu["maxOptionsQM"]
+                
+                It's not recommended to go over 15 - 18, due to hud limitations
+                You can also find the default X/Y variables for the quick menu there as well(self.menu["XQM"] / self.menu["YQM"])
+            */
 
             self addMenu(menu, "Quick Menu H4X");
                 self addOptBool(self.godmode, "God Mode", ::Godmode, self);
@@ -170,6 +174,7 @@ runMenuIndex(menu)
             
             self addMenu(menu, "Power-Up Menu");
                 self addOptSlider("Spawn Location", ::PowerUpSpawnLocation, "Crosshairs;Self");
+                self addOpt("Reign Drops", ::ReignDropsActivate);
 
                 if(isDefined(powerups) && powerups.size)
                 {
@@ -584,19 +589,19 @@ runMenuIndex(menu)
                 self addOptBool(level flag::get("power_on"), "Turn On Power", ::ActivatePower);
                 self addOptBool(level flag::get("soul_catchers_charged"), "Feed Dragons", ::FeedDragons);
 
-                //if(level flag::get("soul_catchers_charged"))
-                    //self addOpt("Bow Quests", ::newMenu, "Bow Quests");
+                if(level flag::get("soul_catchers_charged"))
+                    self addOpt("Bow Quests", ::newMenu, "Bow Quests");
             break;
         
         case "Bow Quests":
             self addMenu(menu, "Bow Quests");
-                //self addOpt("Fire", ::newMenu, "Fire Bow");
-                //self addOpt("Lightning", ::newMenu, "Lightning Bow");
+                self addOpt("Fire", ::newMenu, "Fire Bow");
+                self addOpt("Lightning", ::newMenu, "Lightning Bow");
                 //self addOpt("Void", ::newMenu, "Void Bow");
                 //self addOpt("Wolf", ::newMenu, "Wolf Bow");
             break;
         
-        /*case "Fire Bow":
+        case "Fire Bow":
             //level.var_c62829c7 <- player bound to fire quest
 
             self addMenu(menu, "Fire");
@@ -617,9 +622,9 @@ runMenuIndex(menu)
                         self addOpt("Quest Hasn't Been Bound Yet");
                     }
                 }
-            break;*/
+            break;
         
-        /*case "Lightning Bow":
+        case "Lightning Bow":
             //level.var_f8d1dc16 <- player bound to lightning quest
 
             trig = GetEnt("aq_es_weather_vane_trig", "targetname");
@@ -642,7 +647,7 @@ runMenuIndex(menu)
                         self addOpt("Quest Hasn't Been Bound Yet");
                     }
                 }
-            break;*/
+            break;
         
         /*case "Void Bow":
             //level.var_6e68c0d8 <- player bound to void quest
@@ -754,7 +759,7 @@ runMenuIndex(menu)
                 self addOptBool(level.SavedMapEntities[self.EntityEditorNumber].Invisibility, "Invisibility", ::EntityInvisibility, level.SavedMapEntities[self.EntityEditorNumber]);
                 self addOpt("Rotation", ::newMenu, "Entity Rotation", false, self.EntityEditorNumber);
                 self addOptIncSlider("Scale", ::EntityScale, 1, 1, 10, 1, level.SavedMapEntities[self.EntityEditorNumber]);
-                self addOptSlider("Teleport", ::TeleportEntity, "Self;Crosshairs", level.SavedMapEntities[self.EntityEditorNumber]);
+                self addOptSlider("Teleport", ::TeleportEntity, "Self;Self To Entity;Crosshairs", level.SavedMapEntities[self.EntityEditorNumber]);
                 self addOpt("Reset Origin", ::EntityResetOrigin, level.SavedMapEntities[self.EntityEditorNumber]);
             break;
         
@@ -848,7 +853,7 @@ runMenuIndex(menu)
                 {
                     for(a = 0; a < craftables.size; a++)
                         if(craftables[a] != "open_table" && !IsSubStr(craftables[a], "ritual_") && !IsCraftableCollected(craftables[a]))
-                            self addOpt(CleanString(craftables[a]), ::CollectCraftableParts, craftables[a]);
+                            self addOpt(CleanString(craftables[a]), ::newMenu, craftables[a]);
                 }
                 else
                     self addOpt("No Craftables Found");
@@ -1092,8 +1097,9 @@ runMenuIndex(menu)
                 self addOpt("Disconnect", ::disconnect);
                 self addOptBool((GetDvarInt("migration_forceHost") == 1), "Force Host", ::ForceHost);
                 self addOptBool(level.GEntityProtection, "G_Entity Crash Protection", ::GEntityProtection);
-                self addOptBool((GetDvarString("ui_lobbyDebugVis") == "1"), "DevGui Info", ::DevGUIInfo);
                 self addOpt("Custom Map Spawns", ::newMenu, "Custom Map Spawns");
+                self addOptBool((GetDvarString("ui_lobbyDebugVis") == "1"), "DevGui Info", ::DevGUIInfo);
+                self addOptBool((GetDvarString("r_fog") == "0"), "Disable Fog", ::DisableFog);
             break;
         
         case "Custom Map Spawns":
@@ -1199,7 +1205,7 @@ MenuOptionsPlayer(menu, player)
     weapons = ["Assault Rifles", "Sub Machine Guns", "Light Machine Guns", "Sniper Rifles", "Shotguns", "Pistols", "Launchers", "Specials"];
     weaponsVar = ["assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special"];
     weaponAttachTypes = ["Optic", "Rig", "Mod"]; //gamedata\weapons\common\attachmenttable.csv
-
+    craftables = GetArrayKeys(level.zombie_include_craftables);
     mapStr = ReturnMapName(level.script);
     
     switch(newmenu)
@@ -1340,6 +1346,7 @@ MenuOptionsPlayer(menu, player)
         case "Profile Management":
             self addMenu(menu, "Profile Management");
                 self addOptBool(player.LiquidsLoop, "Liquid Divinium", ::LiquidsLoop, player);
+                self addOptSlider("Challenges", ::AllChallenges, "Unlock;Lock", player);
                 self addOpt("Unlock All Achievements", ::UnlockAchievements, player);
                 self addOpt("Clan Tag Options", ::newMenu, "Clan Tag Options " + player GetEntityNumber());
                 self addOpt("Custom Stats", ::newMenu, "Custom Stats " + player GetEntityNumber());
@@ -1369,7 +1376,7 @@ MenuOptionsPlayer(menu, player)
             
             self addMenu(menu, "Custom Stats");
                 self addOpt("Custom Value: " + player.CustomStatsValue, ::NumberPad, "Custom Stats Value", ::CustomStatsValue, player);
-                self addOpt("Set Selected Stats", ::SetCustomStats, player);
+                self addOpt("Send Selected Stats", ::SetCustomStats, player);
                 self addOpt("");
                 self addOpt("General", ::newMenu, "General Stats " + player GetEntityNumber());
                 self addOpt("Gobblegum Uses", ::newMenu, "Gobblegum Stats " + player GetEntityNumber());
@@ -1710,6 +1717,9 @@ MenuOptionsPlayer(menu, player)
             break;
         
         case "Aimbot Menu":
+            if(!isDefined(player.AimbotType))
+                player.AimbotType = "Snap";
+            
             if(!isDefined(player.AimBoneTag))
                 player.AimBoneTag = "Best";
             
@@ -1718,17 +1728,16 @@ MenuOptionsPlayer(menu, player)
             
             self addMenu(menu, "Aimbot Menu");
                 self addOptBool(player.Aimbot, "Aimbot", ::Aimbot, player);
-                self addOptSlider("Bone Tag", ::AimBoneTag, "Best;" + level.boneTags, player);
+                self addOptSlider("Type", ::AimbotType, "Snap;Silent", player);
+                self addOptSlider("Tag", ::AimBoneTag, "Best;" + level.boneTags, player);
                 self addOptBool(player.AimingRequired, "Aiming Required", ::AimbotOptions, 1, player);
-                self addOptBool(player.AimSnap, "Aim Snap To Zombie", ::AimbotOptions, 2, player);
-                self addOptBool(player.ShootThruWalls, "Shoot Through Walls", ::AimbotOptions, 3, player);
-                self addOptBool(player.VisibilityCheck, "Visibility Check", ::AimbotOptions, 4, player);
-                self addOptBool(player.PlayableAreaCheck, "Playable Area Check", ::AimbotOptions, 5, player);
-                self addOptBool(player.AutoFire, "Auto-Fire", ::AimbotOptions, 6, player);
-                self addOptBool(player.AimbotDistanceCheck, "Distance Check", ::AimbotOptions, 7, player);
+                self addOptBool(player.VisibilityCheck, "Damageable Only", ::AimbotOptions, 2, player);
+                self addOptBool(player.PlayableAreaCheck, "In Playable Area", ::AimbotOptions, 3, player);
+                self addOptBool(player.AutoFire, "Auto-Fire", ::AimbotOptions, 4, player);
+                self addOptBool(player.AimbotDistanceCheck, "Distance", ::AimbotOptions, 5, player);
 
                 if(isDefined(player.AimbotDistanceCheck))
-                    self addOptIncSlider("Distance", ::AimbotDistance, 100, 100, 1000, 100, player);
+                    self addOptIncSlider("Max Distance", ::AimbotDistance, 100, 100, 1000, 100, player);
             break;
         
         case "Options":
@@ -1843,7 +1852,7 @@ MenuOptionsPlayer(menu, player)
         default:
             if(isInArray(weapons, newmenu))
             {
-                pistols = ["pistol_standard", "pistol_burst", "pistol_fullauto"];
+                pistols = ["pistol_standard", "pistol_burst", "pistol_fullauto", "pistol_m1911", "pistol_revolver38", "pistol_c96"];
                 specials = [];
 
                 foreach(index, weapon_category in weapons)
@@ -1962,6 +1971,38 @@ MenuOptionsPlayer(menu, player)
                     }
                 }
             }
+            else if(isInArray(craftables, newmenu))
+            {
+                self addMenu(menu, newmenu);
+
+                    for(a = 0; a < craftables.size; a++)
+                    {
+                        if(craftables[a] != newmenu)
+                            continue;
+                        
+                        parts = 0;
+                        craftable = craftables[a];
+                        
+                        if(isDefined(craftable))
+                        {
+                            foreach(part in level.zombie_include_craftables[craftable].a_piecestubs)
+                            {
+                                if(IsPartCollected(part))
+                                    continue;
+                                
+                                if(isDefined(part.pieceSpawn.model))
+                                {
+                                    self addOpt(CleanString(part.pieceSpawn.piecename), ::CollectCraftablePart, part);
+
+                                    parts++;
+                                }
+                            }
+                        }
+                    }
+
+                    if(!isDefined(craftable) || !parts)
+                        self addOpt("No Parts Found");
+            }
             else
             {
                 error404 = true;
@@ -2062,7 +2103,7 @@ menuMonitor()
                             self.menu["ui"]["QMScroller"][1] SetShaderValues(undefined, (self.menu["ui"]["QMBG"][self.menu["cursQM"][menu]].width + 2), undefined);
                         }
 
-                        self PlaySoundToPlayer("uin_alert_lockon", self);
+                        self PlaySoundToPlayer("fly_870mcs_pull", self);
 
                         wait 0.2;
                     }
@@ -2086,6 +2127,8 @@ menuMonitor()
                                 self RefreshMenu(menu, curs); //This Will Refresh That Bool Option For Every Player That Is Able To See It.
                             }
                         }
+
+                        self PlaySoundToPlayer("fly_mr6_slide_forward", self);
                         
                         wait 0.2;
                     }
@@ -2103,7 +2146,7 @@ menuMonitor()
                             else
                                 self SetIncSlider(dir);
                             
-                            self PlaySoundToPlayer("uin_alert_lockon", self);
+                            self PlaySoundToPlayer("fly_870mcs_pull", self);
 
                             wait 0.2;
                         }
@@ -2120,6 +2163,8 @@ menuMonitor()
                     }
                     else
                         self newMenu();
+                    
+                    self PlaySoundToPlayer("fly_mr6_slide_back", self);
 
                     wait 0.2;
                 }
@@ -2226,8 +2271,14 @@ drawText()
                     }
                 }
 
-                if((isDefined(self.menu["items"][self getCurrent()].slider[(a + start)]) || isDefined(self.menu["items"][self getCurrent()].incslider[(a + start)])) && (self.menu["MenuDesign"] == "Right Side" || self.menu["MenuDesign"] == "Old School"))
-                    optStr = isDefined(self.menu["items"][self getCurrent()].slider[(a + start)]) ? optStr + " < " + self.menu_S[self getCurrent()][(a + start)][self.menu_SS[self getCurrent()][(a + start)]] + " > [" + (self.menu_SS[self getCurrent()][(a + start)] + 1) + "/" + self.menu_S[self getCurrent()][(a + start)].size + "]" : optStr + " < " + self.menu_SS[self getCurrent()][(a + start)] + " >";
+                if(self.menu["MenuDesign"] == "Right Side" || self.menu["MenuDesign"] == "Old School")
+                {
+                    if((isDefined(self.menu["items"][self getCurrent()].slider[(a + start)]) || isDefined(self.menu["items"][self getCurrent()].incslider[(a + start)])))
+                        optStr = isDefined(self.menu["items"][self getCurrent()].slider[(a + start)]) ? optStr + " < " + self.menu_S[self getCurrent()][(a + start)][self.menu_SS[self getCurrent()][(a + start)]] + " > [" + (self.menu_SS[self getCurrent()][(a + start)] + 1) + "/" + self.menu_S[self getCurrent()][(a + start)].size + "]" : optStr + " < " + self.menu_SS[self getCurrent()][(a + start)] + " >";
+                    
+                    if(isDefined(self.menu["items"][self getCurrent()].func[(a + start)]) && self.menu["items"][self getCurrent()].func[(a + start)] == ::newMenu)
+                        optStr = optStr; //Put this here if anyone ever wants to add something indicating a submenu option
+                }
 
                 fixedScale = (self.menu["MenuDesign"] == "Old School") ? 1.7 : 1.3;
                 optColor = (self.menu["MenuDesign"] == "Old School" && (a + start) == self getCursor()) ? self.menu["Main_Color"] : (1, 1, 1);
@@ -2357,8 +2408,14 @@ scrollMenu(dir, OldCurs)
             }
         }
 
-        if((isDefined(self.menu["items"][self getCurrent()].slider[(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) || isDefined(self.menu["items"][self getCurrent()].incslider[(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))])) && (self.menu["MenuDesign"] == "Right Side" || self.menu["MenuDesign"] == "Old School"))
-            optStr = isDefined(self.menu["items"][self getCurrent()].slider[(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) ? optStr + " < " + self.menu_S[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))][self.menu_SS[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]] + " > [" + (self.menu_SS[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))] + 1) + "/" + self.menu_S[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))].size + "]" : optStr + " < " + self.menu_SS[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))] + " >";
+        if(self.menu["MenuDesign"] == "Right Side" || self.menu["MenuDesign"] == "Old School")
+        {
+            if((isDefined(self.menu["items"][self getCurrent()].slider[(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) || isDefined(self.menu["items"][self getCurrent()].incslider[(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))])))
+                optStr = isDefined(self.menu["items"][self getCurrent()].slider[(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) ? optStr + " < " + self.menu_S[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))][self.menu_SS[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]] + " > [" + (self.menu_SS[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))] + 1) + "/" + self.menu_S[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))].size + "]" : optStr + " < " + self.menu_SS[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))] + " >";
+            
+            if(isDefined(self.menu["items"][self getCurrent()].func[(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) && self.menu["items"][self getCurrent()].func[(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))] == ::newMenu)
+                optStr = optStr; //Put this here if anyone ever wants to add something indicating a submenu option
+        }
 
         optX = (self.menu["MenuDesign"] == "Right Side" && isDefined(self.menu["items"][self getCurrent()].bool[(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) && (self.menu["ToggleStyle"] == "Boxes" || self.menu["ToggleStyle"] == "Text")) ? ((self.menu["ToggleStyle"] == "Text") ? (self.menu["X"] + 20) : (self.menu["X"] + 15)) : (self.menu["X"] + 4);
         self.menu["ui"]["text"][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))] = self createText("default", 1.1, 5, optStr, (self.menu["MenuDesign"] == "Old School") ? "CENTER" : "LEFT", "CENTER", (self.menu["MenuDesign"] == "Right Side") ? optX : (self.menu["X"] + 4), (self.menu["ui"]["text"][curs].y + (((self.menu["MaxOptions"] * (sepMultiplier / 2)) - (sepMultiplier / 2)) * dir)), 0, (isDefined(self.menu["items"][self getCurrent()].bool[(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) && isDefined(self.menu_B[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))]) && self.menu_B[self getCurrent()][(curs + (Int(((self.menu["MaxOptions"] - 1) / 2)) * dir))] && self.menu["ToggleStyle"] == "Text Color") ? divideColor(0, 255, 0) : (1, 1, 1));
