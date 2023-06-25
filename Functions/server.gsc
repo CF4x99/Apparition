@@ -221,6 +221,10 @@ SetDoheartText(text, refresh)
             level thread PulseFXText(level.DoheartSavedText, level.DoheartText);
             break;
         
+        case "Type Writer":
+            level thread TypeWriterFXText(level.DoheartSavedText, level.DoheartText);
+            break;
+        
         case "Moving":
             level thread RandomPosText(level.DoheartSavedText, level.DoheartText);
             break;

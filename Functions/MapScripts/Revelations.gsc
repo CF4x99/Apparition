@@ -1,12 +1,3 @@
-
-/*
-    [X] = Completed
-
-
-    [X] Damage Tombstones
-    [X] Build Keeper Protector(Server Modifications -> Craftables)
-*/
-
 DamageGraveStones()
 {
     menu = self getCurrent();

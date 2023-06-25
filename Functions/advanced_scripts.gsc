@@ -58,7 +58,7 @@ AC130(type)
         SetAngles = VectorToAngles(self.ACSavedOrigin - self GetEye());
         
         linker = SpawnScriptModel(self.ACSavedOrigin, "tag_origin", (0, SetAngles[1], 0));
-        c130 = SpawnScriptModel(((linker.origin + (AnglesToRight(linker.angles) * 1800)) + (0, 0, (self.StartOrigin[2] + 1500))), "tag_origin");
+        c130 = SpawnScriptModel(((linker.origin + (AnglesToRight(linker.angles) * 1800)) + (0, 0, ((self.StartOrigin[2] + 1500) - linker.origin[2]))), "tag_origin");
         c130.angles = VectorToAngles(linker.origin - c130.origin);
 
         c130 LinkTo(linker);
@@ -451,6 +451,8 @@ ArtilleryStrike()
     PlayFXOnTag(level._effect["powerup_on"], goalPos, "tag_origin");
 
     self.menu["DisableMenuControls"] = true;
+
+    self SetMenuInstructions("[{+attack}] - Confirm Location\n[{+melee}] - Cancel");
     
     while(1)
     {
@@ -481,6 +483,8 @@ ArtilleryStrike()
     
     goalPos delete();
     self.menu["DisableMenuControls"] = undefined;
+
+    self SetMenuInstructions();
     
     if(isDefined(targetPos))
     {
@@ -948,7 +952,9 @@ ControllableZombie(team)
 
     CZSavedOrigin = self.origin;
     CZSavedAngles = self.angles;
-    zombie = zombie_utility::spawn_zombie(level.zombie_spawners[RandomInt(level.zombie_spawners.size)]);
+
+    spawner = ArrayGetClosest(level.zombie_spawners, self.origin);
+    zombie = zombie_utility::spawn_zombie(spawner);
 
     self SetStance("stand");
 
@@ -1096,7 +1102,8 @@ BodyGuard()
         self endon("disconnect");
         self endon("EndBodyGuard");
         
-        self.BodyGuardZombie = zombie_utility::spawn_zombie(level.zombie_spawners[RandomInt(level.zombie_spawners.size)]);
+        spawner = ArrayGetClosest(level.zombie_spawners, self.origin);
+        self.BodyGuardZombie = zombie_utility::spawn_zombie(spawner);
 
         wait 0.1;
         

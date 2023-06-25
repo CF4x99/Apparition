@@ -18,6 +18,7 @@ FXMan(fx, player)
     {
         player.fxent = SpawnFX(player.SavedFX, player GetTagOrigin(player.SavedFXTag));
         TriggerFX(player.fxent);
+        
         wait 0.1;
 
         if(isDefined(player.fxent))
@@ -280,6 +281,7 @@ SpecialMovements(player)
         while(isDefined(player.SpecialMovements))
         {
             player.b_wall_run_enabled = 1;
+
             player AllowWallRun(1);
             player AllowDoubleJump(1);
 
@@ -289,6 +291,7 @@ SpecialMovements(player)
     else
     {
         player.b_wall_run_enabled = 0;
+
         player AllowWallRun(0);
         player AllowDoubleJump(0);
     }
@@ -405,6 +408,7 @@ NukeNade()
         if(isDefined(zombies[a]) && IsAlive(zombies[a]) && Distance(origin, zombies[a].origin) <= 500)
         {
             zombies[a].ZombieFling = true;
+
             zombies[a] thread zombie_death::flame_death_fx();
             zombies[a] DoDamage((zombies[a].health + 666), origin);
         }
@@ -509,6 +513,7 @@ CodJumperBoxTrigger(player)
     player.CodJumperLaunched = true;
     
     wait 0.5;
+
     player.CodJumperLaunched = undefined;
     self.isRotating = undefined;
 }
@@ -547,10 +552,8 @@ GetRandomThrowSpeed()
 {
     yaw = RandomFloat(360);
     pitch = RandomFloatRange(65, 85);
-    cospitch = Cos(pitch);
-    velocity = (((Cos(yaw) * cospitch), (Sin(yaw) * cospitch), Sin(pitch)) * RandomFloatRange(400, 600));
-
-    return velocity;
+    
+    return (((Cos(yaw) * Cos(pitch)), (Sin(yaw) * Cos(pitch)), Sin(pitch)) * RandomFloatRange(400, 600));
 }
 
 UnlimitedSpecialist(player)
@@ -703,6 +706,7 @@ GravityGun(player)
                     }
 
                     wait 0.01;
+
                     shootEnt = SpawnScriptModel(grabEnt.origin, "tag_origin");
 
                     if(IsPlayer(grabEnt))
@@ -711,7 +715,10 @@ GravityGun(player)
                         grabEnt LinkTo(shootEnt);
 
                     shootEnt Launch(VectorScale(AnglesToForward(player GetPlayerAngles()), 5000));
+
                     grabEnt.GravityGunLaunched = true;
+                    shootEnt.GravityGunLaunched = true;
+
                     shootEnt thread deleteAfter(5);
 
                     if(IsPlayer(grabEnt) || grabEnt isZombie())
@@ -732,7 +739,7 @@ GravityGun(player)
                         grabEnt = ent;
                 
                 foreach(client in level.players)
-                    if(client != player && Distance(player TraceBullet(), client.origin) <= 100)
+                    if(!isDefined(client.GravityGunLaunched) && client != player && Distance(player TraceBullet(), client.origin) <= 100)
                         grabEnt = client;
                 
 
@@ -827,6 +834,7 @@ PowerUpMagnet(player)
                 {
                     powerup.movingtoplayer = true;
                     powerup MoveTo(player GetTagOrigin("j_mainroot"), CalcDistance(1100, powerup.origin, player GetTagOrigin("j_mainroot")));
+
                     wait 0.05;
 
                     if(isDefined(powerup)) //making sure the powerup still exists

@@ -1,46 +1,3 @@
-
-/*
-	UPGRADE STAFFS:
-
-	[X] = Can Be Completed With Apparition
-
-		- ICE ~ https://www.kronorium.com/img/ice_staff.png
-			[X] Complete Ice Puzzle(Crazy Place)
-			[X] Destroy 3 Tombstones With Ice Staff
-			[X] Align 115 Rings
-			- Charge Staff With Souls In Crazy Place
-		
-		- WIND ~ https://www.kronorium.com/img/wind_staff.png
-			[X] Complete Wind Puzzle(Crazy Place)
-			[X] Shoot 3 Smoking Stones
-			[X] Align 115 Rings
-			- Charge Staff With Souls In Crazy Place
-		
-		- LIGHTNING ~ https://www.kronorium.com/img/lightning_staff.png
-			[X] Complete Lightning Puzzle(Crazy Place)
-				- 1, 3, 6
-				- 3, 5, 7
-				- 2, 4, 6
-			
-			[X] Turn Dials Around Map
-				- Tank Station ~ Down
-				- Spawn ~ Left
-				- Gen. 4 ~ Up
-				- Upstairs Church ~ Up
-				- Downstairs Church ~ Right
-				- Gen. 5 ~ Down
-				- Mound Wall ~ Up
-			
-			[X] Align 115 Rings
-			- Charge Staff With Souls In Crazy Place
-		
-		- FIRE ~ https://www.kronorium.com/img/fire_staff.png
-			[X] Fill Cauldrons(Crazy Place)
-			[X] Light Torches
-			[X] Align 115 Rings
-			- Charge Staff With Souls In Crazy Place
-*/
-
 CompleteSoulbox(box)
 {
 	if(!isDefined(box) || box.n_souls_absorbed >= 30)
@@ -803,8 +760,6 @@ CompleteFireTorches()
 			wait 0.5;
 		}
 	}
-	else
-		iPrintlnBold("torches undefined");
 
 	while(!level flag::get("fire_puzzle_2_complete"))
 		wait 0.1;
@@ -936,7 +891,7 @@ Align115Rings(type)
 
 	foreach(ring in rings)
 	{
-		if(ring.var_b1c02d8a clientfield::get("bryce_cake") == (num - 1)/*ring.position == (num - 1)*/ || !isDefined(ring.target))
+		if(ring.position == (num - 1) || !isDefined(ring.target))
 			continue;
 		
 		ring.position = (num - 1);

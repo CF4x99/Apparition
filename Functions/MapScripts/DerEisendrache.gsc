@@ -150,9 +150,9 @@ RunicCircles()
     
     self RefreshMenu(menu, curs);
 
-    wait 3;
+    wait 5; //Allows buffer time between this, and the next step to help ensure we don't run into any issues
 
-    level.ChargingCircles = undefined; //Allows buffer time between this, and the next step.
+    level.ChargingCircles = undefined;
 }
 
 ChargeRunicCircle()
@@ -210,12 +210,12 @@ ClockFireplaceStep()
     clock.var_67b5dd94 notify("trigger", level.var_c62829c7);
 
     while(!isDefined(level.var_2e55cb98))
-        wait 0.1;
+        wait 1;
 
     level.var_2e55cb98.origin = level.var_c62829c7.origin;
-    level.var_2e55cb98 LinkTo(level.var_c62829c7.origin, "j_mainroot");
+    level.var_2e55cb98 LinkTo(level.var_c62829c7);
 
-    wait 0.5;
+    wait 1;
 
     target = GetEnt(level.var_2e55cb98.var_336f1366.target, "targetname");
     firePlace = LocateFireplace(); //Need to find the fireplace before this part of the step is completed
@@ -242,7 +242,7 @@ LocateFireplace()
     circles = GetEntArray("aq_rp_runic_circle_volume", "script_noteworthy");
     firePlaces = struct::get_array("aq_rp_fireplace_struct", "targetname");
 
-    //By this point, only one runic circle should still be defined.
+    //By this point in the quest, only one runic circle should still be defined.
     //But, we're still gonna scan through just to be sure.
 
     if(isDefined(circles))

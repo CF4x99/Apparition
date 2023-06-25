@@ -3,8 +3,9 @@ createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
     textElem = self hud::CreateFontString(font, fontSize);
 
     textElem.hideWhenInMenu = true;
-    textElem.archived = false;
+    textElem.archived = (self.hud_count >= 21);
     textElem.foreground = true;
+    textElem.player = self;
 
     textElem.sort = sort;
     textElem.alpha = alpha;
@@ -12,7 +13,9 @@ createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
 
     textElem hud::SetPoint(align, relative, x, y);
     textElem SetTextString(text);
-    
+
+    self.hud_count++;
+
     return textElem;
 }
 
@@ -59,9 +62,10 @@ createRectangle(align, relative, x, y, width, height, color, sort, alpha, shader
     uiElement.children = [];
     
     uiElement.hideWhenInMenu = true;
-    uiElement.archived = true;
+    uiElement.archived = (self.hud_count >= 21);
     uiElement.foreground = true;
     uiElement.hidden = false;
+    uiElement.player = self;
 
     uiElement.align = align;
     uiElement.relative = relative;
@@ -74,6 +78,8 @@ createRectangle(align, relative, x, y, width, height, color, sort, alpha, shader
     uiElement SetShaderValues(shader, width, height);
     uiElement hud::SetParent(level.uiParent);
     uiElement hud::SetPoint(align, relative, x, y);
+
+    self.hud_count++;
     
     return uiElement;
 }
@@ -123,6 +129,17 @@ createServerRectangle(align, relative, x, y, width, height, color, sort, alpha, 
     uiElement hud::SetPoint(align, relative, x, y);
     
     return uiElement;
+}
+
+DestroyHud()
+{
+    if(!isDefined(self))
+        return;
+    
+    self destroy();
+
+    if(isDefined(self.player))
+        self.player.hud_count--;
 }
 
 SetTextString(text)
@@ -203,7 +220,7 @@ hudFade(alpha, time)
 hudFadenDestroy(alpha, time)
 {
     self hudFade(alpha, time);
-    self destroy();
+    self DestroyHud();
 }
 
 hudFadeColor(color, time)
@@ -261,11 +278,11 @@ destroyAll(arry)
         {
             foreach(value in arry[keys[a]])
                 if(isDefined(value))
-                    value destroy();
+                    value DestroyHud();
         }
         else
             if(isDefined(arry[keys[a]]))
-                arry[keys[a]] destroy();
+                arry[keys[a]] DestroyHud();
 }
 
 getName()
@@ -287,14 +304,6 @@ GetPlayerFromEntityNumber(number)
     foreach(player in level.players)
         if(player GetEntityNumber() == number)
             return player;
-}
-
-destroyAfter(time)
-{
-    wait time;
-
-    if(isDefined(self))
-        self destroy();
 }
 
 isInMenu(allowQM)
@@ -328,6 +337,23 @@ ArrayRemove(arry, value)
             newArray[newArray.size] = arry[a];
 
     return newArray;
+}
+
+ArrayGetClosest(array, point)
+{
+    if(!isDefined(array) || !array.size)
+        return;
+    
+    for(a = 0; a < array.size; a++)
+    {
+        if(!isDefined(array[a]))
+            continue;
+        
+        if(!isDefined(closest) || isDefined(closest) && Closer(point, array[a].origin, closest.origin))
+            closest = array[a];
+    }
+
+    return closest;
 }
 
 getCurrent()
@@ -440,6 +466,9 @@ newMenu(menu, dontSave, i1)
         player thread WatchMenuWeaponSwitch(self);
     }
 
+    if(menu == "Players")
+        self thread PlayerInfoHandler();
+
     if(isDefined(i1))
         self.EntityEditorNumber = i1;
     
@@ -463,6 +492,122 @@ WatchMenuWeaponSwitch(player)
         if(isInArray(refresh, CleanMenuName(player getCurrent())))
             player RefreshMenu(player getCurrent(), player getCursor(), true);
     }
+}
+
+PlayerInfoHandler()
+{
+    if(isDefined(self.PlayerInfoHandler))
+        return;
+    self.PlayerInfoHandler = true;
+
+    self endon("disconnect");
+    self endon("EndPlayerInfoHandler");
+
+    wait 0.1; //buffer (needed)
+
+    while(isDefined(self.PlayerInfoHandler))
+    {
+        if(self getCurrent() != "Players")
+            break;
+        
+        player = level.players[self getCursor()];
+        
+        infoString = isDefined(player) ? (player IsHost() && (!self IsHost() || !self IsDeveloper()) || player isDeveloper() && !self isDeveloper()) ? "^1ACCESS DENIED" : player BuildInfoString() : "^1PLAYER NOT FOUND";
+        width = CorrectNL_BGWidth(infoString) - 25;
+        height = CorrectNL_BGHeight(infoString);
+        xValue = (self.menu["MenuDesign"] == "Right Side") ? ((self.menu["X"] - ((self.menu["MenuWidth"] / 2) + 5)) - width) : (self.menu["X"] + ((self.menu["MenuWidth"] / 2) + 5));
+        yValue = isDefined(self.menu["ui"]["scroller"]) ? self.menu["ui"]["scroller"].y : self.menu["ui"]["text"][self getCursor()].y;
+
+        if(!isDefined(self.menu["PlayerInfoBackground"]))
+            self.menu["PlayerInfoBackground"] = self createRectangle("TOP_LEFT", "CENTER", xValue, yValue, 0, 0, (0, 0, 0), 1, 0.6, "white");
+        
+        if(!isDefined(self.menu["PlayerInfoString"]))
+            self.menu["PlayerInfoString"] = self createText("default", 1.2, 2, "", "LEFT", "CENTER", self.menu["PlayerInfoBackground"].x + 2, self.menu["PlayerInfoBackground"].y + 6, 1, (1, 1, 1));
+
+        if(self.menu["PlayerInfoBackground"].y != yValue || self.menu["PlayerInfoBackground"].x != xValue)
+        {
+            self.menu["PlayerInfoBackground"].y = yValue;
+            self.menu["PlayerInfoString"].y = self.menu["PlayerInfoBackground"].y + 6;
+
+            self.menu["PlayerInfoBackground"].x = xValue;
+            self.menu["PlayerInfoString"].x = self.menu["PlayerInfoBackground"].x + 2;
+        }
+
+        if(self.menu["PlayerInfoString"].text != infoString)
+            self.menu["PlayerInfoString"] SetTextString(infoString);
+        
+        if(self.menu["PlayerInfoBackground"].width != width || self.menu["PlayerInfoBackground"].height != height)
+            self.menu["PlayerInfoBackground"] SetShaderValues(undefined, width, height);
+        
+        wait 0.1;
+    }
+
+    if(isDefined(self.menu["PlayerInfoBackground"]))
+        self.menu["PlayerInfoBackground"] destroy();
+    
+    if(isDefined(self.menu["PlayerInfoString"]))
+        self.menu["PlayerInfoString"] destroy();
+
+    self.PlayerInfoHandler = undefined;
+}
+
+BuildInfoString()
+{
+    string = "";
+    
+    string += "^1PLAYER INFO:"; //Added an extra \n for spacing
+    string += "\n^7Name: ^2" + CleanName(self getName());
+    string += "\n^7Verification: ^2" + self.menuState["verification"];
+    string += "\n^7IP: ^2" + StrTok(self GetIPAddress(), "Public Addr: ")[0];
+    string += "\n^7XUID: ^2" + self GetXUID();
+    string += "\n^7STEAM ID: ^2" + self GetXUID(1);
+    string += "\n^7Controller: " + (self GamepadUsedLast() ? "^2True" : "^1False");
+    string += "\n^7Weapon: ^2" + StrTok(self GetCurrentWeapon().name, "+")[0]; //Can't use the displayname
+    string += "\n^7Prestige: ^2" + self.pers["plevel"];
+    string += "\n^7Rank: ^2" + self.pers["rank"];
+    string += "\n^7Health: ^2" + self.health;
+    
+    //I set it up like this for better organization, and to make it easier to add more display strings
+    //Make sure you add \n before every new string you add
+
+    return string;
+}
+
+CorrectNL_BGHeight(string) //Auto-Size Player Info Background Height Based On How Many Strings Are Listed
+{
+    if(!isDefined(string))
+        return;
+    
+    multiplier = 0;
+    toks = StrTok(string, "\n");
+
+    if(isDefined(toks) && toks.size)
+        for(a = 0; a < toks.size; a++)
+            multiplier++;
+    
+    return 3 + (14 * multiplier);
+}
+
+CorrectNL_BGWidth(string) //Auto-Size Player Info Background Width Based On The Longest String
+{
+    if(!isDefined(string))
+        return;
+    
+    biggest = undefined;
+    toks = StrTok(string, "\n");
+
+    if(isDefined(toks) && toks.size)
+    {
+        biggest = toks[0];
+
+        for(a = 0; a < toks.size; a++)
+            if(toks[a].size > biggest.size)
+                biggest = toks[a];
+    }
+
+    width = ShaderTextWidth(biggest);
+
+    return width;
 }
 
 CleanMenuName(menu)
@@ -605,11 +750,11 @@ SetTextFX(text, time)
 
     self SetTextString(text);
     self thread hudFade(1, 0.5);
-    self SetCOD7DecodeFX(Int((1.5 * 25)), Int((time * 1000)), 1000);
+    self SetTypeWriterFX(38, Int((time * 1000)), 1000);
     wait time;
 
     self hudFade(0, 0.5);
-    self destroy();
+    self DestroyHud();
 }
 
 PulseFXText(text, hud)
@@ -625,6 +770,25 @@ PulseFXText(text, hud)
         {
             hud.color = divideColor(RandomInt(255), RandomInt(255), RandomInt(255));
             hud SetCOD7DecodeFX(25, 2000, 500);
+        }
+
+        wait 3;
+    }
+}
+
+TypeWriterFXText(text, hud)
+{
+    if(!isDefined(text) || !isDefined(hud))
+        return;
+    
+    hud SetTextString(text);
+
+    while(isDefined(hud))
+    {
+        if(isDefined(hud))
+        {
+            hud.color = divideColor(RandomInt(255), RandomInt(255), RandomInt(255));
+            hud SetTypeWriterFX(25, 2000, 500);
         }
 
         wait 3;
@@ -712,14 +876,11 @@ Keyboard(title, func, player)
     self endon("disconnect");
 
     self.menu["inKeyboard"] = true;
-
-    if(!isDefined(self.menu["ui"]["scroller"]))
-        self.menu["ui"]["scroller"] = self createRectangle("TOP_LEFT", "CENTER", self.menu["X"], self.menu["Y"], self.menu["MenuWidth"], 18, self.menu["Main_Color"], 3, 1, "white");
     
     if(isDefined(self.menu["ui"]["scroller"]))
         self.menu["ui"]["scroller"] hudScaleOverTime(0.1, 16, 16);
     
-    self SoftLockMenu(title, "", (self.menu["MenuDesign"] == "Right Side") ? 1000 : 140);
+    self SoftLockMenu(title, "", (self.menu["MenuDesign"] == "Right Side") ? 1000 : 120);
     
     letters = [];
     self.keyboard = [];
@@ -733,19 +894,24 @@ Keyboard(title, func, player)
             letters[a] += lettersTok[a][b] + "\n";
     }
 
-    self.keyboard["string"] = self createText("objective", 1, 5, "", "CENTER", "CENTER", (self.menu["MenuDesign"] == "Old School") ? self.menu["X"] : (self.menu["X"] + 105), (self.menu["Y"] - 45), 1, (1, 1, 1));
+    self.keyboard["string"] = self createText("objective", 1.1, 5, "", (self.menu["MenuDesign"] == "Right Side") ? "LEFT" : "CENTER", "CENTER", (self.menu["MenuDesign"] == "Right Side") ? (self.menu["X"] - (self.menu["MenuWidth"] / 2) + 4) : self.menu["X"], (self.menu["Y"] + 15), 1, (1, 1, 1));
 
     for(a = 0; a < letters.size; a++)
-        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menu["MenuDesign"] == "Old School") ? (self.menu["X"] - 90) + (a * 15) : (self.menu["X"] + 15) + (a * 15), (self.menu["Y"] - 20), 1, (1, 1, 1));
+        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menu["MenuDesign"] == "Old School") ? (self.menu["X"] - 90) + (a * 15) : (self.menu["X"] - (self.menu["MenuWidth"] / 2)) + 15 + (a * 15), (self.menu["Y"] + 35), 1, (1, 1, 1));
     
     if(isDefined(self.menu["ui"]["scroller"]))
-        self.menu["ui"]["scroller"] hudMoveXY((self.keyboard["keys0"].x - 8), (self.keyboard["keys0"].y - 8), 0.1);
+        self.menu["ui"]["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), 0.1);
+    
+    if(!isDefined(self.menu["ui"]["scroller"]))
+        self.menu["ui"]["scroller"] = self createRectangle("TOP", "CENTER", self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), self.menu["MenuWidth"], 18, self.menu["Main_Color"], 3, 1, "white");
     
     cursY = 0;
     cursX = 0;
     stringLimit = 32;
     string = "";
     multiplier = 14.5;
+
+    self SetMenuInstructions("[{+actionslot 1}]/[{+actionslot 2}]/[{+actionslot 3}]/[{+actionslot 4}] - Scroll\n[{+activate}] - Select\n[{+frag}] - Add Space\n[{+gostand}] - Confirm\n[{+melee}] - Backspace/Cancel");
 
     wait 0.1;
     
@@ -771,7 +937,7 @@ Keyboard(title, func, player)
                 cursX = (cursX < 0) ? 12 : 0;
             
             if(isDefined(self.menu["ui"]["scroller"]))
-                self.menu["ui"]["scroller"] hudMoveX((self.keyboard["keys0"].x - 8) + (15 * cursX), 0.05);
+                self.menu["ui"]["scroller"] hudMoveX(self.keyboard["keys0"].x + (15 * cursX), 0.05);
 
             wait 0.025;
         }
@@ -839,6 +1005,7 @@ Keyboard(title, func, player)
     
     destroyAll(self.keyboard);
     self SoftUnlockMenu();
+    self SetMenuInstructions();
 
     if(isDefined(returnString))
         return string;
@@ -853,13 +1020,10 @@ NumberPad(title, func, player, param)
 
     self.menu["inKeyboard"] = true;
 
-    if(!isDefined(self.menu["ui"]["scroller"]))
-        self.menu["ui"]["scroller"] = self createRectangle("TOP_LEFT", "CENTER", self.menu["X"], self.menu["Y"], self.menu["MenuWidth"], 18, self.menu["Main_Color"], 3, 1, "white");
-
     if(isDefined(self.menu["ui"]["scroller"]))
         self.menu["ui"]["scroller"] hudScaleOverTime(0.1, 15, 15);
 
-    self SoftLockMenu(title, "", (self.menu["MenuDesign"] == "Right Side") ? 1000 : 70);
+    self SoftLockMenu(title, "", (self.menu["MenuDesign"] == "Right Side") ? 1000 : 50);
     
     letters = [];
     self.keyboard = [];
@@ -867,17 +1031,23 @@ NumberPad(title, func, player, param)
     for(a = 0; a < 10; a++)
         letters[a] = a;
     
-    self.keyboard["string"] = self createText("objective", 1.2, 5, "", "CENTER", "CENTER", (self.menu["MenuDesign"] == "Old School") ? self.menu["X"] : (self.menu["X"] + 105), (self.menu["Y"] - 45), 1, (1, 1, 1));
+    self.keyboard["string"] = self createText("objective", 1.2, 5, "", (self.menu["MenuDesign"] == "Right Side") ? "LEFT" : "CENTER", "CENTER", (self.menu["MenuDesign"] == "Right Side") ? (self.menu["X"] - (self.menu["MenuWidth"] / 2) + 4) : self.menu["X"], (self.menu["Y"] + 15), 1, (1, 1, 1));
 
     for(a = 0; a < letters.size; a++)
-        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menu["MenuDesign"] == "Old School") ? ((self.menu["X"] - 69) + (a * 15)) : ((self.menu["X"] + 36) + (a * 15)), (self.menu["Y"] - 20), 1, (1, 1, 1));
+        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menu["MenuDesign"] == "Old School") ? ((self.menu["X"] - 69) + (a * 15)) : (self.menu["X"] - (self.menu["MenuWidth"] / 2)) + 36 + (a * 15), (self.menu["Y"] + 35), 1, (1, 1, 1));
     
     if(isDefined(self.menu["ui"]["scroller"]))
-        self.menu["ui"]["scroller"] hudMoveXY((self.keyboard["keys0"].x - 8), (self.keyboard["keys0"].y - 8), 0.1);
+        self.menu["ui"]["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), 0.1);
+    
+    if(!isDefined(self.menu["ui"]["scroller"]))
+        self.menu["ui"]["scroller"] = self createRectangle("TOP", "CENTER", self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), self.menu["MenuWidth"], 18, self.menu["Main_Color"], 3, 1, "white");
     
     cursX = 0;
     stringLimit = 10;
     string = "";
+
+    self SetMenuInstructions("[{+actionslot 3}]/[{+actionslot 4}] - Scroll\n[{+activate}] - Select\n[{+gostand}] - Confirm\n[{+melee}] - Backspace/Cancel");
+
     wait 0.3;
     
     while(1)
@@ -890,7 +1060,7 @@ NumberPad(title, func, player, param)
                 cursX = (cursX < 0) ? 9 : 0;
 
             if(isDefined(self.menu["ui"]["scroller"]))
-                self.menu["ui"]["scroller"] hudMoveX((self.keyboard["keys0"].x - 8) + (15 * cursX), 0.05);
+                self.menu["ui"]["scroller"] hudMoveX(self.keyboard["keys0"].x + (15 * cursX), 0.05);
 
             wait 0.025;
         }
@@ -911,10 +1081,15 @@ NumberPad(title, func, player, param)
             if(!string.size)
                 break;
             
-            if(isDefined(player))
-                self thread ExeFunction(func, Int(string), player, param);
+            if(isDefined(func))
+            {
+                if(isDefined(player))
+                    self thread ExeFunction(func, Int(string), player, param);
+                else
+                    self thread ExeFunction(func, Int(string));
+            }
             else
-                self thread ExeFunction(func, Int(string));
+                returnValue = true;
 
             break;
         }
@@ -941,6 +1116,10 @@ NumberPad(title, func, player, param)
     
     destroyAll(self.keyboard);
     self SoftUnlockMenu();
+    self SetMenuInstructions();
+
+    if(isDefined(returnValue))
+        return Int(string);
 }
 
 RGBFade()
@@ -1202,14 +1381,14 @@ MenuCredits()
     if(isDefined(self.menu["ui"]["scroller"]))
         self.menu["ui"]["scroller"].alpha = 0;
     
-    self SoftLockMenu("Press [{+melee}] To Exit Menu Credits", "", (self.menu["MenuDesign"] == "Right Side") ? 1000 : 155);
+    self SoftLockMenu("Press [{+melee}] To Exit Menu Credits", "", (self.menu["MenuDesign"] == "Right Side") ? 1000 : 145);
     
     MenuTextStartCredits = [
     "^1" + level.menuName,
-    "The Biggest & Best Menu For ^1BO3 Zombies",
-    "^1Developed By: ^7CF4_99",
-    "^1Start Date: ^76/10/21",
-    "^1Version: ^7" + level.menuVersion,
+    "The Biggest & Best Menu For ^1Black Ops 3 Zombies",
+    "Developed By: ^1CF4_99",
+    "Start Date: ^16/10/21",
+    "Version: ^1" + level.menuVersion,
     " ",
     "^1Extinct",
     "LUI HUD",
@@ -1243,9 +1422,9 @@ MenuCredits()
     "^5Feel Free To Continue To Leech <3",
     " ",
     "Thanks For Choosing ^1" + level.menuName,
-    "YouTube - ^1CF4_99",
-    "Discord - ^1CF4_99#9999",
-    "Discord.gg/MXT"
+    "YouTube: ^1CF4_99",
+    "Discord: ^1CF4_99#9999",
+    "Discord.gg/^1MXT"
     ];
     
     self thread MenuCreditsStart(MenuTextStartCredits);
@@ -1277,7 +1456,7 @@ MenuCreditsStart(creditArray)
     {
         if(creditArray[a] != " ")
         {
-            self.credits["MenuCreditsHud"][a] = self createText("default", !startPos ? 1.4 : 1.1, 5, "", "CENTER", "CENTER", (self.menu["MenuDesign"] == "Old School") ? self.menu["X"] : (self.menu["X"] + 105), (self.menu["Y"] - 45) + (startPos * 17), 0, (1, 1, 1));
+            self.credits["MenuCreditsHud"][a] = self createText("objective", !startPos ? 1.4 : 1.1, 5, "", "CENTER", "CENTER", self.menu["X"], (self.menu["Y"] + 15) + (startPos * 17), 0, (1, 1, 1));
             self.credits["MenuCreditsHud"][a] thread CreditsFadeIn(creditArray[a], 0.9);
 
             self thread credits_delete(self.credits["MenuCreditsHud"][a]);
@@ -1303,7 +1482,7 @@ CreditsFadeIn(text, time)
     
     self SetTextString(text);
     self thread hudFade(1, time);
-    self SetCOD7DecodeFX(37, 5000, 1000);
+    self SetTypeWriterFX(37, 5000, 1000);
     
     wait 5;
     
@@ -1318,5 +1497,5 @@ credits_delete(hud)
     self waittill("EndMenuCredits");
     
     if(isDefined(hud))
-        hud destroy();
+        hud DestroyHud();
 }

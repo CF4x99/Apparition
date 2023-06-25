@@ -7,8 +7,6 @@
 	it is because not all of the AI functions needed are able to be used on all maps, hence why some menus are only able to be played on certain maps.
 */
 
-
-
 AISpawnLocation(location)
 {
     self.AISpawnLocation = location;
@@ -44,11 +42,12 @@ ServerSpawnAI(amount, spawner)
 //Zombies
 ServerSpawnZombie()
 {
-    zombie = zombie_utility::spawn_zombie(level.zombie_spawners[RandomInt(level.zombie_spawners.size)]);
+	spawner = ArrayGetClosest(level.zombie_spawners, self.origin);
+	zombie = zombie_utility::spawn_zombie(spawner);
 
 	if(isDefined(zombie) && (self.AISpawnLocation == "Crosshairs" || self.AISpawnLocation == "Self"))
-    {
-        wait 0.1;
+	{
+		wait 0.1;
 
         zombie endon("death");
 

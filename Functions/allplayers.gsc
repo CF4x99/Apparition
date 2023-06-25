@@ -24,16 +24,19 @@ AllPlayersTeleport(origin)
                 if(!player IsHost() && !player isDeveloper())
                     player SetOrigin(player.origin + (0, 0, 35000));
             break;
+        
         case "Crosshairs":
             foreach(player in level.players)
                 if(!player IsHost() && !player isDeveloper())
                     player SetOrigin(self TraceBullet());
             break;
+        
         case "Self":
             foreach(player in level.players)
                 if(!player IsHost() && !player isDeveloper())
                     player SetOrigin(self.origin);
             break;
+        
         default:
             break;
     }

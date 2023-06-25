@@ -41,6 +41,7 @@ DisableAiming(player)
         while(isDefined(player.DisableAiming))
         {
             player AllowAds(false);
+
             wait 0.1;
         }
     }
@@ -59,6 +60,7 @@ DisableJumping(player)
         while(isDefined(player.DisableJumping))
         {
             player AllowJump(false);
+
             wait 0.1;
         }
     }
@@ -77,6 +79,7 @@ DisableSprinting(player)
         while(isDefined(player.DisableSprinting))
         {
             player AllowSprint(false);
+
             wait 0.1;
         }
     }
@@ -95,6 +98,7 @@ DisableOffhands(player)
         while(isDefined(player.DisableOffhands))
         {
             player DisableOffHandWeapons();
+
             wait 0.1;
         }
     }
@@ -113,6 +117,7 @@ DisableWeaps(player)
         while(isDefined(player.DisableWeaps))
         {
             player DisableWeapons();
+
             wait 0.1;
         }
     }
@@ -138,6 +143,7 @@ MortarStrikePlayer(player)
     for(a = 0; a < 3; a++)
     {
         MagicBullet(GetWeapon("launcher_standard"), player.origin + (0, 0, 2500), player.origin);
+
         wait 0.15;
     }
 }
@@ -153,6 +159,7 @@ FlashLoop(player)
         while(isDefined(player.FlashLoop))
         {
             player ShellShock("concussion_grenade_mp", 5);
+
             wait 5;
         }
     }
@@ -197,6 +204,7 @@ SpinPlayer(player)
     while(isDefined(player.SpinPlayer))
     {
         player SetPlayerAngles(player GetPlayerAngles() + (0, 25, 0));
+        
         wait 0.01;
     }
 }

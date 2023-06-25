@@ -230,6 +230,7 @@ ZombieGibBone(bone)
             
             default:
                 zombies[a] thread zombie_utility::zombie_head_gib();
+                break;
         }
     }
 }
@@ -239,7 +240,6 @@ SetZombieModel(model)
     level notify("EndZombieModel");
     level endon("EndZombieModel");
 
-    
     if(model != level.ZombieModel)
     {
         level.ZombieModel = model;

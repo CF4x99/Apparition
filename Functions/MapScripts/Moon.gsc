@@ -207,11 +207,17 @@ play_mooncomp_vox(alias, digger)
 			case "hangar":
 				num = 1;
 				break;
+			
 			case "teleporter":
 				num = 0;
 				break;
+			
 			case "biodome":
 				num = 2;
+				break;
+			
+			default:
+				num = 0;
 				break;
 		}
 	}

@@ -1,7 +1,7 @@
-CollectKT4Parts()
+CollectKT4Parts(part)
 {
-    if(HasKT4Parts())
-        return self iPrintlnBold("^1ERROR: ^7All KT-4 Parts Have Already Been Collected");
+    if(level flag::get(part) || isDefined(self.menu[part]))
+        return;
     
     self endon("disconnect");
     
@@ -11,67 +11,86 @@ CollectKT4Parts()
     //All parts of the KT-4 craftable have to be collected in different ways.
     //With that being said, these craftables aren't found in the craftable array(i.e. shield)
 
-    //Part that is usually collected from a zombie
-    if(!level flag::get("ww1_found"))
+    switch(part)
     {
-        level.var_622692a9++;
-        self notify("player_got_ww_part");
-        level flag::set("ww1_found");
+        case "ww1_found":
+            self.menu[part] = true;
 
-        foreach(player in level.players)
-        {
-            player clientfield::set_to_player("wonderweapon_part_wwi", 1);
-            player thread zm_craftables::player_show_craftable_parts_ui("zmInventory.wonderweapon_part_wwi", "zmInventory.widget_wonderweapon_parts", 0);
-        }
-
-        wait 0.1;
-    }
-
-    //Part that is found in the underwater cave
-    if(!level flag::get("ww2_found"))
-    {
-        part = struct::get("ww_part_underwater", "script_noteworthy");
-
-        foreach(stub in level._unitriggers.dynamic_stubs)
-        {
-            if(stub.origin == part.origin)
+            //Part that is usually collected from a zombie
+            if(!level flag::get("ww1_found"))
             {
-                partTrigger = stub;
-                break;
+                level.var_622692a9++;
+                self notify("player_got_ww_part");
+                level flag::set("ww1_found");
+
+                foreach(player in level.players)
+                {
+                    player clientfield::set_to_player("wonderweapon_part_wwi", 1);
+                    player thread zm_craftables::player_show_craftable_parts_ui("zmInventory.wonderweapon_part_wwi", "zmInventory.widget_wonderweapon_parts", 0);
+                }
+
+                wait 0.1;
             }
-        }
 
-        if(isDefined(partTrigger))
-            partTrigger notify("trigger", self);
+            self.menu[part] = undefined;
+            break;
         
-        wait 0.1;
-    }
+        case "ww2_found":
+            self.menu[part] = true;
 
-    //Part that is extracted from a spider
-    if(!level flag::get("ww3_found"))
-    {
-        level.var_622692a9++;
-        self notify("player_got_ww_part");
-        level flag::set("ww3_found");
+            //Part that is found in the underwater cave
+            if(!level flag::get("ww2_found"))
+            {
+                part = struct::get("ww_part_underwater", "script_noteworthy");
 
-        extractor = GetEnt("venom_extractor", "targetname");
-        extractor scene::play("p7_fxanim_zm_island_venom_extractor_end_bundle", extractor);
-        extractor SetModel("p7_fxanim_zm_island_venom_extractor_red_mod");
-        extractor scene::init("p7_fxanim_zm_island_venom_extractor_red_bundle", extractor);
+                foreach(stub in level._unitriggers.dynamic_stubs)
+                {
+                    if(stub.origin == part.origin)
+                    {
+                        partTrigger = stub;
+                        break;
+                    }
+                }
 
-        foreach(player in level.players)
-        {
-            player clientfield::set_to_player("wonderweapon_part_wwiii", 1);
-            player thread zm_craftables::player_show_craftable_parts_ui("zmInventory.wonderweapon_part_wwiii", "zmInventory.widget_wonderweapon_parts", 0);
-        }
+                if(isDefined(partTrigger))
+                    partTrigger notify("trigger", self);
+                
+                wait 0.1;
+            }
+
+            self.menu[part] = undefined;
+            break;
+
+        case "ww3_found":
+            self.menu[part] = true;
+
+            //Part that is extracted from a spider
+            if(!level flag::get("ww3_found"))
+            {
+                level.var_622692a9++;
+                self notify("player_got_ww_part");
+                level flag::set("ww3_found");
+
+                extractor = GetEnt("venom_extractor", "targetname");
+                extractor scene::play("p7_fxanim_zm_island_venom_extractor_end_bundle", extractor);
+                extractor SetModel("p7_fxanim_zm_island_venom_extractor_red_mod");
+                extractor scene::init("p7_fxanim_zm_island_venom_extractor_red_bundle", extractor);
+
+                foreach(player in level.players)
+                {
+                    player clientfield::set_to_player("wonderweapon_part_wwiii", 1);
+                    player thread zm_craftables::player_show_craftable_parts_ui("zmInventory.wonderweapon_part_wwiii", "zmInventory.widget_wonderweapon_parts", 0);
+                }
+            }
+
+            self.menu[part] = undefined;
+            break;
+        
+        default:
+            break;
     }
 
     self RefreshMenu(menu, curs);
-}
-
-HasKT4Parts()
-{
-    return (level flag::get("ww1_found") && level flag::get("ww2_found") && level flag::get("ww3_found"));
 }
 
 ZNSGrabWaterBucket()
@@ -202,10 +221,13 @@ ZNSReturnWaterType(sourceint)
     {
         case 1:
             return "Blue";
+        
         case 2:
             return "Green";
+        
         case 3:
             return "Purple";
+        
         default:
             return "Unknown";
     }

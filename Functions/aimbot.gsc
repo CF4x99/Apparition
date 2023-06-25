@@ -8,15 +8,18 @@ Aimbot(player)
     {
         enemy = player GetClosestTarget();
 
-        if(isDefined(player.AimingRequired) && !player AdsButtonPressed() || isDefined(player.Noclip) || isDefined(player.UFOMode) || isDefined(player.ControllableZombie) || isDefined(player.AC130))
+        if(isDefined(player.Noclip) || isDefined(player.UFOMode) || isDefined(player.ControllableZombie) || isDefined(player.AC130))
             enemy = undefined;
 
         if(isDefined(enemy) && isDefined(player.AimbotDistanceCheck) && Distance(player.origin, enemy.origin) > player.AimbotDistance)
             enemy = undefined;
+        
+        if(player.AimbotKey == "Aiming" && !player AdsButtonPressed() || player.AimbotKey == "Firing" && !player isFiring1())
+            enemy = undefined;
 
         if(isDefined(enemy))
         {
-            origin = (player.AimBoneTag == "Best") ? enemy GetTagOrigin(player ScanForBestTag(enemy)) : enemy GetTagOrigin(player.AimBoneTag);
+            origin = enemy GetTagOrigin(player.AimBoneTag);
 
             if(!isDefined(origin)) //If the tag origin for the target tag can't be found, this will test the given tags to see if one can be used
             {
@@ -27,7 +30,7 @@ Aimbot(player)
                     test = enemy GetTagOrigin(tags[a]);
 
                     if(isDefined(test))
-                        origin = enemy GetTagOrigin("tag_body");
+                        origin = enemy GetTagOrigin(tags[a]);
                 }
             }
 
@@ -76,28 +79,6 @@ GetClosestTarget()
     return enemy;
 }
 
-ScanForBestTag(target)
-{
-    if(!isDefined(target) || !IsAlive(target))
-        return;
-    
-    tags = ["j_ankle_ri", "j_ankle_le", "pelvis", "j_mainroot", "j_spinelower", "j_spine4", "j_neck", "j_head"];
-    scanValue = 0;
-
-    for(a = 0; a < tags.size; a++)
-    {
-        currentScan = target DamageConeTrace(self GetEye(), self);
-
-        if(currentScan >= scanValue)
-        {
-            scanValue = currentScan;
-            tag = tags[a];
-        }
-    }
-
-    return tag;
-}
-
 isFiring1()
 {
     return (self isFiring() && !self IsMeleeing());
@@ -123,6 +104,11 @@ AimbotType(type, player)
 AimBoneTag(tag, player)
 {
     player.AimBoneTag = tag;
+}
+
+AimbotKey(key, player)
+{
+    player.AimbotKey = key;
 }
 
 AimbotDistance(distance, player)

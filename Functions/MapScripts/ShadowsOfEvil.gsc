@@ -200,7 +200,7 @@ ReturnSOESmashableName(name)
 			return "Slums Rift Portal";
 		
 		default:
-			return "unknown";
+			return "Unknown";
 	}
 }
 

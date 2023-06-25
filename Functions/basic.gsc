@@ -48,6 +48,8 @@ Noclip1(player)
         player.nocliplinker = SpawnScriptModel(player.origin, "tag_origin");
         player PlayerLinkTo(player.nocliplinker, "tag_origin");
         player.menu["DisableMenuControls"] = true;
+
+        self SetMenuInstructions("[{+attack}] - Move Forward\n[{+speed_throw}] - Move Backwards\n[{+melee}] - Exit");
         
         while(isDefined(player.Noclip) && isAlive(player) && !player isPlayerLinked(player.nocliplinker))
         {
@@ -74,6 +76,8 @@ Noclip1(player)
         player EnableOffHandWeapons();
 
         player.menu["DisableMenuControls"] = undefined;
+
+        self SetMenuInstructions();
     }
 }
 
@@ -121,6 +125,8 @@ UFOMode(player)
         player.ufolinker = SpawnScriptModel(player.origin, "tag_origin");
         player PlayerLinkTo(player.ufolinker, "tag_origin");
         player.menu["DisableMenuControls"] = true;
+
+        self SetMenuInstructions("[{+attack}] - Move Up\n[{+speed_throw}] - Move Down\n[{+frag}] - Move Forward\n[{+melee}] - Exit");
         
         while(isDefined(player.UFOMode) && isAlive(player) && !player isPlayerLinked(player.ufolinker))
         {
@@ -152,6 +158,8 @@ UFOMode(player)
         player EnableOffHandWeapons();
 
         player.menu["DisableMenuControls"] = undefined;
+
+        self SetMenuInstructions();
     }
 }
 
@@ -616,14 +624,34 @@ NoExplosiveDamage(player)
     player.NoExplosiveDamage = isDefined(player.NoExplosiveDamage) ? undefined : true;
 }
 
-SetCharacterModelIndex(index, player)
+SetCharacterModelIndex(index, player, disableEffect)
 {
-    PlayFX(level._effect["teleport_splash"], player.origin);
-    PlayFX(level._effect["teleport_aoe"], player.origin);
+    if(!isDefined(disableEffect) || !disableEffect)
+    {
+        PlayFX(level._effect["teleport_splash"], player.origin);
+        PlayFX(level._effect["teleport_aoe_kill"], player GetTagOrigin("j_spineupper"));
+    }
 
     player.characterIndex = index;
     player SetCharacterBodyType(index);
     player zm_audio::setexertvoice(index);
+}
+
+LoopCharacterModelIndex(player)
+{
+    player.LoopCharacterModelIndex = isDefined(player.LoopCharacterModelIndex) ? undefined : true;
+
+    if(isDefined(player.LoopCharacterModelIndex))
+    {
+        player endon("disconnect");
+
+        while(isDefined(player.LoopCharacterModelIndex))
+        {
+            SetCharacterModelIndex(RandomInt(9), player, true);
+
+            wait 1;
+        }
+    }
 }
 
 UnlimitedSprint(player)

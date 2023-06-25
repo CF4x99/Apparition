@@ -1,7 +1,7 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.0.9
+    Version:              1.1.0
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
     
@@ -226,9 +226,9 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName = "Apparition";
-    level.menuVersion = "1.0.9";
+    level.menuVersion = "1.1.0";
 
-    level.MenuStatus = ["None", "Verified", "VIP", "Co-Host", "Admin", "Host", "Developer"];
+    level.MenuStatus = ["None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer"];
     level.AutoVerify = 0;
 
     level.colorNames = ["Light Blue", "Raspberry", "Skyblue", "Pink", "Green", "Brown", "Blue", "Red", "Orange", "Purple", "Cyan", "Yellow", "Black", "White"];
@@ -271,10 +271,40 @@ DefineMenuArrays()
     {
         level.menuTeleports = [];
         
-        //[<teleport location name>, <(x, y, z) origin>]
+        //[< teleport location name >, < (x, y, z) origin >]
 
-        if(map == "Origins")
-            level.menuTeleports["Origins"] = ["Spawn", (2698.43, 5290.48, -346.219), "The Crazy Place", (10334.5, -7891.93, -411.875), "Robot Head: Odin", (-6759.17, -6541.72, 159.375), "Robot Head: Thor", (-6223.59, -6547.65, 159.375), "Robot Head: Freya", (-5699.83, -6540.03, 159.375), "Prison", (-3142.11, 1125.09, -63.875)];
+        switch(map)
+        {
+            case "Shadows Of Evil":
+                locations = ["Spawn", (1077.87, -5364.46, 124.719), "Pack 'a' Punch", (2614.68, -2348.33, -351.875)];
+                break;
+            
+            case "The Giant":
+                locations = ["Spawn", (-56.6293, 286.99, 98.125), "Power", (529.258, -1835.94, 61.6158), "Pack 'a' Punch", (-53.7356, 499.323, 101.125), "Prison", (-93.9053, -3268.56, -104.875)];
+                break;
+            
+            case "Der Eisendrache":
+                locations = ["Spawn", (421.786, 559.05, -47.875), "Power", (-27.8228, 2784.15, 848.125), "Boss Fight Room", (-3182.63, 6962.58, -252.375), "Time Travel Room", (-278.407, 5001.93, 152.125), "Prison", (917.821, 912.26, 144.125)];
+                break;
+            
+            case "Zetsubou No Shima":
+                locations = ["Spawn", (393.455, -3181.32, -501.117), "Power", (-1475.2, 3456.67, -426.877), "Pack 'a' Punch", (246.815, 3818.53, -503.875)];
+                break;
+            
+            case "Kino Der Toten":
+                locations = ["Spawn", (13.2366, -1262.8, 90.125), "Power", (-619.298, 1391.23, -15.875), "Pack 'a' Punch", (5.74551, -376.756, 320.125), "Air Force Room", (1154.75, 2650.46, -367.875), "Surgical Room", (1948.13, -2204.91, 136.125), "Samantha's Room", (-2636.31, 189.825, 52.125), "Samantha's Red Room", (-2620.55, -1106.91, 53.3851), "Prison", (-1590.36, -4760.5, -167.875)];
+                break;
+            
+            case "Origins":
+                locations = ["Spawn", (2698.43, 5290.48, -346.219), "Staff Chamber", (-2.4956, -2.693, -751.875), "The Crazy Place", (10334.5, -7891.93, -411.875), "Robot Head: Odin", (-6759.17, -6541.72, 159.375), "Robot Head: Thor", (-6223.59, -6547.65, 159.375), "Robot Head: Freya", (-5699.83, -6540.03, 159.375), "Prison", (-3142.11, 1125.09, -63.875)];
+                break;
+            
+            default:
+                break;
+        }
+
+        if(isDefined(locations) && locations.size)
+            level.menuTeleports[map] = locations;
     }
     
     level.MenuModels = ["defaultactor", "defaultvehicle"];
@@ -358,6 +388,8 @@ playerSetup()
     
     self AllowWallRun(0);
     self AllowDoubleJump(0);
+
+    self.hud_count = 0;
     
     self thread menuMonitor();
     self.menuThreaded = true;
@@ -408,15 +440,24 @@ ApparitionWelcomeMessage()
             self.MenuInstructions = undefined;
         }
 
-        if(!self isInMenu(true))
+        if(!isDefined(self.menu["MenuInstructions"]))
         {
-            string = "Status: " + self.menuState["verification"] + "\n[{+speed_throw}] & [{+melee}] To Open";
+            if(!self isInMenu(true))
+            {
+                instructionsY = 635;
+                string = "Status: " + self.menuState["verification"] + "\n[{+speed_throw}] & [{+melee}] To Open";
 
-            if(!isDefined(self.menu["DisableQM"]))
-                string += "\n[{+speed_throw}] & [{+smoke}] To Open Quick Menu";
+                if(!isDefined(self.menu["DisableQM"]))
+                    string += "\n[{+speed_throw}] & [{+smoke}] To Open Quick Menu";
+            }
+            else
+            {
+                instructionsY = 585;
+                string = "[{+attack}]/[{+speed_throw}] - Scroll\n[{+actionslot 3}]/[{+actionslot 4}] - Slider Left/Right\n[{+activate}] - Select\n[{+melee}] - Go Back/Exit";
+            }
         }
         else
-            string = "[{+attack}]/[{+speed_throw}] - Scroll\n[{+actionslot 3}]/[{+actionslot 4}] - Slider Left/Right\n[{+melee}] - Go Back/Exit";
+            string = self.menu["MenuInstructions"];
         
         if(isDefined(self.MenuInstructions) && self GetLUIMenuData(self.MenuInstructions, "text") != string)
             self SetLUIMenuData(self.MenuInstructions, "text", string);
@@ -424,9 +465,14 @@ ApparitionWelcomeMessage()
         if(isDefined(self.MenuInstructions))
             self lui::set_color(self.MenuInstructions, level.RGBFadeColor);
         
-        if(isDefined(self.MenuInstructions) && self GetLUIMenuData(self.MenuInstructions, "y") != 635)
-            self SetLUIMenuData(self.MenuInstructions, "y", 635);
+        if(isDefined(self.MenuInstructions) && self GetLUIMenuData(self.MenuInstructions, "y") != instructionsY)
+            self SetLUIMenuData(self.MenuInstructions, "y", instructionsY);
 
         wait 0.01;
     }
+}
+
+SetMenuInstructions(text)
+{
+    self.menu["MenuInstructions"] = (!isDefined(text) || text == "") ? undefined : text;
 }

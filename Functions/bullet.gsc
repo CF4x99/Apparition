@@ -30,7 +30,6 @@ BulletProjectile(projectile, type, player)
                     bspawn NotSolid();
                     bspawn thread deleteAfter(5);
                 }
-                
                 break;
             
             case "Effect":
