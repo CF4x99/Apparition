@@ -38,6 +38,7 @@ runMenuIndex(menu)
                             self addOpt("Entity Options", ::newMenu, "Entity Options");
                             self addOpt("Server Modifications", ::newMenu, "Server Modifications");
                             self addOpt("Zombie Options", ::newMenu, "Zombie Options");
+                            self addOpt("Spawnables", ::newMenu, "Spawnables");
 
                             if(self IsHost())
                                 self addOpt("Host Menu", ::newMenu, "Host Menu");
@@ -92,7 +93,7 @@ runMenuIndex(menu)
                 if(self.menu["MenuDesign"] != "Old School")
                 {
                     self addOptSlider("Toggle Style", ::ToggleStyle, "Boxes;Text;Text Color");
-                    self addOptIncSlider("Max Options", ::MenuMaxOptions, 1, self.menu["MaxOptions"], 12, 1);
+                    self addOptIncSlider("Max Options", ::MenuMaxOptions, 5, self.menu["MaxOptions"], 12, 1);
 
                     if(self.menu["MenuDesign"] != "Right Side")
                         self addOptBool(self.menu["DisableOptionCounter"], "Disable Option Counter", ::DisableOptionCounter);
@@ -1079,6 +1080,13 @@ runMenuIndex(menu)
                         self addOptBool((level.ZombiesDamageFX == fxs[a]), CleanString(fxs[a]), ::SetZombiesDamageEffect, fxs[a]);
             break;
         
+        case "Spawnables":
+            self addMenu(menu, "Spawnables");
+                self addOptSlider("Drop Tower", ::SpawnSystem, "Spawn;Dismantle;Delete", "Drop Tower", ::SpawnDropTower);
+                self addOptSlider("Merry Go Round", ::SpawnSystem, "Spawn;Dismantle;Delete", "Merry Go Round", ::SpawnMerryGoRound);
+                self addOptIncSlider("Merry Go Round Speed", ::SetMerryGoRoundSpeed, 1, 1, 10, 1);
+            break;
+        
         case "Host Menu":
             self addMenu(menu, "Host Menu");
                 self addOpt("Disconnect", ::disconnect);
@@ -1335,14 +1343,14 @@ MenuOptionsPlayer(menu, player)
             self addMenu(menu, "Profile Management");
                 self addOptBool(player.LiquidsLoop, "Liquid Divinium", ::LiquidsLoop, player);
                 self addOptSlider("Challenges", ::AllChallenges, "Unlock;Lock", player);
+                self addOpt("Complete Daily Challenges", ::CompleteDailyChallenges, player);
+                self addOptSlider("Weapon Ranks", ::PlayerWeaponRanks, "Max;Reset", player);
+                self addOptIncSlider("Rank", ::SetPlayerRank, (player.pers["plevel"] > 10) ? 36 : 1, (player.pers["plevel"] > 10) ? 36 : 1, (player.pers["plevel"] > 10) ? 1000 : 35, 1, player);
+                self addOptIncSlider("Prestige", ::SetPlayerPrestige, 0, player.pers["plevel"], 10, 1, player);
                 self addOpt("Unlock All Achievements", ::UnlockAchievements, player);
                 self addOpt("Clan Tag Options", ::newMenu, "Clan Tag Options " + player GetEntityNumber());
                 self addOpt("Custom Stats", ::newMenu, "Custom Stats " + player GetEntityNumber());
                 self addOpt("EE Stats", ::newMenu, "EE Stats " + player GetEntityNumber());
-                self addOptIncSlider("Rank", ::SetPlayerRank, (player.pers["plevel"] > 10) ? 36 : 1, (player.pers["plevel"] > 10) ? 36 : 1, (player.pers["plevel"] > 10) ? 1000 : 35, 1, player);
-                self addOptIncSlider("Prestige", ::SetPlayerPrestige, 0, player.pers["plevel"], 10, 1, player);
-                self addOpt("Complete Daily Challenges", ::CompleteDailyChallenges, player);
-                self addOptSlider("Weapon Rank", ::PlayerWeaponRanks, "Max;Reset", player);
             break;
         
         case "Clan Tag Options":

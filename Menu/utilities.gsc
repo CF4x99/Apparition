@@ -466,7 +466,7 @@ newMenu(menu, dontSave, i1)
         player thread WatchMenuWeaponSwitch(self);
     }
 
-    if(menu == "Players")
+    if(menu == "Players" && !isDefined(self.PlayerInfoHandler))
         self thread PlayerInfoHandler();
 
     if(isDefined(i1))
@@ -505,11 +505,8 @@ PlayerInfoHandler()
 
     wait 0.1; //buffer (needed)
 
-    while(isDefined(self.PlayerInfoHandler))
+    while(self isInMenu() && self getCurrent() == "Players")
     {
-        if(self getCurrent() != "Players")
-            break;
-        
         player = level.players[self getCursor()];
         
         infoString = isDefined(player) ? (player IsHost() && (!self IsHost() || !self IsDeveloper()) || player isDeveloper() && !self isDeveloper()) ? "^1ACCESS DENIED" : player BuildInfoString() : "^1PLAYER NOT FOUND";
@@ -539,14 +536,14 @@ PlayerInfoHandler()
         if(self.menu["PlayerInfoBackground"].width != width || self.menu["PlayerInfoBackground"].height != height)
             self.menu["PlayerInfoBackground"] SetShaderValues(undefined, width, height);
         
-        wait 0.1;
+        wait 0.01;
     }
 
     if(isDefined(self.menu["PlayerInfoBackground"]))
-        self.menu["PlayerInfoBackground"] destroy();
+        self.menu["PlayerInfoBackground"] DestroyHud();
     
     if(isDefined(self.menu["PlayerInfoString"]))
-        self.menu["PlayerInfoString"] destroy();
+        self.menu["PlayerInfoString"] DestroyHud();
 
     self.PlayerInfoHandler = undefined;
 }
@@ -1228,35 +1225,11 @@ ReturnMapName(map)
 {
     switch(map)
     {
-        case "zm_prototype":
-            return "Nacht Der Untoten";
-        
-        case "zm_asylum":
-            return "Verruckt";
-        
-        case "zm_sumpf":
-            return "Shi No Numa";
+        case "zm_zod":
+            return "Shadows Of Evil";
         
         case "zm_factory":
             return "The Giant";
-        
-        case "zm_moon":
-            return "Moon";
-        
-        case "zm_cosmodrome":
-            return "Ascension";
-        
-        case "zm_theater":
-            return "Kino Der Toten";
-        
-        case "zm_temple":
-            return "Shangri-La";
-        
-        case "zm_tomb":
-            return "Origins";
-        
-        case "zm_zod":
-            return "Shadows Of Evil";
         
         case "zm_castle":
             return "Der Eisendrache";
@@ -1264,11 +1237,35 @@ ReturnMapName(map)
         case "zm_island":
             return "Zetsubou No Shima";
         
+        case "zm_stalingrad":
+            return "Gorod Krovi";
+        
         case "zm_genesis":
             return "Revelations";
         
-        case "zm_stalingrad":
-            return "Gorod Krovi";
+        case "zm_prototype":
+            return "Nacht Der Untoten";
+        
+        case "zm_asylum":
+            return "Verrückt";
+        
+        case "zm_sumpf":
+            return "Shi No Numa";
+        
+        case "zm_theater":
+            return "Kino Der Toten";
+        
+        case "zm_cosmodrome":
+            return "Ascension";
+        
+        case "zm_temple":
+            return "Shangri-La";
+
+        case "zm_moon":
+            return "Moon";
+        
+        case "zm_tomb":
+            return "Origins";
         
         default:
             return "Unknown";

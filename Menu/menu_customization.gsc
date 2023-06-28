@@ -227,12 +227,12 @@ LoadMenuVars() //Pre-Set Menu Variables.
     self.menu["Y"] = self.menu["DefaultY"];
 
     self.menu["ToggleStyle"] = "Boxes";
-    self.menu["Main_Color"] = divideColor(200, 0, 0); //Default theme color
+    self.menu["Main_Color"] = divideColor(255, 0, 0); //Default theme color
     self.menu["MenuBlurValue"] = 2.5; //Amount of blur applied when menu blur is enabled
     self.menu["MenuWidth"] = self.menu["DefaultWidth"];
 
-    //Change 'undefined' to 'true' if you want to disable the option counter by default
-    self.menu["DisableOptionCounter"] = undefined;
+    //Change 'true' to 'undefined' if you want to enable the option counter by default
+    self.menu["DisableOptionCounter"] = true;
 
     //Change 'undefined' to 'true' if you want to disable the instructions by default
     self.menu["DisableMenuInstructions"] = undefined;
@@ -265,7 +265,7 @@ LoadMenuVars() //Pre-Set Menu Variables.
     dvar = GetDvarString("MenuTheme" + self GetXUID());
     dvarSep = StrTok(dvar, ";");
     
-    /*if(dvar != "" && (dvarSep[0] == level.menuName || dvarSep[0] == "Right Side" || dvarSep[0] == "Old School"))
+    if(dvar != "" && (dvarSep[0] == level.menuName || dvarSep[0] == "Right Side" || dvarSep[0] == "Old School"))
     {
         self.menu["MenuDesign"] = dvarSep[0];        
         self.menu["ToggleStyle"] = dvarSep[1];
@@ -289,10 +289,10 @@ LoadMenuVars() //Pre-Set Menu Variables.
         }
     }
     else
-    {*/
+    {
         self thread SmoothRainbowTheme(); //The color defaults to smooth rainbow. Remove this if you want the color to default to the self.menu["Main_Color"] variable.
         self SaveMenuTheme();
-    //}
+    }
 }
 
 //Decided to remake GetDvarVector

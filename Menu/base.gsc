@@ -153,6 +153,7 @@ drawText()
     if(!isDefined(text) || !text.size)
     {
         self addOpt("No Options Found");
+        
         text = self.menu["items"][self getCurrent()].name;
     }
 
@@ -161,7 +162,8 @@ drawText()
         if(!isDefined(self.menu["curs"][self getCurrent()]))
             self.menu["curs"][self getCurrent()] = 0;
         
-        start = (self getCursor() >= self.menu["MaxOptions"]) ? (self getCursor() - (self.menu["MaxOptions"] - 1)) : 0;
+        half = Int(self.menu["MaxOptions"] / 2);
+        start = (self getCursor() >= half && text.size > self.menu["MaxOptions"]) ? (self getCursor() + half >= text.size - 1) ? (text.size - self.menu["MaxOptions"]) : (self getCursor() - (half - 1)) : 0;
         
         if(isDefined(text) && text.size)
         {
@@ -271,10 +273,12 @@ ScrollingSystem()
 {
     menu = self getCurrent();
     text = self.menu["items"][menu].name;
-
+    
     if(!self isInQuickMenu())
     {
-        if(self.menu["curs"][menu] >= text.size || self.menu["curs"][menu] < 0 || text.size > self.menu["MaxOptions"] && self.menu["curs"][menu] >= (self.menu["MaxOptions"] - 1))
+        half = Int(self.menu["MaxOptions"] / 2);
+        
+        if(self.menu["curs"][menu] >= (half - 1) && self.menu["curs"][menu] <= ((text.size - 1) - half) || self.menu["curs"][menu] >= text.size || self.menu["curs"][menu] < 0)
         {
             if(self.menu["curs"][menu] >= text.size || self.menu["curs"][menu] < 0)
                 self.menu["curs"][menu] = (self.menu["curs"][menu] >= text.size) ? 0 : (text.size - 1);
@@ -443,6 +447,9 @@ openMenu1(menu)
     
     self.menu["currentMenu"] = menu;
     self drawText();
+
+    if(menu == "Players" && !isDefined(self.PlayerInfoHandler))
+        self thread PlayerInfoHandler();
 
     if(isDefined(self.menu["MenuBlur"]))
         self SetBlur(self.menu["MenuBlurValue"], 0.1);

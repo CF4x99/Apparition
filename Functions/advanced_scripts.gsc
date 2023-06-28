@@ -1199,12 +1199,10 @@ GetBodyGuardTarget(player)
 
 SpiralStaircase(size)
 {
-    for(a = 0; a < level.MenuModels.size; a++)
-        if(IsSubStr(level.MenuModels[a], "vending_doubletap") || IsSubStr(level.MenuModels[a], "vending_sleight"))
-            model = level.MenuModels[a];
+    model = GetSpawnableBaseModel();
 
     if(!isInArray(level.MenuModels, model))
-        return self iPrintlnBold("^1ERROR: ^7Couldn't Spawn Spiral Staircase");
+        return self iPrintlnBold("^1ERROR: ^7Couldn't Find A Valid Base Model For The Spiral Staircase");
     
     if(isDefined(level.SpiralStaircaseSpawning))
         return self iPrintlnBold("^1ERROR: ^7Spiral Staircase Is Being Built");
