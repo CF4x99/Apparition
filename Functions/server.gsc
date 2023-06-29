@@ -754,6 +754,11 @@ SetMapSpawn(plyer, type)
     SetDvar(level.script + "Spawn" + (Int(StrTok(plyer, "Player ")[0]) - 1), (type == "Set") ? self.origin : "");
 }
 
+ServerMaxAmmoClips()
+{
+    level.ServerMaxAmmoClips = isDefined(level.ServerMaxAmmoClips) ? undefined : true;
+}
+
 ShootToRevive()
 {
     level.ShootToRevive = isDefined(level.ShootToRevive) ? undefined : true;

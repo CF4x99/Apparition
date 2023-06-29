@@ -100,10 +100,6 @@ runMenuIndex(menu)
                 }
 
                 self addOptBool(self.menu["MenuBlur"], "Menu Blur", ::MenuBlur);
-
-                if(isDefined(self.menu["MenuBlur"]))
-                    self addOptIncSlider("Blur Amount", ::MenuBlurAmount, 1, self.menu["MenuBlurValue"], 3, 0.1);
-                
                 self addOptBool(self.menu["DisableMenuInstructions"], "Disable Instructions", ::DisableMenuInstructions);
                 self addOptBool(self.menu["LargeCursor"], "Large Cursor", ::LargeCursor);
                 self addOptBool(self.menu["DisableQM"], "Disable Quick Menu", ::DisableQuickMenu);
@@ -838,7 +834,7 @@ runMenuIndex(menu)
                     if(IsCraftableCollected(craftables[a]) || craftables[a] == "open_table" || IsSubStr(craftables[a], "ritual_"))
                         continue;
 
-                    found++
+                    found++;
                     
                     self addOpt(CleanString(craftables[a]), ::newMenu, craftables[a]);
                 }
@@ -891,6 +887,7 @@ runMenuIndex(menu)
         
         case "Server Tweakables":
             self addMenu(menu, "Server Tweakables");
+                self addOptBool(level.ServerMaxAmmoClips, "Max Ammo Powerups Fill Clips", ::ServerMaxAmmoClips);
                 self addOptBool(level.ShootToRevive, "Shoot To Revive", ::ShootToRevive);
                 self addOptIncSlider("Pack 'a' Punch Camo Index", ::SetPackCamoIndex, 0, level.pack_a_punch_camo_index, 138, 1);
                 self addOptIncSlider("Player Weapon Limit", ::SetPlayerWeaponLimit, 0, 0, 15, 1);
@@ -1796,6 +1793,7 @@ MenuOptionsPlayer(menu, player)
                 player.ShellShockTime = 1;
             
             self addMenu(menu, "Malicious Options");
+                self addOpt("Open Pause Menu", ::PlayerOpenPauseMenu, player);
                 self addOpt("Disable Actions", ::newMenu, "Disable Actions " + player GetEntityNumber());
                 self addOptSlider("Set Stance", ::SetPlayerStance, "Prone;Crouch;Stand", player);
                 self addOpt("Launch", ::LaunchPlayer, player);

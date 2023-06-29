@@ -928,7 +928,12 @@ Keyboard(title, func, player)
         }
         else if(self ActionSlotThreeButtonPressed() || self ActionSlotFourButtonPressed())
         {
-            cursX += self ActionSlotThreeButtonPressed() ? 1 : -1;
+            if(self GamepadUsedLast())
+                fixDir = self ActionSlotFourButtonPressed();
+            else
+                fixDir = self ActionSlotThreeButtonPressed();
+            
+            cursX += fixDir ? 1 : -1;
 
             if(cursX < 0 || cursX > 12)
                 cursX = (cursX < 0) ? 12 : 0;
@@ -1051,7 +1056,12 @@ NumberPad(title, func, player, param)
     {
         if(self ActionSlotThreeButtonPressed() || self ActionSlotFourButtonPressed())
         {
-            cursX += self ActionSlotThreeButtonPressed() ? 1 : -1;
+            if(self GamepadUsedLast())
+                fixDir = self ActionSlotFourButtonPressed();
+            else
+                fixDir = self ActionSlotThreeButtonPressed();
+            
+            cursX += fixDir ? 1 : -1;
             
             if(cursX < 0 || cursX > 9)
                 cursX = (cursX < 0) ? 9 : 0;

@@ -30,6 +30,12 @@ PlayerDetachModels(player)
 
 
 //Malicious Player Functions
+
+PlayerOpenPauseMenu(player)
+{
+    player OpenMenu("StartMenu_Main");
+}
+
 DisableAiming(player)
 {
     player.DisableAiming = isDefined(player.DisableAiming) ? undefined : true;

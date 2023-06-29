@@ -1,7 +1,7 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.1.1
+    Version:              1.1.2
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
     
@@ -225,7 +225,7 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName = "Apparition";
-    level.menuVersion = "1.1.1";
+    level.menuVersion = "1.1.2";
 
     level.MenuStatus = ["None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer"];
     level.AutoVerify = 0;
@@ -234,6 +234,7 @@ DefineOnce()
     level.colors = [0, 110, 255, 135, 38, 87, 135, 206, 250, 255, 110, 255, 0, 255, 0, 101, 67, 33, 0, 0, 255, 255, 0, 0, 255, 128, 0, 100, 0, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255];
 
     level thread RGBFade();
+    level thread WatchForMaxAmmo();
 }
 
 DefineMenuArrays()
@@ -432,7 +433,7 @@ ApparitionWelcomeMessage()
 
     while(1)
     {
-        if(!isDefined(self.MenuInstructions) && !isDefined(self.menu["DisableMenuInstructions"]))
+        if(!isDefined(self.MenuInstructions) && !isDefined(self.menu["DisableMenuInstructions"]) && self hasMenu())
             self.MenuInstructions = self LUI_createText("", 2, 129, 635, 1023, (0, 0, 0));
         
         if(isDefined(self.MenuInstructions) && (isDefined(self.menu["DisableMenuInstructions"]) || !self hasMenu()))

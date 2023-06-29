@@ -77,7 +77,12 @@ menuMonitor()
                     {
                         if(isDefined(self.menu["items"][menu].slider[curs]) || isDefined(self.menu["items"][menu].incslider[curs]))
                         {
-                            dir = self ActionSlotThreeButtonPressed() ? 1 : -1;
+                            if(self GamepadUsedLast())
+                                fixDir = self ActionSlotFourButtonPressed();
+                            else
+                                fixDir = self ActionSlotThreeButtonPressed();
+                            
+                            dir = fixDir ? 1 : -1;
                             
                             if(isDefined(self.menu["items"][menu].slider[curs]))
                                 self SetSlider(dir);

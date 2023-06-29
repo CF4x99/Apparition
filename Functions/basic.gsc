@@ -649,7 +649,7 @@ LoopCharacterModelIndex(player)
         {
             SetCharacterModelIndex(RandomInt(9), player, true);
 
-            wait 1;
+            wait 0.25;
         }
     }
 }

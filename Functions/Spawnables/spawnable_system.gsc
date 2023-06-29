@@ -1,4 +1,4 @@
-SpawnSystem(action, type, function)
+SpawnSystem(action, type, func)
 {
     checkModel = GetSpawnableBaseModel();
 
@@ -39,8 +39,8 @@ SpawnSystem(action, type, function)
             
             level.spawnable[type + "_Building"] = true;
             
-            if(isDefined(function))
-                self [[ function ]]();
+            if(isDefined(func))
+                self [[ func ]]();
             
             level.spawnable[type + "_Building"] = undefined;
             level.spawnable[type + "_Spawned"] = true;

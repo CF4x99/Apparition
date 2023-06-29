@@ -525,6 +525,9 @@ Tornado()
 
     if(!isDefined(level.TornadoSpawned))
     {
+        if(!isDefined(level.SpawnableArray["Tornado"]) || !level.SpawnableArray["Tornado"].size)
+            return;
+        
         for(a = 0; a < level.SpawnableArray["Tornado"].size; a++)
             if(isDefined(level.SpawnableArray["Tornado"][a]))
                 level.SpawnableArray["Tornado"][a] delete();
@@ -756,20 +759,6 @@ TornadoIgnorePlayers()
 TornadoIgnoreEntities()
 {
     level.TornadoIgnoreEntities = isDefined(level.TornadoIgnoreEntities) ? undefined : true;
-}
-
-SpawnableArray(spawn)
-{
-    if(!isDefined(spawn))
-        return;
-    
-    if(!isDefined(level.SpawnableArray))
-        level.SpawnableArray = [];
-    
-    if(!isDefined(level.SpawnableArray[spawn]))
-        level.SpawnableArray[spawn] = [];
-    
-    level.SpawnableArray[spawn][level.SpawnableArray[spawn].size] = self;
 }
 
 MoonDoors()

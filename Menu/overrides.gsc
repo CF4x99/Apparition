@@ -196,3 +196,24 @@ player_out_of_playable_area_monitor()
 {
     return 0;
 }
+
+WatchForMaxAmmo() //Not really an override. But, fuck it
+{
+    if(isDefined(level.WatchForMaxAmmo))
+        return;
+    level.WatchForMaxAmmo = true;
+
+    while(1)
+    {
+        level waittill("zmb_max_ammo_level");
+        
+        if(!isDefined(level.level.ServerMaxAmmoClips))
+            continue;
+        
+        foreach(player in level.players)
+        {
+            foreach(weapon in player GetWeaponsList(1))
+                player SetWeaponAmmoClip(weapon, weapon.clipsize);
+        }
+    }
+}

@@ -1,6 +1,6 @@
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.1.1
+    Version:              1.1.2
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
