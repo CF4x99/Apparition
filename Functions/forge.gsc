@@ -27,6 +27,7 @@ ForgeCarryModel()
     while(isDefined(self.forge["model"]))
     {
         self.forge["model"] MoveTo(isDefined(self.forge["ignoreCollisions"]) ? self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), self.forge["ModelDistance"]) : BulletTrace(self GetEye(), self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), self.forge["ModelDistance"]), false, self.forge["model"])["position"], 0.1);
+        
         wait 0.05;
     }
 }

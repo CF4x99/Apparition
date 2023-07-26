@@ -35,7 +35,6 @@ runMenuIndex(menu)
                         
                         if(self getVerification() > 3) //Co-Host
                         {
-                            self addOpt("Entity Options", ::newMenu, "Entity Options");
                             self addOpt("Server Modifications", ::newMenu, "Server Modifications");
                             self addOpt("Zombie Options", ::newMenu, "Zombie Options");
                             self addOpt("Spawnables", ::newMenu, "Spawnables");
@@ -63,21 +62,31 @@ runMenuIndex(menu)
             */
 
             self addMenu(menu, "Quick Menu H4X");
-                self addOptBool(self.godmode, "God Mode", ::Godmode, self);
-                self addOptBool(self.Noclip, "Noclip", ::Noclip1, self);
-                self addOptBool(self.NoclipBind, "Bind Noclip To [{+frag}]", ::BindNoclip, self);
-                self addOptSlider("Unlimited Ammo", ::UnlimitedAmmo, "Continuous;Reload;Disable", self);
-                self addOptBool(self.UnlimitedEquipment, "Unlimited Equipment", ::UnlimitedEquipment, self);
-                self addOptSlider("Modify Score", ::ModifyScore, "1000000;100000;10000;1000;100;10;0;-10;-100;-1000;-10000;-100000;-1000000", self);
-                self addOpt("Perk Menu", ::newMenu, "Perk Menu " + self GetEntityNumber());
-                self addOptBool(self.NoTarget, "No Target", ::NoTarget, self);
-                self addOptBool(self.ReducedSpread, "Reduced Spread", ::ReducedSpread, self);
-                self addOptBool(self.UnlimitedSprint, "Unlimited Sprint", ::UnlimitedSprint, self);
+
+                if(Is_Alive(self))
+                {
+                    self addOptBool(self.godmode, "God Mode", ::Godmode, self);
+                    self addOptBool(self.Noclip, "Noclip", ::Noclip1, self);
+                    self addOptBool(self.NoclipBind, "Bind Noclip To [{+frag}]", ::BindNoclip, self);
+                    self addOptSlider("Unlimited Ammo", ::UnlimitedAmmo, "Continuous;Reload;Disable", self);
+                    self addOptBool(self.UnlimitedEquipment, "Unlimited Equipment", ::UnlimitedEquipment, self);
+                    self addOptSlider("Modify Score", ::ModifyScore, "1000000;100000;10000;1000;100;10;0;-10;-100;-1000;-10000;-100000;-1000000", self);
+                    self addOpt("Perk Menu", ::newMenu, "Perk Menu " + self GetEntityNumber());
+                    self addOptBool(self.NoTarget, "No Target", ::NoTarget, self);
+                    self addOptBool(self.ReducedSpread, "Reduced Spread", ::ReducedSpread, self);
+                    self addOptBool(self.UnlimitedSprint, "Unlimited Sprint", ::UnlimitedSprint, self);
+                }
+
                 self addOpt("Respawn", ::ServerRespawnPlayer, self);
-                self addOpt("Revive", ::PlayerRevive, self);
+
+                if(Is_Alive(self))
+                    self addOpt("Revive", ::PlayerRevive, self);
 
                 if(self IsHost() || self IsDeveloper())
+                {
+                    self addOpt("Restart Game", ::ServerRestartGame);
                     self addOpt("Disconnect", ::disconnect);
+                }
             break;
         
         case "Menu Customization":
@@ -165,7 +174,6 @@ runMenuIndex(menu)
                 self.CustomSentryWeapon = GetWeapon("minigun");
             
             self addMenu(menu, "Advanced Scripts");
-                self addOpt("3D Drawing", ::newMenu, "3D Drawing Options");
                 self addOptSlider("AC-130", ::AC130, "Fly;Walking");
 
                 if(isDefined(level.zombie_include_powerups) && level.zombie_include_powerups.size)
@@ -183,31 +191,6 @@ runMenuIndex(menu)
                 self addOptSlider("Controllable Zombie", ::ControllableZombie, "Friendly;Enemy");
                 self addOptBool(self.BodyGuard, "Body Guard", ::BodyGuard);
                 self addOptIncSlider("Spiral Staircase", ::SpiralStaircase, 5, 5, 50, 1);
-                self addOptBool(level.DesolidifyDebris, "Desolidify Debris", ::DesolidifyDebris);
-            break;
-        
-        case "3D Drawing Options":
-            if(!isDefined(self.x3DDrawingFX))
-                self.x3DDrawingFX = GetArrayKeys(level._effect)[0];
-            
-            if(!isDefined(self.x3DDistance))
-                self.x3DDistance = 150;
-            
-            self addMenu(menu, "3D Drawing Options");
-                self addOptBool(self.x3DDrawing, "3D Drawing", ::x3DDrawing);
-                self addOpt("3D Drawing Effect: " + CleanString(self.x3DDrawingFX), ::newMenu, "3D Drawing Effect");
-                self addOpt("3D Drawing Distance: " + self.x3DDistance, ::NumberPad, "3D Drawing Distance", ::x3DDrawingDistance);
-                self addOpt("Delete All 3D Drawings", ::DeleteAllDrawings);
-            break;
-        
-        case "3D Drawing Effect":
-            fxs = GetArrayKeys(level._effect);
-            
-            self addMenu(menu, "3D Drawing Effect");
-
-                if(isDefined(fxs) && fxs.size)
-                    for(a = 0; a < fxs.size; a++)
-                        self addOpt(CleanString(fxs[a]), ::x3DDrawingFX, fxs[a]);
             break;
         
         case "Rain Options":
@@ -702,62 +685,6 @@ runMenuIndex(menu)
                 self addOptBool(level flag::get("character_stones_done"), "Damage Tombstones", ::DamageGraveStones);
             break;
         
-        case "Entity Options":
-            self addMenu(menu, "Entity Options");
-
-                if(isDefined(level.SavedMapEntities) && level.SavedMapEntities.size)
-                {
-                    self addOpt("Entity Editing List", ::newMenu, "Entity Editing List");
-                    self addOptBool(AllEntitiesInvisible(), "Invisibility", ::EntitiesInvisibility);
-                    self addOpt("Delete", ::DeleteEntities);
-                    self addOpt("Rotation", ::newMenu, "Entities Rotation");
-                    self addOptIncSlider("Scale", ::EntitiesScale, 1, 1, 10, 1);
-                    self addOptSlider("Teleport", ::TeleportEntities, "Self;Crosshairs");
-                    self addOpt("Reset Origin", ::EntitiesResetOrigins);
-                }
-                else
-                    self addOpt("No Entities Found");
-            break;
-        
-        case "Entity Editing List":
-            self addMenu(menu, "Entity Editing List");
-
-                if(isDefined(level.SavedMapEntities) && level.SavedMapEntities.size)
-                {
-                    for(a = 0; a < level.SavedMapEntities.size; a++)
-                        if(isDefined(level.SavedMapEntities[a]) && level.SavedMapEntities[a].model != "")
-                            self addOpt(CleanString(level.SavedMapEntities[a].model), ::newMenu, "Entity Editor", false, a);
-                }
-                else
-                    self addOpt("No Entities Found");
-            break;
-        
-        case "Entity Editor":
-            self addMenu(menu, CleanString(level.SavedMapEntities[self.EntityEditorNumber].model));
-                self addOpt("Delete", ::DeleteEntity, level.SavedMapEntities[self.EntityEditorNumber]);
-                self addOptBool(level.SavedMapEntities[self.EntityEditorNumber].Invisibility, "Invisibility", ::EntityInvisibility, level.SavedMapEntities[self.EntityEditorNumber]);
-                self addOpt("Rotation", ::newMenu, "Entity Rotation", false, self.EntityEditorNumber);
-                self addOptIncSlider("Scale", ::EntityScale, 1, 1, 10, 1, level.SavedMapEntities[self.EntityEditorNumber]);
-                self addOptSlider("Teleport", ::TeleportEntity, "Self;Self To Entity;Crosshairs", level.SavedMapEntities[self.EntityEditorNumber]);
-                self addOpt("Reset Origin", ::EntityResetOrigin, level.SavedMapEntities[self.EntityEditorNumber]);
-            break;
-        
-        case "Entity Rotation":
-            self addMenu(menu, "Rotation");
-                self addOpt("Reset Angles", ::EntityResetAngles, level.SavedMapEntities[self.EntityEditorNumber]);
-                self addOptIncSlider("Pitch", ::EntityRotation, -10, 0, 10, 1, "Pitch", level.SavedMapEntities[self.EntityEditorNumber]);
-                self addOptIncSlider("Yaw", ::EntityRotation, -10, 0, 10, 1, "Yaw", level.SavedMapEntities[self.EntityEditorNumber]);
-                self addOptIncSlider("Roll", ::EntityRotation, -10, 0, 10, 1, "Roll", level.SavedMapEntities[self.EntityEditorNumber]);
-            break;
-        
-        case "Entities Rotation":
-            self addMenu(menu, "Rotation");
-                self addOpt("Reset Angles", ::EntitiesResetAngles);
-                self addOptIncSlider("Pitch", ::EntitiesRotation, -10, 0, 10, 1, "Pitch");
-                self addOptIncSlider("Yaw", ::EntitiesRotation, -10, 0, 10, 1, "Yaw");
-                self addOptIncSlider("Roll", ::EntitiesRotation, -10, 0, 10, 1, "Roll");
-            break;
-        
         case "Server Modifications":
             self addMenu(menu, "Server Modifications");
                 self addOptBool(level.SuperJump, "Super Jump", ::SuperJump);
@@ -1110,7 +1037,7 @@ runMenuIndex(menu)
                 self addOpt("Send Message", ::Keyboard, "Send Message To All Players", ::MessageAllPLayers);
                 self addOpt("Temp Ban", ::AllPlayersFunction, ::BanPlayer);
                 self addOpt("Kick", ::AllPlayersFunction, ::KickPlayer);
-                self addOpt("Down", ::AllPlayersFunction, ::DownPlayer);
+                self addOpt("Down", ::AllPlayersFunction, ::PlayerDeath, "Down");
                 self addOpt("Revive", ::AllPlayersFunction, ::PlayerRevive);
                 self addOpt("Respawn", ::AllPlayersFunction, ::ServerRespawnPlayer);
             break;
@@ -1154,9 +1081,6 @@ runMenuIndex(menu)
 
                 foreach(player in level.players)
                 {
-                    if(player IsHost() && !self IsHost() || player isDeveloper() && !self isDeveloper()) //This Will Make It So No One Can See The Host In The Player Menu Besides The Host & Developer. No one can see the developer, besides the developer.
-                        continue;
-
                     if(!isDefined(player.menuState["verification"])) //If A Player Doesn't Have A Verification Set, They Won't Show. Mainly Happens If They Are Still Connecting
                         player.menuState["verification"] = level.MenuStatus[level.AutoVerify];
                     
@@ -1219,7 +1143,6 @@ MenuOptionsPlayer(menu, player)
                 self addOptSlider("Clone", ::PlayerClone, "Clone;Dead", player);
                 self addOptBool(player.Invisibility, "Invisibility", ::Invisibility, player);
                 self addOptBool(player.SaveAndLoad, "Save & Load Position", ::SaveAndLoad, player);
-                self addOptSlider("Custom Crosshairs", ::CustomCrosshairs, "Disable;+;(+);.;o;<>;|-|;-|-;<3;" + CleanName(player getName()) + ";" + level.menuName + ";CF4_99;Extinct;ItsFebiven;Discord.gg/MXT", player);
                 self addOptBool(player.NoTarget, "No Target", ::NoTarget, player);
                 self addOptBool(player.ReducedSpread, "Reduced Spread", ::ReducedSpread, player);
                 self addOptBool(player.MultiJump, "Multi-Jump", ::MultiJump, player);
@@ -1232,7 +1155,7 @@ MenuOptionsPlayer(menu, player)
                 self addOptBool(player.UnlimitedSprint, "Unlimited Sprint", ::UnlimitedSprint, player);
                 self addOpt("Respawn", ::ServerRespawnPlayer, player);
                 self addOpt("Revive", ::PlayerRevive, player);
-                self addOpt("Down", ::DownPlayer, player);
+                self addOptSlider("Death", ::PlayerDeath, "Down;Kill", player);
             break;
         
         case "Perk Menu":
@@ -1306,8 +1229,8 @@ MenuOptionsPlayer(menu, player)
 
                 if(player != self)
                 {
-                    self addOpt("Teleport To Self", ::TeleportPlayer, player, self);
-                    self addOpt("Teleport To Player", ::TeleportPlayer, self, player);
+                    self addOpt("Teleport To Self", ::TeleportPlayer, self, player);
+                    self addOpt("Teleport To Player", ::TeleportPlayer, player, self);
                 }
             break;
         
@@ -1641,10 +1564,7 @@ MenuOptionsPlayer(menu, player)
                 self addOpt("Force Field Size: " + player.ForceFieldSize, ::NumberPad, "Force Field Size", ::ForceFieldSize, player);
                 self addOptBool(player.Jetpack, "Jetpack", ::Jetpack, player);
                 self addOptBool(player.ZombieCounter, "Zombie Counter", ::ZombieCounter, player);
-                self addOptBool(player.HealthBar, "Health Bar", ::HealthBar, player);
                 self addOptBool(player.LightProtector, "Light Protector", ::LightProtector, player);
-                self addOpt("Adventure Time", ::AdventureTime, player);
-                self addOpt("Earthquake", ::SendEarthquake, player);
                 self addOptBool(player.SpecialMovements, "Special Movements", ::SpecialMovements, player);
                 self addOptBool(player.SpecNade, "Spec-Nade", ::SpecNade, player);
                 self addOptBool(player.NukeNades, "Nuke Nades", ::NukeNades, player);

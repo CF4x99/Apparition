@@ -252,7 +252,7 @@ AttachSelfToPlayer(player)
     if(player == self)
         return self iPrintlnBold("^1ERROR: ^7You Can't Attach To Yourself");
     
-    if(!IsAlive(player))
+    if(!Is_Alive(player))
         return self iPrintlnBold("^1ERROR: ^7Player Isn't Alive");
 
     self.AttachToPlayer = isDefined(self.AttachToPlayer) ? undefined : true;
@@ -266,7 +266,7 @@ AttachSelfToPlayer(player)
             if(!self IsLinkedTo(player))
                 self PlayerLinkTo(player, "j_head");
             
-            if(!IsAlive(player))
+            if(!Is_Alive(player))
                 self thread AttachSelfToPlayer(player);
 
             wait 0.1;
@@ -346,6 +346,8 @@ JumpScarePlayer(player)
     if(isDefined(player.JumpScarePlayer))
         return;
     player.JumpScarePlayer = true;
+
+    player endon("disconnect");
 
     player.var_92fcfed8 = player OpenLUIMenu((ReturnMapName(level.script) == "Shadows Of Evil") ? "JumpScare" : "JumpScare-Tomb");
 

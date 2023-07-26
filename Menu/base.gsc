@@ -12,21 +12,24 @@ menuMonitor()
         {
             if(!self isInMenu(true))
             {
-                if(self AdsButtonPressed() && self MeleeButtonPressed())
+                if(self AdsButtonPressed() && self MeleeButtonPressed() && Is_Alive(self))
                 {
                     self openMenu1();
                     wait 0.5;
                 }
-                else if(self AdsButtonPressed() && self SecondaryOffhandButtonPressed() && !isDefined(self.menu["DisableQM"]))
+                else if(self AdsButtonPressed() && (self SecondaryOffhandButtonPressed() || !Is_Alive(self) && self JumpButtonPressed()) && !isDefined(self.menu["DisableQM"]))
                 {
-                    self openQuickMenu();
+                    self openQuickMenu1();
                     wait 0.5;
                 }
             }
             else
             {
-                if(isDefined(self.menu["MenuBlur"]))
+                if(isDefined(self.menu["MenuBlur"]) && !self isInQuickMenu())
                     self SetBlur(self.menu["MenuBlurValue"], 0.1);
+                
+                if(self isInMenu(false) && !Is_Alive(self))
+                    self closeMenu1();
                 
                 menu = self getCurrent();
                 curs = self getCursor();
@@ -95,7 +98,7 @@ menuMonitor()
                         }
                     }
                 }
-                else if(self MeleeButtonPressed())
+                else if(self MeleeButtonPressed() || !Is_Alive(self) && self JumpButtonPressed())
                 {
                     if(menu == "Main" || menu == "Quick Menu")
                     {
@@ -276,6 +279,8 @@ drawText()
 
 ScrollingSystem()
 {
+    self endon("disconnect");
+
     menu = self getCurrent();
     text = self.menu["items"][menu].name;
     
@@ -371,6 +376,8 @@ SetMenuTitle(title)
 
 openMenu1(menu)
 {
+    self endon("disconnect");
+
     if(!isDefined(menu))
         menu = (isDefined(self.menu["currentMenu"]) && self.menu["currentMenu"] != "") ? self.menu["currentMenu"] : "Main";
     
@@ -387,50 +394,28 @@ openMenu1(menu)
                 self.menu["ui"]["outlines"] = [];
             
             //Left Side
-            self.menu["ui"]["outlines"][0] = self createRectangle("TOP", "CENTER", self.menu["X"] - (self.menu["MenuWidth"] / 2), self.menu["Y"], 1, 168, self.menu["Main_Color"], 3, 0, "white");
+            self.menu["ui"]["outlines"][0] = self createRectangle("TOP", "CENTER", self.menu["X"] - (self.menu["MenuWidth"] / 2), self.menu["Y"], 1, 168, self.menu["Main_Color"], 3, 1, "white");
             
             //Right Side
-            self.menu["ui"]["outlines"][1] = self createRectangle("TOP", "CENTER", (self.menu["X"] + (self.menu["MenuWidth"] / 2)), self.menu["Y"], 1, 168, self.menu["Main_Color"], 3, 0, "white");
+            self.menu["ui"]["outlines"][1] = self createRectangle("TOP", "CENTER", (self.menu["X"] + (self.menu["MenuWidth"] / 2)), self.menu["Y"], 1, 168, self.menu["Main_Color"], 3, 1, "white");
             
             //Top
-            self.menu["ui"]["outlines"][2] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"] - 13, self.menu["MenuWidth"] + 1, 14, self.menu["Main_Color"], 3, 0, "white");
+            self.menu["ui"]["outlines"][2] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"] - 13, self.menu["MenuWidth"] + 1, 14, self.menu["Main_Color"], 3, 1, "white");
 
             //Bottom
-            self.menu["ui"]["outlines"][3] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"] + 168, self.menu["MenuWidth"], 1, self.menu["Main_Color"], 3, 0, "white");
+            self.menu["ui"]["outlines"][3] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"] + 168, self.menu["MenuWidth"], 1, self.menu["Main_Color"], 3, 1, "white");
         }
         
-        self.menu["ui"]["scroller"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], self.menu["MenuWidth"], (self.menu["MenuDesign"] == "Right Side") ? 15 : 18, self.menu["Main_Color"], 2, 0, "white");
+        self.menu["ui"]["scroller"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], self.menu["MenuWidth"], (self.menu["MenuDesign"] == "Right Side") ? 15 : 18, self.menu["Main_Color"], 2, 1, "white");
     }
 
-    self.menu["ui"]["title"] = self createText("default", (self.menu["MenuDesign"] == "Right Side") ? 1.4 : 1.2, 5, "", (self.menu["MenuDesign"] == "Old School") ? "CENTER" : "LEFT", "CENTER", (self.menu["MenuDesign"] == "Old School") ? self.menu["X"] : (self.menu["X"] - (self.menu["MenuWidth"] / 2) + 4), (self.menu["MenuDesign"] == "Right Side") ? (self.menu["Y"] - 35) : (self.menu["MenuDesign"] == "Old School") ? (self.menu["Y"] - 12) : (self.menu["Y"] - 6), 0, (self.menu["MenuDesign"] == "Old School") ? self.menu["Main_Color"] : (1, 1, 1));
+    self.menu["ui"]["title"] = self createText("default", (self.menu["MenuDesign"] == "Right Side") ? 1.4 : 1.2, 5, "", (self.menu["MenuDesign"] == "Old School") ? "CENTER" : "LEFT", "CENTER", (self.menu["MenuDesign"] == "Old School") ? self.menu["X"] : (self.menu["X"] - (self.menu["MenuWidth"] / 2) + 4), (self.menu["MenuDesign"] == "Right Side") ? (self.menu["Y"] - 35) : (self.menu["MenuDesign"] == "Old School") ? (self.menu["Y"] - 12) : (self.menu["Y"] - 6), 1, (self.menu["MenuDesign"] == "Old School") ? self.menu["Main_Color"] : (1, 1, 1));
     
     if(!isDefined(self.menu["DisableOptionCounter"]) && self.menu["MenuDesign"] == level.menuName)
-        self.menu["ui"]["optionCount"] = self createText("default", 1.2, 5, "", "RIGHT", "CENTER", (self.menu["X"] + (self.menu["MenuWidth"] / 2) - 4), (self.menu["MenuDesign"] == "Right Side") ? (self.menu["Y"] - 72) : (self.menu["Y"] - 6), 0, (1, 1, 1));
+        self.menu["ui"]["optionCount"] = self createText("default", 1.2, 5, "", "RIGHT", "CENTER", (self.menu["X"] + (self.menu["MenuWidth"] / 2) - 4), (self.menu["MenuDesign"] == "Right Side") ? (self.menu["Y"] - 72) : (self.menu["Y"] - 6), 1, (1, 1, 1));
 
     if(self.menu["MenuDesign"] == "Right Side")
-        self.menu["ui"]["MenuName"] = self createText("default", 1.9, 5, level.menuName, "LEFT", "CENTER", (self.menu["X"] - (self.menu["MenuWidth"] / 2) + 4), (self.menu["Y"] - 72), 0, (1, 1, 1));
-    
-    hud = ["outlines", "optionCount", "scroller", "MenuName"];
-
-    alpha = (self.menu["MenuDesign"] != "Old School") ? 1 : 0;
-    hudFadeInTime = 0;
-
-    for(a = 0; a < hud.size; a++)
-    {
-        if(isDefined(self.menu["ui"][hud[a]]))
-        {
-            if(IsArray(self.menu["ui"][hud[a]]))
-            {
-                for(b = 0; b < self.menu["ui"][hud[a]].size; b++)
-                    if(isDefined(self.menu["ui"][hud[a]][b]))
-                        self.menu["ui"][hud[a]][b] thread hudFade(alpha, hudFadeInTime);
-            }
-            else
-                self.menu["ui"][hud[a]] thread hudFade(alpha, hudFadeInTime);
-        }
-    }
-    
-    self.menu["ui"]["title"] thread hudFade(1, hudFadeInTime);
+        self.menu["ui"]["MenuName"] = self createText("default", 1.9, 5, level.menuName, "LEFT", "CENTER", (self.menu["X"] - (self.menu["MenuWidth"] / 2) + 4), (self.menu["Y"] - 72), 1, (1, 1, 1));
     
     switch(self.menu["MenuDesign"])
     {
@@ -448,7 +433,7 @@ openMenu1(menu)
     }
 
     if(isDefined(self.menu["ui"]["background"]))
-        self.menu["ui"]["background"] thread hudFade(alpha, hudFadeInTime);
+        self.menu["ui"]["background"] thread hudFade(alpha, 0);
     
     self.menu["currentMenu"] = menu;
     self drawText();
@@ -472,6 +457,8 @@ closeMenu1()
 
     if(!self isInMenu())
         return;
+    
+    self endon("disconnect");
     
     self DestroyOpts();
     self notify("menuClosed");
@@ -497,8 +484,10 @@ closeMenu1()
     self.menuState["isInMenu"] = undefined;
 }
 
-openQuickMenu()
+openQuickMenu1()
 {
+    self endon("disconnect");
+
     if(!isDefined(self.menu["ui"]["QMBG"]))
         self.menu["ui"]["QMBG"] = [];
     
@@ -531,6 +520,8 @@ closeQuickMenu()
     if(!self isInQuickMenu())
         return;
     
+    self endon("disconnect");
+    
     self DestroyOpts();
     destroyAll(self.menu["ui"]);
     
@@ -541,6 +532,8 @@ SoftLockMenu(title, optCount, bgHeight)
 {
     if(!self hasMenu() || self hasMenu() && !self isInMenu())
         return;
+    
+    self endon("disconnect");
     
     self.menu["DisableMenuControls"] = true;
     self DestroyOpts();
@@ -574,6 +567,8 @@ SoftUnlockMenu()
     if(!self hasMenu() || !self isInMenu())
         return;
     
+    self endon("disconnect");
+    
     if(self.menu["MenuDesign"] == "Old School" && isDefined(self.menu["ui"]["scroller"]))
         self.menu["ui"]["scroller"] DestroyHud();
     
@@ -585,6 +580,8 @@ SoftUnlockMenu()
         self.menu["ui"]["scroller"] hudScaleOverTime(0.1, self.menu["MenuWidth"], (self.menu["MenuDesign"] == "Right Side") ? 15 : 18);
         self.menu["ui"]["scroller"] hudFade(1, 0.1);
     }
+    else
+        wait 0.1;
     
     self.menu["DisableMenuControls"] = undefined;
     self.menu["inKeyboard"] = undefined;
@@ -618,6 +615,8 @@ UpdateOptCount()
 
 DestroyOpts()
 {
+    self endon("disconnect");
+    
     hud = ["text", "BoolOpt", "BoolBack", "subMenu", "IntSlider", "StringSlider", "textQM", "QMBG"];
 
     for(a = 0; a < hud.size; a++)
@@ -632,16 +631,16 @@ RefreshMenu(menu, curs, force)
     if(isDefined(menu) && !isDefined(curs) || !isDefined(menu) && isDefined(curs))
         return;
     
-    if(self hasMenu() && self isInMenu(true) && !isDefined(self.menu["DisableMenuControls"]))
+    if(isDefined(menu) && isDefined(curs))
     {
-        if(isDefined(menu) && isDefined(curs))
-        {
-            foreach(player in level.players)
-                if(player hasMenu() && player isInMenu(true) && (player getCurrent() == menu || player PlayerHasOption(self, menu, curs)) && !isDefined(player.menu["DisableMenuControls"]))
-                    if(isDefined(player.menu["ui"]["text"][curs]) || player PlayerHasOption(self, menu, curs) || isDefined(force) && force)
-                        player drawText();
-        }
-        else
+        foreach(player in level.players)
+            if(player hasMenu() && player isInMenu(true) && (player getCurrent() == menu || player PlayerHasOption(self, menu, curs)) && !isDefined(player.menu["DisableMenuControls"]))
+                if(isDefined(player.menu["ui"]["text"][curs]) || player PlayerHasOption(self, menu, curs) || isDefined(force) && force)
+                    player drawText();
+    }
+    else
+    {
+        if(isDefined(self) && self hasMenu() && self isInMenu(true) && !isDefined(self.menu["DisableMenuControls"]))
             self drawText(); //if menu or cursor are undefined, it will only refresh the menu for the player it was called on
     }
 }

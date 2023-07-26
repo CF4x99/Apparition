@@ -13,7 +13,7 @@ SetPlayerModel(player, model)
     player.spawnedPlayerModel SetModel(model);
     player.spawnedPlayerModel NotSolid();
     
-    while(isDefined(player.ModelManipulation) && IsAlive(player))
+    while(isDefined(player.ModelManipulation) && Is_Alive(player))
     {
         player Hide();
         

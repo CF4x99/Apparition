@@ -207,7 +207,7 @@ WatchForMaxAmmo() //Not really an override. But, fuck it
     {
         level waittill("zmb_max_ammo_level");
         
-        if(!isDefined(level.level.ServerMaxAmmoClips))
+        if(!isDefined(level.ServerMaxAmmoClips))
             continue;
         
         foreach(player in level.players)

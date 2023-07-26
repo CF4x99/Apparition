@@ -3,6 +3,8 @@ TeleportGenerator()
     if(level flag::get("target_teleported"))
         return self iPrintlnBold("^1ERROR: ^7Generator Has Already Been Teleported");
     
+    self endon("disconnect");
+    
     curs = self getCursor();
     menu = self getCurrent();
     
@@ -23,6 +25,8 @@ ActivateComputer()
     
     if(level flag::get("rerouted_power"))
         return self iPrintlnBold("^1ERROR: ^7Computer Has Already Been Activated");
+    
+    self endon("disconnect");
     
     curs = self getCursor();
     menu = self getCurrent();

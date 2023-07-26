@@ -63,6 +63,8 @@ SamanthasHideAndSeekSong()
     if(ReturnMapName(level.script) == "Kino Der Toten" && !level flag::get("snd_zhdegg_activate"))
         return self iPrintlnBold("^1ERROR: ^7Samantha's Hide & Seek Can't Be Completed Until The Door Knocking Combination Has Been Completed");
     
+    self endon("disconnect");
+    
     curs = self getCursor();
     menu = self getCurrent();
     

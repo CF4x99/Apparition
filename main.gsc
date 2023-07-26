@@ -1,7 +1,7 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.1.2
+    Version:              1.1.3
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
     
@@ -84,6 +84,8 @@
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
     Discord: CF4_99#9999
+
+    add pap camo to weapon when using the menu to pack
 */
 
 #include scripts\codescripts\struct;
@@ -188,11 +190,11 @@ onPlayerSpawned()
 {
     self endon("disconnect");
 
-    if(self isHost())
-    {
-        if(!isDefined(level.AntiEndGame))
-            self thread AntiEndGame();
-    }
+    self AllowWallRun(0);
+    self AllowDoubleJump(0);
+
+    self.StartOrigin = self.origin;
+    self notify("stop_player_out_of_playable_area_monitor");
 
     for(a = 0; a < level.players.size; a++)
         if(level.players[a] == self)
@@ -201,6 +203,16 @@ onPlayerSpawned()
     if(GetDvarString(level.script + "Spawn" + myIndex) != "")
         self SetOrigin(GetDvarVector1(level.script + "Spawn" + myIndex));
 
+    if(isDefined(self.OnPlayerSpawned))
+        return;
+    self.OnPlayerSpawned = true;
+
+    if(self isHost())
+    {
+        if(!isDefined(level.AntiEndGame))
+            self thread AntiEndGame();
+    }
+    
     level flag::wait_till("initial_blackscreen_passed");
 
     if(self IsHost())
@@ -211,9 +223,6 @@ onPlayerSpawned()
         if(ReturnMapName(level.script) == "Unknown")
             self iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7On Custom Maps, Some Things Might Not Work As They Should.");
     }
-
-    self.StartOrigin = self.origin;
-    self notify("stop_player_out_of_playable_area_monitor");
     
     self thread playerSetup();
 }
@@ -225,7 +234,7 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName = "Apparition";
-    level.menuVersion = "1.1.2";
+    level.menuVersion = "1.1.3";
 
     level.MenuStatus = ["None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer"];
     level.AutoVerify = 0;
@@ -378,6 +387,8 @@ playerSetup()
     if(isDefined(self.menuThreaded))
         return;
     
+    self endon("disconnect");
+    
     self defineVariables();
 
     if(self isDeveloper() || self isHost())
@@ -388,9 +399,6 @@ playerSetup()
     if(self hasMenu())
         self thread ApparitionWelcomeMessage();
     
-    self AllowWallRun(0);
-    self AllowDoubleJump(0);
-
     self.hud_count = 0;
     
     self thread menuMonitor();
@@ -421,14 +429,24 @@ defineVariables()
 
 ApparitionWelcomeMessage()
 {
-    //You can add a welcome message that will show for players when they're given the menu.
     if(isDefined(self.WelcomeDisplay))
         return;
     
     self.WelcomeDisplay = true;
+
+    self endon("disconnect");
+
+    if(!isDefined(self.PlayerWelcomeMessage))
+        self.PlayerWelcomeMessage = self createText("objective", 1.7, 1, "", "TOP", "TOP", 0, 25, 1, level.RGBFadeColor);
     
-    //Only displays when the player is verified, and isn't in the menu.
-    //Can be disabled in Menu Customization
+    if(isDefined(self.PlayerWelcomeMessage))
+    {
+        self.PlayerWelcomeMessage thread SetTextFX("Welcome To Apparition Developed By CF4_99", 4);
+        self.PlayerWelcomeMessage thread HudRGBFade();
+    }
+    
+    //Menu Instructions only display when the player is verified
+    //Menu Instructions Can Be Disabled In Menu Customization
     //If you want to disable by default: menu_customization.gsc -> LoadMenuVars() -> self.menu["DisableMenuInstructions"] = undefined; <- Change to true
 
     while(1)
@@ -442,24 +460,31 @@ ApparitionWelcomeMessage()
             self.MenuInstructions = undefined;
         }
 
-        if(!isDefined(self.menu["MenuInstructions"]))
+        if(Is_Alive(self))
         {
-            if(!self isInMenu(true))
+            if(!isDefined(self.menu["MenuInstructions"]))
             {
-                instructionsY = 635;
-                string = "Status: " + self.menuState["verification"] + "\n[{+speed_throw}] & [{+melee}] To Open";
+                if(!self isInMenu(true))
+                {
+                    instructionsY = 635;
+                    string = "Status: " + self.menuState["verification"] + "\n[{+speed_throw}] & [{+melee}] To Open";
 
-                if(!isDefined(self.menu["DisableQM"]))
-                    string += "\n[{+speed_throw}] & [{+smoke}] To Open Quick Menu";
+                    if(!isDefined(self.menu["DisableQM"]))
+                        string += "\n[{+speed_throw}] & [{+smoke}] To Open Quick Menu";
+                }
+                else
+                {
+                    instructionsY = 585;
+                    string = "[{+attack}]/[{+speed_throw}] - Scroll\n[{+actionslot 3}]/[{+actionslot 4}] - Slider Left/Right\n[{+activate}] - Select\n[{+melee}] - Go Back/Exit";
+                }
             }
             else
-            {
-                instructionsY = 585;
-                string = "[{+attack}]/[{+speed_throw}] - Scroll\n[{+actionslot 3}]/[{+actionslot 4}] - Slider Left/Right\n[{+activate}] - Select\n[{+melee}] - Go Back/Exit";
-            }
+                string = self.menu["MenuInstructions"];
         }
         else
-            string = self.menu["MenuInstructions"];
+        {
+            string = !self isInMenu(true) ? "[{+speed_throw}] & [{+gostand}] To Open Quick Menu" : "[{+attack}]/[{+speed_throw}] - Scroll\n[{+activate}] - Select\n[{+gostand}] - Go Back/Exit";
+        }
         
         if(isDefined(self.MenuInstructions) && self GetLUIMenuData(self.MenuInstructions, "text") != string)
             self SetLUIMenuData(self.MenuInstructions, "text", string);

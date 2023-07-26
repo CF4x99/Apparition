@@ -35,6 +35,7 @@ SetRound(round)
     level.zombie_total = 0;
 	level.round_number = round;
 	world.roundnumber = (round ^ 115);
+
     SetRoundsPlayed(round);
 
     level notify("kill_round");
@@ -269,7 +270,7 @@ LobbyTimer()
 
         foreach(player in level.players)
         {
-            player.LobbyTimer = player OpenLUIMenu("HudElementTimer");
+            player.LobbyTimer = player OpenLUIMenu("HudElementTimer", true);
 
             player SetLUIMenuData(player.LobbyTimer, "x", 25);
             player SetLUIMenuData(player.LobbyTimer, "y", 600);
@@ -280,7 +281,7 @@ LobbyTimer()
         wait (level.LobbyTime * 60);
 
         foreach(player in level.players)
-            if(isDefined(player.LobbyTimer))
+            if(isDefined(player) && isDefined(player.LobbyTimer))
                 player CloseLUIMenu(player.LobbyTimer);
         
         if(isDefined(level.AntiEndGame))
@@ -791,13 +792,13 @@ PlayerShootToRevive()
         if(!isDefined(tracePlayer))
         {
             foreach(player in level.players)
-                if(player != self && IsAlive(player) && player IsDown())
+                if(player != self && Is_Alive(player) && player IsDown())
                     if(Distance(traceBullet, player.origin) <= 30)
                         if(!isDefined(tracePlayer) || isDefined(tracePlayer) && Distance(traceBullet, tracePlayer.origin) > Distance(traceBullet, player.origin))
                             tracePlayer = player;
         }
 
-        if(isDefined(tracePlayer) && IsPlayer(tracePlayer) && IsAlive(tracePlayer) && tracePlayer IsDown())
+        if(isDefined(tracePlayer) && IsPlayer(tracePlayer) && Is_Alive(tracePlayer) && tracePlayer IsDown())
         {
             if(isDefined(self.hud_damagefeedback))
                 self zombie_utility::show_hit_marker();

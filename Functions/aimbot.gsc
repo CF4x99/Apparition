@@ -14,6 +14,12 @@ Aimbot(player)
         if(isDefined(enemy) && isDefined(player.AimbotDistanceCheck) && Distance(player.origin, enemy.origin) > player.AimbotDistance)
             enemy = undefined;
         
+        if(isDefined(enemy) && isDefined(player.PlayableAreaCheck) && !zm_behavior::inplayablearea(enemy))
+            enemy = undefined;
+        
+        if(isDefined(enemy) && isDefined(player.VisibilityCheck) && enemy DamageConeTrace(player GetEye(), player) < 0.1)
+            enemy = undefined;
+        
         if(player.AimbotKey == "Aiming" && !player AdsButtonPressed() || player.AimbotKey == "Firing" && !player isFiring1())
             enemy = undefined;
 
@@ -23,7 +29,7 @@ Aimbot(player)
 
             if(!isDefined(origin)) //If the tag origin for the target tag can't be found, this will test the given tags to see if one can be used
             {
-                tags = ["tag_body", "j_ankle_ri", "j_ankle_le", "pelvis", "j_mainroot", "j_spinelower", "j_spine4", "j_neck", "j_head"];
+                tags = ["j_ankle_ri", "j_ankle_le", "pelvis", "j_mainroot", "j_spinelower", "j_spine4", "j_neck", "j_head", "tag_body"];
 
                 for(a = 0; a < tags.size; a++)
                 {
@@ -86,6 +92,8 @@ isFiring1()
 
 FireGun()
 {
+    self endon("disconnect");
+    
     if(self GetCurrentWeapon().name == "none" || !self GetWeaponAmmoClip(self GetCurrentWeapon()) || self IsReloading() || self isOnLadder() || self IsMantling() || self IsSwitchingWeapons() || self IsMeleeing() || self IsSprinting())
         return;
     

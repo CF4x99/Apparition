@@ -136,41 +136,6 @@ ZombieCounter(player)
         player CloseLUIMenu(player.ZombieCounterHud);
 }
 
-HealthBar(player)
-{
-    player.HealthBar = isDefined(player.HealthBar) ? undefined : true;
-
-    if(isDefined(player.HealthBar))
-    {
-        player endon("disconnect");
-
-        player.HealthDisplay = player LUI_createText("", 0, 64, 83, 1023, (1, 1, 1));
-        player.HealthBackbar = player LUI_createRectangle(0, 21, 80, 204, 32, (0, 0, 0), 1, "white");
-        player.HealthBarHud = player LUI_createRectangle(0, 23, 82, (player.health >= 100) ? 200 : (player.health * 2), 28, (0, 1, 0), 1, "white");
-
-        while(isDefined(player.HealthBar))
-        {
-            player lui::set_color(player.HealthBarHud, (player.health >= 35) ? divideColor((0 + ((player.maxHealth - player.health) * 8.5)), 255, 0) : divideColor(255, (player.health * 5), 0));
-            
-            if(player GetLUIMenuData(player.HealthBarHud, "width") != (player.health >= 100) ? 200 : (player.health * 2))
-                player SetLUIMenuData(player.HealthBarHud, "width", (player.health >= 100) ? 200 : (player.health * 2));
-            
-            if(player GetLUIMenuData(player.HealthDisplay, "text") != "Health: " + player.health + "/" + player.maxHealth)
-                player SetLUIMenuData(player.HealthDisplay, "text", "Health: " + player.health + "/" + player.maxHealth);
-
-            wait 0.01;
-        }
-    }
-    else
-    {
-        hbhud = [player.HealthDisplay, player.HealthBackbar, player.HealthBarHud];
-
-        foreach(hud in hbhud)
-            if(isDefined(hud))
-                player CloseLUIMenu(hud);
-    }
-}
-
 LightProtector(player)
 {
     player.LightProtector = isDefined(player.LightProtector) ? undefined : true;
@@ -228,46 +193,6 @@ GetLightProtectorTarget(distance)
     }
 
     return enemy;
-}
-
-AdventureTime(player)
-{  
-    if(isDefined(player.AdventureTime))
-        return;
-    
-    if(player isPlayerLinked())
-        return self iPrintlnBold("^1ERROR: ^7Player Is Linked To An Entity");
-    
-    player endon("disconnect");
-    
-    player.AdventureTime = true;
-    
-    origin = player.origin;
-    model = SpawnScriptModel(player.origin, "test_sphere_silver", (0, player.angles[1], 0));
-
-    model SetScale(7);
-    player PlayerLinkTo(model);
-    
-    for(a = 0; a < 10; a++)
-    {
-        newOrigin = origin + (RandomInt(7500), RandomInt(7500), RandomIntRange(1000, 5500));
-        model MoveTo(newOrigin, 1.5);
-
-        wait 3;
-    }
-    
-    model MoveTo(origin, 3);
-    wait 3.5;
-    
-    player Unlink();
-    model delete();
-
-    player.AdventureTime = undefined;
-}
-
-SendEarthquake(player)
-{
-    Earthquake(1, 15, player.origin, 750);
 }
 
 SpecialMovements(player)
@@ -483,7 +408,7 @@ CodJumper(player)
             {
                 foreach(client in level.players)
                 {
-                    if(!IsAlive(client) || client isDown() || isDefined(client.CodJumperLaunched))
+                    if(!Is_Alive(client) || client isDown() || isDefined(client.CodJumperLaunched))
                         continue;
                     
                     for(a = 0; a < player.codboxes.size; a++)
@@ -505,6 +430,8 @@ CodJumper(player)
 
 CodJumperBoxTrigger(player)
 {
+    player endon("disconnect");
+
     player SetOrigin(player.origin + (0, 0, 5));
     player SetVelocity((player GetVelocity()[0], player GetVelocity()[1], 600));
 
@@ -611,7 +538,9 @@ RocketRiding(player)
 
 WatchRocket(rocket, linker)
 {
-    while(isDefined(rocket) && IsAlive(self))
+    self endon("disconnect");
+    
+    while(isDefined(rocket) && Is_Alive(self))
     {
         if(self MeleeButtonPressed() || self AttackButtonPressed())
             break;
@@ -752,6 +681,9 @@ GravityGun(player)
 
 GravityGunUnlinkAfter(time)
 {
+    if(IsPlayer(self))
+        self endon("disconnect");
+    
     wait time;
 
     if(isDefined(self))

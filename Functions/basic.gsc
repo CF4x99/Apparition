@@ -51,7 +51,7 @@ Noclip1(player)
 
         self SetMenuInstructions("[{+attack}] - Move Forward\n[{+speed_throw}] - Move Backwards\n[{+melee}] - Exit");
         
-        while(isDefined(player.Noclip) && isAlive(player) && !player isPlayerLinked(player.nocliplinker))
+        while(isDefined(player.Noclip) && Is_Alive(player) && !player isPlayerLinked(player.nocliplinker))
         {
             if(player AttackButtonPressed())
                 player.nocliplinker.origin = player.nocliplinker.origin + AnglesToForward(player GetPlayerAngles()) * 60;
@@ -128,7 +128,7 @@ UFOMode(player)
 
         self SetMenuInstructions("[{+attack}] - Move Up\n[{+speed_throw}] - Move Down\n[{+frag}] - Move Forward\n[{+melee}] - Exit");
         
-        while(isDefined(player.UFOMode) && isAlive(player) && !player isPlayerLinked(player.ufolinker))
+        while(isDefined(player.UFOMode) && Is_Alive(player) && !player isPlayerLinked(player.ufolinker))
         {
             player.ufolinker.angles = (player.ufolinker.angles[0], player GetPlayerAngles()[1], player.ufolinker.angles[2]);
 
@@ -167,11 +167,10 @@ UnlimitedAmmo(type, player)
 {
     player notify("EndUnlimitedAmmo");
     player endon("EndUnlimitedAmmo");
+    player endon("disconnect");
 
     if(type != "Disable")
     {
-        player endon("disconnect");
-
         while(1)
         {
             player GiveMaxAmmo(player GetCurrentWeapon());
@@ -243,6 +242,8 @@ GivePlayerPerk(perk, player)
 
 GivePlayerGobblegum(name, player)
 {
+    player endon("disconnect");
+
     if(player.bgb != name)
     {
         menu = self getCurrent();
@@ -404,24 +405,6 @@ SaveAndLoad(player)
     }
 }
 
-CustomCrosshairs(string, player)
-{    
-    if(isDefined(player.CustomCrosshairs))
-        player CloseLUIMenu(player.CustomCrosshairs);
-
-    if(string != "Disable")
-        player.CustomCrosshairs = player LUI_createText(string, 2, 129, 344, 1023, (0, 0, 0));
-    
-    player endon("disconnect");
-
-    while(isDefined(player.CustomCrosshairs))
-    {
-        player lui::set_color(player.CustomCrosshairs, level.RGBFadeColor);
-
-        wait 0.01;
-    }
-}
-
 NoTarget(player)
 {   
     player.NoTarget = isDefined(player.NoTarget) ? undefined : true;
@@ -478,7 +461,7 @@ MultiJump(player)
             firstJump = undefined;
         }
         
-        if(isAlive(player) && !player IsOnGround() && !isDefined(firstJump))
+        if(Is_Alive(player) && !player IsOnGround() && !isDefined(firstJump))
         {
             if(player JumpButtonPressed())
             {
@@ -660,6 +643,8 @@ UnlimitedSprint(player)
 
     if(isDefined(player.UnlimitedSprint))
     {
+        player endon("disconnect");
+        
         while(isDefined(player.UnlimitedSprint))
         {
             if(!player HasPerk("specialty_unlimitedsprint"))
@@ -699,28 +684,11 @@ PlayerRevive(player)
     if(!player isDown())
         return;
 
-    player RevivePlayer();
-
-    if(isDefined(player.revivetrigger))
-    {
-        player.revivetrigger delete();
-        player.revivetrigger = undefined;
-    }
-
-    player laststand::cleanup_suicide_hud();
-    player zm_laststand::laststand_enable_player_weapons();
-    player AllowJump(1);
-    player.ignoreme = 0;
-    player DisableInvulnerability();
-    player.laststand = undefined;
-    player notify("player_revived", player);
+    player zm_laststand::auto_revive(player);
 }
 
-DownPlayer(player)
+PlayerDeath(type, player)
 {
-    if(player IsDown())
-        return self iPrintlnBold("^1ERROR: ^7Player Is Already Down");
-    
     if(isDefined(player.godmode))
         player Godmode(player);
 
@@ -728,5 +696,37 @@ DownPlayer(player)
         player DemiGod(player);
     
     player DisableInvulnerability(); //Just to ensure that the player is able to be damaged.
-    player DoDamage(player.health + 999, (0, 0, 0));
+
+    if(!Is_Alive(player))
+        return self iPrintlnBold("^1ERROR: ^7Player Isn't Alive");
+    
+    wait 0.5;
+    
+    switch(type)
+    {
+        case "Down":
+            if(player IsDown())
+                return self iPrintlnBold("^1ERROR: ^7Player Is Already Down");
+            
+            player DoDamage(player.health + 999, (0, 0, 0));
+            break;
+        
+        case "Kill":
+            if(!player IsDown())
+            {
+                player DoDamage(player.health + 999, (0, 0, 0));
+
+                wait 0.5;
+            }
+            
+            if(player IsDown()) //Not using else, because this needs to run whether the block above runs, or not
+            {
+                player notify("bled_out");
+                player zm_laststand::bleed_out();
+            }
+            break;
+        
+        default:
+            break;
+    }
 }

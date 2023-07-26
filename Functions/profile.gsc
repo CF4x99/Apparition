@@ -145,6 +145,8 @@ SetCustomStats(player)
     if(!isDefined(player.CustomStatsArray) || !player.CustomStatsArray.size)
         return self iPrintlnBold("^1ERROR: ^7No Stats Have Selected");
     
+    player endon("disconnect");
+    
     for(a = 0; a < player.CustomStatsArray.size; a++)
     {
         if(isInArray(level.MenuBGB, player.CustomStatsArray[a]))
@@ -212,6 +214,8 @@ AllBGBStats(player)
 
 SetPlayerPrestige(prestige, player)
 {
+    player endon("disconnect");
+
     player SetDStat("PlayerStatsList", "plevel", "StatValue", prestige);
     player SetRank(player rank::getRankForXp(player rank::getRankXP()), player GetDStat("PlayerStatsList", "plevel", "StatValue"));
 
@@ -222,6 +226,8 @@ SetPlayerPrestige(prestige, player)
 
 SetPlayerRank(rank, player)
 {
+    player endon("disconnect");
+
     add = (rank > 35) ? Int(TableLookup("gamedata/tables/zm/zm_paragonranktable.csv", 0, (rank - 36), (rank == 100) ? 7 : 2)) : Int(TableLookup("gamedata/tables/zm/zm_ranktable.csv", 0, (rank - 1), (rank == 35) ? 7 : 2));
     current = (rank > 35) ? Int(player GetDStat("PlayerStatsList", "paragon_rankxp", "StatValue")) : Int(player GetDStat("PlayerStatsList", "rankxp", "StatValue"));
 

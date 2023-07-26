@@ -89,7 +89,7 @@ ReignDropRemoveHandler(var_93eb638b)
 		players = GetPlayers();
 
 		for(i = 0; i < players.size; i++)
-			if(IsAlive(players[i]))
+			if(Is_Alive(players[i]))
 				players[i] PlayLocalSound(level.zmb_laugh_alias);
 	}
 

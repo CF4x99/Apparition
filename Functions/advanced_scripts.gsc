@@ -1,45 +1,3 @@
-x3DDrawing()
-{
-    self.x3DDrawing = isDefined(self.x3DDrawing) ? undefined : true;
-
-    self endon("disconnect");
-
-    if(!isDefined(self.x3DFX))
-        self.x3DFX = [];
-
-    while(isDefined(self.x3DDrawing))
-    {
-        if(self AdsButtonPressed())
-        {
-            self.x3DFX[self.x3DFX.size] = SpawnFX(level._effect[self.x3DDrawingFX], BulletTrace(self GetEye(), (self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), self.x3DDistance)), 0, self)["position"]);
-            TriggerFX(self.x3DFX[(self.x3DFX.size - 1)]);
-        }
-
-        wait 0.01;
-    }
-}
-
-DeleteAllDrawings()
-{
-    if(isDefined(self.x3DFX) && self.x3DFX.size)
-        for(a = 0; a < self.x3DFX.size; a++)
-            if(isDefined(self.x3DFX[a]))
-                self.x3DFX[a] delete();
-}
-
-x3DDrawingFX(fx)
-{
-    self.x3DDrawingFX = fx;
-}
-
-x3DDrawingDistance(distance)
-{
-    if(distance < 20)
-        return self iPrintlnBold("^1ERROR: ^7Distance Cannot Be Lower Than 20");
-
-    self.x3DDistance = distance;
-}
-
 AC130(type)
 {
     if(isDefined(self.AC130))
@@ -168,6 +126,8 @@ AC130FireRate(ammo)
 
 FireAC130(ammoType)
 {
+    self endon("disconnect");
+
     if(!isDefined(self.AC130DisableFire))
         self.AC130DisableFire = [];
     
@@ -343,11 +303,12 @@ DisableLobbyRain()
 
 CustomSentry(origin)
 {
+    self endon("disconnect");
+
     self.CustomSentry = isDefined(self.CustomSentry) ? undefined : true;
 
     if(isDefined(self.CustomSentry))
     {
-        self endon("disconnect");
         self endon("EndCustomSentry");
         
         if(!isDefined(origin))
@@ -444,6 +405,7 @@ ArtilleryStrike()
     self.ArtilleryStrike = true;
     
     self endon("disconnect");
+
     self closeMenu1();
     wait 0.25;
     
@@ -623,6 +585,7 @@ TornadoWatchPlayers()
 TornadoLaunchPlayer(a)
 {
     level endon("Tornado_Stop");
+    self endon("disconnect");
 
     self.OnTornado = true;
 
@@ -1245,15 +1208,4 @@ SpiralStaircase(size)
 
         level.SpiralStaircaseSpawning = undefined;
     }
-}
-
-DesolidifyDebris()
-{
-    level.DesolidifyDebris = isDefined(level.DesolidifyDebris) ? undefined : true;
-
-    foreach(model in GetEntArray("script_brushmodel", "classname"))
-        if(isDefined(level.DesolidifyDebris))
-            model NotSolid();
-        else
-            model Solid();
 }

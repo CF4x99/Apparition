@@ -3,7 +3,7 @@ createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
     textElem = self hud::CreateFontString(font, fontSize);
 
     textElem.hideWhenInMenu = true;
-    textElem.archived = (self.hud_count >= 21);
+    textElem.archived = self ShouldArchive();
     textElem.foreground = true;
     textElem.player = self;
 
@@ -21,7 +21,7 @@ createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
 
 LUI_createText(text, align, x, y, width, color)
 {    
-    textElem = self OpenLUIMenu("HudElementText");
+    textElem = self OpenLUIMenu("HudElementText", true);
 
     //0 - LEFT | 1 - RIGHT | 2 - CENTER
     self SetLUIMenuData(textElem, "text", text);
@@ -62,7 +62,7 @@ createRectangle(align, relative, x, y, width, height, color, sort, alpha, shader
     uiElement.children = [];
     
     uiElement.hideWhenInMenu = true;
-    uiElement.archived = (self.hud_count >= 21);
+    uiElement.archived = self ShouldArchive();
     uiElement.foreground = true;
     uiElement.hidden = false;
     uiElement.player = self;
@@ -86,7 +86,7 @@ createRectangle(align, relative, x, y, width, height, color, sort, alpha, shader
 
 LUI_createRectangle(align, x, y, width, height, color, alpha, shader)
 {
-    uiElement = self OpenLUIMenu("HudElementImage");
+    uiElement = self OpenLUIMenu("HudElementImage", true);
 
     //0 - LEFT | 1 - RIGHT | 2 - CENTER
     self SetLUIMenuData(uiElement, "alignment", align);
@@ -111,7 +111,7 @@ createServerRectangle(align, relative, x, y, width, height, color, sort, alpha, 
     uiElement.elemType = "bar";
     uiElement.children = [];
     
-    uiElement.hideWhenInMenu = false;
+    uiElement.hideWhenInMenu = true;
     uiElement.archived = true;
     uiElement.foreground = true;
     uiElement.hidden = false;
@@ -129,6 +129,14 @@ createServerRectangle(align, relative, x, y, width, height, color, sort, alpha, 
     uiElement hud::SetPoint(align, relative, x, y);
     
     return uiElement;
+}
+
+ShouldArchive()
+{
+    if(!Is_Alive(self) || self.hud_count < 21)
+        return false;
+    
+    return true;
 }
 
 DestroyHud()
@@ -231,9 +239,11 @@ hudFadeColor(color, time)
 
 HudRGBFade()
 {
-    if(isDefined(self.RGBFade))
+    if(!isDefined(self) || isDefined(self.RGBFade))
         return;
     self.RGBFade = true;
+
+    self endon("death");
 
     level endon("stop_intermission"); //For custom end game hud
 
@@ -306,9 +316,9 @@ GetPlayerFromEntityNumber(number)
             return player;
 }
 
-isInMenu(allowQM)
+isInMenu(iqm)
 {
-    return (isDefined(self.menuState["isInMenu"]) || self isInQuickMenu() && allowQM);
+    return isDefined(self.menuState["isInMenu"]) || isDefined(iqm) && iqm && isDefined(self.menuState["isInQuickMenu"]);
 }
 
 isInQuickMenu()
@@ -428,6 +438,16 @@ newMenu(menu, dontSave, i1)
 {
     self notify("EndSwitchWeaponMonitor");
     self endon("menuClosed");
+
+    if(self getCurrent() == "Players" && isDefined(menu))
+    {
+        player = level.players[self getCursor()];
+
+        //This will make it so only the host developers can access the host's player options. Also, only the developers can access other developer's player options.
+
+        if(player IsHost() && (!self IsHost() || !self IsDeveloper()) || player isDeveloper() && !self isDeveloper())
+            return self iPrintlnBold("^1ERROR: ^7Access Denied");
+    }
     
     if(!isDefined(menu))
     {
@@ -468,9 +488,6 @@ newMenu(menu, dontSave, i1)
 
     if(menu == "Players" && !isDefined(self.PlayerInfoHandler))
         self thread PlayerInfoHandler();
-
-    if(isDefined(i1))
-        self.EntityEditorNumber = i1;
     
     self DestroyOpts();
     self drawText();
@@ -739,7 +756,7 @@ deleteAfter(time)
 
 SetTextFX(text, time)
 {
-    if(!isDefined(text))
+    if(!isDefined(text) || !isDefined(self))
         return;
     
     if(!isDefined(time))
@@ -876,6 +893,8 @@ Keyboard(title, func, player)
     
     if(isDefined(self.menu["ui"]["scroller"]))
         self.menu["ui"]["scroller"] hudScaleOverTime(0.1, 16, 16);
+    else
+        self.menu["ui"]["scroller"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], 16, 16, self.menu["Main_Color"], 3, 1, "white");
     
     self SoftLockMenu(title, "", (self.menu["MenuDesign"] == "Right Side") ? 1000 : 120);
     
@@ -899,9 +918,6 @@ Keyboard(title, func, player)
     if(isDefined(self.menu["ui"]["scroller"]))
         self.menu["ui"]["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), 0.1);
     
-    if(!isDefined(self.menu["ui"]["scroller"]))
-        self.menu["ui"]["scroller"] = self createRectangle("TOP", "CENTER", self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), self.menu["MenuWidth"], 18, self.menu["Main_Color"], 3, 1, "white");
-    
     cursY = 0;
     cursX = 0;
     stringLimit = 32;
@@ -910,7 +926,7 @@ Keyboard(title, func, player)
 
     self SetMenuInstructions("[{+actionslot 1}]/[{+actionslot 2}]/[{+actionslot 3}]/[{+actionslot 4}] - Scroll\n[{+activate}] - Select\n[{+frag}] - Add Space\n[{+gostand}] - Confirm\n[{+melee}] - Backspace/Cancel");
 
-    wait 0.1;
+    wait 1;
     
     while(1)
     {
@@ -1024,6 +1040,8 @@ NumberPad(title, func, player, param)
 
     if(isDefined(self.menu["ui"]["scroller"]))
         self.menu["ui"]["scroller"] hudScaleOverTime(0.1, 15, 15);
+    else
+        self.menu["ui"]["scroller"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], 15, 15, self.menu["Main_Color"], 3, 1, "white");
 
     self SoftLockMenu(title, "", (self.menu["MenuDesign"] == "Right Side") ? 1000 : 50);
     
@@ -1041,16 +1059,13 @@ NumberPad(title, func, player, param)
     if(isDefined(self.menu["ui"]["scroller"]))
         self.menu["ui"]["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), 0.1);
     
-    if(!isDefined(self.menu["ui"]["scroller"]))
-        self.menu["ui"]["scroller"] = self createRectangle("TOP", "CENTER", self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), self.menu["MenuWidth"], 18, self.menu["Main_Color"], 3, 1, "white");
-    
     cursX = 0;
     stringLimit = 10;
     string = "";
 
     self SetMenuInstructions("[{+actionslot 3}]/[{+actionslot 4}] - Scroll\n[{+activate}] - Select\n[{+gostand}] - Confirm\n[{+melee}] - Backspace/Cancel");
 
-    wait 0.3;
+    wait 1;
     
     while(1)
     {
@@ -1167,6 +1182,11 @@ isDown()
     return isDefined(self.revivetrigger);
 }
 
+Is_Alive(player)
+{
+    return (IsAlive(player) && player.sessionstate != "spectator");
+}
+
 isZombie()
 {
     return (isDefined(self.is_zombie) && self.is_zombie);
@@ -1257,7 +1277,7 @@ ReturnMapName(map)
             return "Nacht Der Untoten";
         
         case "zm_asylum":
-            return "Verrückt";
+            return "Verruckt";
         
         case "zm_sumpf":
             return "Shi No Numa";

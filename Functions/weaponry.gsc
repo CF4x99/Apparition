@@ -42,6 +42,8 @@ PackCurrentWeapon(player)
 
     if(zm_weapons::is_weapon_included(base_weapon))
 		force_attachments = zm_weapons::get_force_attachments(base_weapon.rootweapon);
+    
+    camo = upgraded ? level.pack_a_punch_camo_index : 0;
 
 	if(isDefined(force_attachments) && force_attachments.size)
 	{
@@ -54,9 +56,9 @@ PackCurrentWeapon(player)
 
 			force_attachments = ArrayCombine(force_attachments, packed_attachments, 0, 0);
 		}
-
-        camo = 0;
+        
         acvi = 0;
+
 		newWeapon = GetWeapon(newWeapon.rootweapon.name, force_attachments);
 		weapon_options = player CalcWeaponOptions(camo, 0, 0);
 	}

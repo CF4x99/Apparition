@@ -89,7 +89,7 @@ SpawnSystem(action, type, func)
             { 
                 for(a = 0; a < level.SpawnableArray[type].size; a++)
                 {
-                    if(!isDefined(level.SpawnableArray[type].size))
+                    if(!isDefined(level.SpawnableArray[type][a]))
                         continue;
                     
                     level.SpawnableArray[type][a] NotSolid();

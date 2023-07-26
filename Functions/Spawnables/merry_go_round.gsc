@@ -86,7 +86,7 @@ RotateMerryYaw()
 {
     level endon("Merry Go Round_Stop");
     
-    while(1)
+    while(isDefined(self))
     {
         self RotateYaw(360, level.MerryGoRoundSpeed);
         wait level.MerryGoRoundSpeed;
