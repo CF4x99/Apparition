@@ -1,7 +1,7 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.1.3
+    Version:              1.1.4
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
     
@@ -84,8 +84,6 @@
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
     Discord: CF4_99#9999
-
-    add pap camo to weapon when using the menu to pack
 */
 
 #include scripts\codescripts\struct;
@@ -176,7 +174,7 @@ init()
     level.saved_callbackactorkilled = level.callbackactorkilled;
     level.callbackactorkilled = ::override_actor_killed;
     
-    level.custom_game_over_hud_elem = ::override_game_over_hud_elem; //This will only show the custom hud to players that are verified.
+    level.custom_game_over_hud_elem = ::override_game_over_hud_elem;
     level.player_score_override = ::override_player_points;
 }
 
@@ -203,6 +201,7 @@ onPlayerSpawned()
     if(GetDvarString(level.script + "Spawn" + myIndex) != "")
         self SetOrigin(GetDvarVector1(level.script + "Spawn" + myIndex));
 
+    //Anthing Above This Is Ran Every Time The Player Spawns
     if(isDefined(self.OnPlayerSpawned))
         return;
     self.OnPlayerSpawned = true;
@@ -234,7 +233,7 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName = "Apparition";
-    level.menuVersion = "1.1.3";
+    level.menuVersion = "1.1.4";
 
     level.MenuStatus = ["None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer"];
     level.AutoVerify = 0;
@@ -325,6 +324,20 @@ DefineMenuArrays()
         if(ents[a].model != "tag_origin" && ents[a].model != "")
             array::add(level.MenuModels, ents[a].model, 0);
     
+    level.MenuEffects = [];
+    fxs = GetArrayKeys(level._effect);
+
+    for(a = 0; a < fxs.size; a++)
+    {
+        if(isInArray(level.MenuEffects))
+            continue;
+        
+        level.MenuEffects[a] = SpawnStruct();
+
+        level.MenuEffects[a].name = fxs[a];
+        level.MenuEffects[a].displayName = CleanString(fxs[a]);
+    }
+    
     level.customBoxWeapons = [];
     weapons = GetArrayKeys(level.zombie_weapons);
 
@@ -357,13 +370,8 @@ DefineMenuArrays()
     foreach(DeathBarrier in GetEntArray("trigger_hurt", "classname"))
         DeathBarrier delete();
 
-    foreach(entity in GetEntArray("script_model", "classname"))
+    foreach(entity in GetEntArray("script_model", "classname")) //Needed For Moon Doors
     {
-        if(entity.model == "tag_origin" || IsSubStr(entity.model, "collision"))
-            continue;
-        
-        level.SavedMapEntities[level.SavedMapEntities.size] = entity;
-
         entity.savedOrigin = entity.origin;
         entity.savedAngles = entity.angles;
     }
@@ -386,6 +394,7 @@ playerSetup()
 {
     if(isDefined(self.menuThreaded))
         return;
+    self.menuThreaded = true;
     
     self endon("disconnect");
     
@@ -399,10 +408,7 @@ playerSetup()
     if(self hasMenu())
         self thread ApparitionWelcomeMessage();
     
-    self.hud_count = 0;
-    
     self thread menuMonitor();
-    self.menuThreaded = true;
 }
  
 defineVariables()
@@ -411,39 +417,24 @@ defineVariables()
         return;
     self.DefinedVariables = true;
     
-    if(!isDefined(self.menu))
-        self.menu = [];
+    self.menu = [];
+    self.menu["ui"] = [];
+    self.menuState = [];
     
-    if(!isDefined(self.menu["ui"]))
-        self.menu["ui"] = [];
-    
-    if(!isDefined(self.menuState))
-        self.menuState = [];
-    
+    self.hud_count = 0;
     self.menu["currentMenu"] = "";
-    self.menuState["isInMenu"] = undefined;
     
     //Menu Design Variables
-    self thread LoadMenuVars();
+    self LoadMenuVars();
 }
 
 ApparitionWelcomeMessage()
 {
     if(isDefined(self.WelcomeDisplay))
         return;
-    
     self.WelcomeDisplay = true;
 
     self endon("disconnect");
-
-    if(!isDefined(self.PlayerWelcomeMessage))
-        self.PlayerWelcomeMessage = self createText("objective", 1.7, 1, "", "TOP", "TOP", 0, 25, 1, level.RGBFadeColor);
-    
-    if(isDefined(self.PlayerWelcomeMessage))
-    {
-        self.PlayerWelcomeMessage thread SetTextFX("Welcome To Apparition Developed By CF4_99", 4);
-        self.PlayerWelcomeMessage thread HudRGBFade();
-    }
     
     //Menu Instructions only display when the player is verified
     //Menu Instructions Can Be Disabled In Menu Customization
@@ -453,14 +444,14 @@ ApparitionWelcomeMessage()
     {
         if(!isDefined(self.MenuInstructions) && !isDefined(self.menu["DisableMenuInstructions"]) && self hasMenu())
             self.MenuInstructions = self LUI_createText("", 2, 129, 635, 1023, (0, 0, 0));
-        
+    
         if(isDefined(self.MenuInstructions) && (isDefined(self.menu["DisableMenuInstructions"]) || !self hasMenu()))
         {
             self CloseLUIMenu(self.MenuInstructions);
             self.MenuInstructions = undefined;
         }
 
-        if(Is_Alive(self))
+        if(isDefined(self.MenuInstructions))
         {
             if(!isDefined(self.menu["MenuInstructions"]))
             {
@@ -480,20 +471,16 @@ ApparitionWelcomeMessage()
             }
             else
                 string = self.menu["MenuInstructions"];
-        }
-        else
-        {
-            string = !self isInMenu(true) ? "[{+speed_throw}] & [{+gostand}] To Open Quick Menu" : "[{+attack}]/[{+speed_throw}] - Scroll\n[{+activate}] - Select\n[{+gostand}] - Go Back/Exit";
-        }
-        
-        if(isDefined(self.MenuInstructions) && self GetLUIMenuData(self.MenuInstructions, "text") != string)
-            self SetLUIMenuData(self.MenuInstructions, "text", string);
-        
-        if(isDefined(self.MenuInstructions))
+            
+
+            if(self GetLUIMenuData(self.MenuInstructions, "text") != string)
+                self SetLUIMenuData(self.MenuInstructions, "text", string);
+            
             self lui::set_color(self.MenuInstructions, level.RGBFadeColor);
-        
-        if(isDefined(self.MenuInstructions) && self GetLUIMenuData(self.MenuInstructions, "y") != instructionsY)
-            self SetLUIMenuData(self.MenuInstructions, "y", instructionsY);
+            
+            if(self GetLUIMenuData(self.MenuInstructions, "y") != instructionsY)
+                self SetLUIMenuData(self.MenuInstructions, "y", instructionsY);
+        }
 
         wait 0.01;
     }

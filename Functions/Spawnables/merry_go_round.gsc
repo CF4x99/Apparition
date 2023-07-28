@@ -9,10 +9,10 @@ SpawnMerryGoRound()
     origin = self TraceBullet();
     level.MerryGoRoundSpeed = 10;
     
+    SeatsLinker = [];
     base = [];
     platforms = [];
     seats = [];
-    SeatsLinker = [];
     
     MerryGoRoundLinker = SpawnScriptModel(origin + (0, 0, 15), "tag_origin", (0, 0, 0));
 

@@ -72,7 +72,7 @@ addOpt(name, fnc, input1, input2, input3, input4)
     menu = self.temp["memory"];
     size = self.menu["items"][menu].name.size;
     
-    self.menu["items"][menu].name[size] = MakeLocalizedString(name);
+    self.menu["items"][menu].name[size] = name;
     self.menu["items"][menu].func[size] = fnc;
     self.menu["items"][menu].input1[size] = input1;
     self.menu["items"][menu].input2[size] = input2;
@@ -85,7 +85,7 @@ addOptBool(var, name, fnc, input1, input2, input3, input4)
     menu = self.temp["memory"];
     size = self.menu["items"][menu].name.size;
     
-    self.menu["items"][menu].name[size] = MakeLocalizedString(name);
+    self.menu["items"][menu].name[size] = name;
     self.menu["items"][menu].func[size] = fnc;
     self.menu["items"][menu].input1[size] = input1;
     self.menu["items"][menu].input2[size] = input2;
@@ -101,7 +101,7 @@ addOptIncSlider(name, fnc, min, start, max, increment, input1, input2, input3, i
     menu = self.temp["memory"];
     size = self.menu["items"][menu].name.size;
     
-    self.menu["items"][menu].name[size] = MakeLocalizedString(name);
+    self.menu["items"][menu].name[size] = name;
     self.menu["items"][menu].func[size] = fnc;
     self.menu["items"][menu].input1[size] = input1;
     self.menu["items"][menu].input2[size] = input2;
@@ -124,7 +124,7 @@ addOptSlider(name, fnc, values, input1, input2, input3, input4)
     
     self.menu_S[menu][size] = StrTok(values, ";");
 
-    self.menu["items"][menu].name[size] = MakeLocalizedString(name);
+    self.menu["items"][menu].name[size] = name;
     self.menu["items"][menu].func[size] = fnc;
     self.menu["items"][menu].input1[size] = input1;
     self.menu["items"][menu].input2[size] = input2;

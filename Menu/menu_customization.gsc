@@ -147,14 +147,6 @@ MenuMaxOptions(max)
     self SaveMenuTheme();
 }
 
-DisableOptionCounter()
-{
-    self closeMenu1();
-    self.menu["DisableOptionCounter"] = isDefined(self.menu["DisableOptionCounter"]) ? undefined : true;
-    self SaveMenuTheme();
-    self openMenu1();
-}
-
 MenuBlur()
 {
     self.menu["MenuBlur"] = isDefined(self.menu["MenuBlur"]) ? undefined : true;
@@ -188,7 +180,6 @@ DisableQuickMenu()
 SaveMenuTheme()
 {
     design = self.menu["MenuDesign"] + ";" + self.menu["ToggleStyle"] + ";" + self.menu["X"] + ";" + self.menu["Y"] + ";" + self.menu["MenuWidth"] + ";" + self.menu["MaxOptions"] + ";" + self.menu["MenuBlurValue"] + ";";
-    design += isDefined(self.menu["DisableOptionCounter"]) ? "Disable;" : "Enable;";
     design += isDefined(self.menu["DisableMenuInstructions"]) ? "Disable;" : "Enable;";
     design += isDefined(self.menu["LargeCursor"]) ? "Enable;" : "Disable;";
     design += isDefined(self.menu["MenuBlur"]) ? "Enable;" : "Disable;";
@@ -231,9 +222,6 @@ LoadMenuVars() //Pre-Set Menu Variables.
     self.menu["MenuBlurValue"] = 2.5; //Amount of blur applied when menu blur is enabled
     self.menu["MenuWidth"] = self.menu["DefaultWidth"];
 
-    //Change 'true' to 'undefined' if you want to enable the option counter by default
-    self.menu["DisableOptionCounter"] = true;
-
     //Change 'undefined' to 'true' if you want to disable the instructions by default
     self.menu["DisableMenuInstructions"] = undefined;
 
@@ -274,17 +262,16 @@ LoadMenuVars() //Pre-Set Menu Variables.
         self.menu["MenuWidth"] = Int(dvarSep[4]);
         self.menu["MaxOptions"] = Int(dvarSep[5]);
         self.menu["MenuBlurValue"] = Float(dvarSep[6]);
-        self.menu["DisableOptionCounter"] = (dvarSep[7] == "Disable") ? true : undefined;
-        self.menu["DisableMenuInstructions"] = (dvarSep[8] == "Disable") ? true : undefined;
-        self.menu["LargeCursor"] = (dvarSep[9] == "Enable") ? true : undefined;
-        self.menu["MenuBlur"] = (dvarSep[10] == "Enable") ? true : undefined;
-        self.menu["DisableQM"] = (dvarSep[11] == "Enable") ? true : undefined;
+        self.menu["DisableMenuInstructions"] = (dvarSep[7] == "Disable") ? true : undefined;
+        self.menu["LargeCursor"] = (dvarSep[8] == "Enable") ? true : undefined;
+        self.menu["MenuBlur"] = (dvarSep[9] == "Enable") ? true : undefined;
+        self.menu["DisableQM"] = (dvarSep[10] == "Enable") ? true : undefined;
         
-        if(dvarSep[12] == "Rainbow")
+        if(dvarSep[11] == "Rainbow")
             self thread SmoothRainbowTheme();
         else
         {
-            SetDvar(self GetXUID() + level.menuName + "Color", dvarSep[12]);
+            SetDvar(self GetXUID() + level.menuName + "Color", dvarSep[11]);
             self.menu["Main_Color"] = GetDvarVector1(self GetXUID() + level.menuName + "Color");
         }
     }

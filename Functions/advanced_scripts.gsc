@@ -63,7 +63,10 @@ AC130(type)
         destroyAll(self.AC130HUD);
     
     if(isDefined(self.AC130HUDLUI))
+    {
         self CloseLUIMenu(self.AC130HUDLUI);
+        self.AC130HUDLUI = undefined;
+    }
 
     if(!isDefined(self.godmode))
         self DisableInvulnerability();

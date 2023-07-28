@@ -120,7 +120,8 @@ ZombieCounter(player)
     {
         player endon("disconnect");
 
-        player.ZombieCounterHud = player LUI_createText("", 0, 22, 25, 1023, (0, 0, 0));
+        if(!isDefined(player.ZombieCounterHud))
+            player.ZombieCounterHud = player LUI_createText("", 0, 22, 25, 1023, (0, 0, 0));
 
         while(isDefined(player.ZombieCounter))
         {
@@ -133,7 +134,10 @@ ZombieCounter(player)
         }
     }
     else
+    {
         player CloseLUIMenu(player.ZombieCounterHud);
+        player.ZombieCounterHud = undefined;
+    }
 }
 
 LightProtector(player)

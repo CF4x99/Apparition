@@ -21,7 +21,7 @@ createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
 
 LUI_createText(text, align, x, y, width, color)
 {    
-    textElem = self OpenLUIMenu("HudElementText", true);
+    textElem = self OpenLUIMenu("HudElementText", 1);
 
     //0 - LEFT | 1 - RIGHT | 2 - CENTER
     self SetLUIMenuData(textElem, "text", text);
@@ -86,7 +86,7 @@ createRectangle(align, relative, x, y, width, height, color, sort, alpha, shader
 
 LUI_createRectangle(align, x, y, width, height, color, alpha, shader)
 {
-    uiElement = self OpenLUIMenu("HudElementImage", true);
+    uiElement = self OpenLUIMenu("HudElementImage", 1);
 
     //0 - LEFT | 1 - RIGHT | 2 - CENTER
     self SetLUIMenuData(uiElement, "alignment", align);
@@ -155,6 +155,26 @@ SetTextString(text)
     if(!isDefined(self) || !isDefined(text))
         return;
     
+    if(!isDefined(level.uniqueStrings))
+        level.uniqueStrings = [];
+    
+    if(!isInArray(level.uniqueStrings, text))
+    {
+        if(level.uniqueStrings.size >= 1499)
+        {
+            text = "UNIQUE STRING LIMIT REACHED";
+
+            if(!isDefined(level.uniqueStringLimitNotify))
+            {
+                bot::get_host_player() iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7Unique String Limit Has Been Reached. No More Unique Strings Will Be Created");
+                level.uniqueStringLimitNotify = true;
+            }
+        }
+        
+        array::add(level.uniqueStrings, text, 0);
+    }
+
+    text = MakeLocalizedString(text);
     self.text = text;
     self SetText(text);
 }
@@ -395,15 +415,10 @@ SetSlider(dir)
     if((self.menu_SS[menu][curs] > max) || (self.menu_SS[menu][curs] < 0))
         self.menu_SS[menu][curs] = (self.menu_SS[menu][curs] > max) ? 0 : max;
     
-    if(isDefined(self.menu["ui"]["StringSlider"][curs]))
-        self.menu["ui"]["StringSlider"][curs] SetTextString("< " + self.menu_S[menu][curs][self.menu_SS[menu][curs]] + " > [" + (self.menu_SS[menu][curs] + 1) + "/" + self.menu_S[menu][curs].size + "]");
+    if(!self isInQuickMenu())
+        self.menu["ui"]["text"][curs] SetTextString(self.menu["items"][self getCurrent()].name[curs] + " < " + self.menu_S[menu][curs][self.menu_SS[menu][curs]] + " > [" + (self.menu_SS[menu][curs] + 1) + "/" + self.menu_S[menu][curs].size + "]");
     else
-    {
-        if(!self isInQuickMenu())
-            self.menu["ui"]["text"][curs] SetTextString(self.menu["items"][self getCurrent()].name[curs] + " < " + self.menu_S[menu][curs][self.menu_SS[menu][curs]] + " > [" + (self.menu_SS[menu][curs] + 1) + "/" + self.menu_S[menu][curs].size + "]");
-        else
-            self drawText(); //Needed To Resize Option Backgrounds & Refresh Sliders
-    }
+        self drawText(); //Needed To Resize Option Backgrounds & Refresh Sliders
 }
 
 SetIncSlider(dir)
@@ -418,20 +433,16 @@ SetIncSlider(dir)
     if((self.menu_SS[menu][curs] < max) && (self.menu_SS[menu][curs] + val) > max || (self.menu_SS[menu][curs] > min) && (self.menu_SS[menu][curs] - val) < min)
         self.menu_SS[menu][curs] = ((self.menu_SS[menu][curs] < max) && (self.menu_SS[menu][curs] + val) > max) ? max : min;
     else
-        self.menu_SS[menu][curs] += (dir > 0) ? val : (val * -1);
+        self.menu_SS[menu][curs] = (dir > 0) ? self.menu_SS[menu][curs] + val : self.menu_SS[menu][curs] - val;
     
     if((self.menu_SS[menu][curs] > max) || (self.menu_SS[menu][curs] < min))
         self.menu_SS[menu][curs] = (self.menu_SS[menu][curs] > max) ? min : max;
     
-    if(isDefined(self.menu["ui"]["IntSlider"][curs]))
-        self.menu["ui"]["IntSlider"][curs] SetTextString("< " + self.menu_SS[menu][curs] + " >");
+    
+    if(!self isInQuickMenu())
+        self.menu["ui"]["text"][curs] SetTextString(self.menu["items"][self getCurrent()].name[curs] + " < " + self.menu_SS[menu][curs] + " >");
     else
-    {
-        if(!self isInQuickMenu())
-            self.menu["ui"]["text"][curs] SetTextString(self.menu["items"][self getCurrent()].name[curs] + " < " + self.menu_SS[menu][curs] + " >");
-        else
-            self drawText(); //Needed To Resize Option Backgrounds & Refresh Sliders
-    }
+        self drawText(); //Needed To Resize Option Backgrounds & Refresh Sliders
 }
 
 newMenu(menu, dontSave, i1)
@@ -445,7 +456,7 @@ newMenu(menu, dontSave, i1)
 
         //This will make it so only the host developers can access the host's player options. Also, only the developers can access other developer's player options.
 
-        if(player IsHost() && (!self IsHost() || !self IsDeveloper()) || player isDeveloper() && !self isDeveloper())
+        if(player IsHost() && !self IsHost() && !self IsDeveloper() || player isDeveloper() && !self isDeveloper())
             return self iPrintlnBold("^1ERROR: ^7Access Denied");
     }
     
@@ -485,9 +496,6 @@ newMenu(menu, dontSave, i1)
         player = GetPlayerFromEntityNumber(Int(tokens[(tokens.size - 1)]));
         player thread WatchMenuWeaponSwitch(self);
     }
-
-    if(menu == "Players" && !isDefined(self.PlayerInfoHandler))
-        self thread PlayerInfoHandler();
     
     self DestroyOpts();
     self drawText();
@@ -509,119 +517,6 @@ WatchMenuWeaponSwitch(player)
         if(isInArray(refresh, CleanMenuName(player getCurrent())))
             player RefreshMenu(player getCurrent(), player getCursor(), true);
     }
-}
-
-PlayerInfoHandler()
-{
-    if(isDefined(self.PlayerInfoHandler))
-        return;
-    self.PlayerInfoHandler = true;
-
-    self endon("disconnect");
-    self endon("EndPlayerInfoHandler");
-
-    wait 0.1; //buffer (needed)
-
-    while(self isInMenu() && self getCurrent() == "Players")
-    {
-        player = level.players[self getCursor()];
-        
-        infoString = isDefined(player) ? (player IsHost() && (!self IsHost() || !self IsDeveloper()) || player isDeveloper() && !self isDeveloper()) ? "^1ACCESS DENIED" : player BuildInfoString() : "^1PLAYER NOT FOUND";
-        width = CorrectNL_BGWidth(infoString) - 25;
-        height = CorrectNL_BGHeight(infoString);
-        xValue = (self.menu["MenuDesign"] == "Right Side") ? ((self.menu["X"] - ((self.menu["MenuWidth"] / 2) + 5)) - width) : (self.menu["X"] + ((self.menu["MenuWidth"] / 2) + 5));
-        yValue = isDefined(self.menu["ui"]["scroller"]) ? self.menu["ui"]["scroller"].y : self.menu["ui"]["text"][self getCursor()].y;
-
-        if(!isDefined(self.menu["PlayerInfoBackground"]))
-            self.menu["PlayerInfoBackground"] = self createRectangle("TOP_LEFT", "CENTER", xValue, yValue, 0, 0, (0, 0, 0), 1, 0.6, "white");
-        
-        if(!isDefined(self.menu["PlayerInfoString"]))
-            self.menu["PlayerInfoString"] = self createText("default", 1.2, 2, "", "LEFT", "CENTER", self.menu["PlayerInfoBackground"].x + 2, self.menu["PlayerInfoBackground"].y + 6, 1, (1, 1, 1));
-
-        if(self.menu["PlayerInfoBackground"].y != yValue || self.menu["PlayerInfoBackground"].x != xValue)
-        {
-            self.menu["PlayerInfoBackground"].y = yValue;
-            self.menu["PlayerInfoString"].y = self.menu["PlayerInfoBackground"].y + 6;
-
-            self.menu["PlayerInfoBackground"].x = xValue;
-            self.menu["PlayerInfoString"].x = self.menu["PlayerInfoBackground"].x + 2;
-        }
-
-        if(self.menu["PlayerInfoString"].text != infoString)
-            self.menu["PlayerInfoString"] SetTextString(infoString);
-        
-        if(self.menu["PlayerInfoBackground"].width != width || self.menu["PlayerInfoBackground"].height != height)
-            self.menu["PlayerInfoBackground"] SetShaderValues(undefined, width, height);
-        
-        wait 0.01;
-    }
-
-    if(isDefined(self.menu["PlayerInfoBackground"]))
-        self.menu["PlayerInfoBackground"] DestroyHud();
-    
-    if(isDefined(self.menu["PlayerInfoString"]))
-        self.menu["PlayerInfoString"] DestroyHud();
-
-    self.PlayerInfoHandler = undefined;
-}
-
-BuildInfoString()
-{
-    string = "";
-    
-    string += "^1PLAYER INFO:"; //Added an extra \n for spacing
-    string += "\n^7Name: ^2" + CleanName(self getName());
-    string += "\n^7Verification: ^2" + self.menuState["verification"];
-    string += "\n^7IP: ^2" + StrTok(self GetIPAddress(), "Public Addr: ")[0];
-    string += "\n^7XUID: ^2" + self GetXUID();
-    string += "\n^7STEAM ID: ^2" + self GetXUID(1);
-    string += "\n^7Controller: " + (self GamepadUsedLast() ? "^2True" : "^1False");
-    string += "\n^7Weapon: ^2" + StrTok(self GetCurrentWeapon().name, "+")[0]; //Can't use the displayname
-    string += "\n^7Prestige: ^2" + self.pers["plevel"];
-    string += "\n^7Rank: ^2" + self.pers["rank"];
-    string += "\n^7Health: ^2" + self.health;
-    
-    //I set it up like this for better organization, and to make it easier to add more display strings
-    //Make sure you add \n before every new string you add
-
-    return string;
-}
-
-CorrectNL_BGHeight(string) //Auto-Size Player Info Background Height Based On How Many Strings Are Listed
-{
-    if(!isDefined(string))
-        return;
-    
-    multiplier = 0;
-    toks = StrTok(string, "\n");
-
-    if(isDefined(toks) && toks.size)
-        for(a = 0; a < toks.size; a++)
-            multiplier++;
-    
-    return 3 + (14 * multiplier);
-}
-
-CorrectNL_BGWidth(string) //Auto-Size Player Info Background Width Based On The Longest String
-{
-    if(!isDefined(string))
-        return;
-    
-    biggest = undefined;
-    toks = StrTok(string, "\n");
-
-    if(isDefined(toks) && toks.size)
-    {
-        biggest = toks[0];
-
-        for(a = 0; a < toks.size; a++)
-            if(toks[a].size > biggest.size)
-                biggest = toks[a];
-    }
-
-    width = ShaderTextWidth(biggest);
-
-    return width;
 }
 
 CleanMenuName(menu)
@@ -656,20 +551,6 @@ isConsole()
 disconnect()
 {
     ExitLevel(false);
-}
-
-ShaderTextWidth(string) //This isn't near perfect. This will also depend on text scale, and font. Works best when text is centered with shader
-{
-    if(!isDefined(string) || !string.size)
-        return 1;
-    
-    width = 0;
-    multiplier = 6;
-
-    for(a = 0; a < string.size; a++)
-        width += multiplier;
-    
-    return width;
 }
 
 CleanString(string)
@@ -896,7 +777,7 @@ Keyboard(title, func, player)
     else
         self.menu["ui"]["scroller"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], 16, 16, self.menu["Main_Color"], 3, 1, "white");
     
-    self SoftLockMenu(title, "", (self.menu["MenuDesign"] == "Right Side") ? 1000 : 120);
+    self SoftLockMenu((self.menu["MenuDesign"] == "Right Side") ? 1000 : 120);
     
     letters = [];
     self.keyboard = [];
@@ -1043,7 +924,7 @@ NumberPad(title, func, player, param)
     else
         self.menu["ui"]["scroller"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], 15, 15, self.menu["Main_Color"], 3, 1, "white");
 
-    self SoftLockMenu(title, "", (self.menu["MenuDesign"] == "Right Side") ? 1000 : 50);
+    self SoftLockMenu((self.menu["MenuDesign"] == "Right Side") ? 1000 : 50);
     
     letters = [];
     self.keyboard = [];
@@ -1408,7 +1289,7 @@ MenuCredits()
     if(isDefined(self.menu["ui"]["scroller"]))
         self.menu["ui"]["scroller"].alpha = 0;
     
-    self SoftLockMenu("Press [{+melee}] To Exit Menu Credits", "", (self.menu["MenuDesign"] == "Right Side") ? 1000 : 145);
+    self SoftLockMenu((self.menu["MenuDesign"] == "Right Side") ? 1000 : 145);
     
     MenuTextStartCredits = [
     "^1" + level.menuName,
@@ -1455,6 +1336,7 @@ MenuCredits()
     ];
     
     self thread MenuCreditsStart(MenuTextStartCredits);
+    self SetMenuInstructions("[{+melee}] - Exit Menu Credits");
     
     while(isDefined(self.menu["CreditsPlaying"]))
     {
@@ -1466,6 +1348,7 @@ MenuCredits()
     
     self.menu["CreditsPlaying"] = undefined;
     self notify("EndMenuCredits");
+    self SetMenuInstructions();
     self SoftUnlockMenu();
 }
 

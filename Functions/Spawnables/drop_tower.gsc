@@ -8,7 +8,6 @@ SpawnDropTower()
     origin = self TraceBullet();
     
     base = [];
-    towerAttachSeats = [];
     towerSeats = [];
     
     towerSeatAttach = SpawnScriptModel(origin + (0, 0, 15), "tag_origin");
@@ -32,9 +31,6 @@ SpawnDropTower()
     
     foreach(seat in towerSeats)
         seat LinkTo(towerSeatAttach);
-    
-    foreach(attachment in towerAttachSeats)
-        attachment LinkTo(towerSeatAttach);
     
     towerSeatAttach thread startDropMovement();
     array::thread_all(towerSeats, ::SeatSystem, "Drop Tower");

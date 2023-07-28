@@ -196,28 +196,10 @@ drawText()
                         else
                             self.menu["ui"]["BoolOpt"][(a + start)] = self createText("default", 1.1, 4, (isDefined(self.menu_B[self getCurrent()][(a + start)]) && self.menu_B[self getCurrent()][(a + start)]) ? "ON" : "OFF", (self.menu["MenuDesign"] == "Right Side") ? "LEFT" : "RIGHT", "CENTER", (self.menu["MenuDesign"] == "Right Side") ? (self.menu["X"] - (self.menu["MenuWidth"] / 2) + 4) : (self.menu["X"] + ((self.menu["MenuWidth"] / 2) - 4)), (self.menu["Y"] + yOffset) + (a * sepMultiplier), 1, (1, 1, 1));
                     }
-                    
-                    if(self.menu["MenuDesign"] != "Right Side")
-                    {
-                        if(isDefined(self.menu["items"][self getCurrent()].func[(a + start)]) && self.menu["items"][self getCurrent()].func[(a + start)] == ::newMenu)
-                            self.menu["ui"]["subMenu"][(a + start)] = self createText("default", 1.1, 4, ">", "RIGHT", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) - 4)), (self.menu["Y"] + yOffset) + (a * sepMultiplier), 1, (1, 1, 1));
-                    
-                        if(isDefined(self.menu["items"][self getCurrent()].incslider[(a + start)]))
-                            self.menu["ui"]["IntSlider"][(a + start)] = self createText("default", 1.1, 4, "< " + self.menu_SS[self getCurrent()][(a + start)] + " >", "RIGHT", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) - 4)), (self.menu["Y"] + yOffset) + (a * sepMultiplier), 1, (1, 1, 1));
-
-                        if(isDefined(self.menu["items"][self getCurrent()].slider[(a + start)]))
-                            self.menu["ui"]["StringSlider"][(a + start)] = self createText("default", 1.1, 4, "< " + self.menu_S[self getCurrent()][(a + start)][self.menu_SS[self getCurrent()][(a + start)]] + " > [" + (self.menu_SS[self getCurrent()][(a + start)] + 1) + "/" + self.menu_S[self getCurrent()][(a + start)].size + "]", "RIGHT", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) - 4)), (self.menu["Y"] + yOffset) + (a * sepMultiplier), 1, (1, 1, 1));
-                    }
                 }
 
-                if(self.menu["MenuDesign"] == "Right Side" || self.menu["MenuDesign"] == "Old School")
-                {
-                    if((isDefined(self.menu["items"][self getCurrent()].slider[(a + start)]) || isDefined(self.menu["items"][self getCurrent()].incslider[(a + start)])))
-                        optStr = isDefined(self.menu["items"][self getCurrent()].slider[(a + start)]) ? optStr + " < " + self.menu_S[self getCurrent()][(a + start)][self.menu_SS[self getCurrent()][(a + start)]] + " > [" + (self.menu_SS[self getCurrent()][(a + start)] + 1) + "/" + self.menu_S[self getCurrent()][(a + start)].size + "]" : optStr + " < " + self.menu_SS[self getCurrent()][(a + start)] + " >";
-                    
-                    if(isDefined(self.menu["items"][self getCurrent()].func[(a + start)]) && self.menu["items"][self getCurrent()].func[(a + start)] == ::newMenu)
-                        optStr = optStr; //Put this here if anyone ever wants to add something indicating a submenu option
-                }
+                if((isDefined(self.menu["items"][self getCurrent()].slider[(a + start)]) || isDefined(self.menu["items"][self getCurrent()].incslider[(a + start)])))
+                    optStr = isDefined(self.menu["items"][self getCurrent()].slider[(a + start)]) ? optStr + " < " + self.menu_S[self getCurrent()][(a + start)][self.menu_SS[self getCurrent()][(a + start)]] + " > [" + (self.menu_SS[self getCurrent()][(a + start)] + 1) + "/" + self.menu_S[self getCurrent()][(a + start)].size + "]" : optStr + " < " + self.menu_SS[self getCurrent()][(a + start)] + " >";
 
                 fixedScale = (self.menu["MenuDesign"] == "Old School") ? 1.7 : 1.3;
                 optColor = (self.menu["MenuDesign"] == "Old School" && (a + start) == self getCursor()) ? self.menu["Main_Color"] : (1, 1, 1);
@@ -251,7 +233,7 @@ drawText()
                 optStr = isDefined(self.menu["items"][self getCurrent()].slider[(start + a)]) ? optStr + " < " + self.menu_S[self getCurrent()][(start + a)][self.menu_SS[self getCurrent()][(start + a)]] + " > [" + (self.menu_SS[self getCurrent()][(start + a)] + 1) + "/" + self.menu_S[self getCurrent()][(start + a)].size + "]" : optStr + " < " + self.menu_SS[self getCurrent()][(start + a)] + " >";
 
             self.menu["ui"]["textQM"][(start + a)] = self createText("default", 1.1, 5, optStr, "CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, (self.menu["YQM"]) + (a * 21), 1, (isDefined(self.menu["items"][self getCurrent()].bool[(start + a)]) && isDefined(self.menu_B[self getCurrent()][(start + a)]) && self.menu_B[self getCurrent()][(start + a)]) ? divideColor(0, 255, 0) : (1, 1, 1));
-            self.menu["ui"]["QMBG"][(start + a)] = self createRectangle("CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, self.menu["YQM"] + (a * 21), ShaderTextWidth(optStr), 18, (0, 0, 0), 2, 0.95, "white");
+            self.menu["ui"]["QMBG"][(start + a)] = self createRectangle("CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, self.menu["YQM"] + (a * 21), (self.menu["ui"]["textQM"][(start + a)] GetTextWidth() - 8), 18, (0, 0, 0), 2, 0.95, "white");
         }
         
         if(!isDefined(self.menu["ui"]["textQM"][self getCursor()]))
@@ -264,7 +246,7 @@ drawText()
         self.menu["ui"]["QMScroller"][1] SetShaderValues(undefined, (self.menu["ui"]["QMBG"][self getCursor()].width + 2), undefined);
     }
 
-    hud = ["text", "BoolOpt", "BoolBack", "subMenu", "IntSlider", "StringSlider"];
+    hud = ["text", "BoolOpt", "BoolBack", "subMenu"];
 
     foreach(str in hud)
     {
@@ -367,10 +349,8 @@ SetMenuTitle(title)
     
     if(self isInQuickMenu())
     {
-        width = ShaderTextWidth(title);
-
-        self.menu["ui"]["bannerQM"] SetShaderValues(undefined, width, undefined);
-        self.menu["ui"]["banner2QM"] SetShaderValues(undefined, (width - 2), undefined);
+        self.menu["ui"]["bannerQM"] SetShaderValues(undefined, (self.menu["ui"]["title"] GetTextWidth() - 8), undefined);
+        self.menu["ui"]["banner2QM"] SetShaderValues(undefined, (self.menu["ui"]["bannerQM"].width - 2), undefined);
     }
 }
 
@@ -411,9 +391,6 @@ openMenu1(menu)
 
     self.menu["ui"]["title"] = self createText("default", (self.menu["MenuDesign"] == "Right Side") ? 1.4 : 1.2, 5, "", (self.menu["MenuDesign"] == "Old School") ? "CENTER" : "LEFT", "CENTER", (self.menu["MenuDesign"] == "Old School") ? self.menu["X"] : (self.menu["X"] - (self.menu["MenuWidth"] / 2) + 4), (self.menu["MenuDesign"] == "Right Side") ? (self.menu["Y"] - 35) : (self.menu["MenuDesign"] == "Old School") ? (self.menu["Y"] - 12) : (self.menu["Y"] - 6), 1, (self.menu["MenuDesign"] == "Old School") ? self.menu["Main_Color"] : (1, 1, 1));
     
-    if(!isDefined(self.menu["DisableOptionCounter"]) && self.menu["MenuDesign"] == level.menuName)
-        self.menu["ui"]["optionCount"] = self createText("default", 1.2, 5, "", "RIGHT", "CENTER", (self.menu["X"] + (self.menu["MenuWidth"] / 2) - 4), (self.menu["MenuDesign"] == "Right Side") ? (self.menu["Y"] - 72) : (self.menu["Y"] - 6), 1, (1, 1, 1));
-
     if(self.menu["MenuDesign"] == "Right Side")
         self.menu["ui"]["MenuName"] = self createText("default", 1.9, 5, level.menuName, "LEFT", "CENTER", (self.menu["X"] - (self.menu["MenuWidth"] / 2) + 4), (self.menu["Y"] - 72), 1, (1, 1, 1));
     
@@ -437,9 +414,6 @@ openMenu1(menu)
     
     self.menu["currentMenu"] = menu;
     self drawText();
-
-    if(menu == "Players" && !isDefined(self.PlayerInfoHandler))
-        self thread PlayerInfoHandler();
 
     if(isDefined(self.menu["MenuBlur"]))
         self SetBlur(self.menu["MenuBlurValue"], 0.1);
@@ -496,6 +470,9 @@ openQuickMenu1()
     
     if(!isDefined(self.menu["ui"]["QMScroller"]))
         self.menu["ui"]["QMScroller"] = [];
+    
+    if(!isDefined(self.menu["cursQM"]))
+        self.menu["cursQM"] = [];
 
     self.menu["currentMenuQM"] = isDefined(self.menu["currentMenuQM"]) ? self.menu["currentMenuQM"] : "Quick Menu";
     options = self.menu["items"][self.menu["currentMenuQM"]].name;
@@ -528,7 +505,7 @@ closeQuickMenu()
     self.menuState["isInQuickMenu"] = undefined;
 }
 
-SoftLockMenu(title, optCount, bgHeight)
+SoftLockMenu(bgHeight)
 {
     if(!self hasMenu() || self hasMenu() && !self isInMenu())
         return;
@@ -554,12 +531,6 @@ SoftLockMenu(title, optCount, bgHeight)
         if(isDefined(self.menu["ui"]["outlines"][3]))
             self.menu["ui"]["outlines"][3].y = (self.menu["Y"] + (bgHeight - 1));
     }
-        
-    if(isDefined(self.menu["ui"]["title"]))
-        self.menu["ui"]["title"] SetTextString(title);
-    
-    if(isDefined(self.menu["ui"]["optionCount"]))
-        self.menu["ui"]["optionCount"] SetTextString(optCount);
 }
 
 SoftUnlockMenu()
@@ -595,9 +566,6 @@ UpdateOptCount()
     if(self.menu["MenuDesign"] == "Right Side")
         return;
     
-    if(self hasMenu() && isDefined(self.menu["ui"]["optionCount"]))
-        self.menu["ui"]["optionCount"] SetTextString((self getCursor() + 1) + "/" + self.menu["items"][self getCurrent()].name.size);
-    
     height = (((self.menu["items"][self getCurrent()].name.size >= self.menu["MaxOptions"]) ? self.menu["MaxOptions"] : self.menu["items"][self getCurrent()].name.size) * 20);
     
     if(isDefined(self.menu["ui"]["background"]))
@@ -617,7 +585,7 @@ DestroyOpts()
 {
     self endon("disconnect");
     
-    hud = ["text", "BoolOpt", "BoolBack", "subMenu", "IntSlider", "StringSlider", "textQM", "QMBG"];
+    hud = ["text", "BoolOpt", "BoolBack", "subMenu", "textQM", "QMBG"];
 
     for(a = 0; a < hud.size; a++)
     {
@@ -634,9 +602,14 @@ RefreshMenu(menu, curs, force)
     if(isDefined(menu) && isDefined(curs))
     {
         foreach(player in level.players)
-            if(player hasMenu() && player isInMenu(true) && (player getCurrent() == menu || player PlayerHasOption(self, menu, curs)) && !isDefined(player.menu["DisableMenuControls"]))
-                if(isDefined(player.menu["ui"]["text"][curs]) || player PlayerHasOption(self, menu, curs) || isDefined(force) && force)
+        {
+            if(!player hasMenu() || !player isInMenu(true) || isDefined(player.menu["DisableMenuControls"]))
+                continue;
+            
+            if(player getCurrent() == menu || self != player && player PlayerHasOption(self, menu, curs))
+                if(isDefined(player.menu["ui"]["text"][curs]) || player == self && player getCurrent() == menu && (isDefined(player.menu["ui"]["text"][curs]) || isDefined(self.menu["ui"]["textQM"][curs])) || self != player && player PlayerHasOption(self, menu, curs) || isDefined(force) && force)
                     player drawText();
+        }
     }
     else
     {
@@ -650,26 +623,9 @@ PlayerHasOption(source, menu, curs)
     option = source.menu["items"][menu].name[curs];
 
     if(self.menu["items"][self getCurrent()].name.size)
-    {
         for(a = 0; a < self.menu["items"][self getCurrent()].name.size; a++)
-            if(option == self.menu["items"][self getCurrent()].name[a])
-            {
-                if(self isInQuickMenu())
-                {
-                    if(isDefined(self.menu["ui"]["textQM"]) && self.menu["ui"]["textQM"].size)
-                        for(b = 0; b < self.menu["ui"]["textQM"].size; b++)
-                            if(self.menu["ui"]["textQM"][b].text == option)
-                                return true;
-                }
-                else
-                {
-                    if(isDefined(self.menu["ui"]["text"]) && self.menu["ui"]["text"].size)
-                        for(b = 0; b < self.menu["ui"]["text"].size; b++)
-                            if(self.menu["ui"]["text"][b].text == option)
-                                return true;
-                }
-            }
-    }
+            if(option == self.menu["items"][self getCurrent()].name[a] && (IsSubStr(source getCurrent(), " " + self GetEntityNumber()) || IsSubStr(self getCurrent(), " " + source GetEntityNumber())))
+                return true;
 
     return false;
 }

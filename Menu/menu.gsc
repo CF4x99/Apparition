@@ -103,9 +103,6 @@ runMenuIndex(menu)
                 {
                     self addOptSlider("Toggle Style", ::ToggleStyle, "Boxes;Text;Text Color");
                     self addOptIncSlider("Max Options", ::MenuMaxOptions, 5, self.menu["MaxOptions"], 12, 1);
-
-                    if(self.menu["MenuDesign"] != "Right Side")
-                        self addOptBool(self.menu["DisableOptionCounter"], "Disable Option Counter", ::DisableOptionCounter);
                 }
 
                 self addOptBool(self.menu["MenuBlur"], "Menu Blur", ::MenuBlur);
@@ -202,9 +199,6 @@ runMenuIndex(menu)
             break;
         
         case "Rain Models":
-            arr = [];
-            ents = GetEntArray("script_model", "classname");
-            
             self addMenu(menu, "Models");
 
                 if(isDefined(level.MenuModels) && level.MenuModels.size)
@@ -215,12 +209,10 @@ runMenuIndex(menu)
             break;
         
         case "Rain Effects":
-            fxs = GetArrayKeys(level._effect);
-            
             self addMenu(menu, "Effects");
 
-                for(a = 0; a < fxs.size; a++)
-                    self addOpt(CleanString(fxs[a]), ::LobbyRain, "FX", fxs[a]);
+                for(a = 0; a < level.MenuEffects.size; a++)
+                    self addOpt(level.MenuEffects[a].displayName, ::LobbyRain, "FX", level.MenuEffects[a].name);
             break;
         
         case "Rain Projectiles":
@@ -305,11 +297,8 @@ runMenuIndex(menu)
         case "Spawn Script Model":
             self addMenu(menu, "Spawn");
 
-                if(isDefined(level.MenuModels) && level.MenuModels.size)
-                    for(a = 0; a < level.MenuModels.size; a++)
-                        self addOpt(CleanString(level.MenuModels[a]), ::ForgeSpawnModel, level.MenuModels[a]);
-                else
-                    self addOpt("No Models Found");
+                for(a = 0; a < level.MenuModels.size; a++)
+                    self addOpt(CleanString(level.MenuModels[a]), ::ForgeSpawnModel, level.MenuModels[a]);
             break;
         
         case "Rotate Script Model":
@@ -706,10 +695,8 @@ runMenuIndex(menu)
                 self addOpt("Spawn Bot", ::SpawnBot);
 
                 if(isDefined(level.zombie_include_craftables) && level.zombie_include_craftables.size && !isDefined(level.all_parts_required))
-                {
                     if(level.zombie_include_craftables.size > 1 || level.zombie_include_craftables.size && GetArrayKeys(level.zombie_include_craftables)[0] != "open_table")
                         self addOpt("Craftables", ::newMenu, "Zombie Craftables");
-                }
 
                 if(isDefined(level.MenuZombieTraps) && level.MenuZombieTraps.size)
                     self addOpt("Zombie Traps", ::newMenu, "Zombie Traps");
@@ -805,11 +792,8 @@ runMenuIndex(menu)
             self addMenu(menu, "Joker Model");
                 self addOptBool((level.chest_joker_model == level.savedJokerModel), "Default", ::SetBoxJokerModel, level.savedJokerModel);
 
-                if(isDefined(level.MenuModels) && level.MenuModels.size)
-                    for(a = 0; a < level.MenuModels.size; a++)
-                        self addOptBool((level.chest_joker_model == level.MenuModels[a]), CleanString(level.MenuModels[a]), ::SetBoxJokerModel, level.MenuModels[a]);
-                else
-                    self addOpt("No Models Found");
+                for(a = 0; a < level.MenuModels.size; a++)
+                    self addOptBool((level.chest_joker_model == level.MenuModels[a]), CleanString(level.MenuModels[a]), ::SetBoxJokerModel, level.MenuModels[a]);
             break;
         
         case "Server Tweakables":
@@ -975,33 +959,27 @@ runMenuIndex(menu)
             break;
         
         case "Zombie Death Effect":
-            fxs = GetArrayKeys(level._effect);
-
             if(!isDefined(level.ZombiesDeathFX))
-                level.ZombiesDeathFX = fxs[0];
+                level.ZombiesDeathFX = level.MenuEffects[0];
             
             self addMenu(menu, "Death Effect");
                 self addOptBool(level.ZombiesDeathEffect, "Death Effect", ::ZombiesDeathEffect);
                 self addOpt("");
 
-                if(isDefined(fxs) && fxs.size)
-                    for(a = 0; a < fxs.size; a++)
-                        self addOptBool((level.ZombiesDeathFX == fxs[a]), CleanString(fxs[a]), ::SetZombiesDeathEffect, fxs[a]);
+                for(a = 0; a < level.MenuEffects.size; a++)
+                    self addOptBool((level.ZombiesDeathFX == level.MenuEffects[a].name), level.MenuEffects[a].displayName, ::SetZombiesDeathEffect, level.MenuEffects[a].name);
             break;
 
         case "Zombie Damage Effect":
-            fxs = GetArrayKeys(level._effect);
-
             if(!isDefined(level.ZombiesDamageFX))
-                level.ZombiesDamageFX = fxs[0];
+                level.ZombiesDamageFX = level.MenuEffects[0];
             
             self addMenu(menu, "Damage Effect");
                 self addOptBool(level.ZombiesDamageEffect, "Damage Effect", ::ZombiesDamageEffect);
                 self addOpt("");
 
-                if(isDefined(fxs) && fxs.size)
-                    for(a = 0; a < fxs.size; a++)
-                        self addOptBool((level.ZombiesDamageFX == fxs[a]), CleanString(fxs[a]), ::SetZombiesDamageEffect, fxs[a]);
+                for(a = 0; a < level.MenuEffects.size; a++)
+                    self addOptBool((level.ZombiesDamageFX == level.MenuEffects[a].name), level.MenuEffects[a].displayName, ::SetZombiesDamageEffect, level.MenuEffects[a].name);
             break;
         
         case "Spawnables":
@@ -1586,16 +1564,13 @@ MenuOptionsPlayer(menu, player)
             if(!isDefined(player.FXManTag))
                 player.FXManTag = "j_head";
             
-            fxs = GetArrayKeys(level._effect);
-            
             self addMenu(menu, "Effects Man Options");
                 self addOpt("Disable", ::DisableFXMan, player);
                 self addOptSlider("Play FX On Tag", ::SetFXManTag, level.boneTags, player);
                 self addOpt("");
 
-                if(isDefined(fxs) && fxs.size)
-                    for(a = 0; a < fxs.size; a++)
-                        self addOpt(CleanString(fxs[a]), ::FXMan, level._effect[fxs[a]], player);
+                for(a = 0; a < level.MenuEffects.size; a++)
+                    self addOpt(level.MenuEffects[a].displayName, ::FXMan, level._effect[level.MenuEffects[a].name], player);
             break;
         
         case "Hit Markers":
@@ -1622,11 +1597,8 @@ MenuOptionsPlayer(menu, player)
                 self addOpt("Reset Player Model", ::ResetPlayerModel, player);
                 self addOpt("");
 
-                if(isDefined(level.MenuModels) && level.MenuModels.size)
-                    for(a = 0; a < level.MenuModels.size; a++)
-                        self addOpt(CleanString(level.MenuModels[a]), ::SetPlayerModel, player, level.MenuModels[a]);
-                else
-                    self addOpt("No Models Found");
+                for(a = 0; a < level.MenuModels.size; a++)
+                    self addOpt(CleanString(level.MenuModels[a]), ::SetPlayerModel, player, level.MenuModels[a]);
             break;
         
         case "Aimbot Menu":
@@ -1849,7 +1821,7 @@ MenuOptionsPlayer(menu, player)
                 type = (newmenu == "Mystery Box Normal Weapons") ? level.zombie_weapons : level.zombie_weapons_upgraded;
                 weaps = GetArrayKeys(type);
 
-                self addMenu(menu, newmenu);
+                self addMenu(menu, StrTok(newmenu, "Mystery Box ")[0]);
                 self addOptBool(IsAllWeaponsInBox(type), "Enable All", ::EnableAllWeaponsInBox, type);
 
                 if(isDefined(weaps) && weaps.size)
