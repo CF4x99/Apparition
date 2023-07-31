@@ -244,7 +244,7 @@ DoheartTextPass(string)
     if(string != "Custom")
         self thread SetDoheartText(string);
     else
-        self Keyboard("Doheart Text", ::SetDoheartText);
+        self Keyboard(::SetDoheartText);
 }
 
 SetDoheartStyle(style)
@@ -771,6 +771,14 @@ ShootToRevive()
         else
             player notify("EndShootToRevive");
     }
+}
+
+ServerXPMultiplier(multiplier)
+{
+    if(!multiplier)
+        multiplier = 1;
+    
+    level.ServerXPMultiplier = multiplier;
 }
 
 PlayerShootToRevive()

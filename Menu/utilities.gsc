@@ -12,7 +12,11 @@ createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
     textElem.color = color;
 
     textElem hud::SetPoint(align, relative, x, y);
-    textElem SetTextString(text);
+
+    if(IsInt(text) || IsFloat(text))
+        textElem SetValue(text);
+    else
+        textElem SetTextString(text);
 
     self.hud_count++;
 
@@ -150,13 +154,10 @@ DestroyHud()
         self.player.hud_count--;
 }
 
-SetTextString(text)
+SetTextString(text = "")
 {
-    if(!isDefined(self) || !isDefined(text))
+    if(!isDefined(self))
         return;
-    
-    if(!isDefined(level.uniqueStrings))
-        level.uniqueStrings = [];
     
     if(!isInArray(level.uniqueStrings, text))
     {
@@ -166,12 +167,12 @@ SetTextString(text)
 
             if(!isDefined(level.uniqueStringLimitNotify))
             {
-                bot::get_host_player() iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7Unique String Limit Has Been Reached. No More Unique Strings Will Be Created");
+                bot::get_host_player() iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7Unique String Limit Has Been Reached. No More Unique Strings Will Be Created.");
                 level.uniqueStringLimitNotify = true;
             }
         }
         
-        array::add(level.uniqueStrings, text, 0);
+        level.uniqueStrings[level.uniqueStrings.size] = text;
     }
 
     text = MakeLocalizedString(text);
@@ -415,8 +416,8 @@ SetSlider(dir)
     if((self.menu_SS[menu][curs] > max) || (self.menu_SS[menu][curs] < 0))
         self.menu_SS[menu][curs] = (self.menu_SS[menu][curs] > max) ? 0 : max;
     
-    if(!self isInQuickMenu())
-        self.menu["ui"]["text"][curs] SetTextString(self.menu["items"][self getCurrent()].name[curs] + " < " + self.menu_S[menu][curs][self.menu_SS[menu][curs]] + " > [" + (self.menu_SS[menu][curs] + 1) + "/" + self.menu_S[menu][curs].size + "]");
+    if(isDefined(self.menu["ui"]["StringSlider"][curs]))
+        self.menu["ui"]["StringSlider"][curs] SetTextString("< " + self.menu_S[menu][curs][self.menu_SS[menu][curs]] + " > [" + (self.menu_SS[menu][curs] + 1) + "/" + self.menu_S[menu][curs].size + "]");
     else
         self drawText(); //Needed To Resize Option Backgrounds & Refresh Sliders
 }
@@ -430,17 +431,16 @@ SetIncSlider(dir)
     max = self.menu["items"][menu].incslidermax[curs];
     min = self.menu["items"][menu].incslidermin[curs];
     
-    if((self.menu_SS[menu][curs] < max) && (self.menu_SS[menu][curs] + val) > max || (self.menu_SS[menu][curs] > min) && (self.menu_SS[menu][curs] - val) < min)
+    if(self.menu_SS[menu][curs] < max && (self.menu_SS[menu][curs] + val) > max || (self.menu_SS[menu][curs] > min) && (self.menu_SS[menu][curs] - val) < min)
         self.menu_SS[menu][curs] = ((self.menu_SS[menu][curs] < max) && (self.menu_SS[menu][curs] + val) > max) ? max : min;
     else
-        self.menu_SS[menu][curs] = (dir > 0) ? self.menu_SS[menu][curs] + val : self.menu_SS[menu][curs] - val;
+        self.menu_SS[menu][curs] += (dir > 0) ? val : (val * -1);
     
     if((self.menu_SS[menu][curs] > max) || (self.menu_SS[menu][curs] < min))
         self.menu_SS[menu][curs] = (self.menu_SS[menu][curs] > max) ? min : max;
     
-    
-    if(!self isInQuickMenu())
-        self.menu["ui"]["text"][curs] SetTextString(self.menu["items"][self getCurrent()].name[curs] + " < " + self.menu_SS[menu][curs] + " >");
+    if(isDefined(self.menu["ui"]["IntSlider"][curs]))
+        self.menu["ui"]["IntSlider"][curs] SetValue(self.menu_SS[menu][curs]);
     else
         self drawText(); //Needed To Resize Option Backgrounds & Refresh Sliders
 }
@@ -763,7 +763,7 @@ FadingTextEffect(text, hud)
     }
 }
 
-Keyboard(title, func, player)
+Keyboard(func, player)
 {
     if(!self isInMenu())
         return;
@@ -777,7 +777,7 @@ Keyboard(title, func, player)
     else
         self.menu["ui"]["scroller"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], 16, 16, self.menu["Main_Color"], 3, 1, "white");
     
-    self SoftLockMenu((self.menu["MenuDesign"] == "Right Side") ? 1000 : 120);
+    self SoftLockMenu(120);
     
     letters = [];
     self.keyboard = [];
@@ -791,10 +791,10 @@ Keyboard(title, func, player)
             letters[a] += lettersTok[a][b] + "\n";
     }
 
-    self.keyboard["string"] = self createText("objective", 1.1, 5, "", (self.menu["MenuDesign"] == "Right Side") ? "LEFT" : "CENTER", "CENTER", (self.menu["MenuDesign"] == "Right Side") ? (self.menu["X"] - (self.menu["MenuWidth"] / 2) + 4) : self.menu["X"], (self.menu["Y"] + 15), 1, (1, 1, 1));
+    self.keyboard["string"] = self createText("objective", 1.1, 5, "", "CENTER", "CENTER", self.menu["X"], (self.menu["Y"] + 15), 1, (1, 1, 1));
 
     for(a = 0; a < letters.size; a++)
-        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menu["MenuDesign"] == "Old School") ? (self.menu["X"] - 90) + (a * 15) : (self.menu["X"] - (self.menu["MenuWidth"] / 2)) + 15 + (a * 15), (self.menu["Y"] + 35), 1, (1, 1, 1));
+        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menu["X"] - (self.menu["MenuWidth"] / 2)) + 15 + (a * 15), (self.menu["Y"] + 35), 1, (1, 1, 1));
     
     if(isDefined(self.menu["ui"]["scroller"]))
         self.menu["ui"]["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), 0.1);
@@ -910,7 +910,7 @@ Keyboard(title, func, player)
         return string;
 }
 
-NumberPad(title, func, player, param)
+NumberPad(func, player, param)
 {
     if(!self isInMenu())
         return;
@@ -924,7 +924,7 @@ NumberPad(title, func, player, param)
     else
         self.menu["ui"]["scroller"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], 15, 15, self.menu["Main_Color"], 3, 1, "white");
 
-    self SoftLockMenu((self.menu["MenuDesign"] == "Right Side") ? 1000 : 50);
+    self SoftLockMenu(50);
     
     letters = [];
     self.keyboard = [];
@@ -932,10 +932,10 @@ NumberPad(title, func, player, param)
     for(a = 0; a < 10; a++)
         letters[a] = a;
     
-    self.keyboard["string"] = self createText("objective", 1.2, 5, "", (self.menu["MenuDesign"] == "Right Side") ? "LEFT" : "CENTER", "CENTER", (self.menu["MenuDesign"] == "Right Side") ? (self.menu["X"] - (self.menu["MenuWidth"] / 2) + 4) : self.menu["X"], (self.menu["Y"] + 15), 1, (1, 1, 1));
+    self.keyboard["string"] = self createText("objective", 1.2, 5, "", "CENTER", "CENTER", self.menu["X"], (self.menu["Y"] + 15), 1, (1, 1, 1));
 
     for(a = 0; a < letters.size; a++)
-        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menu["MenuDesign"] == "Old School") ? ((self.menu["X"] - 69) + (a * 15)) : (self.menu["X"] - (self.menu["MenuWidth"] / 2)) + 36 + (a * 15), (self.menu["Y"] + 35), 1, (1, 1, 1));
+        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menu["X"] - (self.menu["MenuWidth"] / 2)) + 36 + (a * 15), (self.menu["Y"] + 35), 1, (1, 1, 1));
     
     if(isDefined(self.menu["ui"]["scroller"]))
         self.menu["ui"]["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), 0.1);
@@ -1289,7 +1289,7 @@ MenuCredits()
     if(isDefined(self.menu["ui"]["scroller"]))
         self.menu["ui"]["scroller"].alpha = 0;
     
-    self SoftLockMenu((self.menu["MenuDesign"] == "Right Side") ? 1000 : 145);
+    self SoftLockMenu(145);
     
     MenuTextStartCredits = [
     "^1" + level.menuName,

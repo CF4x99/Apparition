@@ -5,7 +5,7 @@ runMenuIndex(menu)
     switch(menu)
     {
         case "Main":
-            self addMenu(menu, (self.menu["MenuDesign"] == "Right Side") ? "Main Menu" : level.menuName);
+            self addMenu(menu, level.menuName);
             
             if(self getVerification() > 0) //Verified
             {
@@ -92,19 +92,14 @@ runMenuIndex(menu)
         case "Menu Customization":
             self addMenu(menu, "Menu Customization");
                 self addOpt("Menu Credits", ::MenuCredits);
-                self addOptSlider("Style", ::MenuDesign, level.menuName + ";Right Side;Old School");
                 self addOpt("Design Preferences", ::newMenu, "Design Preferences");
                 self addOpt("Main Design Color", ::newMenu, "Main Design Color");
             break;
         
         case "Design Preferences":
             self addMenu(menu, "Design Preferences");
-                if(self.menu["MenuDesign"] != "Old School")
-                {
-                    self addOptSlider("Toggle Style", ::ToggleStyle, "Boxes;Text;Text Color");
-                    self addOptIncSlider("Max Options", ::MenuMaxOptions, 5, self.menu["MaxOptions"], 12, 1);
-                }
-
+                self addOptSlider("Toggle Style", ::ToggleStyle, "Boxes;Text;Text Color");
+                self addOptIncSlider("Max Options", ::MenuMaxOptions, 5, self.menu["MaxOptions"], 12, 1);
                 self addOptBool(self.menu["MenuBlur"], "Menu Blur", ::MenuBlur);
                 self addOptBool(self.menu["DisableMenuInstructions"], "Disable Instructions", ::DisableMenuInstructions);
                 self addOptBool(self.menu["LargeCursor"], "Large Cursor", ::LargeCursor);
@@ -123,7 +118,7 @@ runMenuIndex(menu)
         case "Message Menu":
             self addMenu(menu, "Message Menu");
                 self addOptSlider("Display Type", ::MessageDisplay, "Notify;Print Bold");
-                self addOpt("Custom Message", ::Keyboard, "Custom Message", ::DisplayMessage);
+                self addOpt("Custom Message", ::Keyboard, ::DisplayMessage);
                 self addOpt("Miscellaneous", ::newMenu, "Miscellaneous Messages");
                 self addOpt("Advertisements", ::newMenu, "Advertisements Messages");
             break;
@@ -287,7 +282,7 @@ runMenuIndex(menu)
                 self addOpt("Rotate", ::newMenu, "Rotate Script Model");
                 self addOpt("Delete", ::ForgeDeleteModel);
                 self addOpt("Drop", ::ForgeDropModel);
-                self addOpt("Distance", ::NumberPad, "Model Distance", ::ForgeModelDistance);
+                self addOpt("Distance", ::NumberPad, ::ForgeModelDistance);
                 self addOptBool(self.forge["ignoreCollisions"], "Ignore Collisions", ::ForgeIgnoreCollisions);
                 self addOpt("Delete Last Spawn", ::ForgeDeleteLastSpawn);
                 self addOpt("Delete All Spawned", ::ForgeDeleteAllSpawned);
@@ -303,7 +298,7 @@ runMenuIndex(menu)
         
         case "Rotate Script Model":
             self addMenu(menu, "Rotate");
-                self addOpt("Reset Angles", ::ForgeRotateModel, 0, "Reset");
+                self addOpt("Reset", ::ForgeRotateModel, 0, "Reset");
                 self addOptIncSlider("Roll", ::ForgeRotateModel, -10, 0, 10, 1, "Roll");
                 self addOptIncSlider("Yaw", ::ForgeRotateModel, -10, 0, 10, 1, "Yaw");
                 self addOptIncSlider("Pitch", ::ForgeRotateModel, -10, 0, 10, 1, "Pitch");
@@ -679,8 +674,8 @@ runMenuIndex(menu)
                 self addOptBool(level.SuperJump, "Super Jump", ::SuperJump);
                 self addOptBool((GetDvarInt("bg_gravity") == 200), "Low Gravity", ::LowGravity);
                 self addOptBool((GetDvarString("g_speed") == "500"), "Super Speed", ::SuperSpeed);
-                self addOptIncSlider("Timescale", ::ServerSetTimeScale, 0.1, GetDvarInt("timescale"), 5, 0.1);
-                self addOpt("Set Round", ::NumberPad, "Set Round", ::SetRound);
+                self addOptIncSlider("Timescale", ::ServerSetTimeScale, 0.5, GetDvarInt("timescale"), 5, 0.5);
+                self addOpt("Set Round", ::NumberPad, ::SetRound);
                 self addOptBool(level.AntiQuit, "Anti-Quit", ::AntiQuit);
                 self addOptBool(level.AntiJoin, "Anti-Join", ::AntiJoin);
                 self addOptBool(level.AntiEndGame, "Anti-End Game", ::AntiEndGame);
@@ -774,7 +769,7 @@ runMenuIndex(menu)
         
         case "Mystery Box Options":
             self addMenu(menu, "Mystery Box Options");
-                self addOptBool(level.chests[level.chest_index].old_cost != 950, "Custom Price", ::NumberPad, "Mystery Box Price", ::SetBoxPrice);
+                self addOptBool(level.chests[level.chest_index].old_cost != 950, "Custom Price", ::NumberPad, ::SetBoxPrice);
                 self addOptBool(AllBoxesActive(), "Show All", ::ShowAllChests);
                 self addOpt("Force Joker", ::BoxForceJoker);
                 self addOptBool((GetDvarString("magic_chest_movable") == "0"), "Never Moves", ::BoxNeverMoves);
@@ -800,6 +795,7 @@ runMenuIndex(menu)
             self addMenu(menu, "Server Tweakables");
                 self addOptBool(level.ServerMaxAmmoClips, "Max Ammo Powerups Fill Clips", ::ServerMaxAmmoClips);
                 self addOptBool(level.ShootToRevive, "Shoot To Revive", ::ShootToRevive);
+                self addOpt("XP Multiplier", ::NumberPad, ::ServerXPMultiplier);
                 self addOptIncSlider("Pack 'a' Punch Camo Index", ::SetPackCamoIndex, 0, level.pack_a_punch_camo_index, 138, 1);
                 self addOptIncSlider("Player Weapon Limit", ::SetPlayerWeaponLimit, 0, 0, 15, 1);
                 self addOptIncSlider("Player Perk Limit", ::SetPlayerPerkLimit, 0, 0, level.MenuPerks.size, 1);
@@ -808,8 +804,8 @@ runMenuIndex(menu)
                 self addOptBool(level.DisablePowerups, "Disable Power-Ups", ::DisablePowerups);
                 self addOptBool(level.headshots_only, "Headshots Only", ::headshots_only);
                 self addOptIncSlider("Clip Size Multiplier", ::ServerSetClipSizeMultiplier, 1, 1, 10, 1);
-                self addOpt("Pack 'a' Punch Price", ::NumberPad, "Pack 'a' Punch Price", ::EditPackAPunchPrice);
-                self addOpt("Repack 'a' Punch Price", ::NumberPad, "Repack 'a' Punch Price", ::EditRepackAPunchPrice);
+                self addOpt("Pack 'a' Punch Price", ::NumberPad, ::EditPackAPunchPrice);
+                self addOpt("Repack 'a' Punch Price", ::NumberPad, ::EditRepackAPunchPrice);
             break;
         
         case "Change Map":
@@ -835,7 +831,7 @@ runMenuIndex(menu)
                 self addOptBool(level.ZombiesInvisibility, "Invisibility", ::ZombiesInvisibility);
                 self addOptBool((GetDvarString("g_ai") == "0"), "Freeze", ::FreezeZombies);
                 self addOptSlider("Movement", ::SetZombieRunSpeed, "Walk;Run;Sprint;Super Sprint");
-                self addOptIncSlider("Animation Speed", ::SetZombieAnimationSpeed, 1, 1, 2, 0.1);
+                self addOptIncSlider("Animation Speed", ::SetZombieAnimationSpeed, 1, 1, 2, 0.5);
                 self addOpt("Make Crawlers", ::ForceZombieCrawlers);
                 self addOptSlider("Gib Bone", ::ZombieGibBone, "Random;Head;Right Leg;Left Leg;Right Arm;Left Arm");
                 self addOptBool(level.DisappearingZombies, "Disappearing Zombies", ::DisappearingZombies);
@@ -1012,7 +1008,7 @@ runMenuIndex(menu)
                 self addOpt("Profile Management", ::newMenu, "All Players Profile Management");
                 self addOpt("Model Manipulation", ::newMenu, "All Players Model Manipulation");
                 self addOpt("Malicious Options", ::newMenu, "All Players Malicious Options");
-                self addOpt("Send Message", ::Keyboard, "Send Message To All Players", ::MessageAllPLayers);
+                self addOpt("Send Message", ::Keyboard, ::MessageAllPLayers);
                 self addOpt("Temp Ban", ::AllPlayersFunction, ::BanPlayer);
                 self addOpt("Kick", ::AllPlayersFunction, ::KickPlayer);
                 self addOpt("Down", ::AllPlayersFunction, ::PlayerDeath, "Down");
@@ -1117,7 +1113,7 @@ MenuOptionsPlayer(menu, player)
                 self addOpt("Perk Menu", ::newMenu, "Perk Menu " + player GetEntityNumber());
                 self addOpt("Gobblegum Menu", ::newMenu, "Gobblegum Menu " + player GetEntityNumber());
                 self addOptBool(player.ThirdPerson, "Third Person", ::ThirdPerson, player);
-                self addOptIncSlider("Movement Speed", ::SetMovementSpeed, 0, 1, 3, 0.1, player);
+                self addOptIncSlider("Movement Speed", ::SetMovementSpeed, 0, 1, 3, 0.5, player);
                 self addOptSlider("Clone", ::PlayerClone, "Clone;Dead", player);
                 self addOptBool(player.Invisibility, "Invisibility", ::Invisibility, player);
                 self addOptBool(player.SaveAndLoad, "Save & Load Position", ::SaveAndLoad, player);
@@ -1243,7 +1239,7 @@ MenuOptionsPlayer(menu, player)
                 self addOptSlider("Challenges", ::AllChallenges, "Unlock;Lock", player);
                 self addOpt("Complete Daily Challenges", ::CompleteDailyChallenges, player);
                 self addOptSlider("Weapon Ranks", ::PlayerWeaponRanks, "Max;Reset", player);
-                self addOptIncSlider("Rank", ::SetPlayerRank, (player.pers["plevel"] > 10) ? 36 : 1, (player.pers["plevel"] > 10) ? 36 : 1, (player.pers["plevel"] > 10) ? 1000 : 35, 1, player);
+                self addOptIncSlider("Rank", ::SetPlayerRank, (player zm_stats::get_global_stat("PLEVEL") == level.maxprestige) ? 36 : 1, (player zm_stats::get_global_stat("PLEVEL") == level.maxprestige) ? 36 : 1, (player zm_stats::get_global_stat("PLEVEL") == level.maxprestige) ? 1000 : 35, 1, player);
                 self addOptIncSlider("Prestige", ::SetPlayerPrestige, 0, player.pers["plevel"], 10, 1, player);
                 self addOpt("Unlock All Achievements", ::UnlockAchievements, player);
                 self addOpt("Clan Tag Options", ::newMenu, "Clan Tag Options " + player GetEntityNumber());
@@ -1257,7 +1253,7 @@ MenuOptionsPlayer(menu, player)
                 self addOpt("Invisible Name", ::SetClanTag, "^Hä", player);
                 self addOpt("@CF4", ::SetClanTag, "@CF4", player);
                 self addOptSlider("Name Color", ::SetClanTag, "Black;Red;Green;Yellow;Blue;Cyan;Pink", player);
-                self addOpt("Custom", ::Keyboard, "Custom Clan Tag", ::SetClanTag, player);
+                self addOpt("Custom", ::Keyboard, ::SetClanTag, player);
             break;
         
         case "Custom Stats":
@@ -1269,7 +1265,7 @@ MenuOptionsPlayer(menu, player)
                 player.CustomStatsArray = [];
             
             self addMenu(menu, "Custom Stats");
-                self addOpt("Custom Value: " + player.CustomStatsValue, ::NumberPad, "Custom Stats Value", ::CustomStatsValue, player);
+                self addOpt("Custom Value: " + player.CustomStatsValue, ::NumberPad, ::CustomStatsValue, player);
                 self addOpt("Send Selected Stats", ::SetCustomStats, player);
                 self addOpt("");
                 self addOpt("General", ::newMenu, "General Stats " + player GetEntityNumber());
@@ -1525,8 +1521,8 @@ MenuOptionsPlayer(menu, player)
             
             self addMenu(menu, "Explosive Bullets");
                 self addOptBool(player.ExplosiveBullets, "Explosive Bullets", ::ExplosiveBullets, player);
-                self addOpt("Explosive Bullet Range: " + player.ExplosiveBulletsRange, ::NumberPad, "Explosive Bullet Range", ::ExplosiveBulletRange, player);
-                self addOpt("Explosive Bullet Damage: " + player.ExplosiveBulletsDamage, ::NumberPad, "Explosive Bullet Damage", ::ExplosiveBulletDamage, player);
+                self addOpt("Explosive Bullet Range: " + player.ExplosiveBulletsRange, ::NumberPad, ::ExplosiveBulletRange, player);
+                self addOpt("Explosive Bullet Damage: " + player.ExplosiveBulletsDamage, ::NumberPad, ::ExplosiveBulletDamage, player);
             break;
         
         case "Fun Scripts":
@@ -1539,7 +1535,7 @@ MenuOptionsPlayer(menu, player)
             self addMenu(menu, "Fun Scripts");
                 self addOpt("Effects Man Options", ::newMenu, "Effects Man Options " + player GetEntityNumber());
                 self addOptBool(player.ForceField, "Force Field", ::ForceField, player);
-                self addOpt("Force Field Size: " + player.ForceFieldSize, ::NumberPad, "Force Field Size", ::ForceFieldSize, player);
+                self addOpt("Force Field Size: " + player.ForceFieldSize, ::NumberPad, ::ForceFieldSize, player);
                 self addOptBool(player.Jetpack, "Jetpack", ::Jetpack, player);
                 self addOptBool(player.ZombieCounter, "Zombie Counter", ::ZombieCounter, player);
                 self addOptBool(player.LightProtector, "Light Protector", ::LightProtector, player);
@@ -1648,7 +1644,7 @@ MenuOptionsPlayer(menu, player)
                 for(a = 0; a < submenus.size; a++)
                     self addOpt(submenus[a], ::newMenu, submenus[a] + " " + player GetEntityNumber());
 
-                self addOpt("Send Message", ::Keyboard, "Send Message", ::MessagePlayer, player);
+                self addOpt("Send Message", ::Keyboard, ::MessagePlayer, player);
                 self addOptBool(player.FreezePlayer, "Freeze", ::FreezePlayer, player);
                 self addOpt("Kick", ::KickPlayer, player);
                 self addOpt("Temp Ban", ::BanPlayer, player);
@@ -1711,11 +1707,11 @@ MenuOptionsPlayer(menu, player)
         
         case "Disable Actions":
             self addMenu(menu, "Disable Actions");
-                self addOptBool(player.DisableAiming, "Disable Aiming", ::DisableAiming, player);
-                self addOptBool(player.DisableJumping, "Disable Jumping", ::DisableJumping, player);
-                self addOptBool(player.DisableSprinting, "Disable Sprinting", ::DisableSprinting, player);
-                self addOptBool(player.DisableOffhands, "Disable Offhand Weapons", ::DisableOffhands, player);
-                self addOptBool(player.DisableWeaps, "Disable Weapons", ::DisableWeaps, player);
+                self addOptBool(player.DisableAiming, "Aiming", ::DisableAiming, player);
+                self addOptBool(player.DisableJumping, "Jumping", ::DisableJumping, player);
+                self addOptBool(player.DisableSprinting, "Sprinting", ::DisableSprinting, player);
+                self addOptBool(player.DisableWeaps, "Weapons", ::DisableWeaps, player);
+                self addOptBool(player.DisableOffhands, "Offhand Weapons", ::DisableOffhands, player);
             break;
         
         case "Map Challenges Player":
@@ -1821,7 +1817,7 @@ MenuOptionsPlayer(menu, player)
                 type = (newmenu == "Mystery Box Normal Weapons") ? level.zombie_weapons : level.zombie_weapons_upgraded;
                 weaps = GetArrayKeys(type);
 
-                self addMenu(menu, StrTok(newmenu, "Mystery Box ")[0]);
+                self addMenu(menu, (newmenu == "Mystery Box Normal Weapons") ? "Normal Weapons" : "Upgraded Weapons");
                 self addOptBool(IsAllWeaponsInBox(type), "Enable All", ::EnableAllWeaponsInBox, type);
 
                 if(isDefined(weaps) && weaps.size)

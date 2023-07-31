@@ -26,15 +26,6 @@ MenuTheme(color)
         if(isDefined(self.menu["ui"]["BoolOpt"][a]) && isDefined(self.menu_B[self getCurrent()][a]) && self.menu_B[self getCurrent()][a] && self.menu["ToggleStyle"] != "Text")
             self.menu["ui"]["BoolOpt"][a] hudFadeColor(color, 1);
     
-    if(self.menu["MenuDesign"] == "Old School" && !self isInQuickMenu())
-    {
-        if(isDefined(self.menu["ui"]["text"][self getCursor()]))
-            self.menu["ui"]["text"][self getCursor()] hudFadeColor(color, 1);
-        
-        if(isDefined(self.menu["ui"]["title"]))
-            self.menu["ui"]["title"] hudFadeColor(color, 1);
-    }
-    
     self.menu["Main_Color"] = color;
     self SaveMenuTheme();
 }
@@ -78,59 +69,10 @@ SmoothRainbowTheme()
             if(isDefined(self.menu["ui"]["BoolOpt"][a]) && isDefined(self.menu_B[self getCurrent()][a]) && self.menu_B[self getCurrent()][a] && self.menu["ToggleStyle"] != "Text")
                 self.menu["ui"]["BoolOpt"][a].color = level.RGBFadeColor;
         
-        if(self.menu["MenuDesign"] == "Old School" && !self isInQuickMenu())
-        {
-            if(isDefined(self.menu["ui"]["text"][self getCursor()]))
-                self.menu["ui"]["text"][self getCursor()].color = (isDefined(self.menu["items"][self getCurrent()].bool[self getCursor()]) && isDefined(self.menu_B[self getCurrent()][self getCursor()]) && self.menu_B[self getCurrent()][self getCursor()] && self.menu["ToggleStyle"] == "Text Color") ? divideColor(0, 255, 0) : level.RGBFadeColor;
-
-            if(isDefined(self.menu["ui"]["title"]))
-                self.menu["ui"]["title"].color = level.RGBFadeColor;
-        }
-        
         self.menu["Main_Color"] = level.RGBFadeColor;
         
         wait 0.01;
     }
-}
-
-MenuDesign(design)
-{
-    if(self.menu["MenuDesign"] == design)
-        return;
-    
-    self closeMenu1();
-
-    self.menu["X"] = self.menu["DefaultX"];
-    self.menu["Y"] = self.menu["DefaultY"];
-
-    self.menu["MaxOptions"] = 12;
-    self.menu["ToggleStyle"] = "Boxes";
-    self.menu["LargeCursor"] = undefined;
-    self.menu["MenuBlur"] = undefined;
-    self.menu["MenuWidth"] = self.menu["DefaultWidth"];
-
-    self.menu["MenuDesign"] = design;
-
-    if(self.menu["MenuDesign"] == "Old School")
-    {
-        self.menu["X"] = 0;
-        self.menu["Y"] = -180;
-
-        self.menu["MaxOptions"] = 15;
-        self.menu["ToggleStyle"] = "Text Color";
-        self.menu["LargeCursor"] = true;
-        self.menu["MenuBlur"] = true;
-    }
-    else if(self.menu["MenuDesign"] == "Right Side")
-    {
-        self.menu["X"] = 330;
-        self.menu["Y"] = -125;
-        
-        self.menu["MenuWidth"] = 250;
-    }
-
-    self SaveMenuTheme();
-    self openMenu1();
 }
 
 ToggleStyle(style)
@@ -179,7 +121,7 @@ DisableQuickMenu()
 
 SaveMenuTheme()
 {
-    design = self.menu["MenuDesign"] + ";" + self.menu["ToggleStyle"] + ";" + self.menu["X"] + ";" + self.menu["Y"] + ";" + self.menu["MenuWidth"] + ";" + self.menu["MaxOptions"] + ";" + self.menu["MenuBlurValue"] + ";";
+    design = level.menuName + ";" + self.menu["ToggleStyle"] + ";" + self.menu["MaxOptions"] + ";";
     design += isDefined(self.menu["DisableMenuInstructions"]) ? "Disable;" : "Enable;";
     design += isDefined(self.menu["LargeCursor"]) ? "Enable;" : "Disable;";
     design += isDefined(self.menu["MenuBlur"]) ? "Enable;" : "Disable;";
@@ -191,36 +133,18 @@ SaveMenuTheme()
 
 LoadMenuVars() //Pre-Set Menu Variables.
 {
-    self.menu["MenuDesign"] = level.menuName; //Current Choices: level.menuName, Right Side, Old School
-
-    //If you change these, I recommend sticking to the min/max bounds
-    self.menu["DefaultX"] = -290;
-    self.menu["DefaultY"] = -150;
-    self.menu["DefaultWidth"] = 210;
-
-    //Quick Menu X/Y Variables
     self.menu["XQM"] = -1;
     self.menu["YQM"] = -161;
-    self.menu["maxOptionsQM"] = 15;
+
+    self.menu["X"] = -290;
+    self.menu["Y"] = -150;
 
     self.menu["MaxOptions"] = 12;
-
-    self.menu["MenuWidthMin"] = 165;
-    self.menu["MenuWidthMax"] = 450;
-    
-    self.menu["YMax"] = 154;
-    self.menu["YMin"] = -135;
-
-    self.menu["XMax"] = 217;
-    self.menu["XMin"] = -427;
-
-    self.menu["X"] = self.menu["DefaultX"];
-    self.menu["Y"] = self.menu["DefaultY"];
-
+    self.menu["maxOptionsQM"] = 15;
     self.menu["ToggleStyle"] = "Boxes";
     self.menu["Main_Color"] = divideColor(255, 0, 0); //Default theme color
     self.menu["MenuBlurValue"] = 2.5; //Amount of blur applied when menu blur is enabled
-    self.menu["MenuWidth"] = self.menu["DefaultWidth"];
+    self.menu["MenuWidth"] = 210;
 
     //Change 'undefined' to 'true' if you want to disable the instructions by default
     self.menu["DisableMenuInstructions"] = undefined;
@@ -231,47 +155,24 @@ LoadMenuVars() //Pre-Set Menu Variables.
     //Change 'undefined' to 'true' if you want to disable the quick menu by default
     self.menu["DisableQM"] = undefined;
 
-    if(self.menu["MenuDesign"] == "Old School")
-    {
-        self.menu["X"] = 0;
-        self.menu["Y"] = -180;
-
-        self.menu["MaxOptions"] = 15;
-        self.menu["ToggleStyle"] = "Text Color"; //Do Not Change This
-        self.menu["LargeCursor"] = true;
-        self.menu["MenuBlur"] = true;
-    }
-    else if(self.menu["MenuDesign"] == "Right Side")
-    {
-        self.menu["X"] = 330;
-        self.menu["Y"] = -125;
-
-        self.menu["MenuWidth"] = 250;
-    }
-
     //Loading Saved Menu Variables
     dvar = GetDvarString("MenuTheme" + self GetXUID());
     dvarSep = StrTok(dvar, ";");
     
-    if(dvar != "" && (dvarSep[0] == level.menuName || dvarSep[0] == "Right Side" || dvarSep[0] == "Old School"))
+    if(dvar != "" && dvarSep[0] == level.menuName)
     {
-        self.menu["MenuDesign"] = dvarSep[0];        
         self.menu["ToggleStyle"] = dvarSep[1];
-        self.menu["X"] = Int(dvarSep[2]);
-        self.menu["Y"] = Int(dvarSep[3]);
-        self.menu["MenuWidth"] = Int(dvarSep[4]);
-        self.menu["MaxOptions"] = Int(dvarSep[5]);
-        self.menu["MenuBlurValue"] = Float(dvarSep[6]);
-        self.menu["DisableMenuInstructions"] = (dvarSep[7] == "Disable") ? true : undefined;
-        self.menu["LargeCursor"] = (dvarSep[8] == "Enable") ? true : undefined;
-        self.menu["MenuBlur"] = (dvarSep[9] == "Enable") ? true : undefined;
-        self.menu["DisableQM"] = (dvarSep[10] == "Enable") ? true : undefined;
+        self.menu["MaxOptions"] = Int(dvarSep[2]);
+        self.menu["DisableMenuInstructions"] = (dvarSep[3] == "Disable") ? true : undefined;
+        self.menu["LargeCursor"] = (dvarSep[4] == "Enable") ? true : undefined;
+        self.menu["MenuBlur"] = (dvarSep[5] == "Enable") ? true : undefined;
+        self.menu["DisableQM"] = (dvarSep[6] == "Enable") ? true : undefined;
         
-        if(dvarSep[11] == "Rainbow")
+        if(dvarSep[7] == "Rainbow")
             self thread SmoothRainbowTheme();
         else
         {
-            SetDvar(self GetXUID() + level.menuName + "Color", dvarSep[11]);
+            SetDvar(self GetXUID() + level.menuName + "Color", dvarSep[7]);
             self.menu["Main_Color"] = GetDvarVector1(self GetXUID() + level.menuName + "Color");
         }
     }

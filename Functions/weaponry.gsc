@@ -5,7 +5,13 @@ TakeCurrentWeapon(player)
 
 TakePlayerWeapons(player)
 {
-    player TakeAllWeapons();
+    foreach(weapon in player GetWeaponsList(1))
+    {
+        if(weapon == level.weaponbasemelee || IsSubStr(weapon.name, "_knife"))
+            continue;
+        
+        player TakeWeapon(weapon);
+    }
 }
 
 DropCurrentWeapon(type, player)

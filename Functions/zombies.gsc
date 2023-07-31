@@ -23,7 +23,7 @@ SetZombieHealth(type)
     switch(type)
     {
         case "Custom":
-            self thread NumberPad("Zombie Health", ::EditZombieHealth);
+            self thread NumberPad(::EditZombieHealth);
             break;
         
         case "Reset":

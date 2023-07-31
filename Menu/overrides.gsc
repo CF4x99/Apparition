@@ -83,6 +83,341 @@ override_player_points(damage_weapon, player_points)
     return player_points;
 }
 
+override_server_xp_multiplier(type, n_xp)
+{
+    return n_xp * level.ServerXPMultiplier;
+}
+
+override_player_events()
+{
+    events = ["death_raps", "death_wasp", "death_spider", "death_thrasher", "death", "death_mechz", "ballistic_knife_death", "damage_light", "damage", "damage_ads", "carpenter_powerup", "rebuild_board", "bonus_points_powerup", "nuke_powerup", "jetgun_fling", "riotshield_fling", "thundergun_fling", "hacker_transfer", "reviver", "vulture", "build_wallbuy", "ww_webbed"];
+
+    foreach(event in events)
+        level.a_func_score_events[event] = ::event_override;
+}
+
+event_override(event, mod, hit_location, zombie_team, damage_weapon)
+{
+    player_points = 0;
+	team_points = 0;
+
+    switch(event)
+    {
+        case "death_raps":
+        case "death_wasp":
+        {
+            player_points = mod;
+
+            override_processscoreevent("kill", self, undefined, damage_weapon);
+            break;
+        }
+
+        case "death_spider":
+        {
+            player_points = zm_score::get_zombie_death_player_points();
+
+            override_processscoreevent("kill_spider", self, undefined, damage_weapon);
+            break;
+        }
+
+        case "death_thrasher":
+        {
+            player_points = zm_score::get_zombie_death_player_points();
+            points = self player_add_points_kill_bonus(mod, hit_location, damage_weapon);
+
+            if(level.zombie_vars[self.team]["zombie_powerup_insta_kill_on"] == 1 && mod == "MOD_UNKNOWN")
+                points = points * 2;
+
+            player_points = player_points + points;
+            player_points = player_points * 2;
+            
+            if(mod == "MOD_GRENADE" || mod == "MOD_GRENADE_SPLASH")
+            {
+                self zm_stats::increment_client_stat("grenade_kills");
+                self zm_stats::increment_player_stat("grenade_kills");
+            }
+
+            override_processscoreevent("kill_thrasher", self, undefined, damage_weapon);
+            break;
+        }
+
+        case "death":
+        {
+            player_points = zm_score::get_zombie_death_player_points();
+            points = self player_add_points_kill_bonus(mod, hit_location, damage_weapon, player_points);
+
+            if(level.zombie_vars[self.team]["zombie_powerup_insta_kill_on"] == 1 && mod == "MOD_UNKNOWN")
+                points = points * 2;
+
+            player_points = player_points + points;
+
+            if(mod == "MOD_GRENADE" || mod == "MOD_GRENADE_SPLASH")
+            {
+                self zm_stats::increment_client_stat("grenade_kills");
+                self zm_stats::increment_player_stat("grenade_kills");
+            }
+            break;
+        }
+
+        case "death_mechz":
+        {
+            player_points = mod;
+
+            override_processscoreevent("kill_mechz", self, undefined, damage_weapon);
+            break;
+        }
+
+        case "ballistic_knife_death":
+        {
+            player_points = zm_score::get_zombie_death_player_points() + level.zombie_vars["zombie_score_bonus_melee"];
+
+            self zm_score::score_cf_increment_info("death_melee");
+            break;
+        }
+
+        case "damage_light":
+        {
+            player_points = level.zombie_vars["zombie_score_damage_light"];
+            self zm_score::score_cf_increment_info("damage");
+            break;
+        }
+
+        case "damage":
+        {
+            player_points = level.zombie_vars["zombie_score_damage_normal"];
+            self zm_score::score_cf_increment_info("damage");
+            break;
+        }
+
+        case "damage_ads":
+        {
+            player_points = int(level.zombie_vars["zombie_score_damage_normal"] * 1.25);
+
+            self zm_score::score_cf_increment_info("damage");
+            break;
+        }
+
+        case "carpenter_powerup":
+        case "rebuild_board":
+        {
+            player_points = mod;
+            break;
+        }
+
+        case "bonus_points_powerup":
+        {
+            player_points = mod;
+            break;
+        }
+
+        case "nuke_powerup":
+        {
+            player_points = mod;
+            team_points = mod;
+            break;
+        }
+
+        case "jetgun_fling":
+        case "riotshield_fling":
+        case "thundergun_fling":
+        {
+            player_points = mod;
+
+            override_processscoreevent("kill", self, undefined, damage_weapon);
+            break;
+        }
+
+        case "hacker_transfer":
+        {
+            player_points = mod;
+            break;
+        }
+
+        case "reviver":
+        {
+            player_points = mod;
+            override_processscoreevent("player_did_revived", self, undefined, damage_weapon);
+            break;
+        }
+
+        case "vulture":
+        {
+            player_points = mod;
+            break;
+        }
+
+        case "build_wallbuy":
+        {
+            player_points = mod;
+            break;
+        }
+
+        case "ww_webbed":
+        {
+            player_points = mod;
+            break;
+        }
+
+        case "death_raz":
+        {
+            player_points = zm_score::get_zombie_death_player_points();
+            points = self player_add_points_kill_bonus(mod, hit_location, damage_weapon);
+            player_points = (player_points + points) * 2;
+
+            if(mod == "MOD_GRENADE" || mod == "MOD_GRENADE_SPLASH")
+            {
+                self zm_stats::increment_client_stat("grenade_kills");
+                self zm_stats::increment_player_stat("grenade_kills");
+            }
+
+            override_processscoreevent("kill_raz", self, undefined, damage_weapon);
+            break;
+        }
+
+        case "death_sentinel":
+        {
+            override_processscoreevent("kill_sentinel", self, undefined, damage_weapon);
+            player_points = 100;
+        }
+
+        default:
+        {
+            break;
+        }
+    }
+
+    return player_points;
+}
+
+override_processscoreevent(event, player, victim, weapon)
+{
+	pixbeginevent("processScoreEvent");
+
+	scoregiven = 0;
+
+	if(!IsPlayer(player))
+		return;
+
+	if(isDefined(level.challengesoneventreceived))
+		player thread [[ level.challengesoneventreceived ]](event);
+
+	if(scoreevents::isregisteredevent(event) && (!SessionModeIsZombiesGame() || level.onlinegame))
+	{
+		allowplayerscore = 0;
+
+		if(!isDefined(weapon) || !killstreaks::is_killstreak_weapon(weapon))
+			allowplayerscore = 1;
+		else
+			allowplayerscore = scoreevents::killstreakweaponsallowedscore(event);
+
+		if(allowplayerscore)
+		{
+			if(isDefined(level.scoreongiveplayerscore))
+			{
+				scoregiven = [[ level.scoreongiveplayerscore ]](event, player, victim, undefined, weapon);
+				isscoreevent = scoregiven > 0;
+
+				if(isscoreevent)
+				{
+					hero_restricted = scoreevents::is_hero_score_event_restricted(event);
+					player ability_power::power_gain_event_score(victim, scoregiven, weapon, hero_restricted);
+				}
+			}
+		}
+	}
+
+	if(scoreevents::shouldaddrankxp(player) && GetDvarInt("teamOpsEnabled") == 0)
+	{
+		pickedup = 0;
+
+		if(isDefined(weapon) && isDefined(player.pickedupweapons) && isDefined(player.pickedupweapons[weapon]))
+			pickedup = 1;
+        
+		player AddRankXP(event, weapon, player.class_num, pickedup, isscoreevent, level.ServerXPMultiplier);
+	}
+
+	pixendevent();
+    
+	return scoregiven;
+}
+
+player_add_points_kill_bonus(mod, hit_location, weapon, player_points = undefined)
+{
+	if(mod != "MOD_MELEE")
+	{
+		if("head" == hit_location || "helmet" == hit_location)
+			override_processscoreevent("headshot", self, undefined, weapon);
+		else
+			override_processscoreevent("kill", self, undefined, weapon);
+	}
+
+	if(isdefined(level.player_score_override))
+	{
+		new_points = self [[ level.player_score_override ]](weapon, player_points);
+
+		if(new_points > 0 && new_points != player_points)
+			return 0;
+	}
+
+	if(mod == "MOD_MELEE")
+	{
+		self zm_score::score_cf_increment_info("death_melee");
+		override_processscoreevent("melee_kill", self, undefined, weapon);
+
+		return level.zombie_vars["zombie_score_bonus_melee"];
+	}
+
+	if(mod == "MOD_BURNED")
+	{
+		self zm_score::score_cf_increment_info("death_torso");
+
+		return level.zombie_vars["zombie_score_bonus_burn"];
+	}
+
+	score = 0;
+
+	if(isDefined(hit_location))
+	{
+		switch(hit_location)
+		{
+			case "head":
+			case "helmet":
+			{
+				self zm_score::score_cf_increment_info("death_head");
+				score = level.zombie_vars["zombie_score_bonus_head"];
+
+				break;
+			}
+
+			case "neck":
+			{
+				self zm_score::score_cf_increment_info("death_neck");
+				score = level.zombie_vars["zombie_score_bonus_neck"];
+
+				break;
+			}
+
+			case "torso_lower":
+			case "torso_upper":
+			{
+				self zm_score::score_cf_increment_info("death_torso");
+				score = level.zombie_vars["zombie_score_bonus_torso"];
+
+				break;
+			}
+
+			default:
+			{
+				self zm_score::score_cf_increment_info("death_normal");
+
+				break;
+			}
+		}
+	}
+
+	return score;
+}
+
 DamageFeedBack()
 {
     if(isDefined(self.hud_damagefeedback) && isDefined(self.ShowHitmarkers))
@@ -197,7 +532,7 @@ player_out_of_playable_area_monitor()
     return 0;
 }
 
-WatchForMaxAmmo() //Not really an override. But, fuck it
+WatchForMaxAmmo()
 {
     if(isDefined(level.WatchForMaxAmmo))
         return;
@@ -213,7 +548,16 @@ WatchForMaxAmmo() //Not really an override. But, fuck it
         foreach(player in level.players)
         {
             foreach(weapon in player GetWeaponsList(1))
-                player SetWeaponAmmoClip(weapon, weapon.clipsize);
+            {
+                clipAmmo = player GetWeaponAmmoClip(weapon);
+                clipSize = weapon.clipsize;
+
+                if(clipAmmo < clipSize)
+                    player SetWeaponAmmoClip(weapon, clipSize);
+
+                if(weapon.isdualwield && weapon.dualwieldweapon != level.weaponnone)
+                    player SetWeaponAmmoClip(weapon.dualwieldweapon, clipSize);
+            }
         }
     }
 }

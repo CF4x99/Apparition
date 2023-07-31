@@ -712,14 +712,22 @@ PlayerDeath(type, player)
             break;
         
         case "Kill":
+            if(level.players.size < 2)
+                if(player HasPerk("specialty_quickrevive") || player zm_perks::has_perk_paused("specialty_quickrevive"))
+                {
+                    player notify("specialty_quickrevive_stop");
+
+                    wait 0.5;
+                }
+
             if(!player IsDown())
             {
                 player DoDamage(player.health + 999, (0, 0, 0));
 
-                wait 0.5;
+                wait 0.25;
             }
             
-            if(player IsDown()) //Not using else, because this needs to run whether the block above runs, or not
+            if(player IsDown() && level.players.size > 1) //Not using else, because this needs to run whether the block above runs, or not
             {
                 player notify("bled_out");
                 player zm_laststand::bleed_out();

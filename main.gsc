@@ -120,8 +120,11 @@
 #include scripts\shared\damagefeedback_shared;
 #include scripts\shared\bots\_bot;
 #include scripts\shared\_burnplayer;
+#include scripts\shared\killstreaks_shared;
+#include scripts\shared\abilities\_ability_power;
 
 #include scripts\zm\gametypes\_globallogic;
+#include scripts\zm\gametypes\_globallogic_score;
 #include scripts\zm\_util;
 #include scripts\zm\_zm;
 #include scripts\zm\_zm_behavior;
@@ -176,6 +179,9 @@ init()
     
     level.custom_game_over_hud_elem = ::override_game_over_hud_elem;
     level.player_score_override = ::override_player_points;
+    level.xpmodifiercallback = ::override_server_xp_multiplier;
+
+    level thread override_player_events();
 }
 
 OnPlayerConnect()
@@ -240,6 +246,9 @@ DefineOnce()
 
     level.colorNames = ["Light Blue", "Raspberry", "Skyblue", "Pink", "Green", "Brown", "Blue", "Red", "Orange", "Purple", "Cyan", "Yellow", "Black", "White"];
     level.colors = [0, 110, 255, 135, 38, 87, 135, 206, 250, 255, 110, 255, 0, 255, 0, 101, 67, 33, 0, 0, 255, 255, 0, 0, 255, 128, 0, 100, 0, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255];
+
+    level.uniqueStrings = [];
+    level.ServerXPMultiplier = 1;
 
     level thread RGBFade();
     level thread WatchForMaxAmmo();
