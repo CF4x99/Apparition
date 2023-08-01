@@ -1,7 +1,7 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.1.4
+    Version:              1.1.5
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
     
@@ -32,6 +32,7 @@
         - Extinct ~ Ideas, Suggestions, Constructive Criticism, Spec-Nade, and LUI Hud
         - CraftyCritter ~ BO3 Compiler
         - ItsFebiven ~ Some Ideas and Suggestions
+        - Joel ~ Suggestions, Bug Reports, and Testing The Unique String Crash Protection
 
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
@@ -239,7 +240,7 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName = "Apparition";
-    level.menuVersion = "1.1.4";
+    level.menuVersion = "1.1.5";
 
     level.MenuStatus = ["None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer"];
     level.AutoVerify = 0;
@@ -247,7 +248,6 @@ DefineOnce()
     level.colorNames = ["Light Blue", "Raspberry", "Skyblue", "Pink", "Green", "Brown", "Blue", "Red", "Orange", "Purple", "Cyan", "Yellow", "Black", "White"];
     level.colors = [0, 110, 255, 135, 38, 87, 135, 206, 250, 255, 110, 255, 0, 255, 0, 101, 67, 33, 0, 0, 255, 255, 0, 0, 255, 128, 0, 100, 0, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255];
 
-    level.uniqueStrings = [];
     level.ServerXPMultiplier = 1;
 
     level thread RGBFade();
@@ -330,7 +330,7 @@ DefineMenuArrays()
     ents = GetEntArray("script_model", "classname");
 
     for(a = 0; a < ents.size; a++)
-        if(ents[a].model != "tag_origin" && ents[a].model != "")
+        if(ents[a].model != "tag_origin" && ents[a].model != "" && !IsSubStr(ents[a].model, "collision_"))
             array::add(level.MenuModels, ents[a].model, 0);
     
     level.MenuEffects = [];
@@ -338,7 +338,13 @@ DefineMenuArrays()
 
     for(a = 0; a < fxs.size; a++)
     {
-        if(isInArray(level.MenuEffects))
+        if(!isDefined(fxs[a]))
+            continue;
+        
+        if(IsSubStr(fxs[a], "step_") || IsSubStr(fxs[a], "fall_") || IsSubStr(fxs[a], "tesla_viewmodel"))
+            continue;
+        
+        if(isInArray(level.MenuEffects, fxs[a]))
             continue;
         
         level.MenuEffects[a] = SpawnStruct();
@@ -481,6 +487,7 @@ ApparitionWelcomeMessage()
             else
                 string = self.menu["MenuInstructions"];
             
+            string = AddToStringCache(string);
 
             if(self GetLUIMenuData(self.MenuInstructions, "text") != string)
                 self SetLUIMenuData(self.MenuInstructions, "text", string);

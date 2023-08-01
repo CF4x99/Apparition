@@ -28,7 +28,7 @@ LUI_createText(text, align, x, y, width, color)
     textElem = self OpenLUIMenu("HudElementText", 1);
 
     //0 - LEFT | 1 - RIGHT | 2 - CENTER
-    self SetLUIMenuData(textElem, "text", text);
+    self SetLUIMenuData(textElem, "text", AddToStringCache(text));
     self SetLUIMenuData(textElem, "alignment", align);
     self SetLUIMenuData(textElem, "x", x);
     self SetLUIMenuData(textElem, "y", y);
@@ -154,30 +154,39 @@ DestroyHud()
         self.player.hud_count--;
 }
 
-SetTextString(text = "")
+SetTextString(text)
 {
-    if(!isDefined(self))
+    if(!isDefined(self) || !isDefined(text))
         return;
     
-    if(!isInArray(level.uniqueStrings, text))
-    {
-        if(level.uniqueStrings.size >= 1499)
-        {
-            text = "UNIQUE STRING LIMIT REACHED";
+    text = AddToStringCache(text);
 
-            if(!isDefined(level.uniqueStringLimitNotify))
-            {
-                bot::get_host_player() iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7Unique String Limit Has Been Reached. No More Unique Strings Will Be Created.");
-                level.uniqueStringLimitNotify = true;
-            }
-        }
-        
-        level.uniqueStrings[level.uniqueStrings.size] = text;
-    }
-
-    text = MakeLocalizedString(text);
     self.text = text;
     self SetText(text);
+}
+
+AddToStringCache(text)
+{
+    if(!isDefined(level.uniqueStrings))
+        level.uniqueStrings = [];
+    
+    if(level.uniqueStrings.size >= 1499 && !isInArray(level.uniqueStrings, text))
+    {
+        text = "UNIQUE STRING LIMIT REACHED";
+
+        if(!isDefined(level.uniqueStringLimitNotify))
+        {
+            bot::get_host_player() iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7Unique String Limit Has Been Reached. To Prevent Crashing, No More Unique Strings Will Be Created.");
+            level.uniqueStringLimitNotify = true;
+        }
+    }
+
+    if(!isInArray(level.uniqueStrings, text))
+        level.uniqueStrings[level.uniqueStrings.size] = text;
+
+    text = MakeLocalizedString(text);
+
+    return text;
 }
 
 SetShaderValues(shader, width, height)
@@ -487,7 +496,7 @@ newMenu(menu, dontSave, i1)
     else
         self.menu["currentMenuQM"] = menu;
 
-    refresh = ["Weapon Options", "Optic", "Rig", "Mod"];
+    refresh = ["Weapon Options", "Weapon Attachments"];
 
     if(isInArray(refresh, CleanMenuName(menu))) //Submenus that should be refreshed when player switches weapons
     {
@@ -508,7 +517,7 @@ WatchMenuWeaponSwitch(player)
     player endon("menuClosed");
     player endon("EndSwitchWeaponMonitor");
 
-    refresh = ["Weapon Options", "Optic", "Rig", "Mod"];
+    refresh = ["Weapon Options", "Weapon Attachments"];
     
     while(isInArray(refresh, CleanMenuName(player getCurrent())))
     {
@@ -1315,6 +1324,12 @@ MenuCredits()
     "^1Serious",
     "Annoying Most Of The Time",
     "But, I Learned A Lot From Him In The Past",
+    " ",
+    "^1Joel",
+    "Bug Reporting",
+    "Testing",
+    "Testing Unique String Crash Protection",
+    "Breaking Shit",
     " ",
     "^1CmDArn",
     "Bug Testing/Reporting",

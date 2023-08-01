@@ -1031,7 +1031,7 @@ runMenuIndex(menu)
         
         case "All Players Model Manipulation":
             self addMenu(menu, "Model Manipulation");
-                self addOpt("Reset Player Model", ::AllPlayersFunction, ::ResetPlayerModel);
+                self addOpt("Reset", ::AllPlayersFunction, ::ResetPlayerModel);
                 self addOpt("");
 
                 if(isDefined(level.MenuModels) && level.MenuModels.size)
@@ -1090,7 +1090,14 @@ MenuOptionsPlayer(menu, player)
 {
     self endon("disconnect");
     
-    newmenu = CleanMenuName(menu);
+    if(!isDefined(player) || !IsPlayer(player))
+    {
+        menu = "404";
+        newmenu = "404";
+    }
+
+    if(!isDefined(newmenu))
+        newmenu = CleanMenuName(menu);
     
     weapons = ["Assault Rifles", "Sub Machine Guns", "Light Machine Guns", "Sniper Rifles", "Shotguns", "Pistols", "Launchers", "Specials"];
     weaponsVar = ["assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special"];
@@ -1342,9 +1349,26 @@ MenuOptionsPlayer(menu, player)
         case "Weapon Attachments":
             self addMenu(menu, "Attachments");
                 self addOptBool(player.CorrectInvalidCombo, "Correct Invalid Combinations", ::CorrectInvalidCombo, player);
-                
-                for(a = 0; a < weaponAttachTypes.size; a++)
-                    self addOpt(weaponAttachTypes[a], ::newMenu, weaponAttachTypes[a] + " " + player GetEntityNumber());
+                self addOpt("");
+
+                attachmentFound = 0;
+                weapon = player GetCurrentWeapon();
+
+                for(a = 0; a < 44; a++)
+                {
+                    attachment = ReturnAttachment(a);
+                    name = ReturnAttachmentName(attachment);
+
+                    if(!isInArray(weapon.supportedAttachments, attachment) || attachment == "none" || attachment == "dw")
+                        continue;
+                    
+                    self addOptBool(isInArray(weapon.attachments, attachment), name, ::GivePlayerAttachment, attachment, player);
+
+                    attachmentFound++;
+                }
+
+                if(!attachmentFound)
+                    self addOpt("No Supported Attachments Found");
             break;
         
         case "Weapon AAT":
@@ -1493,13 +1517,10 @@ MenuOptionsPlayer(menu, player)
             break;
         
         case "Bullet Effects":
-            fxs = GetArrayKeys(level._effect);
-            
             self addMenu(menu, "Bullet Effect");
 
-                if(isDefined(fxs) && fxs.size)
-                    for(a = 0; a < fxs.size; a++)
-                        self addOpt(CleanString(fxs[a]), ::BulletProjectile, fxs[a], "Effect", player);
+                for(a = 0; a < level.MenuEffects.size; a++)
+                    self addOpt(level.MenuEffects[a].displayName, ::BulletProjectile, level.MenuEffects[a].name, "Effect", player);
             break;
         
         case "Bullet Spawnables":
@@ -1527,15 +1548,14 @@ MenuOptionsPlayer(menu, player)
         
         case "Fun Scripts":
             if(!isDefined(player.ForceFieldSize))
-                player.ForceFieldSize = 255;
+                player.ForceFieldSize = 250;
             
             if(!isDefined(player.DamagePointsMultiplier))
                 player.DamagePointsMultiplier = 1;
             
             self addMenu(menu, "Fun Scripts");
-                self addOpt("Effects Man Options", ::newMenu, "Effects Man Options " + player GetEntityNumber());
                 self addOptBool(player.ForceField, "Force Field", ::ForceField, player);
-                self addOpt("Force Field Size: " + player.ForceFieldSize, ::NumberPad, ::ForceFieldSize, player);
+                self addOptIncSlider("Force Field Size", ::ForceFieldSize, 250, player.ForceFieldSize, 500, 25, player);
                 self addOptBool(player.Jetpack, "Jetpack", ::Jetpack, player);
                 self addOptBool(player.ZombieCounter, "Zombie Counter", ::ZombieCounter, player);
                 self addOptBool(player.LightProtector, "Light Protector", ::LightProtector, player);
@@ -1554,19 +1574,6 @@ MenuOptionsPlayer(menu, player)
                 self addOptBool(player.PowerUpMagnet, "Power-Up Magnet", ::PowerUpMagnet, player);
                 self addOptBool(player.PlayerInstaKill, "Insta-Kill", ::PlayerInstaKill, player);
                 self addOptIncSlider("Points Multiplier", ::DamagePointsMultiplier, 1, 1, 10, 0.5, player);
-            break;
-        
-        case "Effects Man Options":
-            if(!isDefined(player.FXManTag))
-                player.FXManTag = "j_head";
-            
-            self addMenu(menu, "Effects Man Options");
-                self addOpt("Disable", ::DisableFXMan, player);
-                self addOptSlider("Play FX On Tag", ::SetFXManTag, level.boneTags, player);
-                self addOpt("");
-
-                for(a = 0; a < level.MenuEffects.size; a++)
-                    self addOpt(level.MenuEffects[a].displayName, ::FXMan, level._effect[level.MenuEffects[a].name], player);
             break;
         
         case "Hit Markers":
@@ -1590,7 +1597,7 @@ MenuOptionsPlayer(menu, player)
         case "Model Manipulation":            
             self addMenu(menu, "Model Manipulation");
                 self addOptBool(player.ThirdPerson, "Third Person", ::ThirdPerson, player);
-                self addOpt("Reset Player Model", ::ResetPlayerModel, player);
+                self addOpt("Reset", ::ResetPlayerModel, player);
                 self addOpt("");
 
                 for(a = 0; a < level.MenuModels.size; a++)
@@ -1782,33 +1789,6 @@ MenuOptionsPlayer(menu, player)
                     self addOptBool(player HasWeapon1(GetWeapon("minigun")), "Death Machine", ::GivePlayerWeapon, GetWeapon("minigun"), player);
                     self addOptBool(player HasWeapon1(GetWeapon("defaultweapon")), "Default Weapon", ::GivePlayerWeapon, GetWeapon("defaultweapon"), player);
                 }
-            }
-            else if(isInArray(weaponAttachTypes, newmenu))
-            {
-                attachmentFound = 0;
-                weapon = player GetCurrentWeapon();
-
-                self addMenu(menu, newmenu);
-                    for(a = 0; a < 44; a++)
-                    {
-                        type = ReturnAttachmentType(a);
-
-                        if(type != ToLower(newmenu))
-                            continue;
-                        
-                        attachment = ReturnAttachment(a);
-                        name = ReturnAttachmentName(attachment);
-
-                        if(!isInArray(weapon.supportedAttachments, attachment) || attachment == "dw")
-                            continue;
-                        
-                        self addOptBool(isInArray(weapon.attachments, attachment), name, ::GivePlayerAttachment, attachment, player);
-
-                        attachmentFound++;
-                    }
-
-                    if(!attachmentFound)
-                        self addOpt("No Supported Attachments Found");
             }
             else if(newmenu == "Mystery Box Normal Weapons" || newmenu == "Mystery Box Upgraded Weapons")
             {

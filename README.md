@@ -1,6 +1,6 @@
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.1.4
+    Version:              1.1.5
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
@@ -31,6 +31,7 @@
         - Extinct ~ Ideas, Suggestions, Constructive Criticism, Spec-Nade, and LUI Hud
         - CraftyCritter ~ BO3 Compiler
         - ItsFebiven ~ Some Ideas and Suggestions
+        - Joel ~ Suggestions, Bug Reports, and Testing The Unique String Crash Protection
 
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 

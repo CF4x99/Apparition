@@ -195,7 +195,7 @@ RefreshAC130HUD(ammo)
             break;
     }
 
-    self SetLUIMenuData(self.AC130HUDLUI, "text", text + "\n^3[{+frag}]^7 To Change Weapon");
+    self SetLUIMenuData(self.AC130HUDLUI, "text", AddToStringCache(text + "\n^3[{+frag}] ^7To Change Weapon"));
 
     for(a = 0; a < AC130HudValues.size; a++)
         self.AC130HUD[self.AC130HUD.size] = self createRectangle("CENTER", "CENTER", Int(StrTok(AC130HudValues[a], ",")[0]), Int(StrTok(AC130HudValues[a], ",")[1]), Int(StrTok(AC130HudValues[a], ",")[2]), Int(StrTok(AC130HudValues[a], ",")[3]), (1, 1, 1), 1, 1, "white");

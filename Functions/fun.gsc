@@ -1,54 +1,3 @@
-FXMan(fx, player)
-{
-    player notify("EndFXMan");
-    player endon("EndFXMan");
-    player endon("disconnect");
-    
-    player.FXMan = true;
-
-    if(isDefined(player.fxent))
-        player.fxent delete();
-    
-    wait 0.05;
-
-    player.SavedFX = fx;
-    player.SavedFXTag = player.FXManTag;
-    
-    while(isDefined(player.FXMan))
-    {
-        player.fxent = SpawnFX(player.SavedFX, player GetTagOrigin(player.SavedFXTag));
-        TriggerFX(player.fxent);
-        
-        wait 0.1;
-
-        if(isDefined(player.fxent))
-            player.fxent delete();
-
-        wait 0.2;
-    }
-}
-
-SetFXManTag(tag, player)
-{
-    player.FXManTag = tag;
-    player.FXMan = undefined;
-
-    if(isDefined(player.SavedFX))
-        player thread FXMan(player.SavedFX, player);
-}
-
-DisableFXMan(player)
-{
-    player notify("EndFXMan");
-    player.FXMan = undefined;
-    
-    if(isDefined(player.fxent))
-        player.fxent delete();
-
-    wait 0.05;
-    player.SavedFX = undefined;
-}
-
 ForceField(player)
 {
     player.ForceField = isDefined(player.ForceField) ? undefined : true;
@@ -125,8 +74,10 @@ ZombieCounter(player)
 
         while(isDefined(player.ZombieCounter))
         {
-            if(player GetLUIMenuData(player.ZombieCounterHud, "text") != "Alive: " + zombie_utility::get_current_zombie_count() + "\nRemaining For Round: " + level.zombie_total)
-                player SetLUIMenuData(player.ZombieCounterHud, "text", "Alive: " + zombie_utility::get_current_zombie_count() + "\nRemaining For Round: " + level.zombie_total);
+            string = AddToStringCache("Alive: " + zombie_utility::get_current_zombie_count());
+
+            if(player GetLUIMenuData(player.ZombieCounterHud, "text") != string)
+                player SetLUIMenuData(player.ZombieCounterHud, "text", string);
             
             player lui::set_color(player.ZombieCounterHud, level.RGBFadeColor);
 
