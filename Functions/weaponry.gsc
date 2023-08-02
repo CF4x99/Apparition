@@ -1,6 +1,11 @@
 TakeCurrentWeapon(player)
 {
-    player TakeWeapon(player GetCurrentWeapon());
+    weapon = player GetCurrentWeapon();
+
+    if(weapon == level.weaponbasemelee || IsSubStr(weapon.name, "_knife"))
+        return;
+    
+    player TakeWeapon(weapon);
 }
 
 TakePlayerWeapons(player)
@@ -20,11 +25,21 @@ DropCurrentWeapon(type, player)
     clip = player GetWeaponAmmoClip(player GetCurrentWeapon());
     stock = player GetWeaponAmmoStock(player GetCurrentWeapon());
 
+    if(isDefined(player.aat[player aat::get_nonalternate_weapon(weapon)]))
+        aat = player.aat[player aat::get_nonalternate_weapon(weapon)];
+
     player DropItem(weapon);
 
     if(type == "Don't Take")
     {
         player zm_weapons::weapon_give(weapon, false, false, true);
+
+        if(isDefined(weapon.savedCamo))
+            SetPlayerCamo(weapon.savedCamo, player);
+        
+        if(isDefined(aat))
+            player aat::acquire(weapon, aat);
+        
         player SetWeaponAmmoClip(player GetCurrentWeapon(), clip);
         player SetWeaponAmmoStock(player GetCurrentWeapon(), stock);
 
@@ -49,7 +64,8 @@ PackCurrentWeapon(player)
     if(zm_weapons::is_weapon_included(base_weapon))
 		force_attachments = zm_weapons::get_force_attachments(base_weapon.rootweapon);
     
-    camo = upgraded ? level.pack_a_punch_camo_index : 0;
+    
+    camo = (!upgraded && isDefined(base_weapon.savedCamo) && base_weapon.savedCamo != level.pack_a_punch_camo_index) ? base_weapon.savedCamo : upgraded ? level.pack_a_punch_camo_index : undefined;
 
 	if(isDefined(force_attachments) && force_attachments.size)
 	{
@@ -77,6 +93,8 @@ PackCurrentWeapon(player)
 
     if(!isDefined(newWeapon))
         return;
+    
+    newWeapon.savedCamo = camo;
 
     player TakeWeapon(player GetCurrentWeapon());
     player GiveWeapon(newWeapon, weapon_options, acvi);
@@ -118,10 +136,15 @@ GivePlayerAttachment(attachment, player)
             return self iPrintlnBold("^1ERROR: ^7Attachment Limit Reached");
     }
 
+    camo = isDefined(weapon.savedCamo) ? weapon.savedCamo : undefined;
+
     newWeapon = GetWeapon(weapon.rootweapon.name, attachments);
+    weapon_options = player CalcWeaponOptions(camo, 0, 0);
+
+    newWeapon.savedCamo = camo;
     
     player TakeWeapon(weapon);
-    player GiveWeapon(newWeapon);
+    player GiveWeapon(newWeapon, weapon_options);
     player SetSpawnWeapon(newWeapon, true);
 
     if(isDefined(aat))
@@ -168,6 +191,8 @@ SetPlayerCamo(camo, player)
     player TakeWeapon(weap);
     player GiveWeapon(weap, weapon, NewWeapon);
     player SetSpawnWeapon(weap, true);
+
+    weap.savedCamo = camo;
 }
 
 FlashingCamo(player)
@@ -213,8 +238,8 @@ GivePlayerWeapon(weapon, player)
         return;
     }
     
-    player zm_weapons::weapon_give(weapon, false, false, true);
-    player GiveStartAmmo(weapon);
+    newWeapon = player zm_weapons::weapon_give(weapon, false, false, true);
+    player GiveStartAmmo(newWeapon);
 
     if(!IsSubStr(weapon.name, "_knife"))
         player SetSpawnWeapon(weapon, true);

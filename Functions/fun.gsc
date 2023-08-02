@@ -1,3 +1,101 @@
+ElectricFireCherry(player)
+{
+    player.ElectricFireCherry = isDefined(player.ElectricFireCherry) ? undefined : true;
+
+    if(isDefined(player.ElectricFireCherry))
+    {
+        player endon("disconnect");
+        player endon("EndElectricFireCherry");
+
+        while(isDefined(player.ElectricFireCherry))
+        {
+            player waittill("reload_start");
+
+            CodeSetClientField(player, "electric_cherry_reload_fx", 1);
+
+            player PlaySound("zmb_bgb_powerup_burnedout");
+            player PlaySound("zmb_cherry_explode");
+
+            player clientfield::increment_to_player("zm_bgb_burned_out_1ptoplayer");
+	        player clientfield::increment("zm_bgb_burned_out_3p_allplayers");
+
+			zombies = array::get_all_closest(player.origin, GetAITeamArray(level.zombie_team), undefined, undefined, 350);
+
+            if(!isDefined(zombies) || !zombies.size)
+            {
+                wait 3;
+                continue;
+            }
+
+            targets = [];
+
+            for(a = 0; a < zombies.size; a++)
+            {
+                if(!isDefined(zombies[a]) || !IsAlive(zombies[a]) || isInArray(targets, zombies[a]))
+                    continue;
+                
+                zombies[a].marked_for_death = 1;
+                zombies[a] PlaySound("zmb_elec_jib_zombie");
+
+                if(IsVehicle(zombies[a]))
+                {
+                    if(!(isDefined(zombies[a].head_gibbed) && zombies[a].head_gibbed))
+                        zombies[a] clientfield::set("tesla_shock_eyes_fx_veh", 1);
+                    else
+                        zombies[a] clientfield::set("tesla_death_fx_veh", 1);
+                    
+                    zombies[a] clientfield::increment("zm_bgb_burned_out_fire_torso_vehicle");
+                }
+                else
+                {
+                    if(!(isDefined(zombies[a].head_gibbed) && zombies[a].head_gibbed))
+                        zombies[a] clientfield::set("tesla_shock_eyes_fx", 1);
+                    else
+                        zombies[a] clientfield::set("tesla_death_fx", 1);
+                    
+                    zombies[a] clientfield::increment("zm_bgb_burned_out_fire_torso_actor");
+                }
+                
+                targets[targets.size] = zombies[a];
+            }
+
+            wait 0.5;
+
+            if(isDefined(targets) && targets.size)
+            {
+                for(a = 0; a < targets.size; a++)
+                {
+                    if(!isDefined(targets[a]) || !IsAlive(targets[a]))
+                        continue;
+                    
+                    targets[a].ZombieFling = true;
+                    targets[a] DoDamage(targets[a].health + 666, player.origin, player, player, "none");
+                    player zm_score::add_to_player_score(40);
+                }
+            }
+            
+            wait 1;
+
+            CodeSetClientField(player, "electric_cherry_reload_fx", 0);
+
+            player EFC_Cooldown();
+        }
+    }
+    else
+        player notify("EndElectricFireCherry");
+}
+
+EFC_Cooldown()
+{
+    self endon("death");
+    self endon("disconnect");
+    
+    reloadTime = self HasPerk("specialty_fastreload") ? (0.25 * GetDvarFloat("perk_weapReloadMultiplier")) : 0.25;
+	coolDownTime = reloadTime + 30;
+
+	wait coolDownTime;
+}
+
 ForceField(player)
 {
     player.ForceField = isDefined(player.ForceField) ? undefined : true;
@@ -41,7 +139,7 @@ Jetpack(player)
     {
         player endon("disconnect");
 
-        player iPrintlnBold("Press & Hold [{+frag}] To Use Jetpack");
+        player iPrintlnBold("Press & Hold " + self ReturnButtonName("frag") + " To Use Jetpack");
 
         while(isDefined(player.Jetpack))
         {
@@ -69,26 +167,48 @@ ZombieCounter(player)
     {
         player endon("disconnect");
 
-        if(!isDefined(player.ZombieCounterHud))
-            player.ZombieCounterHud = player LUI_createText("", 0, 22, 25, 1023, (0, 0, 0));
+        if(player hasMenu() && player isInMenu(true))
+            player iPrintlnBold("^1NOTE: ^7The Zombie Counter Is Only Visible While The Menu Is Closed");
 
         while(isDefined(player.ZombieCounter))
         {
-            string = AddToStringCache("Alive: " + zombie_utility::get_current_zombie_count());
+            if(!player isInMenu(true))
+            {
+                if(!isDefined(player.ZombieCounterHud) || !player.ZombieCounterHud.size)
+                {
+                    if(!isDefined(player.ZombieCounterHud))
+                        player.ZombieCounterHud = [];
+                    
+                    player.ZombieCounterHud[0] = player createText("default", 1.4, 1, "Alive:", "LEFT", "CENTER", -400, -215, 1, level.RGBFadeColor);
+                    player.ZombieCounterHud[1] = player createText("default", 1.4, 1, "Remaining For Round:", "LEFT", "CENTER", -400, -200, 1, level.RGBFadeColor);
+                    
+                    player.ZombieCounterHud[2] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (-400 + (player.ZombieCounterHud[0] GetTextWidth() - 8)), -215, 1, level.RGBFadeColor);
+                    player.ZombieCounterHud[3] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (-400 + (player.ZombieCounterHud[1] GetTextWidth() - 38)), -200, 1, level.RGBFadeColor);
 
-            if(player GetLUIMenuData(player.ZombieCounterHud, "text") != string)
-                player SetLUIMenuData(player.ZombieCounterHud, "text", string);
-            
-            player lui::set_color(player.ZombieCounterHud, level.RGBFadeColor);
+                    for(a = 0; a < player.ZombieCounterHud.size; a++)
+                        if(isDefined(player.ZombieCounterHud[a]))
+                            player.ZombieCounterHud[a] thread HudRGBFade();
+                }
+                else
+                {
+                    player.ZombieCounterHud[2] SetValue(zombie_utility::get_current_zombie_count());
+                    player.ZombieCounterHud[3] SetValue(level.zombie_total);
+                }
+            }
+            else
+            {
+                if(isDefined(player.ZombieCounterHud) && player.ZombieCounterHud.size)
+                {
+                    destroyAll(player.ZombieCounterHud);
+                    player.ZombieCounterHud = [];
+                }
+            }
 
             wait 0.01;
         }
     }
     else
-    {
-        player CloseLUIMenu(player.ZombieCounterHud);
-        player.ZombieCounterHud = undefined;
-    }
+        destroyAll(player.ZombieCounterHud);
 }
 
 LightProtector(player)
@@ -175,6 +295,46 @@ SpecialMovements(player)
         player AllowWallRun(0);
         player AllowDoubleJump(0);
     }
+}
+
+AdventureTime(player)
+{  
+    if(isDefined(player.AdventureTime))
+        return;
+
+    if(player isPlayerLinked())
+        return self iPrintlnBold("^1ERROR: ^7Player Is Linked To An Entity");
+
+    player endon("disconnect");
+
+    player.AdventureTime = true;
+
+    origin = player.origin;
+    model = SpawnScriptModel(player.origin, "test_sphere_silver", (0, player.angles[1], 0));
+
+    model SetScale(7);
+    player PlayerLinkTo(model);
+
+    for(a = 0; a < 10; a++)
+    {
+        newOrigin = origin + (RandomInt(7500), RandomInt(7500), RandomIntRange(1000, 5500));
+        model MoveTo(newOrigin, 1.5);
+
+        wait 3;
+    }
+
+    model MoveTo(origin, 3);
+    wait 3.5;
+
+    player Unlink();
+    model delete();
+
+    player.AdventureTime = undefined;
+}
+
+SendEarthquake(player)
+{
+    Earthquake(1, 15, player.origin, 750);
 }
 
 SpecNade(player) //Credit to Extinct for his spec-nade
@@ -659,7 +819,7 @@ DeleteGun(player)
     {
         player endon("disconnect");
 
-        player iPrintlnBold("[{+speed_throw}] To ^2Delete Entities/Zombies");
+        player iPrintlnBold(self ReturnButtonName("speed_throw") + " To ^2Delete Entities/Zombies");
         
         while(isDefined(player.DeleteGun))
         {
@@ -678,6 +838,27 @@ DeleteGun(player)
             }
 
             wait 0.01;
+        }
+    }
+}
+
+RapidFire(player)
+{
+    player.RapidFire = isDefined(player.RapidFire) ? undefined : true;
+
+    player endon("disconnect");
+    
+    while(isDefined(player.RapidFire))
+    {
+        player waittill("weapon_fired");
+
+        weapon = self GetCurrentWeapon();
+
+        for(a = 0; a < 3; a++)
+        {
+            MagicBullet(weapon, player GetWeaponMuzzlePoint(), BulletTrace(player GetWeaponMuzzlePoint(), player GetWeaponMuzzlePoint() + player GetWeaponForwardDir() * 100, 0, undefined)["position"] + (RandomFloatRange(-5, 5), RandomFloatRange(-5, 5), RandomFloatRange(-5, 5)), player);
+
+            wait 0.05;
         }
     }
 }
@@ -737,6 +918,11 @@ PowerUpMagnet(player)
 PlayerInstaKill(player)
 {
     player.PlayerInstaKill = isDefined(player.PlayerInstaKill) ? undefined : true;
+}
+
+DisableEarningPoints(player)
+{
+    player.DisableEarningPoints = isDefined(player.DisableEarningPoints) ? undefined : true;
 }
 
 DamagePointsMultiplier(multiplier, player)

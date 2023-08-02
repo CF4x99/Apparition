@@ -94,7 +94,7 @@ menuMonitor()
                             
                             self PlaySoundToPlayer("fly_870mcs_pull", self);
 
-                            wait 0.2;
+                            wait 0.13;
                         }
                     }
                 }
@@ -367,6 +367,9 @@ openMenu1(menu)
     
     self.menu["currentMenu"] = menu;
     self drawText();
+
+    if(menu == "Players" && !isDefined(self.PlayerInfoHandler))
+        self thread PlayerInfoHandler();
 
     if(isDefined(self.menu["MenuBlur"]))
         self SetBlur(self.menu["MenuBlurValue"], 0.1);

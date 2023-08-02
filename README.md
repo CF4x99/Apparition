@@ -1,6 +1,6 @@
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.1.5
+    Version:              1.1.6.0
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
@@ -9,7 +9,7 @@
 
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
-    Discord:    CF4_99#9999
+    Discord:    cf4_99
     YouTube:    https://www.youtube.com/c/CF499
     MXT Server: https://discord.gg/MXT
 
@@ -83,4 +83,4 @@
 
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
-    Discord: CF4_99#9999
+    Discord: cf4_99

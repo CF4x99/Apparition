@@ -67,7 +67,7 @@ runMenuIndex(menu)
                 {
                     self addOptBool(self.godmode, "God Mode", ::Godmode, self);
                     self addOptBool(self.Noclip, "Noclip", ::Noclip1, self);
-                    self addOptBool(self.NoclipBind, "Bind Noclip To [{+frag}]", ::BindNoclip, self);
+                    self addOptBool(self.NoclipBind, "Bind Noclip To " + self ReturnButtonName("frag"), ::BindNoclip, self);
                     self addOptSlider("Unlimited Ammo", ::UnlimitedAmmo, "Continuous;Reload;Disable", self);
                     self addOptBool(self.UnlimitedEquipment, "Unlimited Equipment", ::UnlimitedEquipment, self);
                     self addOptSlider("Modify Score", ::ModifyScore, "1000000;100000;10000;1000;100;10;0;-10;-100;-1000;-10000;-100000;-1000000", self);
@@ -681,7 +681,6 @@ runMenuIndex(menu)
                 self addOptBool(level.AntiEndGame, "Anti-End Game", ::AntiEndGame);
                 self addOptBool(level.AutoRevive, "Auto-Revive", ::AutoRevive);
                 self addOptBool(level.AutoRespawn, "Auto-Respawn", ::AutoRespawn);
-                self addOpt("Auto-Verification", ::newMenu, "Auto-Verification");
                 self addOptBool(level.ServerPauseWorld, "Pause World", ::ServerPauseWorld);
                 self addOpt("Doheart Options", ::newMenu, "Doheart Options");
                 self addOpt("Lobby Timer Options", ::newMenu, "Lobby Timer Options");
@@ -701,13 +700,6 @@ runMenuIndex(menu)
                 self addOpt("Change Map", ::newMenu, "Change Map");
                 self addOpt("Restart Game", ::ServerRestartGame);
                 self addOpt("End Game", ::ServerEndGame);
-            break;
-        
-        case "Auto-Verification":
-            self addMenu(menu, "Auto-Verification");
-
-                for(a = 0; a < (level.MenuStatus.size - 2); a++)
-                    self addOptBool((level.AutoVerify == a), level.MenuStatus[a], ::SetAutoVerification, a);
             break;
         
         case "Doheart Options":
@@ -993,6 +985,7 @@ runMenuIndex(menu)
                 self addOpt("Custom Map Spawns", ::newMenu, "Custom Map Spawns");
                 self addOptBool((GetDvarString("ui_lobbyDebugVis") == "1"), "DevGui Info", ::DevGUIInfo);
                 self addOptBool((GetDvarString("r_fog") == "0"), "Disable Fog", ::DisableFog);
+                self addOptBool((GetDvarString("sv_cheats") == "1"), "SV Cheats", ::ServerCheats);
             break;
         
         case "Custom Map Spawns":
@@ -1056,7 +1049,7 @@ runMenuIndex(menu)
                 foreach(player in level.players)
                 {
                     if(!isDefined(player.menuState["verification"])) //If A Player Doesn't Have A Verification Set, They Won't Show. Mainly Happens If They Are Still Connecting
-                        player.menuState["verification"] = level.MenuStatus[level.AutoVerify];
+                        player.menuState["verification"] = level.MenuStatus[0];
                     
                     self addOpt("[^2" + player.menuState["verification"] + "^7]" + CleanName(player getName()), ::newMenu, "Options " + player GetEntityNumber());
                 }
@@ -1112,7 +1105,7 @@ MenuOptionsPlayer(menu, player)
                 self addOptBool(player.godmode, "God Mode", ::Godmode, player);
                 self addOptBool(player.DemiGod, "Demi-God", ::DemiGod, player);
                 self addOptBool(player.Noclip, "Noclip", ::Noclip1, player);
-                self addOptBool(player.NoclipBind, "Bind Noclip To [{+frag}]", ::BindNoclip, player);
+                self addOptBool(player.NoclipBind, "Bind Noclip To " + self ReturnButtonName("frag"), ::BindNoclip, player);
                 self addOptBool(player.UFOMode, "UFO Mode", ::UFOMode, player);
                 self addOptSlider("Unlimited Ammo", ::UnlimitedAmmo, "Continuous;Reload;Disable", player);
                 self addOptBool(player.UnlimitedEquipment, "Unlimited Equipment", ::UnlimitedEquipment, player);
@@ -1133,6 +1126,7 @@ MenuOptionsPlayer(menu, player)
                 self addOptBool(player.NoExplosiveDamage, "No Explosive Damage", ::NoExplosiveDamage, player);
                 self addOptIncSlider("Character Model Index", ::SetCharacterModelIndex, 0, player.characterIndex, 8, 1, player);
                 self addOptBool(player.LoopCharacterModelIndex, "Random Character Model Index", ::LoopCharacterModelIndex, player);
+                self addOptBool(player.ShootWhileSprinting, "Shoot While Sprinting", ::ShootWhileSprinting, player);
                 self addOptBool(player.UnlimitedSprint, "Unlimited Sprint", ::UnlimitedSprint, player);
                 self addOpt("Respawn", ::ServerRespawnPlayer, player);
                 self addOpt("Revive", ::PlayerRevive, player);
@@ -1554,12 +1548,15 @@ MenuOptionsPlayer(menu, player)
                 player.DamagePointsMultiplier = 1;
             
             self addMenu(menu, "Fun Scripts");
+                self addOptBool(player.ElectricFireCherry, "Electric Fire Cherry", ::ElectricFireCherry, player);
                 self addOptBool(player.ForceField, "Force Field", ::ForceField, player);
                 self addOptIncSlider("Force Field Size", ::ForceFieldSize, 250, player.ForceFieldSize, 500, 25, player);
                 self addOptBool(player.Jetpack, "Jetpack", ::Jetpack, player);
                 self addOptBool(player.ZombieCounter, "Zombie Counter", ::ZombieCounter, player);
                 self addOptBool(player.LightProtector, "Light Protector", ::LightProtector, player);
                 self addOptBool(player.SpecialMovements, "Special Movements", ::SpecialMovements, player);
+                self addOpt("Adventure Time", ::AdventureTime, player);
+                self addOpt("Earthquake", ::SendEarthquake, player);
                 self addOptBool(player.SpecNade, "Spec-Nade", ::SpecNade, player);
                 self addOptBool(player.NukeNades, "Nuke Nades", ::NukeNades, player);
                 self addOptBool(player.ShootPowerUps, "Shoot Power-Ups", ::ShootPowerUps, player);
@@ -1570,9 +1567,11 @@ MenuOptionsPlayer(menu, player)
                 self addOptBool(player.GrapplingGun, "Grappling Gun", ::GrapplingGun, player);
                 self addOptBool(player.GravityGun, "Gravity Gun", ::GravityGun, player);
                 self addOptBool(player.DeleteGun, "Delete Gun", ::DeleteGun, player);
+                self addOptBool(player.RapidFire, "Rapid Fire", ::RapidFire, player);
                 self addOpt("Hit Markers", ::newMenu, "Hit Markers " + player GetEntityNumber());
                 self addOptBool(player.PowerUpMagnet, "Power-Up Magnet", ::PowerUpMagnet, player);
                 self addOptBool(player.PlayerInstaKill, "Insta-Kill", ::PlayerInstaKill, player);
+                self addOptBool(player.DisableEarningPoints, "Disable Earning Points", ::DisableEarningPoints, player);
                 self addOptIncSlider("Points Multiplier", ::DamagePointsMultiplier, 1, 1, 10, 0.5, player);
             break;
         
@@ -1601,7 +1600,7 @@ MenuOptionsPlayer(menu, player)
                 self addOpt("");
 
                 for(a = 0; a < level.MenuModels.size; a++)
-                    self addOpt(CleanString(level.MenuModels[a]), ::SetPlayerModel, player, level.MenuModels[a]);
+                    self addOpt(CleanString(level.MenuModels[a]), ::SetPlayerModel, level.MenuModels[a], player);
             break;
         
         case "Aimbot Menu":
@@ -1614,18 +1613,25 @@ MenuOptionsPlayer(menu, player)
             if(!isDefined(player.AimbotKey))
                 player.AimbotKey = "None";
             
+            if(!isDefined(player.AimbotVisibilityRequirement))
+                player.AimbotVisibilityRequirement = "None";
+            
             if(!isDefined(player.AimbotDistance))
                 player.AimbotDistance = 100;
             
+            if(!isDefined(player.SmoothSnaps))
+                player.SmoothSnaps = 5;
+            
             self addMenu(menu, "Aimbot Menu");
                 self addOptBool(player.Aimbot, "Aimbot", ::Aimbot, player);
-                self addOptSlider("Type", ::AimbotType, "Snap;Silent", player);
+                self addOptSlider("Type", ::AimbotType, "Snap;Smooth Snap;Silent", player);
                 self addOptSlider("Tag", ::AimBoneTag, level.boneTags, player);
                 self addOptSlider("Key", ::AimbotKey, "None;Aiming;Firing", player);
-                self addOptBool(player.VisibilityCheck, "Damageable Only", ::AimbotOptions, 2, player);
-                self addOptBool(player.PlayableAreaCheck, "In Playable Area", ::AimbotOptions, 3, player);
-                self addOptBool(player.AutoFire, "Auto-Fire", ::AimbotOptions, 4, player);
-                self addOptBool(player.AimbotDistanceCheck, "Distance", ::AimbotOptions, 5, player);
+                self addOptSlider("Requirement", ::AimbotVisibilityRequirement, "None;Visible;Damageable", player);
+                self addOptIncSlider("Smooth Snaps", ::SetSmoothSnaps, 5, 5, 15, 1, player);
+                self addOptBool(player.PlayableAreaCheck, "In Playable Area", ::AimbotOptions, 1, player);
+                self addOptBool(player.AutoFire, "Auto-Fire", ::AimbotOptions, 2, player);
+                self addOptBool(player.AimbotDistanceCheck, "Distance", ::AimbotOptions, 3, player);
 
                 if(isDefined(player.AimbotDistanceCheck))
                     self addOptIncSlider("Max Distance", ::AimbotDistance, 100, 100, 1000, 100, player);

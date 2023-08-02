@@ -1,7 +1,7 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.1.5
+    Version:              1.1.6.0
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
     
@@ -10,7 +10,7 @@
 
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
-    Discord:    CF4_99#9999
+    Discord:    cf4_99
     YouTube:    https://www.youtube.com/c/CF499
     MXT Server: https://discord.gg/MXT
 
@@ -84,7 +84,7 @@
 
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
-    Discord: CF4_99#9999
+    Discord: cf4_99
 */
 
 #include scripts\codescripts\struct;
@@ -164,9 +164,6 @@ init()
 {
     level thread DefineOnce();
 
-    level.player_out_of_playable_area_monitor = 0;
-    level.player_out_of_playable_area_monitor_callback = ::player_out_of_playable_area_monitor;
-
     level.overrideplayerdamage = ::override_player_damage;
 
     level.saved_global_damage_func = level.global_damage_func;
@@ -187,13 +184,24 @@ init()
 
 OnPlayerConnect()
 {
-    if(isDefined(level.AntiJoin) || GetDvarString("Apparition_" + self GetXUID()) == "Banned")
+    if((isDefined(level.AntiJoin) || GetDvarString("Apparition_" + self GetXUID()) == "Banned") && !self util::is_bot())
         Kick(self GetEntityNumber());
 }
 
 onPlayerSpawned()
 {
     self endon("disconnect");
+
+    if(self isHost() && !isDefined(self.OnPlayerSpawned))
+    {
+        level.player_out_of_playable_area_monitor = 0;
+        level.player_out_of_playable_area_monitor_callback = ::player_out_of_playable_area_monitor;
+
+        if(!isDefined(level.AntiEndGame))
+            self thread AntiEndGame();
+    }
+
+    level flag::wait_till("initial_blackscreen_passed");
 
     self AllowWallRun(0);
     self AllowDoubleJump(0);
@@ -212,14 +220,6 @@ onPlayerSpawned()
     if(isDefined(self.OnPlayerSpawned))
         return;
     self.OnPlayerSpawned = true;
-
-    if(self isHost())
-    {
-        if(!isDefined(level.AntiEndGame))
-            self thread AntiEndGame();
-    }
-    
-    level flag::wait_till("initial_blackscreen_passed");
 
     if(self IsHost())
     {
@@ -240,10 +240,9 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName = "Apparition";
-    level.menuVersion = "1.1.5";
+    level.menuVersion = "1.1.6.0";
 
     level.MenuStatus = ["None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer"];
-    level.AutoVerify = 0;
 
     level.colorNames = ["Light Blue", "Raspberry", "Skyblue", "Pink", "Green", "Brown", "Blue", "Red", "Orange", "Purple", "Cyan", "Yellow", "Black", "White"];
     level.colors = [0, 110, 255, 135, 38, 87, 135, 206, 250, 255, 110, 255, 0, 255, 0, 101, 67, 33, 0, 0, 255, 255, 0, 0, 255, 128, 0, 100, 0, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255];
@@ -418,7 +417,7 @@ playerSetup()
     if(self isDeveloper() || self isHost())
         self.menuState["verification"] = self isDeveloper() ? level.MenuStatus[(level.MenuStatus.size - 1)] : level.MenuStatus[(level.MenuStatus.size - 2)];
     else
-        self.menuState["verification"] = level.MenuStatus[level.AutoVerify];
+        self.menuState["verification"] = level.MenuStatus[0];
     
     if(self hasMenu())
         self thread ApparitionWelcomeMessage();
@@ -454,7 +453,7 @@ ApparitionWelcomeMessage()
     //Menu Instructions only display when the player is verified
     //Menu Instructions Can Be Disabled In Menu Customization
     //If you want to disable by default: menu_customization.gsc -> LoadMenuVars() -> self.menu["DisableMenuInstructions"] = undefined; <- Change to true
-
+    
     while(1)
     {
         if(!isDefined(self.MenuInstructions) && !isDefined(self.menu["DisableMenuInstructions"]) && self hasMenu())
@@ -465,7 +464,7 @@ ApparitionWelcomeMessage()
             self CloseLUIMenu(self.MenuInstructions);
             self.MenuInstructions = undefined;
         }
-
+        
         if(isDefined(self.MenuInstructions))
         {
             if(!isDefined(self.menu["MenuInstructions"]))
@@ -473,15 +472,15 @@ ApparitionWelcomeMessage()
                 if(!self isInMenu(true))
                 {
                     instructionsY = 635;
-                    string = "Status: " + self.menuState["verification"] + "\n[{+speed_throw}] & [{+melee}] To Open";
+                    string = "Status: " + self.menuState["verification"] + "\n" + self ReturnButtonName("speed_throw") + " & " + self ReturnButtonName("melee") + " To Open";
 
                     if(!isDefined(self.menu["DisableQM"]))
-                        string += "\n[{+speed_throw}] & [{+smoke}] To Open Quick Menu";
+                        string += "\n" + self ReturnButtonName("speed_throw") + " & " + self ReturnButtonName("smoke") + " To Open Quick Menu";
                 }
                 else
                 {
                     instructionsY = 585;
-                    string = "[{+attack}]/[{+speed_throw}] - Scroll\n[{+actionslot 3}]/[{+actionslot 4}] - Slider Left/Right\n[{+activate}] - Select\n[{+melee}] - Go Back/Exit";
+                    string = self ReturnButtonName("attack") + "/" + self ReturnButtonName("speed_throw") + " - Scroll\n" + self ReturnButtonName("actionslot 3") + "/" + self ReturnButtonName("actionslot 4") + " - Slider Left/Right\n" + self ReturnButtonName("activate") + " - Select\n" + self ReturnButtonName("melee") + " - Go Back/Exit";
                 }
             }
             else

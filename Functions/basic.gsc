@@ -49,7 +49,7 @@ Noclip1(player)
         player PlayerLinkTo(player.nocliplinker, "tag_origin");
         player.menu["DisableMenuControls"] = true;
 
-        self SetMenuInstructions("[{+attack}] - Move Forward\n[{+speed_throw}] - Move Backwards\n[{+melee}] - Exit");
+        self SetMenuInstructions(self ReturnButtonName("attack") + " - Move Forward\n" + self ReturnButtonName("speed_throw") + " - Move Backwards\n" + self ReturnButtonName("melee") + " - Exit");
         
         while(isDefined(player.Noclip) && Is_Alive(player) && !player isPlayerLinked(player.nocliplinker))
         {
@@ -126,7 +126,7 @@ UFOMode(player)
         player PlayerLinkTo(player.ufolinker, "tag_origin");
         player.menu["DisableMenuControls"] = true;
 
-        self SetMenuInstructions("[{+attack}] - Move Up\n[{+speed_throw}] - Move Down\n[{+frag}] - Move Forward\n[{+melee}] - Exit");
+        self SetMenuInstructions(self ReturnButtonName("attack") + " - Move Up\n" + self ReturnButtonName("speed_throw") + " - Move Down\n" + self ReturnButtonName("frag") + " - Move Forward\n" + self ReturnButtonName("melee") + " - Exit");
         
         while(isDefined(player.UFOMode) && Is_Alive(player) && !player isPlayerLinked(player.ufolinker))
         {
@@ -381,8 +381,8 @@ SaveAndLoad(player)
 
     if(isDefined(player.SaveAndLoad))
     {
-        player iPrintlnBold("Press [{+actionslot 3}] To ^2Save Current Location");
-        player iPrintlnBold("Press [{+actionslot 2}] To ^2Load Saved Location");
+        player iPrintlnBold("Press " + self ReturnButtonName("actionslot 3") + " To ^2Save Current Location");
+        player iPrintlnBold("Press " + self ReturnButtonName("actionslot 2") + " To ^2Load Saved Location");
 
         player endon("disconnect");
 
@@ -657,6 +657,26 @@ UnlimitedSprint(player)
         player UnSetPerk("specialty_unlimitedsprint");
 }
 
+ShootWhileSprinting(player)
+{
+    player.ShootWhileSprinting = isDefined(player.ShootWhileSprinting) ? undefined : true;
+
+    if(isDefined(player.ShootWhileSprinting))
+    {
+        player endon("disconnect");
+        
+        while(isDefined(player.ShootWhileSprinting))
+        {
+            if(!player HasPerk("specialty_sprintfire"))
+                player SetPerk("specialty_sprintfire");
+            
+            wait 0.05;
+        }
+    }
+    else
+        player UnSetPerk("specialty_sprintfire");
+}
+
 ServerRespawnPlayer(player)
 {
     if(player.sessionstate != "spectator")
@@ -677,6 +697,9 @@ ServerRespawnPlayer(player)
 
         player.score = 1500;
     }
+
+    if(player isInMenu(true))
+        player closeMenu1();
 }
 
 PlayerRevive(player)

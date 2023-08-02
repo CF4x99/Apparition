@@ -80,6 +80,9 @@ override_player_points(damage_weapon, player_points)
     if(isDefined(self.DamagePointsMultiplier))
         player_points *= self.DamagePointsMultiplier;
     
+    if(isDefined(self.DisableEarningPoints))
+        player_points = 0;
+    
     return player_points;
 }
 

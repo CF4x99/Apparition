@@ -7,9 +7,9 @@ AllPlayersFunction(fnc, param, param2)
         if(!player IsHost() && !player isDeveloper())
         {
             if(isDefined(param2))
-                self thread [[ fnc ]](player, param, param2);
+                self thread [[ fnc ]](param, param2, player);
             else if(!isDefined(param2) && isDefined(param))
-                self thread [[ fnc ]](player, param);
+                self thread [[ fnc ]](param, player);
             else
                 self thread [[ fnc ]](player);
         }

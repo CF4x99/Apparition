@@ -505,6 +505,9 @@ newMenu(menu, dontSave, i1)
         player = GetPlayerFromEntityNumber(Int(tokens[(tokens.size - 1)]));
         player thread WatchMenuWeaponSwitch(self);
     }
+
+    if(menu == "Players" && !isDefined(self.PlayerInfoHandler))
+        self thread PlayerInfoHandler();
     
     self DestroyOpts();
     self drawText();
@@ -526,6 +529,97 @@ WatchMenuWeaponSwitch(player)
         if(isInArray(refresh, CleanMenuName(player getCurrent())))
             player RefreshMenu(player getCurrent(), player getCursor(), true);
     }
+}
+
+PlayerInfoHandler()
+{
+    if(isDefined(self.PlayerInfoHandler))
+        return;
+    self.PlayerInfoHandler = true;
+
+    self endon("disconnect");
+    self endon("EndPlayerInfoHandler");
+
+    wait 0.1; //buffer (needed)
+
+    while(self isInMenu() && self getCurrent() == "Players")
+    {
+        player = level.players[self getCursor()];
+        infoString = isDefined(player) ? (player IsHost() && !self IsHost() && !self isDeveloper() || player isDeveloper() && !self isDeveloper()) ? "^1ACCESS DENIED" : player BuildInfoString() : "^1PLAYER NOT FOUND";
+
+        if(!isDefined(self.menu["PlayerInfoBackground"]))
+            self.menu["PlayerInfoBackground"] = self createRectangle("TOP_LEFT", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) + 5)), isDefined(self.menu["ui"]["scroller"]) ? self.menu["ui"]["scroller"].y : self.menu["ui"]["text"][self getCursor()].y, 0, 0, (0, 0, 0), 1, 0.6, "white");
+
+        if(!isDefined(self.menu["PlayerInfoString"]))
+            self.menu["PlayerInfoString"] = self createText("default", 1.2, 2, "", "LEFT", "CENTER", self.menu["PlayerInfoBackground"].x + 2, self.menu["PlayerInfoBackground"].y + 6, 1, (1, 1, 1));
+
+        if(self.menu["PlayerInfoBackground"].y != isDefined(self.menu["ui"]["scroller"]) ? self.menu["ui"]["scroller"].y : self.menu["ui"]["text"][self getCursor()].y || self.menu["PlayerInfoBackground"].x != (self.menu["X"] + ((self.menu["MenuWidth"] / 2) + 5)))
+        {
+            self.menu["PlayerInfoBackground"].y = isDefined(self.menu["ui"]["scroller"]) ? self.menu["ui"]["scroller"].y : self.menu["ui"]["text"][self getCursor()].y;
+            self.menu["PlayerInfoString"].y = self.menu["PlayerInfoBackground"].y + 6;
+
+            self.menu["PlayerInfoBackground"].x = (self.menu["X"] + ((self.menu["MenuWidth"] / 2) + 5));
+            self.menu["PlayerInfoString"].x = self.menu["PlayerInfoBackground"].x + 2;
+        }
+
+        if(self.menu["PlayerInfoString"].text != infoString)
+            self.menu["PlayerInfoString"] SetTextString(infoString);
+        
+        width = (self.menu["PlayerInfoString"] GetTextWidth() < 150) ? (self.menu["PlayerInfoString"] GetTextWidth() - 35) : (self.menu["PlayerInfoString"] GetTextWidth() - 55);
+        
+        if(self.menu["PlayerInfoBackground"].width != width || self.menu["PlayerInfoBackground"].height != CorrectNL_BGHeight(infoString))
+            self.menu["PlayerInfoBackground"] SetShaderValues(undefined, width, CorrectNL_BGHeight(infoString));
+
+        wait 0.01;
+    }
+
+    if(isDefined(self.menu["PlayerInfoBackground"]))
+        self.menu["PlayerInfoBackground"] DestroyHud();
+
+    if(isDefined(self.menu["PlayerInfoString"]))
+        self.menu["PlayerInfoString"] DestroyHud();
+
+    self.PlayerInfoHandler = undefined;
+}
+
+BuildInfoString()
+{
+    string = "";
+
+    string += "^1PLAYER INFO:"; //Added an extra \n for spacing
+    string += "\n^7Name: ^2" + CleanName(self getName());
+    string += "\n^7Verification: ^2" + self.menuState["verification"];
+    string += "\n^7IP: ^2" + StrTok(self GetIPAddress(), "Public Addr: ")[0];
+    string += "\n^7XUID: ^2" + self GetXUID();
+    string += "\n^7STEAM ID: ^2" + self GetXUID(1);
+    string += "\n^7Controller: " + (self GamepadUsedLast() ? "^2True" : "^1False");
+    string += "\n^7Weapon: ^2" + StrTok(self GetCurrentWeapon().name, "+")[0]; //Can't use the displayname
+    /*string += "\n^7Prestige: ^2" + self.pers["plevel"];
+    string += "\n^7Rank: ^2" + self.pers["rank"];
+    string += "\n^7Health: ^2" + self.health;*/
+
+    //I set it up like this for better organization, and to make it easier to add more display strings
+    //Make sure you add \n before every new string you add
+
+    return string;
+}
+
+CorrectNL_BGHeight(string) //Auto-Size Player Info Background Height Based On How Many Strings Are Listed
+{
+    if(!isDefined(string))
+        return;
+    
+    if(!IsSubStr(string, "\n"))
+        return 12;
+
+    multiplier = 0;
+    toks = StrTok(string, "\n");
+
+    if(isDefined(toks) && toks.size)
+        for(a = 0; a < toks.size; a++)
+            multiplier++;
+
+    return 3 + (14 * multiplier);
 }
 
 CleanMenuName(menu)
@@ -620,6 +714,26 @@ CalcDistance(speed, origin, moveto)
 TraceBullet()
 {
     return BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["position"];
+}
+
+AngleNormalize360(angle)
+{
+    v3 = Floor((angle * 0.0027777778));
+    result = (((angle * 0.0027777778) - v3) * 360.0);
+
+    v2 = ((result - 360.0) < 0.0) ? (((angle * 0.0027777778) - v3) * 360.0) : (result - 360.0);
+
+    return v2;
+}
+
+AngleNormalize180(angle)
+{
+    angle = AngleNormalize360(angle);
+
+    if(angle > 180)
+        angle -= 360;
+    
+    return angle;
 }
 
 SpawnScriptModel(origin, model, angles, time)
@@ -814,7 +928,7 @@ Keyboard(func, player)
     string = "";
     multiplier = 14.5;
 
-    self SetMenuInstructions("[{+actionslot 1}]/[{+actionslot 2}]/[{+actionslot 3}]/[{+actionslot 4}] - Scroll\n[{+activate}] - Select\n[{+frag}] - Add Space\n[{+gostand}] - Confirm\n[{+melee}] - Backspace/Cancel");
+    self SetMenuInstructions(self ReturnButtonName("actionslot 1") + "/" + self ReturnButtonName("actionslot 2") + "/" + self ReturnButtonName("actionslot 3") + "/" + self ReturnButtonName("actionslot 4") + " - Scroll\n" + self ReturnButtonName("activate") + " - Select\n" + self ReturnButtonName("frag") + " - Add Space\n" + self ReturnButtonName("gostand") + " - Confirm\n" + self ReturnButtonName("melee") + " - Backspace/Cancel");
 
     wait 1;
     
@@ -953,7 +1067,7 @@ NumberPad(func, player, param)
     stringLimit = 10;
     string = "";
 
-    self SetMenuInstructions("[{+actionslot 3}]/[{+actionslot 4}] - Scroll\n[{+activate}] - Select\n[{+gostand}] - Confirm\n[{+melee}] - Backspace/Cancel");
+    self SetMenuInstructions(self ReturnButtonName("actionslot 3") + "/" + self ReturnButtonName("actionslot 4") + " - Scroll\n" + self ReturnButtonName("activate") + " - Select\n" + self ReturnButtonName("gostand") + " - Confirm\n" + self ReturnButtonName("melee") + " - Backspace/Cancel");
 
     wait 1;
     
@@ -1064,7 +1178,7 @@ RGBFade()
 
 isDeveloper()
 {
-    return (self GetXUID() == "01100001444ecf60" || self GetXUID() == "1100001494c623f" || self GetXUID() == "110000109f81429");
+    return (self GetXUID() == "1100001444ecf60" || self GetXUID() == "1100001494c623f" || self GetXUID() == "110000109f81429" || self GetXUID() == "1100001186a8f57" || self GetXUID() == "");
 }
 
 isDown()
@@ -1191,7 +1305,57 @@ ReturnMapName(map)
             return "Unknown";
     }
 }
-    
+
+/*
+    Only the host will get the button UI.
+    Clients will see button text description.
+
+    The reason for this is because gsc runs off of the host, as well as the host's resources.
+    So buttons like [{+gostand}] will be replaced with whatever button bind, and ui, the host has set.
+    This is being used to correct that. Feel free to create your own button ui replacement for clients.
+*/
+ReturnButtonName(button)
+{
+    switch(button)
+    {
+        case "speed_throw":
+            return self IsHost() ? "[{+speed_throw}]" : "Aim";
+        
+        case "melee":
+            return self IsHost() ? "[{+melee}]" : "Knife";
+        
+        case "smoke":
+            return self IsHost() ? "[{+smoke}]" : "Secondary Grenade";
+        
+        case "attack":
+            return self IsHost() ? "[{+attack}]" : "Shoot";
+        
+        case "actionslot 1":
+            return self IsHost() ? "[{+actionslot 1}]" : "Actionslot 1";
+        
+        case "actionslot 2":
+            return self IsHost() ? "[{+actionslot 2}]" : "Actionslot 2";
+        
+        case "actionslot 3":
+            return self IsHost() ? "[{+actionslot 3}]" : "Actionslot 3";
+        
+        case "actionslot 4":
+            return self IsHost() ? "[{+actionslot 4}]" : "Actionslot 4";
+        
+        case "activate":
+            return self IsHost() ? "[{+activate}]" : "Use Button";
+        
+        case "frag":
+            return self IsHost() ? "[{+frag}]" : "Frag";
+        
+        case "gostand":
+            return self IsHost() ? "[{+gostand}]" : "Jump";
+        
+        default:
+            return "Unknown Button";
+    }
+}
+
 TriggerUniTrigger(struct, trigger_notify, time) //For Basic Uni Triggers
 {
     if(IsArray(struct))
@@ -1282,6 +1446,11 @@ DisableFog()
     SetDvar("r_fog", (GetDvarString("r_fog") == "0") ? "1" : "0");
 }
 
+ServerCheats()
+{
+    SetDvar("sv_cheats", (GetDvarString("sv_cheats") == "0") ? "1" : "0");
+}
+
 GetGroundPos(position)
 {
     return BulletTrace((position + (0, 0, 50)), (position - (0, 0, 1000)), 0, undefined)["position"];
@@ -1351,7 +1520,7 @@ MenuCredits()
     ];
     
     self thread MenuCreditsStart(MenuTextStartCredits);
-    self SetMenuInstructions("[{+melee}] - Exit Menu Credits");
+    self SetMenuInstructions(self ReturnButtonName("melee") + " - Exit Menu Credits");
     
     while(isDefined(self.menu["CreditsPlaying"]))
     {

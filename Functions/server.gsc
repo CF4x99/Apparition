@@ -172,12 +172,6 @@ AutoRespawn()
     }
 }
 
-SetAutoVerification(num)
-{
-    level.AutoVerify = num;
-    self thread SetVerificationAllPlayers(num);
-}
-
 ServerPauseWorld()
 {
     level.ServerPauseWorld = isDefined(level.ServerPauseWorld) ? undefined : true;
@@ -775,6 +769,9 @@ ShootToRevive()
 
 ServerXPMultiplier(multiplier)
 {
+    if(multiplier > 1000000)
+        return self iPrintlnBold("^1ERROR: ^7The XP Multiplier Can't Be More Than 1000000");
+    
     if(!multiplier)
         multiplier = 1;
     

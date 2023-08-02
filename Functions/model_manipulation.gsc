@@ -1,4 +1,4 @@
-SetPlayerModel(player, model)
+SetPlayerModel(model, player)
 {
     player endon("disconnect");
     
