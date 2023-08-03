@@ -94,13 +94,11 @@
 
     - Added: Entity Options Back
     - Added: Forge Mode
-
     - Changed: Moved Mount Camera To Fun Scripts
     - Changed: Explosive Bullet Damage & Range Are Now Int Sliders
     - Changed: G_Entity Crash Protection Is Now Enabled By Default
     - Changed: XP Multiplier To Int Slider(Minimum: 2 || Max: 100)
     - Changed: Forge Model Distance Editor To Int Slider
-
     - Improved: Large Cursor(Now Sliders, Text Bools, and Sub Menu Indicators Scale With The Option)
     - Improved: G_Entity Crash Protection - Protection Is 1000x Better Now
     - Improved: Electric Fire Cherry(Now Functions Like An Enhanced Electric Cherry)
@@ -111,7 +109,6 @@
     - Improved: Zombie Spawning - Faster & Shouldn't Have Issues Anymore
     - Improved: Nuke Nades
     - Improved: SOE Beast Mode - Works As It Should - Can Now Be Toggled On Other Players
-
     - Fixed: Bug With New Camo Saving System While Un-Pack 'a' Punching A Weapon
     - Fixed: Surface Type Traces That Look For Invalid Surfaces
     - Fixed: Bug With Client Visual Effects
