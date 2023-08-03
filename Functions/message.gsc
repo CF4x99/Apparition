@@ -35,14 +35,10 @@ typeWriter(message)
     while(isDefined(level.LobbyTypeWriterMessage))
         wait 0.1;
     
-    if(isDefined(level.LobbyMessageQueue) && isDefined(level.LobbyMessageQueue[0]))
+    if(isDefined(level.LobbyMessageQueue) && level.LobbyMessageQueue.size)
     {
         curMessage = level.LobbyMessageQueue[0];
-
-        if(level.LobbyMessageQueue.size > 1)
-            level.LobbyMessageQueue = arrayRemove(level.LobbyMessageQueue, level.LobbyMessageQueue[0]);
-        else
-            level.LobbyMessageQueue = [];
+        level.LobbyMessageQueue = ArrayRemove(level.LobbyMessageQueue, level.LobbyMessageQueue[0]);
     }
     else
         curMessage = message;

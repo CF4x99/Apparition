@@ -208,7 +208,9 @@ RainPowerups()
     while(isDefined(level.RainPowerups))
     {
         powerup = level CustomPowerupSpawn(GetArrayKeys(level.zombie_include_powerups)[RandomInt(level.zombie_include_powerups.size)], bot::get_host_player().origin + (RandomIntRange(-1000, 1000), RandomIntRange(-1000, 1000), RandomIntRange(750, 2000)));
-        powerup PhysicsLaunch(powerup.origin, (RandomIntRange(-5, 5), RandomIntRange(-5, 5), RandomIntRange(-5, 5)));
+        
+        if(isDefined(powerup))
+            powerup PhysicsLaunch(powerup.origin, (RandomIntRange(-5, 5), RandomIntRange(-5, 5), RandomIntRange(-5, 5)));
 
         wait 0.025;
     }
@@ -221,6 +223,9 @@ CustomPowerupSpawn(powerup_name, drop_spot)
 	if(isDefined(powerup))
 	{
 		powerup zm_powerups::powerup_setup(powerup_name);
+
+        if(!isDefined(powerup))
+            return;
 
         if(isInArray(level.active_powerups, powerup))
             level.active_powerups = ArrayRemove(level.active_powerups, powerup);
@@ -237,6 +242,9 @@ custom_powerup_timeout()
 {
     wait 15;
 
+    if(!isDefined(self))
+        return;
+    
     self notify("powerup_timedout");
     self zm_powerups::powerup_delete();
 }
@@ -261,6 +269,10 @@ LobbyRain(type, rain)
             
             case "Model":
                 RainModel = SpawnScriptModel(origin, rain);
+
+                if(!isDefined(RainModel))
+                    continue;
+                
                 RainModel NotSolid();
                 RainModel Launch(VectorScale(AnglesToForward(RainModel.angles), 10));
                 RainModel thread deleteAfter(10);
@@ -271,6 +283,9 @@ LobbyRain(type, rain)
             case "FX":
                 linker = SpawnScriptModel(origin, "tag_origin");
 
+                if(!isDefined(linker))
+                    continue;
+                
                 linker thread RainPlayFXOnTag(level._effect[rain], "tag_origin");
                 linker Launch(VectorScale(AnglesToForward(linker.angles), 10));
                 linker thread deleteAfter(10);
@@ -430,7 +445,7 @@ ArtilleryStrike()
 
         if(self UseButtonPressed() || self AttackButtonPressed())
         {
-            if(surface != "none")
+            if(surface != "none" && surface != "default")
             {
                 targetPos = goalPos.origin;
 
@@ -482,7 +497,7 @@ Tornado()
         origin = trace["position"];
         surface = trace["surfacetype"];
 
-        if(surface == "none")
+        if(surface == "none" || surface == "default")
             return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
     }
     
@@ -1191,7 +1206,7 @@ SpiralStaircase(size)
         origin = trace["position"];
         surface = trace["surfacetype"];
 
-        if(surface == "none")
+        if(surface == "none" || surface == "default")
             return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
         
         level.SpiralStaircaseSpawning = true;

@@ -21,7 +21,7 @@ SpawnSystem(action, type, func)
     {
         traceSurface = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["surfacetype"];
 
-        if(traceSurface == "none")
+        if(traceSurface == "none" || traceSurface == "default")
             return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
     }
     

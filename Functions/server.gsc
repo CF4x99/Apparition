@@ -767,17 +767,6 @@ ShootToRevive()
     }
 }
 
-ServerXPMultiplier(multiplier)
-{
-    if(multiplier > 1000000)
-        return self iPrintlnBold("^1ERROR: ^7The XP Multiplier Can't Be More Than 1000000");
-    
-    if(!multiplier)
-        multiplier = 1;
-    
-    level.ServerXPMultiplier = multiplier;
-}
-
 PlayerShootToRevive()
 {
     self endon("disconnect");
@@ -788,29 +777,52 @@ PlayerShootToRevive()
         self waittill("weapon_fired");
 
         trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), true, self);
-        traceBullet = self TraceBullet();
-        tracePlayer = trace["entity"];
 
-        if(isDefined(tracePlayer) && tracePlayer == self)
-            tracePlayer = undefined;
+        traceEntity = trace["entity"];
+        tracePosition = trace["position"];
         
-        if(!isDefined(tracePlayer))
+        /*
+            For a more accurate and less of a hassle for the player, I'm running two traces.
+            The first one is the case where you didn't shoot directly at the downed player, but you got within 50m of them.
+            The second one is the case that you shot them directly
+        */
+
+        if(!isDefined(traceEntity) || !IsPlayer(traceEntity))
         {
             foreach(player in level.players)
-                if(player != self && Is_Alive(player) && player IsDown())
-                    if(Distance(traceBullet, player.origin) <= 30)
-                        if(!isDefined(tracePlayer) || isDefined(tracePlayer) && Distance(traceBullet, tracePlayer.origin) > Distance(traceBullet, player.origin))
-                            tracePlayer = player;
+            {
+                if(player == self || !Is_Alive(player) || !player IsDown() || Distance(tracePosition, player.origin) > 50)
+                    continue;
+                
+                self thread PlayerShootRevive(player);
+                self iPrintlnBold("tracePosition");
+            }
         }
-
-        if(isDefined(tracePlayer) && IsPlayer(tracePlayer) && Is_Alive(tracePlayer) && tracePlayer IsDown())
+        else
         {
-            if(isDefined(self.hud_damagefeedback))
-                self zombie_utility::show_hit_marker();
-
-            PlayerRevive(tracePlayer);
+            if(!Is_Alive(traceEntity) || !traceEntity IsDown())
+                continue;
+            
+            self thread PlayerShootRevive(traceEntity);
+            self iPrintlnBold("traceEntity");
         }
     }
+}
+
+PlayerShootRevive(player)
+{
+    if(!isDefined(player) || !IsPlayer(player))
+        return;
+    
+    if(isDefined(self.hud_damagefeedback))
+        self zombie_utility::show_hit_marker();
+
+    self PlayerRevive(player);
+}
+
+ServerXPMultiplier(multiplier)
+{
+    level.ServerXPMultiplier = multiplier;
 }
 
 SetPackCamoIndex(index)

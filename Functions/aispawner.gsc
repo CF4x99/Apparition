@@ -51,6 +51,7 @@ ServerSpawnZombie()
 
         zombie endon("death");
 
+		zombie StopAnimScripted(0);
         target = self GetAISpawnLocation();
 
         linker = Spawn("script_origin", zombie.origin);
@@ -250,7 +251,7 @@ ServerSpawnMargwa()
 	origin = trace["position"];
 	surface = trace["surfacetype"];
 
-	if(surface == "none")
+	if(surface == "none" || surface == "default")
 		return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
 	
 	s_location = (self.AISpawnLocation == "Crosshairs") ? self TraceBullet() : self.origin;
@@ -581,7 +582,7 @@ ServerSpawnCivilProtector()
 	origin = trace["position"];
 	surface = trace["surfacetype"];
 
-	if(surface == "none")
+	if(surface == "none" || surface == "default")
 		return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
 	
 	v_ground_position = (self.AISpawnLocation == "Crosshairs") ? self TraceBullet() : self.origin;
@@ -606,7 +607,7 @@ ServerSpawnCivilProtector()
 	foreach(var_3154dd4d, player in level.players)
 		player SetPerk("specialty_pistoldeath");
     
-	if(isdefined(level.ai_robot))
+	if(isDefined(level.ai_robot))
 	{
 		level.ai_robot ForceTeleport(var_36e9b69a);
 		level.ai_robot thread function_ab4d9ece(v_ground_position);
@@ -693,14 +694,14 @@ function_fa1df614(v_origin, eattacker, n_radius)
 {
 	team = "axis";
 
-	if(isdefined(level.zombie_team))
+	if(isDefined(level.zombie_team))
 		team = level.zombie_team;
     
 	a_ai_zombies = array::get_all_closest(v_origin, GetAITeamArray(team), undefined, undefined, n_radius);
 
 	foreach(var_6c62ab1c, ai_zombie in a_ai_zombies)
 	{
-		if(isdefined(eattacker))
+		if(isDefined(eattacker))
 			ai_zombie DoDamage(ai_zombie.health + 10000, ai_zombie.origin, eattacker);
 		else
 			ai_zombie DoDamage(ai_zombie.health + 10000, ai_zombie.origin);
@@ -1016,7 +1017,7 @@ ServerSpawnMechz()
 	origin = trace["position"];
 	surface = trace["surfacetype"];
 
-	if(surface == "none")
+	if(surface == "none" || surface == "default")
 		return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
 	
 	flyin = 0;
@@ -1448,7 +1449,7 @@ ServerSpawnSentinelDrone()
 	origin = trace["position"];
 	surface = trace["surfacetype"];
 
-	if(surface == "none")
+	if(surface == "none" || surface == "default")
 		return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
 	
 	s_location = (self.AISpawnLocation == "Crosshairs") ? self TraceBullet() : self.origin;
@@ -2217,7 +2218,7 @@ ServerSpawnMangler()
 	origin = trace["position"];
 	surface = trace["surfacetype"];
 
-	if(surface == "none")
+	if(surface == "none" || surface == "default")
 		return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
 	
 	s_location = (self.AISpawnLocation == "Crosshairs") ? self TraceBullet() : self.origin;

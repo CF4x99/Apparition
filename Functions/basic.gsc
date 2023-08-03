@@ -49,7 +49,7 @@ Noclip1(player)
         player PlayerLinkTo(player.nocliplinker, "tag_origin");
         player.menu["DisableMenuControls"] = true;
 
-        self SetMenuInstructions(self ReturnButtonName("attack") + " - Move Forward\n" + self ReturnButtonName("speed_throw") + " - Move Backwards\n" + self ReturnButtonName("melee") + " - Exit");
+        player SetMenuInstructions(player ReturnButtonName("attack") + " - Move Forward\n" + player ReturnButtonName("speed_throw") + " - Move Backwards\n" + player ReturnButtonName("melee") + " - Exit");
         
         while(isDefined(player.Noclip) && Is_Alive(player) && !player isPlayerLinked(player.nocliplinker))
         {
@@ -77,7 +77,7 @@ Noclip1(player)
 
         player.menu["DisableMenuControls"] = undefined;
 
-        self SetMenuInstructions();
+        player SetMenuInstructions();
     }
 }
 
@@ -126,7 +126,7 @@ UFOMode(player)
         player PlayerLinkTo(player.ufolinker, "tag_origin");
         player.menu["DisableMenuControls"] = true;
 
-        self SetMenuInstructions(self ReturnButtonName("attack") + " - Move Up\n" + self ReturnButtonName("speed_throw") + " - Move Down\n" + self ReturnButtonName("frag") + " - Move Forward\n" + self ReturnButtonName("melee") + " - Exit");
+        player SetMenuInstructions(player ReturnButtonName("attack") + " - Move Up\n" + player ReturnButtonName("speed_throw") + " - Move Down\n" + player ReturnButtonName("frag") + " - Move Forward\n" + player ReturnButtonName("melee") + " - Exit");
         
         while(isDefined(player.UFOMode) && Is_Alive(player) && !player isPlayerLinked(player.ufolinker))
         {
@@ -159,7 +159,7 @@ UFOMode(player)
 
         player.menu["DisableMenuControls"] = undefined;
 
-        self SetMenuInstructions();
+        player SetMenuInstructions();
     }
 }
 
@@ -381,8 +381,8 @@ SaveAndLoad(player)
 
     if(isDefined(player.SaveAndLoad))
     {
-        player iPrintlnBold("Press " + self ReturnButtonName("actionslot 3") + " To ^2Save Current Location");
-        player iPrintlnBold("Press " + self ReturnButtonName("actionslot 2") + " To ^2Load Saved Location");
+        player iPrintlnBold("Press " + player ReturnButtonName("actionslot 3") + " To ^2Save Current Location");
+        player iPrintlnBold("Press " + player ReturnButtonName("actionslot 2") + " To ^2Load Saved Location");
 
         player endon("disconnect");
 
@@ -546,27 +546,33 @@ SetClientVisualEffects(effect, player)
 
     if(effect == player.ClientVisualEffect)
         effect = "None";
+    else if(effect != player.ClientVisualEffect && player GetVisualEffectState(effect))
+        dEffect = effect;
 
-    if(player.ClientVisualEffect != "None")
+    if(player.ClientVisualEffect != "None" || isDefined(dEffect))
     {
-        removeType = GetVisualType(player.ClientVisualEffect);
+        disable = isDefined(dEffect) ? dEffect : player.ClientVisualEffect;
+        removeType = GetVisualType(disable);
 
         if(removeType == "visionset" || removeType == "Both")
-            visionset_mgr::deactivate("visionset", player.ClientVisualEffect, player);
+            visionset_mgr::deactivate("visionset", disable, player);
         
         if(removeType == "overlay" || removeType == "Both")
-            visionset_mgr::deactivate("overlay", player.ClientVisualEffect, player);
+            visionset_mgr::deactivate("overlay", disable, player);
     }
 
-    player.ClientVisualEffect = effect;
-
-    if(effect != "None")
+    if(!isDefined(dEffect))
     {
-        if(type == "visionset" || type == "Both")
-            visionset_mgr::activate("visionset", effect, player);
-        
-        if(type == "overlay" || type == "Both")
-            visionset_mgr::activate("overlay", effect, player);
+        player.ClientVisualEffect = effect;
+
+        if(effect != "None")
+        {
+            if(type == "visionset" || type == "Both")
+                visionset_mgr::activate("visionset", effect, player);
+            
+            if(type == "overlay" || type == "Both")
+                visionset_mgr::activate("overlay", effect, player);
+        }
     }
 }
 

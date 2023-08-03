@@ -1,56 +1,77 @@
-PlayerEnterBeastMode()
+PlayerBeastMode(player)
 {
     curs = self getCursor();
     menu = self getCurrent();
 
-    if(!isDefined(self.beastmode) || isDefined(self.beastmode) && !self.beastmode)
+	player endon("disconnect");
+
+    if(!isDefined(player.beastmode) || isDefined(player.beastmode) && !player.beastmode)
     {
-        self.var_b2356a6c = self.origin;
-        self.var_227fe352 = self.angles;
-        self SetPerk("specialty_playeriszombie");
-        self thread function_72c3fae0(1);
-        self SetCharacterBodyType(level.var_3f7a17f["beast_mode"]);
-        self SetCharacterBodyStyle(0);
-        self SetCharacterHelmetStyle(0);
-        clientfield::set_to_player("player_in_afterlife", 1);
-        self function_96a57786("beast_mode");
-        self thread function_43af326a("beast_mode");
+		player.altbody = 1;
+		player.var_b2356a6c = player.origin;
+		player.var_227fe352 = player.angles;
+        player SetPerk("specialty_playeriszombie");
+        player thread function_72c3fae0(1);
+        player SetCharacterBodyType(level.var_3f7a17f["beast_mode"]);
+        player SetCharacterBodyStyle(0);
+        player SetCharacterHelmetStyle(0);
+        player clientfield::set_to_player("player_in_afterlife", 1);
+        player function_96a57786("beast_mode");
+        player thread function_43af326a("beast_mode");
         callback = level.altbody_enter_callbacks["beast_mode"];
 
         if(isDefined(callback))
-            self [[ callback ]]("beast_mode");
+            player [[ callback ]]("beast_mode");
 
-        clientfield::set("player_altbody", 1);
+        player clientfield::set("player_altbody", 1);
+
+		player thread BeastModeWatchForCancel();
     }
     else
-    {
-        clientfield::set("player_altbody", 0);
-        clientfield::set_to_player("player_in_afterlife", 0);
-        callback = level.altbody_exit_callbacks["beast_mode"];
-
-        if(isDefined(callback))
-            self [[ callback ]]("beast_mode");
-
-        if(!isDefined(self.altbody_visionset))
-            self.altbody_visionset = [];
-
-        visionset = level.altbody_visionsets["beast_mode"];
-
-        if(isDefined(visionset))
-        {
-            visionset_mgr::deactivate("visionset", visionset, self);
-            self.altbody_visionset["beast_mode"] = 0;
-        }
-
-        self thread function_d97ca744("beast_mode");
-        self UnSetPerk("specialty_playeriszombie");
-        self DetachAll();
-        self thread function_72c3fae0(0);
-        self [[ level.givecustomcharacters ]]();
-    }
+		player notify("altbody_end");
 
     wait 0.1;
     self RefreshMenu(menu, curs);
+}
+
+Exit_BeastMode()
+{
+	self endon("disconnect");
+
+	self.altbody = 0;
+	self clientfield::set("player_altbody", 0);
+	self clientfield::set_to_player("player_in_afterlife", 0);
+	callback = level.altbody_exit_callbacks["beast_mode"];
+
+	if(isDefined(callback))
+		self [[ callback ]]("beast_mode");
+
+	if(!isDefined(self.altbody_visionset))
+		self.altbody_visionset = [];
+
+	visionset = level.altbody_visionsets["beast_mode"];
+
+	if(isDefined(visionset))
+	{
+		visionset_mgr::deactivate("visionset", visionset, self);
+		self.altbody_visionset["beast_mode"] = 0;
+	}
+
+	self thread function_d97ca744("beast_mode");
+	self UnSetPerk("specialty_playeriszombie");
+	self DetachAll();
+	self thread function_72c3fae0(0);
+	self [[ level.givecustomcharacters ]]();
+}
+
+BeastModeWatchForCancel()
+{
+	self endon("death");
+	self endon("disconnect");
+
+	self waittill("altbody_end");
+
+	self Exit_BeastMode();
 }
 
 function_72c3fae0(washuman)
@@ -67,6 +88,8 @@ function_72c3fae0(washuman)
 
 function_96a57786(name)
 {
+	endon("disconnect");
+
 	self bgb::suspend_weapon_cycling();
 	loadout = level.altbody_loadouts[name];
 
@@ -96,6 +119,8 @@ function_9244ee8e(player)
 
 function_43af326a(name)
 {
+	endon("disconnect");
+
 	if(!isDefined(self.altbody_visionset))
 		self.altbody_visionset = [];
 
@@ -120,6 +145,8 @@ function_43af326a(name)
 
 function_d97ca744(name, trigger)
 {
+	endon("disconnect");
+
 	loadout = level.altbody_loadouts[name];
 
 	if(isDefined(loadout))

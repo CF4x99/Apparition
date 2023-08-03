@@ -35,6 +35,7 @@ runMenuIndex(menu)
                         
                         if(self getVerification() > 3) //Co-Host
                         {
+                            self addOpt("Entity Options", ::newMenu, "Entity Options");
                             self addOpt("Server Modifications", ::newMenu, "Server Modifications");
                             self addOpt("Zombie Options", ::newMenu, "Zombie Options");
                             self addOpt("Spawnables", ::newMenu, "Spawnables");
@@ -147,7 +148,7 @@ runMenuIndex(menu)
             
             self addMenu(menu, "Power-Up Menu");
                 self addOptSlider("Spawn Location", ::PowerUpSpawnLocation, "Crosshairs;Self");
-                self addOpt("Reign Drops", ::ReignDropsActivate);
+                self addOpt("Reign Drops", zm_bgb_reign_drops::activation);
 
                 if(isDefined(powerups) && powerups.size)
                 {
@@ -282,7 +283,7 @@ runMenuIndex(menu)
                 self addOpt("Rotate", ::newMenu, "Rotate Script Model");
                 self addOpt("Delete", ::ForgeDeleteModel);
                 self addOpt("Drop", ::ForgeDropModel);
-                self addOpt("Distance", ::NumberPad, ::ForgeModelDistance);
+                self addOptIncSlider("Distance", ::ForgeModelDistance, 100, 200, 500, 25);
                 self addOptBool(self.forge["ignoreCollisions"], "Ignore Collisions", ::ForgeIgnoreCollisions);
                 self addOpt("Delete Last Spawn", ::ForgeDeleteLastSpawn);
                 self addOpt("Delete All Spawned", ::ForgeDeleteAllSpawned);
@@ -302,6 +303,62 @@ runMenuIndex(menu)
                 self addOptIncSlider("Roll", ::ForgeRotateModel, -10, 0, 10, 1, "Roll");
                 self addOptIncSlider("Yaw", ::ForgeRotateModel, -10, 0, 10, 1, "Yaw");
                 self addOptIncSlider("Pitch", ::ForgeRotateModel, -10, 0, 10, 1, "Pitch");
+            break;
+        
+        case "Entity Options":
+            self addMenu(menu, "Entity Options");
+
+                if(isDefined(level.SavedMapEntities) && level.SavedMapEntities.size)
+                {
+                    self addOpt("Entity Editing List", ::newMenu, "Entity Editing List");
+                    self addOptBool(AllEntitiesInvisible(), "Invisibility", ::EntitiesInvisibility);
+                    self addOpt("Delete", ::DeleteEntities);
+                    self addOpt("Rotation", ::newMenu, "Entities Rotation");
+                    self addOptIncSlider("Scale", ::EntitiesScale, 1, 1, 10, 1);
+                    self addOptSlider("Teleport", ::TeleportEntities, "Self;Crosshairs");
+                    self addOpt("Reset Origin", ::EntitiesResetOrigins);
+                }
+                else
+                    self addOpt("No Entities Found");
+            break;
+
+        case "Entity Editing List":
+            self addMenu(menu, "Entity Editing List");
+
+                if(isDefined(level.SavedMapEntities) && level.SavedMapEntities.size)
+                {
+                    for(a = 0; a < level.SavedMapEntities.size; a++)
+                        if(isDefined(level.SavedMapEntities[a]) && level.SavedMapEntities[a].model != "")
+                            self addOpt(CleanString(level.SavedMapEntities[a].model), ::newMenu, "Entity Editor", false, a);
+                }
+                else
+                    self addOpt("No Entities Found");
+            break;
+
+        case "Entity Editor":
+            self addMenu(menu, CleanString(level.SavedMapEntities[self.EntityEditorNumber].model));
+                self addOpt("Delete", ::DeleteEntity, level.SavedMapEntities[self.EntityEditorNumber]);
+                self addOptBool(level.SavedMapEntities[self.EntityEditorNumber].Invisibility, "Invisibility", ::EntityInvisibility, level.SavedMapEntities[self.EntityEditorNumber]);
+                self addOpt("Rotation", ::newMenu, "Entity Rotation", false, self.EntityEditorNumber);
+                self addOptIncSlider("Scale", ::EntityScale, 1, 1, 10, 1, level.SavedMapEntities[self.EntityEditorNumber]);
+                self addOptSlider("Teleport", ::TeleportEntity, "Self;Self To Entity;Crosshairs", level.SavedMapEntities[self.EntityEditorNumber]);
+                self addOpt("Reset Origin", ::EntityResetOrigin, level.SavedMapEntities[self.EntityEditorNumber]);
+            break;
+
+        case "Entity Rotation":
+            self addMenu(menu, "Rotation");
+                self addOpt("Reset Angles", ::EntityResetAngles, level.SavedMapEntities[self.EntityEditorNumber]);
+                self addOptIncSlider("Pitch", ::EntityRotation, -10, 0, 10, 1, "Pitch", level.SavedMapEntities[self.EntityEditorNumber]);
+                self addOptIncSlider("Yaw", ::EntityRotation, -10, 0, 10, 1, "Yaw", level.SavedMapEntities[self.EntityEditorNumber]);
+                self addOptIncSlider("Roll", ::EntityRotation, -10, 0, 10, 1, "Roll", level.SavedMapEntities[self.EntityEditorNumber]);
+            break;
+
+        case "Entities Rotation":
+            self addMenu(menu, "Rotation");
+                self addOpt("Reset Angles", ::EntitiesResetAngles);
+                self addOptIncSlider("Pitch", ::EntitiesRotation, -10, 0, 10, 1, "Pitch");
+                self addOptIncSlider("Yaw", ::EntitiesRotation, -10, 0, 10, 1, "Yaw");
+                self addOptIncSlider("Roll", ::EntitiesRotation, -10, 0, 10, 1, "Roll");
             break;
         
         case "The Giant Scripts":
@@ -621,12 +678,19 @@ runMenuIndex(menu)
         
         case "Shadows Of Evil Scripts":
             self addMenu(menu, "Shadows Of Evil Scripts");
-                self addOptBool((isDefined(self.beastmode) && self.beastmode), "Beast Mode", ::PlayerEnterBeastMode);
+                self addOpt("Beast Mode", ::newMenu, "Beast Mode");
                 self addOptBool(self clientfield::get_to_player("pod_sprayer_held"), "Fumigator", ::SOEGrabFumigator);
                 self addOpt("Smashables", ::newMenu, "SOE Smashables");
                 self addOpt("Power Switches", ::newMenu, "SOE Power Switches");
                 self addOpt("Show Symbol Code", ::SOEShowCode);
             break;
+        
+        case "Beast Mode":
+            self addMenu(menu, "Beast Mode");
+                
+                foreach(player in level.players)
+                    self addOptBool((isDefined(player.beastmode) && player.beastmode), CleanName(player getName()), ::PlayerBeastMode, player);
+                break;
         
         case "SOE Smashables":
             self addMenu(menu, "Smashables");
@@ -787,7 +851,7 @@ runMenuIndex(menu)
             self addMenu(menu, "Server Tweakables");
                 self addOptBool(level.ServerMaxAmmoClips, "Max Ammo Powerups Fill Clips", ::ServerMaxAmmoClips);
                 self addOptBool(level.ShootToRevive, "Shoot To Revive", ::ShootToRevive);
-                self addOpt("XP Multiplier", ::NumberPad, ::ServerXPMultiplier);
+                self addOptIncSlider("XP Multiplier", ::ServerXPMultiplier, 2, 2, 100, 1);
                 self addOptIncSlider("Pack 'a' Punch Camo Index", ::SetPackCamoIndex, 0, level.pack_a_punch_camo_index, 138, 1);
                 self addOptIncSlider("Player Weapon Limit", ::SetPlayerWeaponLimit, 0, 0, 15, 1);
                 self addOptIncSlider("Player Perk Limit", ::SetPlayerPerkLimit, 0, 0, level.MenuPerks.size, 1);
@@ -1536,8 +1600,8 @@ MenuOptionsPlayer(menu, player)
             
             self addMenu(menu, "Explosive Bullets");
                 self addOptBool(player.ExplosiveBullets, "Explosive Bullets", ::ExplosiveBullets, player);
-                self addOpt("Explosive Bullet Range: " + player.ExplosiveBulletsRange, ::NumberPad, ::ExplosiveBulletRange, player);
-                self addOpt("Explosive Bullet Damage: " + player.ExplosiveBulletsDamage, ::NumberPad, ::ExplosiveBulletDamage, player);
+                self addOptIncSlider("Explosive Bullet Range", ::ExplosiveBulletRange, 25, 250, 500, 25, player);
+                self addOptIncSlider("Explosive Bullet Damage", ::ExplosiveBulletDamage, 25, 100, 500, 25, player);
             break;
         
         case "Fun Scripts":
@@ -1555,8 +1619,10 @@ MenuOptionsPlayer(menu, player)
                 self addOptBool(player.ZombieCounter, "Zombie Counter", ::ZombieCounter, player);
                 self addOptBool(player.LightProtector, "Light Protector", ::LightProtector, player);
                 self addOptBool(player.SpecialMovements, "Special Movements", ::SpecialMovements, player);
+                self addOptSlider("Mount Camera", ::PlayerMountCamera, "Disable;" + level.boneTags, player);
                 self addOpt("Adventure Time", ::AdventureTime, player);
                 self addOpt("Earthquake", ::SendEarthquake, player);
+                self addOptBool(player.ForgeMode, "Forge Mode", ::ForgeMode, player);
                 self addOptBool(player.SpecNade, "Spec-Nade", ::SpecNade, player);
                 self addOptBool(player.NukeNades, "Nuke Nades", ::NukeNades, player);
                 self addOptBool(player.ShootPowerUps, "Shoot Power-Ups", ::ShootPowerUps, player);
@@ -1706,7 +1772,6 @@ MenuOptionsPlayer(menu, player)
                 self addOptBool(player.BlackScreen, "Black Screen", ::BlackScreenPlayer, player);
                 self addOptBool(player.FakeLag, "Fake Lag", ::FakeLag, player);
                 self addOptBool(self.AttachToPlayer, "Attach Self To Player", ::AttachSelfToPlayer, player);
-                self addOptSlider("Mount Camera", ::PlayerMountCamera, "Disable;" + level.boneTags, player);
                 self addOptBool(player.DropCamera, "Drop Camera", ::PlayerDropCamera, player);
 
                 if(ReturnMapName(level.script) == "Shadows Of Evil" || ReturnMapName(level.script) == "Origins")

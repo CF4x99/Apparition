@@ -187,17 +187,17 @@ drawText()
                         self.menu["ui"]["BoolOpt"][(a + start)] = self createRectangle("CENTER", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) - 8)), (self.menu["Y"] + 14) + (a * 20), 7, 7, (isDefined(self.menu_B[self getCurrent()][(a + start)]) && self.menu_B[self getCurrent()][(a + start)]) ? self.menu["Main_Color"] : (0, 0, 0), 5, 1, "white");
                     }
                     else
-                        self.menu["ui"]["BoolOpt"][(a + start)] = self createText("default", 1.1, 4, (isDefined(self.menu_B[self getCurrent()][(a + start)]) && self.menu_B[self getCurrent()][(a + start)]) ? "ON" : "OFF", "RIGHT", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) - 4)), (self.menu["Y"] + 14) + (a * 20), 1, (1, 1, 1));
+                        self.menu["ui"]["BoolOpt"][(a + start)] = self createText("default", ((a + start) == self getCursor() && isDefined(self.menu["LargeCursor"])) ? 1.3 : 1.1, 4, (isDefined(self.menu_B[self getCurrent()][(a + start)]) && self.menu_B[self getCurrent()][(a + start)]) ? "ON" : "OFF", "RIGHT", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) - 4)), (self.menu["Y"] + 14) + (a * 20), 1, (1, 1, 1));
                 }
 
                 if(isDefined(self.menu["items"][self getCurrent()].func[(a + start)]) && self.menu["items"][self getCurrent()].func[(a + start)] == ::newMenu)
-                    self.menu["ui"]["subMenu"][(a + start)] = self createText("default", 1.1, 4, ">", "RIGHT", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) - 4)), (self.menu["Y"] + 14) + (a * 20), 1, (1, 1, 1));
+                    self.menu["ui"]["subMenu"][(a + start)] = self createText("default", ((a + start) == self getCursor() && isDefined(self.menu["LargeCursor"])) ? 1.3 : 1.1, 4, ">", "RIGHT", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) - 4)), (self.menu["Y"] + 14) + (a * 20), 1, (1, 1, 1));
 
                 if(isDefined(self.menu["items"][self getCurrent()].incslider[(a + start)]))
-                    self.menu["ui"]["IntSlider"][(a + start)] = self createText("default", 1.1, 4, self.menu_SS[self getCurrent()][(a + start)], "RIGHT", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) - 4)), (self.menu["Y"] + 14) + (a * 20), 1, (1, 1, 1));
+                    self.menu["ui"]["IntSlider"][(a + start)] = self createText("default", ((a + start) == self getCursor() && isDefined(self.menu["LargeCursor"])) ? 1.3 : 1.1, 4, self.menu_SS[self getCurrent()][(a + start)], "RIGHT", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) - 4)), (self.menu["Y"] + 14) + (a * 20), 1, (1, 1, 1));
 
                 if(isDefined(self.menu["items"][self getCurrent()].slider[(a + start)]))
-                    self.menu["ui"]["StringSlider"][(a + start)] = self createText("default", 1.1, 4, "< " + self.menu_S[self getCurrent()][(a + start)][self.menu_SS[self getCurrent()][(a + start)]] + " > [" + (self.menu_SS[self getCurrent()][(a + start)] + 1) + "/" + self.menu_S[self getCurrent()][(a + start)].size + "]", "RIGHT", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) - 4)), (self.menu["Y"] + 14) + (a * 20), 1, (1, 1, 1));
+                    self.menu["ui"]["StringSlider"][(a + start)] = self createText("default", ((a + start) == self getCursor() && isDefined(self.menu["LargeCursor"])) ? 1.3 : 1.1, 4, "< " + self.menu_S[self getCurrent()][(a + start)][self.menu_SS[self getCurrent()][(a + start)]] + " > [" + (self.menu_SS[self getCurrent()][(a + start)] + 1) + "/" + self.menu_S[self getCurrent()][(a + start)].size + "]", "RIGHT", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) - 4)), (self.menu["Y"] + 14) + (a * 20), 1, (1, 1, 1));
 
                 self.menu["ui"]["text"][(a + start)] = self createText("default", ((a + start) == self getCursor() && isDefined(self.menu["LargeCursor"])) ? 1.3 : 1.1, 5, self.menu["items"][self getCurrent()].name[(a + start)], "LEFT", "CENTER", (self.menu["X"] - (self.menu["MenuWidth"] / 2) + 4), (self.menu["Y"] + 14) + (a * 20), 1, (isDefined(self.menu["items"][self getCurrent()].bool[(a + start)]) && isDefined(self.menu_B[self getCurrent()][(a + start)]) && self.menu_B[self getCurrent()][(a + start)] && self.menu["ToggleStyle"] == "Text Color") ? divideColor(0, 255, 0) : (1, 1, 1));
             }
@@ -275,20 +275,19 @@ ScrollingSystem()
         {
             if(isDefined(self.menu["LargeCursor"]))
             {
-                for(a = 0; a < self.menu["ui"]["text"].size; a++)
+                hudElems = ["text", "BoolOpt", "subMenu", "IntSlider", "StringSlider"];
+
+                foreach(hud in hudElems)
                 {
-                    if(!isDefined(self.menu["ui"]["text"][a]))
+                    if(!isDefined(self.menu["ui"][hud]) || !self.menu["ui"][hud].size || hud == "BoolOpt" && self.menu["ToggleStyle"] != "Text")
                         continue;
                     
-                    if(a == self.menu["curs"][menu])
+                    foreach(index, elem in self.menu["ui"][hud])
                     {
-                        if(self.menu["ui"]["text"][a].fontScale != 1.3 && isDefined(self.menu["LargeCursor"]))
-                            self.menu["ui"]["text"][a] ChangeFontscaleOverTime1(1.3, 0.05);
-                    }
-                    else
-                    {
-                        if(self.menu["ui"]["text"][a].fontScale != 1.1)
-                            self.menu["ui"]["text"][a] ChangeFontscaleOverTime1(1.1, 0.05);
+                        scale = (index == self.menu["curs"][menu]) ? 1.3 : 1.1;
+                        
+                        if(elem.fontScale != scale)
+                            elem ChangeFontscaleOverTime1(scale, 0.05);
                     }
                 }
             }

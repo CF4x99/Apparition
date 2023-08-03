@@ -7,9 +7,46 @@ ElectricFireCherry(player)
         player endon("disconnect");
         player endon("EndElectricFireCherry");
 
+        player.consecutive_electric_fire_cherry_attacks = 0;
+
         while(isDefined(player.ElectricFireCherry))
         {
             player waittill("reload_start");
+
+            current_weapon = player GetCurrentWeapon();
+
+            if(isInArray(player.wait_on_reload, current_weapon))
+                continue;
+            
+            player.wait_on_reload[player.wait_on_reload.size] = current_weapon;
+            player.consecutive_electric_fire_cherry_attacks++;
+
+            player thread check_for_reload_complete(current_weapon);
+            player thread electric_fire_cherry_cooldown_timer(current_weapon);
+
+            switch(player.consecutive_electric_fire_cherry_attacks)
+			{
+				case 0:
+				case 1:
+					n_zombie_limit = undefined;
+					break;
+                
+				case 2:
+					n_zombie_limit = 12;
+					break;
+                
+				case 3:
+					n_zombie_limit = 8;
+					break;
+                
+				case 4:
+					n_zombie_limit = 4;
+					break;
+                
+				default:
+					n_zombie_limit = 0;
+                    break;
+			}
 
             CodeSetClientField(player, "electric_cherry_reload_fx", 1);
 
@@ -19,11 +56,11 @@ ElectricFireCherry(player)
             player clientfield::increment_to_player("zm_bgb_burned_out_1ptoplayer");
 	        player clientfield::increment("zm_bgb_burned_out_3p_allplayers");
 
-			zombies = array::get_all_closest(player.origin, GetAITeamArray(level.zombie_team), undefined, undefined, 350);
+			zombies = array::get_all_closest(player.origin, GetAITeamArray(level.zombie_team), undefined, undefined, 375);
 
             if(!isDefined(zombies) || !zombies.size)
             {
-                wait 3;
+                CodeSetClientField(player, "electric_cherry_reload_fx", 0);
                 continue;
             }
 
@@ -31,7 +68,7 @@ ElectricFireCherry(player)
 
             for(a = 0; a < zombies.size; a++)
             {
-                if(!isDefined(zombies[a]) || !IsAlive(zombies[a]) || isInArray(targets, zombies[a]))
+                if(!isDefined(zombies[a]) || !IsAlive(zombies[a]) || isInArray(targets, zombies[a]) || isDefined(n_zombie_limit) && targets.size >= n_zombie_limit)
                     continue;
                 
                 zombies[a].marked_for_death = 1;
@@ -59,41 +96,87 @@ ElectricFireCherry(player)
                 targets[targets.size] = zombies[a];
             }
 
-            wait 0.5;
-
             if(isDefined(targets) && targets.size)
             {
                 for(a = 0; a < targets.size; a++)
                 {
+                    wait 0.1;
+
                     if(!isDefined(targets[a]) || !IsAlive(targets[a]))
                         continue;
                     
                     targets[a].ZombieFling = true;
-                    targets[a] DoDamage(targets[a].health + 666, player.origin, player, player, "none");
+                    targets[a] DoDamage((targets[a].health + 666), targets[a].origin);
                     player zm_score::add_to_player_score(40);
                 }
             }
-            
-            wait 1;
 
             CodeSetClientField(player, "electric_cherry_reload_fx", 0);
-
-            player EFC_Cooldown();
         }
     }
     else
         player notify("EndElectricFireCherry");
 }
 
-EFC_Cooldown()
+electric_fire_cherry_cooldown_timer(current_weapon)
 {
-    self endon("death");
-    self endon("disconnect");
+	self notify("electric_fire_cherry_cooldown_started");
+	self endon("electric_fire_cherry_cooldown_started");
     
-    reloadTime = self HasPerk("specialty_fastreload") ? (0.25 * GetDvarFloat("perk_weapReloadMultiplier")) : 0.25;
-	coolDownTime = reloadTime + 30;
+	self endon("death");
+	self endon("disconnect");
 
-	wait coolDownTime;
+    reloadTime = self HasPerk("specialty_fastreload") ? (0.25 * GetDvarFloat("perk_weapReloadMultiplier")) : 0.25;
+    waitTime = reloadTime + 3;
+
+	wait waitTime;
+	self.consecutive_electric_fire_cherry_attacks = 0;
+}
+
+check_for_reload_complete(weapon)
+{
+	self endon("death");
+	self endon("disconnect");
+	self endon("player_lost_weapon_" + weapon.name);
+
+	self thread weapon_replaced_monitor(weapon);
+
+	while(1)
+	{
+		self waittill("reload");
+
+		current_weapon = self GetCurrentWeapon();
+
+		if(current_weapon == weapon)
+		{
+			ArrayRemoveValue(self.wait_on_reload, weapon);
+			self notify("weapon_reload_complete_" + weapon.name);
+
+			break;
+		}
+	}
+}
+
+weapon_replaced_monitor(weapon)
+{
+	self endon("death");
+	self endon("disconnect");
+	self endon("weapon_reload_complete_" + weapon.name);
+
+	while(1)
+	{
+		self waittill("weapon_change");
+
+		primaryweapons = self GetWeaponsListPrimaries();
+
+		if(!isInArray(primaryweapons, weapon))
+		{
+			self notify("player_lost_weapon_" + weapon.name);
+			ArrayRemoveValue(self.wait_on_reload, weapon);
+
+			break;
+		}
+	}
 }
 
 ForceField(player)
@@ -119,9 +202,6 @@ ForceField(player)
 
 ForceFieldSize(num, player)
 {
-    if(!num)
-        return self iPrintlnBold("^1ERROR: ^7Force Field Size Can't Be Less Than 1");
-
     player.ForceFieldSize = num;
 }
 
@@ -139,7 +219,7 @@ Jetpack(player)
     {
         player endon("disconnect");
 
-        player iPrintlnBold("Press & Hold " + self ReturnButtonName("frag") + " To Use Jetpack");
+        player iPrintlnBold("Press & Hold " + player ReturnButtonName("frag") + " To Use Jetpack");
 
         while(isDefined(player.Jetpack))
         {
@@ -337,6 +417,55 @@ SendEarthquake(player)
     Earthquake(1, 15, player.origin, 750);
 }
 
+ForgeMode(player)
+{
+    if(isDefined(player.DeleteGun))
+        player DeleteGun(player);
+    
+    if(isDefined(player.GravityGun))
+        player GravityGun(player);
+
+    player.ForgeMode = isDefined(player.ForgeMode) ? undefined : true;
+
+    if(isDefined(player.ForgeMode))
+    {
+        player endon("disconnect");
+
+        player iPrintlnBold("Aim At Entities/Zombies/Players To Pick Them Up");
+        player iPrintlnBold(player ReturnButtonName("attack") + " To Release");
+        
+        while(isDefined(player.ForgeMode))
+        {
+            if(isDefined(grabEnt))
+            {
+                if(IsPlayer(grabEnt) && !Is_Alive(grabEnt) || grabEnt isZombie() && !IsAlive(grabEnt))
+                {
+                    grabEnt = undefined;
+                    continue;
+                }
+
+                if(!IsPlayer(grabEnt) && !grabEnt isZombie())
+                    grabEnt.origin = (player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 250));
+                else
+                    grabEnt ForceTeleport((player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 250)));
+
+                if(player AttackButtonPressed())
+                    grabEnt = undefined;
+            }
+
+            if(player AdsButtonPressed() && !isDefined(grabEnt))
+            {
+                trace = BulletTrace(player GetWeaponMuzzlePoint(), player GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 1, player);
+
+                if(isDefined(trace["entity"]))
+                    grabEnt = trace["entity"];
+            }
+
+            wait 0.01;
+        }
+    }
+}
+
 SpecNade(player) //Credit to Extinct for his spec-nade
 {
     if(player isPlayerLinked() && !isDefined(player.SpecNade))
@@ -359,7 +488,7 @@ SpecNade(player) //Credit to Extinct for his spec-nade
         {
             player waittill("grenade_fire", grenade, weapon);
             
-            if(zm_utility::is_placeable_mine(weapon) || player isPlayerLinked())
+            if(zm_utility::is_placeable_mine(weapon) || player isPlayerLinked() || !isDefined(grenade))
                 continue;
             
             linker = SpawnScriptModel(grenade.origin - AnglesToForward(grenade.angles) * 50, "tag_origin");
@@ -413,7 +542,7 @@ NukeNades(player)
         {
             player waittill("grenade_fire", grenade, weapon);
             
-            if(zm_utility::is_placeable_mine(weapon))
+            if(zm_utility::is_placeable_mine(weapon) || !isDefined(grenade))
                 continue;
 
             grenade thread NukeNade();
@@ -426,7 +555,9 @@ NukeNades(player)
 NukeNade()
 {
     nukeModel = SpawnScriptModel(self.origin, "p7_zm_power_up_nuke", self.angles);
-    nukeModel LinkTo(self);
+
+    if(isDefined(nukeModel))
+        nukeModel LinkTo(self);
 
     while(isDefined(self))
     {
@@ -434,24 +565,29 @@ NukeNade()
 
         wait 0.05;
     }
+    
+    origin += (0, 0, 25);
 
-    nukeModel delete();
+    if(isDefined(nukeModel))
+        nukeModel delete();
     
     PlayFX(level._effect["grenade_samantha_steal"], origin);
     PlayFX(level._effect["poltergeist"], origin);
-    PlayFX(level._effect["zombie/fx_powerup_nuke_zmb"], origin);
+    PlayFX("zombie/fx_powerup_nuke_zmb", origin);
 
     zombies = GetAITeamArray(level.zombie_team);
     
     for(a = 0; a < zombies.size; a++)
     {
-        if(isDefined(zombies[a]) && IsAlive(zombies[a]) && Distance(origin, zombies[a].origin) <= 500)
-        {
-            zombies[a].ZombieFling = true;
+        if(!isDefined(zombies[a]) || !IsAlive(zombies) || Distance(origin, zombies[a].origin) > 500)
+            continue;
+        
+        zombies[a].ZombieFling = true;
+        zombies[a] clientfield::increment("zm_nuked");
 
-            zombies[a] thread zombie_death::flame_death_fx();
-            zombies[a] DoDamage((zombies[a].health + 666), origin);
-        }
+        wait 0.1;
+
+        zombies[a] DoDamage((zombies[a].health + 666), origin);
     }
 }
 
@@ -473,7 +609,7 @@ ShootPowerUps(player)
             origin = trace["position"];
             surface = trace["surfacetype"];
 
-            if(surface == "none")
+            if(surface == "none" || surface == "default")
                 continue;
 
             powerups = GetArrayKeys(level.zombie_include_powerups);
@@ -508,7 +644,7 @@ CodJumper(player)
                 origin = trace["position"];
                 surface = trace["surfacetype"];
 
-                if(surface != "none")
+                if(surface != "none" && surface != "default")
                 {
                     for(a = 0; a < 3; a++)
                         for(b = 0; b < 4; b++)
@@ -628,43 +764,79 @@ RocketRiding(player)
         {
             player waittill("missile_fire", missile, weaponName);
 
-            if(zm_utility::GetWeaponClassZM(weaponName) == "weapon_launcher")
+            if(zm_utility::GetWeaponClassZM(weaponName) != "weapon_launcher")
+                continue;
+            
+            trace = BulletTrace(player GetWeaponMuzzlePoint(), player GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(player GetPlayerAngles()), 200), 1, player);
+            
+            rider = undefined;
+
+            foreach(client in level.players)
             {
-                wait 0.2;
+                if(!Is_Alive(client) || client == player)
+                    continue;
                 
-                if(!isDefined(player.RidingRocket))
+                if(Distance(client.origin, trace["position"]) <= 225)
                 {
-                    player.RidingRocket = true;
-                    linker = SpawnScriptModel(missile.origin, "tag_origin");
-
-                    linker LinkTo(missile);
-                    player SetOrigin(linker.origin);
-                    player PlayerLinkTo(linker);
-
-                    wait 0.1;
-                    player thread WatchRocket(missile, linker);
+                    if(!isDefined(rider))
+                        rider = client;
+                    else
+                    {
+                        if(Distance(client, trace["position"]) < Distance(rider, trace["position"]))
+                            rider = client;
+                    }
                 }
             }
+            
+            if(!isDefined(rider))
+                rider = player;
+            
+            if(isDefined(rider.RidingRocket))
+            {
+                rider notify("StopRidingRocket");
+                rider Unlink();
+                rider.RocketRidingLinker delete();
+                rider.RidingRocket = undefined;
+            }
+            
+            wait 0.2;
+            
+            rider.RidingRocket = true;
+            rider.RocketRidingLinker = SpawnScriptModel(missile.origin, "tag_origin");
+
+            if(isDefined(rider.RocketRidingLinker))
+                rider.RocketRidingLinker LinkTo(missile);
+            
+            rider SetOrigin(rider.RocketRidingLinker.origin);
+            rider PlayerLinkTo(rider.RocketRidingLinker);
+
+            wait 0.1;
+            rider thread WatchRocket(missile);
         }
     }
     else
         player notify("EndRocketRiding");
 }
 
-WatchRocket(rocket, linker)
+WatchRocket(rocket)
 {
+    self endon("death");
     self endon("disconnect");
+    self endon("StopRidingRocket");
     
     while(isDefined(rocket) && Is_Alive(self))
     {
-        if(self MeleeButtonPressed() || self AttackButtonPressed())
+        if(self MeleeButtonPressed())
             break;
 
         wait 0.05;
     }
     
     self Unlink();
-    linker delete();
+
+    if(isDefined(self.RocketRidingLinker))
+        self.RocketRidingLinker delete();
+    
     self.RidingRocket = undefined;
 }
 
@@ -685,18 +857,21 @@ GrapplingGun(player)
             
             origin = trace["position"];
             surface = trace["surfacetype"];
-            
-            if(surface != "none")
+
+            if(surface == "none" || surface == "default")
             {
-                ent = SpawnScriptModel(player.origin, "tag_origin");
-
-                player PlayerLinkTo(ent);
-                ent MoveTo(origin, 1);
-
-                ent waittill("movedone");
-                player Unlink();
-                ent delete();
+                player iPrintlnBold("^1ERROR: ^7Invalid Surface");
+                continue;
             }
+            
+            ent = SpawnScriptModel(player.origin, "tag_origin");
+
+            player PlayerLinkTo(ent);
+            ent MoveTo(origin, 1);
+
+            ent waittill("movedone");
+            player Unlink();
+            ent delete();
         }
     }
     else
@@ -707,6 +882,9 @@ GravityGun(player)
 {
     if(isDefined(player.DeleteGun))
         player DeleteGun(player);
+    
+    if(isDefined(player.ForgeMode))
+        player ForgeMode(player);
 
     player.GravityGun = isDefined(player.GravityGun) ? undefined : true;
 
@@ -715,58 +893,40 @@ GravityGun(player)
         player endon("disconnect");
 
         player iPrintlnBold("Aim At Entities/Zombies/Players To Pick Them Up");
-        player iPrintlnBold("Shoot To Launch");
-
-        grabEnt = undefined;
+        player iPrintlnBold(player ReturnButtonName("attack") + " To Launch");
         
         while(isDefined(player.GravityGun))
         {
             if(isDefined(grabEnt))
             {
+                if(IsPlayer(grabEnt) && !Is_Alive(grabEnt) || grabEnt isZombie() && !IsAlive(grabEnt))
+                {
+                    grabEnt = undefined;
+                    continue;
+                }
+
                 if(!IsPlayer(grabEnt) && !grabEnt isZombie())
                     grabEnt.origin = (player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 250));
                 else
-                {
-                    if(!isDefined(grabEnt.originLinker))
-                        grabEnt.originLinker = SpawnScriptModel(grabEnt.origin, "tag_origin", grabEnt.angles);
-
-                    if(!grabEnt isLinkedTo(grabEnt.originLinker))
-                    {
-                        if(IsPlayer(grabEnt))
-                            grabEnt PlayerLinkTo(grabEnt.originLinker);
-                        else
-                            grabEnt LinkTo(grabEnt.originLinker);
-                    }
-
-                    grabEnt.originLinker.origin = (player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 250));
-                }
+                    grabEnt ForceTeleport((player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 250)));
                 
                 if(player AttackButtonPressed() && isDefined(grabEnt))
                 {
-                    if(isDefined(grabEnt.originLinker))
-                    {
-                        grabEnt Unlink();
-                        grabEnt.originLinker delete();
-                    }
-
-                    wait 0.01;
-
                     shootEnt = SpawnScriptModel(grabEnt.origin, "tag_origin");
 
                     if(IsPlayer(grabEnt))
                         grabEnt PlayerLinkTo(shootEnt);
                     else
                         grabEnt LinkTo(shootEnt);
-
-                    shootEnt Launch(VectorScale(AnglesToForward(player GetPlayerAngles()), 5000));
-
+                    
                     grabEnt.GravityGunLaunched = true;
                     shootEnt.GravityGunLaunched = true;
-
                     shootEnt thread deleteAfter(5);
+                    grabEnt thread GravityGunUnlinkAfter(5);
+                    
+                    shootEnt Launch(VectorScale(AnglesToForward(player GetPlayerAngles()), 2500));
 
-                    if(IsPlayer(grabEnt) || grabEnt isZombie())
-                        grabEnt thread GravityGunUnlinkAfter(5);
+                    wait 0.1;
 
                     grabEnt = undefined;
                 }
@@ -774,19 +934,10 @@ GravityGun(player)
 
             if(player AdsButtonPressed() && !isDefined(grabEnt))
             {
-                foreach(zombie in GetAITeamArray(level.zombie_team))
-                    if(!isDefined(zombie.GravityGunLaunched) && IsAlive(zombie) && Distance(player TraceBullet(), zombie.origin) <= 100)
-                        grabEnt = zombie;
-                
-                foreach(ent in GetEntArray("script_model", "classname"))
-                    if(!isDefined(ent.GravityGunLaunched) && Distance(player TraceBullet(), ent.origin) <= 100)
-                        grabEnt = ent;
-                
-                foreach(client in level.players)
-                    if(!isDefined(client.GravityGunLaunched) && client != player && Distance(player TraceBullet(), client.origin) <= 100)
-                        grabEnt = client;
-                
+                trace = BulletTrace(player GetWeaponMuzzlePoint(), player GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 1, player);
 
+                if(isDefined(trace["entity"]) && !isDefined(trace["entity"].GravityGunLaunched))
+                    grabEnt = trace["entity"];
             }
 
             wait 0.01;
@@ -796,8 +947,8 @@ GravityGun(player)
 
 GravityGunUnlinkAfter(time)
 {
-    if(IsPlayer(self))
-        self endon("disconnect");
+    self endon("death");
+    self endon("disconnect");
     
     wait time;
 
@@ -812,6 +963,9 @@ DeleteGun(player)
 {
     if(isDefined(player.GravityGun))
         player GravityGun(player);
+    
+    if(isDefined(player.ForgeMode))
+        player ForgeMode(player);
 
     player.DeleteGun = isDefined(player.DeleteGun) ? undefined : true;
 
@@ -819,22 +973,16 @@ DeleteGun(player)
     {
         player endon("disconnect");
 
-        player iPrintlnBold(self ReturnButtonName("speed_throw") + " To ^2Delete Entities/Zombies");
+        player iPrintlnBold("Aim At Entities/Zombies To Delete Them");
         
         while(isDefined(player.DeleteGun))
         {
             if(player AdsButtonPressed())
             {
-                foreach(zombie in GetAITeamArray(level.zombie_team))
-                    if(Distance(player TraceBullet(), zombie.origin) <= 100)
-                        deleteEnt = zombie;
+                trace = BulletTrace(player GetWeaponMuzzlePoint(), player GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 1, player);
 
-                foreach(ent in GetEntArray("script_model", "classname"))
-                    if(Distance(player TraceBullet(), ent.origin) <= 100)
-                        deleteEnt = ent;
-                
-                if(isDefined(deleteEnt))
-                    deleteEnt delete();
+                if(isDefined(trace["entity"]) && !IsPlayer(trace["entity"]))
+                    trace["entity"] delete();
             }
 
             wait 0.01;
@@ -852,7 +1000,7 @@ RapidFire(player)
     {
         player waittill("weapon_fired");
 
-        weapon = self GetCurrentWeapon();
+        weapon = player GetCurrentWeapon();
 
         for(a = 0; a < 3; a++)
         {

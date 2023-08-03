@@ -379,6 +379,16 @@ ArrayRemove(arry, value)
     return newArray;
 }
 
+ArrayReverse(arry)
+{
+    newArray = [];
+
+    for(a = (arry.size - 1); a >= 0; a--)
+        newArray[newArray.size] = arry[a];
+
+    return newArray;
+}
+
 ArrayGetClosest(array, point)
 {
     if(!isDefined(array) || !array.size)
@@ -508,6 +518,9 @@ newMenu(menu, dontSave, i1)
 
     if(menu == "Players" && !isDefined(self.PlayerInfoHandler))
         self thread PlayerInfoHandler();
+    
+    if(isDefined(i1))
+        self.EntityEditorNumber = i1;
     
     self DestroyOpts();
     self drawText();
@@ -1424,12 +1437,20 @@ GEntityProtection()
 
     while(isDefined(level.GEntityProtection))
     {
-        ents = GetEntArray("script_model", "classname");
+        entityCount = GetEntArray().size;
+        ents = ArrayReverse(ArrayCombine(GetEntArray("script_brushmodel", "classname"), GetEntArray("script_model", "classname"), 0, 1));
 
-        if(ents.size > 550)
+        if(entityCount > 999)
         {
-            ents[(ents.size - 1)] delete();
-            self iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7G_Entity Prevented");
+            amount = (entityCount >= 1015) ? 30 : 5;
+
+            for(a = 0; a < amount; a++)
+                if(isDefined(ents[a]))
+                    ents[a] delete();
+            
+            newEntityCount = GetEntArray().size;
+
+            bot::get_host_player() iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7G_Entity Prevented [" + entityCount + "] -> New Entity Count: " + newEntityCount);
         }
 
         wait 0.01;
@@ -1515,7 +1536,7 @@ MenuCredits()
     " ",
     "Thanks For Choosing ^1" + level.menuName,
     "YouTube: ^1CF4_99",
-    "Discord: ^1CF4_99#9999",
+    "Discord: ^1cf4_99",
     "Discord.gg/^1MXT"
     ];
     

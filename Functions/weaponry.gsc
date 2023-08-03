@@ -50,6 +50,7 @@ DropCurrentWeapon(type, player)
 
 PackCurrentWeapon(player)
 {
+    originalWeapon = player GetCurrentWeapon();
     newWeapon = !zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()) ? zm_weapons::get_upgrade_weapon(player GetCurrentWeapon()) : zm_weapons::get_base_weapon(player GetCurrentWeapon());
     
     base_weapon = newWeapon;
@@ -65,7 +66,7 @@ PackCurrentWeapon(player)
 		force_attachments = zm_weapons::get_force_attachments(base_weapon.rootweapon);
     
     
-    camo = (!upgraded && isDefined(base_weapon.savedCamo) && base_weapon.savedCamo != level.pack_a_punch_camo_index) ? base_weapon.savedCamo : upgraded ? level.pack_a_punch_camo_index : undefined;
+    camo = (!upgraded && isDefined(originalWeapon.savedCamo) && originalWeapon.savedCamo != level.pack_a_punch_camo_index) ? originalWeapon.savedCamo : upgraded ? level.pack_a_punch_camo_index : undefined;
 
 	if(isDefined(force_attachments) && force_attachments.size)
 	{
@@ -136,12 +137,9 @@ GivePlayerAttachment(attachment, player)
             return self iPrintlnBold("^1ERROR: ^7Attachment Limit Reached");
     }
 
-    camo = isDefined(weapon.savedCamo) ? weapon.savedCamo : undefined;
-
     newWeapon = GetWeapon(weapon.rootweapon.name, attachments);
-    weapon_options = player CalcWeaponOptions(camo, 0, 0);
-
-    newWeapon.savedCamo = camo;
+    weapon_options = player CalcWeaponOptions(isDefined(weapon.savedCamo) ? weapon.savedCamo : undefined, 0, 0);
+    newWeapon.savedCamo = isDefined(weapon.savedCamo) ? weapon.savedCamo : undefined;
     
     player TakeWeapon(weapon);
     player GiveWeapon(newWeapon, weapon_options);

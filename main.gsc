@@ -15,7 +15,7 @@
     MXT Server: https://discord.gg/MXT
 
     If you are using Crafty's Compiler/Injector, make sure you have the latest build. If not, you will get a syntax error.
-    Latest Build: https://github.com/LJW-Dev/Black-Ops-3-GSC-Compiler/releases/tag/1.0
+    Latest Build: https://github.com/LJW-Dev/Black-Ops-3-GSC-Compiler/releases/latest
 
 
     Controls:
@@ -145,6 +145,7 @@
 #include scripts\zm\_zm_unitrigger;
 #include scripts\zm\_zm_net;
 #include scripts\zm\_zm_laststand;
+#include scripts\zm\bgbs\_zm_bgb_reign_drops;
 
 #namespace duplicate_render;
 
@@ -199,6 +200,9 @@ onPlayerSpawned()
 
         if(!isDefined(level.AntiEndGame))
             self thread AntiEndGame();
+        
+        if(!isDefined(level.GEntityProtection))
+            self thread GEntityProtection();
     }
 
     level flag::wait_till("initial_blackscreen_passed");
@@ -386,6 +390,11 @@ DefineMenuArrays()
 
     foreach(entity in GetEntArray("script_model", "classname")) //Needed For Moon Doors
     {
+        if(entity.model == "tag_origin" || IsSubStr(entity.model, "collision"))
+            continue;
+
+        level.SavedMapEntities[level.SavedMapEntities.size] = entity;
+        
         entity.savedOrigin = entity.origin;
         entity.savedAngles = entity.angles;
     }

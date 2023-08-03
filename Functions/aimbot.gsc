@@ -22,7 +22,7 @@ Aimbot(player)
             if(player.AimbotVisibilityRequirement == "Damageable" && enemy DamageConeTrace(player GetEye(), player) < 0.1)
                 enemy = undefined;
             
-            if(player.AimbotVisibilityRequirement == "Visible" && !self IsVisible(enemy))
+            if(player.AimbotVisibilityRequirement == "Visible" && !player IsVisible(enemy))
                 enemy = undefined;
         }
         

@@ -71,17 +71,11 @@ ExplosiveBullets(player)
 
 ExplosiveBulletDamage(num, player)
 {
-    if(!num)
-        return self iPrintln("^1ERROR: ^7Explosive Bullet Damage Can't Be Lower Than 1");
-
     player.ExplosiveBulletsDamage = num;
 }
 
 ExplosiveBulletRange(num, player)
 {
-    if(!num)
-        return self iPrintln("^1ERROR: ^7Explosive Bullet Range Can't Be Lower Than 1");
-    
     player.ExplosiveBulletsRange = num;
 }
 

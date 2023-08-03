@@ -309,6 +309,7 @@ TeleportZombies(loc)
     {
         if(isDefined(zombies[a]))
         {
+            zombies[a] StopAnimScripted(0);
             zombies[a] ForceTeleport(origin);
             zombies[a].find_flesh_struct_string = "find_flesh";
             zombies[a].ai_state = "find_flesh";
@@ -329,7 +330,10 @@ ZombiesToCrosshairsLoop()
 
         for(a = 0; a < zombies.size; a++)
             if(isDefined(zombies[a]))
+            {
+                zombies[a] StopAnimScripted(0);
                 zombies[a] ForceTeleport(origin);
+            }
 
         wait 0.05;
     }

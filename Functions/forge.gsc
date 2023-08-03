@@ -13,7 +13,10 @@ ForgeSpawnModel(model)
         self.forge["model"] delete();
     
     self.forge["model"] = SpawnScriptModel(self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), self.forge["ModelDistance"]), model, (0, 0, 0));
-    self.forge["model"] SetScale(self.forge["ModelScale"]);
+
+    if(isDefined(self.forge["model"]))
+        self.forge["model"] SetScale(self.forge["ModelScale"]);
+    
     self thread ForgeCarryModel();
 }
 
@@ -49,10 +52,14 @@ ForgePlaceModel()
         self.forge["SpawnedArray"] = [];
     
     spawn = SpawnScriptModel(self.forge["model"].origin, self.forge["model"].model, self.forge["model"].angles);
-    self.forge["SpawnedArray"][self.forge["SpawnedArray"].size] = spawn;
+
+    if(isDefined(spawn))
+    {
+        self.forge["SpawnedArray"][self.forge["SpawnedArray"].size] = spawn;
+        spawn SetScale(self.forge["ModelScale"]);
+    }
     
     self notify("EndCarryModel");
-    spawn SetScale(self.forge["ModelScale"]);
     self.forge["model"] delete();
 }
 
@@ -65,6 +72,10 @@ ForgeCopyModel()
         self.forge["SpawnedArray"] = [];
     
     spawn = SpawnScriptModel(self.forge["model"].origin, self.forge["model"].model, self.forge["model"].angles);
+
+    if(!isDefined(spawn))
+        return;
+    
     self.forge["SpawnedArray"][self.forge["SpawnedArray"].size] = spawn;
     spawn SetScale(self.forge["ModelScale"]);
 }
@@ -115,10 +126,13 @@ ForgeDropModel()
         self.forge["SpawnedArray"] = [];
     
     spawn = SpawnScriptModel(self.forge["model"].origin, self.forge["model"].model, self.forge["model"].angles);
-    spawn SetScale(self.forge["ModelScale"]);
-    
-    self.forge["SpawnedArray"][self.forge["SpawnedArray"].size] = spawn;
-    spawn Launch(VectorScale(AnglesToForward(self GetPlayerAngles()), 10));
+
+    if(isDefined(spawn))
+    {
+        spawn SetScale(self.forge["ModelScale"]);
+        self.forge["SpawnedArray"][self.forge["SpawnedArray"].size] = spawn;
+        spawn Launch(VectorScale(AnglesToForward(self GetPlayerAngles()), 10));
+    }
 
     self notify("EndCarryModel");
     self.forge["model"] delete();
@@ -126,9 +140,6 @@ ForgeDropModel()
 
 ForgeModelDistance(int)
 {
-    if(int < 50)
-        return self iPrintln("^1ERROR: ^7Model Distance Can't Be Lower Than 50");
-    
     self.forge["ModelDistance"] = int;
 }
 
@@ -139,7 +150,7 @@ ForgeIgnoreCollisions()
 
 ForgeDeleteLastSpawn()
 {
-    if(!isDefined(self.forge["SpawnedArray"]) || isDefined(self.forge["SpawnedArray"]) && !self.forge["SpawnedArray"].size)
+    if(!isDefined(self.forge["SpawnedArray"]) || isDefined(self.forge["SpawnedArray"]) && !self.forge["SpawnedArray"].size || !isDefined(self.forge["SpawnedArray"][(self.forge["SpawnedArray"].size - 1)]))
         return;
     
     self.forge["SpawnedArray"][(self.forge["SpawnedArray"].size - 1)] delete();
@@ -163,7 +174,8 @@ ForgeDeleteAllSpawned()
         return;
     
     for(a = 0; a < self.forge["SpawnedArray"].size; a++)
-        self.forge["SpawnedArray"][a] delete();
+        if(isDefined(self.forge["SpawnedArray"][a]))
+            self.forge["SpawnedArray"][a] delete();
     
     self.forge["SpawnedArray"] = undefined;
 }
