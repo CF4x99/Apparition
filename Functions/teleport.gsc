@@ -3,7 +3,7 @@ DisableTeleportEffect(player)
     player.DisableTeleportEffect = isDefined(player.DisableTeleportEffect) ? undefined : true;
 }
 
-TeleportPlayer(origin, player, angles)
+TeleportPlayer(origin, player, angles, name)
 {
     if(!isDefined(origin))
         return;
@@ -19,6 +19,9 @@ TeleportPlayer(origin, player, angles)
     
     if(!isDefined(newOrigin))
         newOrigin = origin;
+    
+    if(isDefined(name) && ReturnMapName(level.script) == "Origins" && IsSubStr(name, "Robot Head") && !isDefined(player.teleport_initial_origin))
+        player.teleport_initial_origin = player.origin;
     
     player SetOrigin(newOrigin);
 

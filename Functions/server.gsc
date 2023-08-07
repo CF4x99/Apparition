@@ -971,7 +971,10 @@ ServerChangeMap(map)
 
 ServerRestartGame()
 {
-    Map_Restart(false);
+    if(isInArray(level.mapNames, level.script))
+        Map(level.script);
+    else
+        MissionFailed();
 }
 
 ServerEndGame()

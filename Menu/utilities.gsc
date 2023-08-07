@@ -23,24 +23,6 @@ createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
     return textElem;
 }
 
-LUI_createText(text, align, x, y, width, color)
-{    
-    textElem = self OpenLUIMenu("HudElementText", 1);
-
-    //0 - LEFT | 1 - RIGHT | 2 - CENTER
-    self SetLUIMenuData(textElem, "text", AddToStringCache(text));
-    self SetLUIMenuData(textElem, "alignment", align);
-    self SetLUIMenuData(textElem, "x", x);
-    self SetLUIMenuData(textElem, "y", y);
-    self SetLUIMenuData(textElem, "width", width);
-    
-    self SetLUIMenuData(textElem, "red", color[0]);
-    self SetLUIMenuData(textElem, "green", color[1]);
-    self SetLUIMenuData(textElem, "blue", color[2]);
-
-    return textElem;
-}
-
 createServerText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
 {
     textElem = hud::CreateServerFontString(font, fontSize);
@@ -84,53 +66,6 @@ createRectangle(align, relative, x, y, width, height, color, sort, alpha, shader
     uiElement hud::SetPoint(align, relative, x, y);
 
     self.hud_count++;
-    
-    return uiElement;
-}
-
-LUI_createRectangle(align, x, y, width, height, color, alpha, shader)
-{
-    uiElement = self OpenLUIMenu("HudElementImage", 1);
-
-    //0 - LEFT | 1 - RIGHT | 2 - CENTER
-    self SetLUIMenuData(uiElement, "alignment", align);
-    self SetLUIMenuData(uiElement, "x", x);
-    self SetLUIMenuData(uiElement, "y", y);
-    self SetLUIMenuData(uiElement, "width", width);
-    self SetLUIMenuData(uiElement, "height", height);
-
-    self SetLUIMenuData(uiElement, "red", color[0]);
-    self SetLUIMenuData(uiElement, "green", color[1]);
-    self SetLUIMenuData(uiElement, "blue", color[2]);
-
-    self SetLUIMenuData(uiElement, "alpha", alpha);
-    self SetLUIMenuData(uiElement, "material", shader);
-
-    return uiElement;
-}
-
-createServerRectangle(align, relative, x, y, width, height, color, sort, alpha, shader)
-{
-    uiElement = NewHudElem();
-    uiElement.elemType = "bar";
-    uiElement.children = [];
-    
-    uiElement.hideWhenInMenu = true;
-    uiElement.archived = true;
-    uiElement.foreground = true;
-    uiElement.hidden = false;
-
-    uiElement.align = align;
-    uiElement.relative = relative;
-    uiElement.xOffset = 0;
-    uiElement.yOffset = 0;
-    uiElement.sort = sort;
-    uiElement.color = color;
-    uiElement.alpha = alpha;
-    
-    uiElement SetShaderValues(shader, width, height);
-    uiElement hud::SetParent(level.uiParent);
-    uiElement hud::SetPoint(align, relative, x, y);
     
     return uiElement;
 }
@@ -184,7 +119,7 @@ AddToStringCache(text)
     if(!isInArray(level.uniqueStrings, text))
         level.uniqueStrings[level.uniqueStrings.size] = text;
 
-    text = MakeLocalizedString(text);
+    text = IsSubStr(text, "[{") ? text : MakeLocalizedString(text);
 
     return text;
 }
@@ -267,6 +202,16 @@ hudFadeColor(color, time)
     self.color = color;
 }
 
+hudScaleOverTime(time, width, height)
+{
+    self ScaleOverTime(time, width, height);
+
+    self.width = width;
+    self.height = height;
+
+    wait time;
+}
+
 HudRGBFade()
 {
     if(!isDefined(self) || isDefined(self.RGBFade))
@@ -294,16 +239,6 @@ ChangeFontscaleOverTime1(scale, time)
 divideColor(c1, c2, c3)
 {
     return ((c1 / 255), (c2 / 255), (c3 / 255));
-}
-
-hudScaleOverTime(time, width, height)
-{
-    self ScaleOverTime(time, width, height);
-
-    self.width = width;
-    self.height = height;
-
-    wait time;
 }
 
 destroyAll(arry)
@@ -913,7 +848,7 @@ Keyboard(func, player)
     else
         self.menu["ui"]["scroller"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], 16, 16, self.menu["Main_Color"], 3, 1, "white");
     
-    self SoftLockMenu(120);
+    self SoftLockMenu(121);
     
     letters = [];
     self.keyboard = [];
@@ -941,7 +876,7 @@ Keyboard(func, player)
     string = "";
     multiplier = 14.5;
 
-    self SetMenuInstructions(self ReturnButtonName("actionslot 1") + "/" + self ReturnButtonName("actionslot 2") + "/" + self ReturnButtonName("actionslot 3") + "/" + self ReturnButtonName("actionslot 4") + " - Scroll\n" + self ReturnButtonName("activate") + " - Select\n" + self ReturnButtonName("frag") + " - Add Space\n" + self ReturnButtonName("gostand") + " - Confirm\n" + self ReturnButtonName("melee") + " - Backspace/Cancel");
+    self SetMenuInstructions("[{+actionslot 1}]/[{+actionslot 2}]/[{+actionslot 3}]/[{+actionslot 4}] - Scroll\n[{+activate}] - Select\n[{+frag}] - Add Space\n[{+gostand}] - Confirm\n[{+melee}] - Backspace/Cancel");
 
     wait 1;
     
@@ -961,11 +896,7 @@ Keyboard(func, player)
         }
         else if(self ActionSlotThreeButtonPressed() || self ActionSlotFourButtonPressed())
         {
-            if(self GamepadUsedLast())
-                fixDir = self ActionSlotFourButtonPressed();
-            else
-                fixDir = self ActionSlotThreeButtonPressed();
-            
+            fixDir = self GamepadUsedLast() ? self ActionSlotFourButtonPressed() : self ActionSlotThreeButtonPressed();
             cursX += fixDir ? 1 : -1;
 
             if(cursX < 0 || cursX > 12)
@@ -1068,7 +999,7 @@ NumberPad(func, player, param)
     for(a = 0; a < 10; a++)
         letters[a] = a;
     
-    self.keyboard["string"] = self createText("objective", 1.2, 5, "", "CENTER", "CENTER", self.menu["X"], (self.menu["Y"] + 15), 1, (1, 1, 1));
+    self.keyboard["string"] = self createText("objective", 1.2, 5, 0, "CENTER", "CENTER", self.menu["X"], (self.menu["Y"] + 15), 1, (1, 1, 1));
 
     for(a = 0; a < letters.size; a++)
         self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menu["X"] - (self.menu["MenuWidth"] / 2)) + 36 + (a * 15), (self.menu["Y"] + 35), 1, (1, 1, 1));
@@ -1080,7 +1011,7 @@ NumberPad(func, player, param)
     stringLimit = 10;
     string = "";
 
-    self SetMenuInstructions(self ReturnButtonName("actionslot 3") + "/" + self ReturnButtonName("actionslot 4") + " - Scroll\n" + self ReturnButtonName("activate") + " - Select\n" + self ReturnButtonName("gostand") + " - Confirm\n" + self ReturnButtonName("melee") + " - Backspace/Cancel");
+    self SetMenuInstructions("[{+actionslot 3}]/[{+actionslot 4}] - Scroll\n[{+activate}] - Select\n[{+gostand}] - Confirm\n[{+melee}] - Backspace/Cancel");
 
     wait 1;
     
@@ -1088,11 +1019,7 @@ NumberPad(func, player, param)
     {
         if(self ActionSlotThreeButtonPressed() || self ActionSlotFourButtonPressed())
         {
-            if(self GamepadUsedLast())
-                fixDir = self ActionSlotFourButtonPressed();
-            else
-                fixDir = self ActionSlotThreeButtonPressed();
-            
+            fixDir = self GamepadUsedLast() ? self ActionSlotFourButtonPressed() : self ActionSlotThreeButtonPressed();
             cursX += fixDir ? 1 : -1;
             
             if(cursX < 0 || cursX > 9)
@@ -1108,7 +1035,7 @@ NumberPad(func, player, param)
             if(string.size < stringLimit)
             {
                 string += letters[cursX];
-                self.keyboard["string"] SetTextString(string);
+                self.keyboard["string"] SetValue(Int(string));
             }
             else
                 self iPrintlnBold("^1ERROR: ^7Max String Size Reached");
@@ -1142,7 +1069,7 @@ NumberPad(func, player, param)
                     backspace += string[a];
                 
                 string = backspace;
-                self.keyboard["string"] SetTextString(string);
+                self.keyboard["string"] SetValue(Int(string));
 
                 wait 0.1;
             }
@@ -1319,56 +1246,6 @@ ReturnMapName(map)
     }
 }
 
-/*
-    Only the host will get the button UI.
-    Clients will see button text description.
-
-    The reason for this is because gsc runs off of the host, as well as the host's resources.
-    So buttons like [{+gostand}] will be replaced with whatever button bind, and ui, the host has set.
-    This is being used to correct that. Feel free to create your own button ui replacement for clients.
-*/
-ReturnButtonName(button)
-{
-    switch(button)
-    {
-        case "speed_throw":
-            return self IsHost() ? "[{+speed_throw}]" : "Aim";
-        
-        case "melee":
-            return self IsHost() ? "[{+melee}]" : "Knife";
-        
-        case "smoke":
-            return self IsHost() ? "[{+smoke}]" : "Secondary Grenade";
-        
-        case "attack":
-            return self IsHost() ? "[{+attack}]" : "Shoot";
-        
-        case "actionslot 1":
-            return self IsHost() ? "[{+actionslot 1}]" : "Actionslot 1";
-        
-        case "actionslot 2":
-            return self IsHost() ? "[{+actionslot 2}]" : "Actionslot 2";
-        
-        case "actionslot 3":
-            return self IsHost() ? "[{+actionslot 3}]" : "Actionslot 3";
-        
-        case "actionslot 4":
-            return self IsHost() ? "[{+actionslot 4}]" : "Actionslot 4";
-        
-        case "activate":
-            return self IsHost() ? "[{+activate}]" : "Use Button";
-        
-        case "frag":
-            return self IsHost() ? "[{+frag}]" : "Frag";
-        
-        case "gostand":
-            return self IsHost() ? "[{+gostand}]" : "Jump";
-        
-        default:
-            return "Unknown Button";
-    }
-}
-
 TriggerUniTrigger(struct, trigger_notify, time) //For Basic Uni Triggers
 {
     if(IsArray(struct))
@@ -1440,9 +1317,11 @@ GEntityProtection()
         entityCount = GetEntArray().size;
         ents = ArrayReverse(ArrayCombine(GetEntArray("script_brushmodel", "classname"), GetEntArray("script_model", "classname"), 0, 1));
 
-        if(entityCount > 999)
+        GEntMax = ReturnMapGEntityCount();
+
+        if(entityCount > (GEntMax - 16))
         {
-            amount = (entityCount >= 1015) ? 30 : 5;
+            amount = (entityCount >= GEntMax) ? 30 : 5;
 
             for(a = 0; a < amount; a++)
                 if(isDefined(ents[a]))
@@ -1454,6 +1333,18 @@ GEntityProtection()
         }
 
         wait 0.01;
+    }
+}
+
+ReturnMapGEntityCount()
+{
+    switch(ReturnMapName(level.script))
+    {
+        case "The Giant":
+            return 915;
+        
+        default:
+            return 1015;
     }
 }
 
@@ -1498,7 +1389,9 @@ MenuCredits()
     "Version: ^1" + level.menuVersion,
     " ",
     "^1Extinct",
-    "LUI HUD",
+    "Ideas",
+    "Suggestions",
+    "Constructive Criticism",
     "His Spec-Nade",
     "Wouldn't Be Where I Am Without Him",
     " ",
@@ -1541,7 +1434,7 @@ MenuCredits()
     ];
     
     self thread MenuCreditsStart(MenuTextStartCredits);
-    self SetMenuInstructions(self ReturnButtonName("melee") + " - Exit Menu Credits");
+    self SetMenuInstructions("[{+melee}] - Exit Menu Credits");
     
     while(isDefined(self.menu["CreditsPlaying"]))
     {

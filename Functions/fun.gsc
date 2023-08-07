@@ -219,7 +219,7 @@ Jetpack(player)
     {
         player endon("disconnect");
 
-        player iPrintlnBold("Press & Hold " + player ReturnButtonName("frag") + " To Use Jetpack");
+        player iPrintlnBold("Press & Hold [{+frag}] To Use Jetpack");
 
         while(isDefined(player.Jetpack))
         {
@@ -259,11 +259,11 @@ ZombieCounter(player)
                     if(!isDefined(player.ZombieCounterHud))
                         player.ZombieCounterHud = [];
                     
-                    player.ZombieCounterHud[0] = player createText("default", 1.4, 1, "Alive:", "LEFT", "CENTER", -400, -215, 1, level.RGBFadeColor);
-                    player.ZombieCounterHud[1] = player createText("default", 1.4, 1, "Remaining For Round:", "LEFT", "CENTER", -400, -200, 1, level.RGBFadeColor);
+                    player.ZombieCounterHud[0] = player createText("default", 1.4, 1, "Alive:", "LEFT", "CENTER", (self.menu["X"] - (self.menu["MenuWidth"] / 2) - 1), -145, 1, level.RGBFadeColor);
+                    player.ZombieCounterHud[1] = player createText("default", 1.4, 1, "Remaining For Round:", "LEFT", "CENTER", player.ZombieCounterHud[0].x, (player.ZombieCounterHud[0].y + 15), 1, level.RGBFadeColor);
                     
-                    player.ZombieCounterHud[2] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (-400 + (player.ZombieCounterHud[0] GetTextWidth() - 8)), -215, 1, level.RGBFadeColor);
-                    player.ZombieCounterHud[3] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (-400 + (player.ZombieCounterHud[1] GetTextWidth() - 38)), -200, 1, level.RGBFadeColor);
+                    player.ZombieCounterHud[2] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (player.ZombieCounterHud[0].x + (player.ZombieCounterHud[0] GetTextWidth() - 8)), player.ZombieCounterHud[0].y, 1, level.RGBFadeColor);
+                    player.ZombieCounterHud[3] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (player.ZombieCounterHud[1].x + (player.ZombieCounterHud[1] GetTextWidth() - 38)), player.ZombieCounterHud[1].y, 1, level.RGBFadeColor);
 
                     for(a = 0; a < player.ZombieCounterHud.size; a++)
                         if(isDefined(player.ZombieCounterHud[a]))
@@ -432,22 +432,21 @@ ForgeMode(player)
         player endon("disconnect");
 
         player iPrintlnBold("Aim At Entities/Zombies/Players To Pick Them Up");
-        player iPrintlnBold(player ReturnButtonName("attack") + " To Release");
+        player iPrintlnBold("[{+attack}] To Release");
         
         while(isDefined(player.ForgeMode))
         {
+            if(isDefined(grabEnt) && (IsPlayer(grabEnt) && !Is_Alive(grabEnt) || grabEnt isZombie() && !IsAlive(grabEnt)))
+                grabEnt = undefined;
+            
             if(isDefined(grabEnt))
             {
-                if(IsPlayer(grabEnt) && !Is_Alive(grabEnt) || grabEnt isZombie() && !IsAlive(grabEnt))
-                {
-                    grabEnt = undefined;
-                    continue;
-                }
-
-                if(!IsPlayer(grabEnt) && !grabEnt isZombie())
-                    grabEnt.origin = (player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 250));
-                else
+                if(IsPlayer(grabEnt))
+                    grabEnt SetOrigin((player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 250)));
+                else if(grabEnt isZombie())
                     grabEnt ForceTeleport((player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 250)));
+                else
+                    grabEnt.origin = (player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 250));
 
                 if(player AttackButtonPressed())
                     grabEnt = undefined;
@@ -893,22 +892,21 @@ GravityGun(player)
         player endon("disconnect");
 
         player iPrintlnBold("Aim At Entities/Zombies/Players To Pick Them Up");
-        player iPrintlnBold(player ReturnButtonName("attack") + " To Launch");
+        player iPrintlnBold("[{+attack}] To Launch");
         
         while(isDefined(player.GravityGun))
         {
+            if(isDefined(grabEnt) && (IsPlayer(grabEnt) && !Is_Alive(grabEnt) || grabEnt isZombie() && !IsAlive(grabEnt)))
+                grabEnt = undefined;
+            
             if(isDefined(grabEnt))
             {
-                if(IsPlayer(grabEnt) && !Is_Alive(grabEnt) || grabEnt isZombie() && !IsAlive(grabEnt))
-                {
-                    grabEnt = undefined;
-                    continue;
-                }
-
-                if(!IsPlayer(grabEnt) && !grabEnt isZombie())
-                    grabEnt.origin = (player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 250));
-                else
+                if(IsPlayer(grabEnt))
+                    grabEnt SetOrigin((player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 250)));
+                else if(grabEnt isZombie())
                     grabEnt ForceTeleport((player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 250)));
+                else
+                    grabEnt.origin = (player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 250));
                 
                 if(player AttackButtonPressed() && isDefined(grabEnt))
                 {

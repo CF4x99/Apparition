@@ -61,12 +61,6 @@ AC130(type)
     
     if(isDefined(self.AC130HUD))
         destroyAll(self.AC130HUD);
-    
-    if(isDefined(self.AC130HUDLUI))
-    {
-        self CloseLUIMenu(self.AC130HUDLUI);
-        self.AC130HUDLUI = undefined;
-    }
 
     if(!isDefined(self.godmode))
         self DisableInvulnerability();
@@ -165,12 +159,8 @@ RefreshAC130HUD(ammo)
 {
     if(isDefined(self.AC130HUD))
         destroyAll(self.AC130HUD);
-    
-    if(isDefined(self.AC130HUDLUI))
-        self CloseLUIMenu(self.AC130HUDLUI);
 
     self.AC130HUD = [];
-    self.AC130HUDLUI = self LUI_createText("", 0, 20, 375, 1023, (1, 1, 1));
 
     switch(ammo)
     {
@@ -195,10 +185,10 @@ RefreshAC130HUD(ammo)
             break;
     }
 
-    self SetLUIMenuData(self.AC130HUDLUI, "text", AddToStringCache(text + "\n^3" + self ReturnButtonName("frag") + " ^7To Change Weapon"));
-
     for(a = 0; a < AC130HudValues.size; a++)
         self.AC130HUD[self.AC130HUD.size] = self createRectangle("CENTER", "CENTER", Int(StrTok(AC130HudValues[a], ",")[0]), Int(StrTok(AC130HudValues[a], ",")[1]), Int(StrTok(AC130HudValues[a], ",")[2]), Int(StrTok(AC130HudValues[a], ",")[3]), (1, 1, 1), 1, 1, "white");
+    
+    self.AC130HUD[self.AC130HUD.size] = self createText("default", 1.2, 1, text + "\n^3[{+frag}] ^7To Change Weapon", "LEFT", "CENTER", -400, 0, 1, (1, 1, 1));
 }
 
 RainPowerups()
@@ -271,7 +261,7 @@ LobbyRain(type, rain)
                 RainModel = SpawnScriptModel(origin, rain);
 
                 if(!isDefined(RainModel))
-                    continue;
+                    break;
                 
                 RainModel NotSolid();
                 RainModel Launch(VectorScale(AnglesToForward(RainModel.angles), 10));
@@ -284,7 +274,7 @@ LobbyRain(type, rain)
                 linker = SpawnScriptModel(origin, "tag_origin");
 
                 if(!isDefined(linker))
-                    continue;
+                    break;
                 
                 linker thread RainPlayFXOnTag(level._effect[rain], "tag_origin");
                 linker Launch(VectorScale(AnglesToForward(linker.angles), 10));
@@ -432,7 +422,7 @@ ArtilleryStrike()
 
     self.menu["DisableMenuControls"] = true;
 
-    self SetMenuInstructions(self ReturnButtonName("attack") + " - Confirm Location\n" + self ReturnButtonName("melee") + " - Cancel");
+    self SetMenuInstructions("[{+attack}] - Confirm Location\n[{+melee}] - Cancel");
     
     while(1)
     {

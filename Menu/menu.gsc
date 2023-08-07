@@ -68,7 +68,7 @@ runMenuIndex(menu)
                 {
                     self addOptBool(self.godmode, "God Mode", ::Godmode, self);
                     self addOptBool(self.Noclip, "Noclip", ::Noclip1, self);
-                    self addOptBool(self.NoclipBind, "Bind Noclip To " + self ReturnButtonName("frag"), ::BindNoclip, self);
+                    self addOptBool(self.NoclipBind, "Bind Noclip To [{+frag}]", ::BindNoclip, self);
                     self addOptSlider("Unlimited Ammo", ::UnlimitedAmmo, "Continuous;Reload;Disable", self);
                     self addOptBool(self.UnlimitedEquipment, "Unlimited Equipment", ::UnlimitedEquipment, self);
                     self addOptSlider("Modify Score", ::ModifyScore, "1000000;100000;10000;1000;100;10;0;-10;-100;-1000;-10000;-100000;-1000000", self);
@@ -102,9 +102,10 @@ runMenuIndex(menu)
                 self addOptSlider("Toggle Style", ::ToggleStyle, "Boxes;Text;Text Color");
                 self addOptIncSlider("Max Options", ::MenuMaxOptions, 5, self.menu["MaxOptions"], 12, 1);
                 self addOptBool(self.menu["MenuBlur"], "Menu Blur", ::MenuBlur);
-                self addOptBool(self.menu["DisableMenuInstructions"], "Disable Instructions", ::DisableMenuInstructions);
                 self addOptBool(self.menu["LargeCursor"], "Large Cursor", ::LargeCursor);
+                self addOptBool(self.menu["DisableMenuInstructions"], "Disable Instructions", ::DisableMenuInstructions);
                 self addOptBool(self.menu["DisableQM"], "Disable Quick Menu", ::DisableQuickMenu);
+                self addOptBool(self.menu["DisableMenuAnimations"], "Disable Menu Animations", ::DisableMenuAnimations);
             break;
         
         case "Main Design Color":
@@ -147,19 +148,18 @@ runMenuIndex(menu)
             powerups = GetArrayKeys(level.zombie_include_powerups);
             
             self addMenu(menu, "Power-Up Menu");
-                self addOptSlider("Spawn Location", ::PowerUpSpawnLocation, "Crosshairs;Self");
-                self addOpt("Reign Drops", zm_bgb_reign_drops::activation);
-
+                
                 if(isDefined(powerups) && powerups.size)
                 {
+                    self addOptSlider("Spawn Location", ::PowerUpSpawnLocation, "Crosshairs;Self");
+                    self addOpt("Reign Drops", zm_bgb_reign_drops::activation);
+
                     for(a = 0; a < powerups.size; a++)
                         if(powerups[a] != "free_perk")
                             self addOpt(CleanString(powerups[a]), ::SpawnPowerUp, powerups[a]);
                         else
                             self addOpt("Free Perk", ::SpawnPowerUp, powerups[a]);
                 }
-                else
-                    self addOpt("No Power-Ups Found");
             break;
         
         case "Advanced Scripts":
@@ -200,8 +200,6 @@ runMenuIndex(menu)
                 if(isDefined(level.MenuModels) && level.MenuModels.size)
                     for(a = 0; a < level.MenuModels.size; a++)
                         self addOpt(CleanString(level.MenuModels[a]), ::LobbyRain, "Model", level.MenuModels[a]);
-                else
-                    self addOpt("No Models Found");
             break;
         
         case "Rain Effects":
@@ -318,8 +316,6 @@ runMenuIndex(menu)
                     self addOptSlider("Teleport", ::TeleportEntities, "Self;Crosshairs");
                     self addOpt("Reset Origin", ::EntitiesResetOrigins);
                 }
-                else
-                    self addOpt("No Entities Found");
             break;
 
         case "Entity Editing List":
@@ -331,8 +327,6 @@ runMenuIndex(menu)
                         if(isDefined(level.SavedMapEntities[a]) && level.SavedMapEntities[a].model != "")
                             self addOpt(CleanString(level.SavedMapEntities[a].model), ::newMenu, "Entity Editor", false, a);
                 }
-                else
-                    self addOpt("No Entities Found");
             break;
 
         case "Entity Editor":
@@ -347,7 +341,7 @@ runMenuIndex(menu)
 
         case "Entity Rotation":
             self addMenu(menu, "Rotation");
-                self addOpt("Reset Angles", ::EntityResetAngles, level.SavedMapEntities[self.EntityEditorNumber]);
+                self addOpt("Reset", ::EntityResetAngles, level.SavedMapEntities[self.EntityEditorNumber]);
                 self addOptIncSlider("Pitch", ::EntityRotation, -10, 0, 10, 1, "Pitch", level.SavedMapEntities[self.EntityEditorNumber]);
                 self addOptIncSlider("Yaw", ::EntityRotation, -10, 0, 10, 1, "Yaw", level.SavedMapEntities[self.EntityEditorNumber]);
                 self addOptIncSlider("Roll", ::EntityRotation, -10, 0, 10, 1, "Roll", level.SavedMapEntities[self.EntityEditorNumber]);
@@ -355,7 +349,7 @@ runMenuIndex(menu)
 
         case "Entities Rotation":
             self addMenu(menu, "Rotation");
-                self addOpt("Reset Angles", ::EntitiesResetAngles);
+                self addOpt("Reset", ::EntitiesResetAngles);
                 self addOptIncSlider("Pitch", ::EntitiesRotation, -10, 0, 10, 1, "Pitch");
                 self addOptIncSlider("Yaw", ::EntitiesRotation, -10, 0, 10, 1, "Yaw");
                 self addOptIncSlider("Roll", ::EntitiesRotation, -10, 0, 10, 1, "Roll");
@@ -473,8 +467,6 @@ runMenuIndex(menu)
                     for(a = 0; a < boxes.size; a++)
                         self addOpt("Soul Box " + (a + 1), ::CompleteSoulbox, boxes[a]);
                 }
-                else
-                    self addOpt("No Soul Boxes Found");
             break;
         
         case "Origins Challenges":
@@ -707,8 +699,6 @@ runMenuIndex(menu)
                         self addOpt(ReturnSOESmashableName(CleanString(smashable.targetname)), ::TriggerSOESmashable, smashable);
                     }
                 }
-                else
-                    self addOpt("No Smashables Found");
             break;
         
         case "SOE Power Switches":
@@ -724,8 +714,6 @@ runMenuIndex(menu)
                         self addOpt(ReturnSOEPowerName(ooze.script_int), ::TriggerSOEESwitch, ooze);
                     }
                 }
-                else
-                    self addOpt("No Power Switches Found");
             break;
         
         case "Revelations Scripts":
@@ -789,7 +777,6 @@ runMenuIndex(menu)
             break;
         
         case "Zombie Craftables":
-            found = 0;
             craftables = GetArrayKeys(level.zombie_include_craftables);
 
             self addMenu(menu, "Craftables");
@@ -798,14 +785,9 @@ runMenuIndex(menu)
                 {
                     if(IsCraftableCollected(craftables[a]) || craftables[a] == "open_table" || IsSubStr(craftables[a], "ritual_"))
                         continue;
-
-                    found++;
                     
                     self addOpt(CleanString(craftables[a]), ::newMenu, craftables[a]);
                 }
-
-                if(!found)
-                    self addOpt("No Craftables Found");
             break;
         
         case "Zombie Traps":
@@ -819,8 +801,6 @@ runMenuIndex(menu)
                         if(isDefined(level.MenuZombieTraps[a]))
                             self addOpt(isDefined(level.MenuZombieTraps[a].prefabname) ? CleanString(level.MenuZombieTraps[a].prefabname) : "Trap " + (a + 1), ::ActivateZombieTrap, a);
                 }
-                else
-                    self addOpt("No Traps Found");
             break;
         
         case "Mystery Box Options":
@@ -841,7 +821,7 @@ runMenuIndex(menu)
         
         case "Joker Model":
             self addMenu(menu, "Joker Model");
-                self addOptBool((level.chest_joker_model == level.savedJokerModel), "Default", ::SetBoxJokerModel, level.savedJokerModel);
+                self addOptBool((level.chest_joker_model == level.savedJokerModel), "Reset", ::SetBoxJokerModel, level.savedJokerModel);
 
                 for(a = 0; a < level.MenuModels.size; a++)
                     self addOptBool((level.chest_joker_model == level.MenuModels[a]), CleanString(level.MenuModels[a]), ::SetBoxJokerModel, level.MenuModels[a]);
@@ -970,14 +950,15 @@ runMenuIndex(menu)
         
         case "Zombie Model Manipulation":
             self addMenu(menu, "Model Manipulation");
-                self addOptBool(!isDefined(level.ZombieModel), "Disable", ::DisableZombieModel);
-                self addOpt("");
-
+                
                 if(isDefined(level.MenuModels) && level.MenuModels.size)
+                {
+                    self addOptBool(!isDefined(level.ZombieModel), "Disable", ::DisableZombieModel);
+                    self addOpt("");
+
                     for(a = 0; a < level.MenuModels.size; a++)
                         self addOptBool(level.ZombieModel == level.MenuModels[a], CleanString(level.MenuModels[a]), ::SetZombieModel, level.MenuModels[a]);
-                else
-                    self addOpt("No Models Found");
+                }
             break;
         
         case "Zombie Animations":
@@ -1088,14 +1069,15 @@ runMenuIndex(menu)
         
         case "All Players Model Manipulation":
             self addMenu(menu, "Model Manipulation");
-                self addOpt("Reset", ::AllPlayersFunction, ::ResetPlayerModel);
-                self addOpt("");
-
+                
                 if(isDefined(level.MenuModels) && level.MenuModels.size)
+                {
+                    self addOpt("Reset", ::AllPlayersFunction, ::ResetPlayerModel);
+                    self addOpt("");
+
                     for(a = 0; a < level.MenuModels.size; a++)
                         self addOpt(CleanString(level.MenuModels[a]), ::AllPlayersFunction, ::SetPlayerModel, level.MenuModels[a]);
-                else
-                    self addOpt("No Models Found");
+                }
             break;
         
         case "All Players Malicious Options":
@@ -1169,7 +1151,7 @@ MenuOptionsPlayer(menu, player)
                 self addOptBool(player.godmode, "God Mode", ::Godmode, player);
                 self addOptBool(player.DemiGod, "Demi-God", ::DemiGod, player);
                 self addOptBool(player.Noclip, "Noclip", ::Noclip1, player);
-                self addOptBool(player.NoclipBind, "Bind Noclip To " + self ReturnButtonName("frag"), ::BindNoclip, player);
+                self addOptBool(player.NoclipBind, "Bind Noclip To [{+frag}]", ::BindNoclip, player);
                 self addOptBool(player.UFOMode, "UFO Mode", ::UFOMode, player);
                 self addOptSlider("Unlimited Ammo", ::UnlimitedAmmo, "Continuous;Reload;Disable", player);
                 self addOptBool(player.UnlimitedEquipment, "Unlimited Equipment", ::UnlimitedEquipment, player);
@@ -1203,6 +1185,7 @@ MenuOptionsPlayer(menu, player)
                 if(isDefined(level.MenuPerks) && level.MenuPerks.size)
                 {
                     self addOptBool((player.perks_active.size == level.MenuPerks.size), "All Perks", ::PlayerAllPerks, player);
+                    self addOptBool(player._retain_perks, "Retain Perks", ::PlayerRetainPerks, player);
 
                     for(a = 0; a < level.MenuPerks.size; a++)
                     {
@@ -1442,8 +1425,6 @@ MenuOptionsPlayer(menu, player)
                             self addOptBool((player.aat[player aat::get_nonalternate_weapon(player GetCurrentWeapon())] == keys[a]), CleanString(level.aat[keys[a]].name), ::GiveWeaponAAT, keys[a], player);
                     }
                 }
-                else
-                    self addOpt("No AAT Found");
             break;
         
         case "Equipment Menu":
@@ -1464,8 +1445,6 @@ MenuOptionsPlayer(menu, player)
                             if(!IsSubStr(weapon.name, "_upgraded"))
                                 self addOptBool(player HasWeapon(weapon), weapon.displayname, ::GivePlayerEquipment, weapon, player);
                 }
-                else
-                    self addOpt("No Equipment Found");
             break;
         
         case "Bullet Menu":
@@ -1475,7 +1454,7 @@ MenuOptionsPlayer(menu, player)
                 self addOpt("Effects", ::newMenu, "Bullet Effects " + player GetEntityNumber());
                 self addOpt("Spawnables", ::newMenu, "Bullet Spawnables " + player GetEntityNumber());
                 self addOpt("Explosive Bullets", ::newMenu, "Explosive Bullets " + player GetEntityNumber());
-                self addOpt("Reset Bullets", ::ResetBullet, player);
+                self addOpt("Reset", ::ResetBullet, player);
             break;
         
         case "Weapon Projectiles":
@@ -1570,8 +1549,6 @@ MenuOptionsPlayer(menu, player)
                             if(!IsSubStr(weapon.name, "_upgraded"))
                                 self addOpt(weapon.displayname, ::BulletProjectile, weapon, "Equipment", player);
                 }
-                else
-                    self addOpt("No Equipment Found");
             break;
         
         case "Bullet Effects":
@@ -1587,8 +1564,6 @@ MenuOptionsPlayer(menu, player)
                 if(isDefined(level.MenuModels) && level.MenuModels.size)
                     for(a = 0; a < level.MenuModels.size; a++)
                         self addOpt(CleanString(level.MenuModels[a]), ::BulletProjectile, level.MenuModels[a], "Spawnable", player);
-                else
-                    self addOpt("No Models Found");
             break;
         
         case "Explosive Bullets":
@@ -1741,18 +1716,17 @@ MenuOptionsPlayer(menu, player)
                 self.playerAttachBone = "j_head";
             
             self addMenu(menu, "Model Attachment");
-                self addOptSlider("Location", ::PlayerAttachmentBone, level.boneTags);
-                self addOpt("Detach All", ::PlayerDetachModels, player);
-                self addOpt("");
                 
                 if(isDefined(level.MenuModels) && level.MenuModels.size)
                 {
+                    self addOptSlider("Location", ::PlayerAttachmentBone, level.boneTags);
+                    self addOpt("Detach All", ::PlayerDetachModels, player);
+                    self addOpt("");
+
                     for(a = 0; a < level.MenuModels.size; a++)
                         if(level.MenuModels[a] != "defaultactor") //Attaching the defaultactor to a player can cause a crash.
                             self addOpt(CleanString(level.MenuModels[a]), ::PlayerModelAttachment, level.menuModels[a], player);
                 }
-                else
-                    self addOpt("No Models Found");
             break;
         
         case "Malicious Options":
@@ -1801,8 +1775,6 @@ MenuOptionsPlayer(menu, player)
                     self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_b88ea497.n_index), player._challenges.var_b88ea497.str_info, ::MapCompleteChallenge, player._challenges.var_b88ea497, player);
                     self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_928c2a2e.n_index), player._challenges.var_928c2a2e.str_info, ::MapCompleteChallenge, player._challenges.var_928c2a2e, player);
                 }
-                else
-                    self addOpt("No Challenges Found");
             break;
         
         case "Origins Challenges Player":
@@ -1916,7 +1888,6 @@ MenuOptionsPlayer(menu, player)
                         if(craftables[a] != newmenu)
                             continue;
                         
-                        parts = 0;
                         craftable = craftables[a];
                         
                         if(isDefined(craftable))
@@ -1927,17 +1898,10 @@ MenuOptionsPlayer(menu, player)
                                     continue;
                                 
                                 if(isDefined(part.pieceSpawn.model))
-                                {
                                     self addOpt(CleanString(part.pieceSpawn.piecename), ::CollectCraftablePart, part);
-
-                                    parts++;
-                                }
                             }
                         }
                     }
-
-                    if(!isDefined(craftable) || !parts)
-                        self addOpt("No Parts Found");
             }
             else
             {
@@ -1964,9 +1928,7 @@ MenuOptionsPlayer(menu, player)
                     self addMenu(menu, mapStr + " Teleports");
                         if(isDefined(level.menuTeleports) && isDefined(level.menuTeleports[mapStr]) && level.menuTeleports[mapStr].size)
                             for(a = 0; a < level.menuTeleports[mapStr].size; a += 2)
-                                self addOpt(level.menuTeleports[mapStr][a], ::TeleportPlayer, level.menuTeleports[mapStr][(a + 1)], player);
-                        else
-                            self addOpt("No " + mapStr + " Teleports Found");
+                                self addOpt(level.menuTeleports[mapStr][a], ::TeleportPlayer, level.menuTeleports[mapStr][(a + 1)], player, undefined, level.menuTeleports[mapStr][a]);
                 }
 
                 if(error404)

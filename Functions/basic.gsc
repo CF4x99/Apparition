@@ -49,7 +49,7 @@ Noclip1(player)
         player PlayerLinkTo(player.nocliplinker, "tag_origin");
         player.menu["DisableMenuControls"] = true;
 
-        player SetMenuInstructions(player ReturnButtonName("attack") + " - Move Forward\n" + player ReturnButtonName("speed_throw") + " - Move Backwards\n" + player ReturnButtonName("melee") + " - Exit");
+        player SetMenuInstructions("[{+attack}] - Move Forward\n[{+speed_throw}] - Move Backwards\n[{+melee}] - Exit");
         
         while(isDefined(player.Noclip) && Is_Alive(player) && !player isPlayerLinked(player.nocliplinker))
         {
@@ -126,7 +126,7 @@ UFOMode(player)
         player PlayerLinkTo(player.ufolinker, "tag_origin");
         player.menu["DisableMenuControls"] = true;
 
-        player SetMenuInstructions(player ReturnButtonName("attack") + " - Move Up\n" + player ReturnButtonName("speed_throw") + " - Move Down\n" + player ReturnButtonName("frag") + " - Move Forward\n" + player ReturnButtonName("melee") + " - Exit");
+        player SetMenuInstructions("[{+attack}] - Move Up\n[{+speed_throw}] - Move Down\n[{+frag}] - Move Forward\n[{+melee}] - Exit");
         
         while(isDefined(player.UFOMode) && Is_Alive(player) && !player isPlayerLinked(player.ufolinker))
         {
@@ -229,6 +229,21 @@ PlayerAllPerks(player)
         for(a = 0; a < level.MenuPerks.size; a++)
             if(player HasPerk(level.MenuPerks[a]) || player zm_perks::has_perk_paused(level.MenuPerks[a]))
                 player notify(level.MenuPerks[a] + "_stop");
+    }
+}
+
+PlayerRetainPerks(player)
+{
+    player._retain_perks = isDefined(player._retain_perks) ? undefined : true;
+
+    if(!isDefined(player._retain_perks))
+    {
+        if(isDefined(player._retain_perks_array))
+            player._retain_perks_array = undefined;
+        
+        for(a = 0; a < level.MenuPerks.size; a++)
+            if(player HasPerk(level.MenuPerks[a]) || player zm_perks::has_perk_paused(level.MenuPerks[a]))
+                player thread zm_perks::perk_think(level.MenuPerks[a]);
     }
 }
 
@@ -381,8 +396,8 @@ SaveAndLoad(player)
 
     if(isDefined(player.SaveAndLoad))
     {
-        player iPrintlnBold("Press " + player ReturnButtonName("actionslot 3") + " To ^2Save Current Location");
-        player iPrintlnBold("Press " + player ReturnButtonName("actionslot 2") + " To ^2Load Saved Location");
+        player iPrintlnBold("Press [{+actionslot 3}] To ^2Save Current Location");
+        player iPrintlnBold("Press [{+actionslot 2}] To ^2Load Saved Location");
 
         player endon("disconnect");
 

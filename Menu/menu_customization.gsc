@@ -119,6 +119,12 @@ DisableQuickMenu()
     self SaveMenuTheme();
 }
 
+DisableMenuAnimations()
+{
+    self.menu["DisableMenuAnimations"] = isDefined(self.menu["DisableMenuAnimations"]) ? undefined : true;
+    self SaveMenuTheme();
+}
+
 SaveMenuTheme()
 {
     design = level.menuName + ";" + self.menu["ToggleStyle"] + ";" + self.menu["MaxOptions"] + ";";
@@ -126,6 +132,7 @@ SaveMenuTheme()
     design += isDefined(self.menu["LargeCursor"]) ? "Enable;" : "Disable;";
     design += isDefined(self.menu["MenuBlur"]) ? "Enable;" : "Disable;";
     design += isDefined(self.menu["DisableQM"]) ? "Enable;" : "Disable;";
+    design += isDefined(self.menu["DisableMenuAnimations"]) ? "Enable;" : "Disable;";
     design += isDefined(self.SmoothRainbowTheme) ? "Rainbow" : self.menu["Main_Color"];
     
     SetDvar("MenuTheme" + self GetXUID(), design);
@@ -136,7 +143,7 @@ LoadMenuVars() //Pre-Set Menu Variables.
     self.menu["XQM"] = -1;
     self.menu["YQM"] = -161;
 
-    self.menu["X"] = -290;
+    self.menu["X"] = -301;
     self.menu["Y"] = -150;
 
     self.menu["MaxOptions"] = 12;
@@ -155,6 +162,9 @@ LoadMenuVars() //Pre-Set Menu Variables.
     //Change 'undefined' to 'true' if you want to disable the quick menu by default
     self.menu["DisableQM"] = undefined;
 
+    //Change 'undefined' to 'true' if you want to disable the menu open/close animations
+    self.menu["DisableMenuAnimations"] = undefined;
+
     //Loading Saved Menu Variables
     dvar = GetDvarString("MenuTheme" + self GetXUID());
     dvarSep = StrTok(dvar, ";");
@@ -167,12 +177,13 @@ LoadMenuVars() //Pre-Set Menu Variables.
         self.menu["LargeCursor"] = (dvarSep[4] == "Enable") ? true : undefined;
         self.menu["MenuBlur"] = (dvarSep[5] == "Enable") ? true : undefined;
         self.menu["DisableQM"] = (dvarSep[6] == "Enable") ? true : undefined;
+        self.menu["DisableMenuAnimations"] = (dvarSep[7] == "Enable") ? true : undefined;
         
-        if(dvarSep[7] == "Rainbow")
+        if(dvarSep[8] == "Rainbow")
             self thread SmoothRainbowTheme();
         else
         {
-            SetDvar(self GetXUID() + level.menuName + "Color", dvarSep[7]);
+            SetDvar(self GetXUID() + level.menuName + "Color", dvarSep[8]);
             self.menu["Main_Color"] = GetDvarVector1(self GetXUID() + level.menuName + "Color");
         }
     }

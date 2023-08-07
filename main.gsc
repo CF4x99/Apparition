@@ -1,7 +1,7 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.1.7.0
+    Version:              1.1.7.5
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
     
@@ -29,7 +29,7 @@
 
     Credits:
         - CF4_99 ~ Project Developer
-        - Extinct ~ Ideas, Suggestions, Constructive Criticism, Spec-Nade, and LUI Hud
+        - Extinct ~ Ideas, Suggestions, Constructive Criticism, and His Spec-Nade
         - CraftyCritter ~ BO3 Compiler
         - ItsFebiven ~ Some Ideas and Suggestions
         - Joel ~ Suggestions, Bug Reports, and Testing The Unique String Crash Protection
@@ -193,20 +193,6 @@ onPlayerSpawned()
 {
     self endon("disconnect");
 
-    if(self isHost() && !isDefined(self.OnPlayerSpawned))
-    {
-        level.player_out_of_playable_area_monitor = 0;
-        level.player_out_of_playable_area_monitor_callback = ::player_out_of_playable_area_monitor;
-
-        if(!isDefined(level.AntiEndGame))
-            self thread AntiEndGame();
-        
-        if(!isDefined(level.GEntityProtection))
-            self thread GEntityProtection();
-    }
-
-    level flag::wait_till("initial_blackscreen_passed");
-
     self AllowWallRun(0);
     self AllowDoubleJump(0);
 
@@ -227,6 +213,15 @@ onPlayerSpawned()
 
     if(self IsHost())
     {
+        level.player_out_of_playable_area_monitor = 0;
+        level.player_out_of_playable_area_monitor_callback = ::player_out_of_playable_area_monitor;
+
+        if(!isDefined(level.AntiEndGame))
+            self thread AntiEndGame();
+        
+        if(!isDefined(level.GEntityProtection))
+            self thread GEntityProtection();
+        
         level thread DefineMenuArrays();
 
         //If there is an unknown map detected(custom map) it will display this note to the host.
@@ -244,7 +239,7 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName = "Apparition";
-    level.menuVersion = "1.1.7.0";
+    level.menuVersion = "1.1.7.5";
 
     level.MenuStatus = ["None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer"];
 
@@ -465,13 +460,21 @@ ApparitionWelcomeMessage()
     
     while(1)
     {
-        if(!isDefined(self.MenuInstructions) && !isDefined(self.menu["DisableMenuInstructions"]) && self hasMenu())
-            self.MenuInstructions = self LUI_createText("", 2, 129, 635, 1023, (0, 0, 0));
-    
-        if(isDefined(self.MenuInstructions) && (isDefined(self.menu["DisableMenuInstructions"]) || !self hasMenu()))
+        if(!isDefined(self.menu["DisableMenuInstructions"]) && self hasMenu() && (!isDefined(self.MenuInstructionsBG) || !isDefined(self.MenuInstructions)))
         {
-            self CloseLUIMenu(self.MenuInstructions);
-            self.MenuInstructions = undefined;
+            if(!isDefined(self.MenuInstructionsBG))
+                self.MenuInstructionsBG = self createRectangle("TOP_LEFT", "CENTER", (self.menu["X"] - (self.menu["MenuWidth"] / 2) - 1), -235, 0, 15, (0, 0, 0), 1, 0.8, "white");
+            
+            if(!isDefined(self.MenuInstructions))
+                self.MenuInstructions = self createText("default", 1.1, 2, "", "LEFT", "CENTER", (self.MenuInstructionsBG.x + 1), (self.MenuInstructionsBG.y + 6), 1, (1, 1, 1));
+        }
+
+        if(isDefined(self.MenuInstructions) && isDefined(self.menu["DisableMenuInstructions"]) || !self hasMenu())
+        {
+            self.MenuInstructions DestroyHud();
+
+            if(isDefined(self.MenuInstructionsBG))
+                self.MenuInstructionsBG DestroyHud();
         }
         
         if(isDefined(self.MenuInstructions))
@@ -480,30 +483,24 @@ ApparitionWelcomeMessage()
             {
                 if(!self isInMenu(true))
                 {
-                    instructionsY = 635;
-                    string = "Status: " + self.menuState["verification"] + "\n" + self ReturnButtonName("speed_throw") + " & " + self ReturnButtonName("melee") + " To Open";
+                    string = "[{+speed_throw}] & [{+melee}]: Open";
 
                     if(!isDefined(self.menu["DisableQM"]))
-                        string += "\n" + self ReturnButtonName("speed_throw") + " & " + self ReturnButtonName("smoke") + " To Open Quick Menu";
+                        string += "\n[{+speed_throw}] & [{+smoke}]: Open Quick Menu";
                 }
                 else
-                {
-                    instructionsY = 585;
-                    string = self ReturnButtonName("attack") + "/" + self ReturnButtonName("speed_throw") + " - Scroll\n" + self ReturnButtonName("actionslot 3") + "/" + self ReturnButtonName("actionslot 4") + " - Slider Left/Right\n" + self ReturnButtonName("activate") + " - Select\n" + self ReturnButtonName("melee") + " - Go Back/Exit";
-                }
+                    string = "[{+attack}]/[{+speed_throw}]: Scroll\n[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right\n[{+activate}]: Select\n[{+melee}]: Go Back/Exit";
             }
             else
                 string = self.menu["MenuInstructions"];
             
-            string = AddToStringCache(string);
-
-            if(self GetLUIMenuData(self.MenuInstructions, "text") != string)
-                self SetLUIMenuData(self.MenuInstructions, "text", string);
+            if(self.MenuInstructions.text != string)
+                self.MenuInstructions SetTextString(string);
             
-            self lui::set_color(self.MenuInstructions, level.RGBFadeColor);
+            height = IsSubStr(string, "\n") ? (CorrectNL_BGHeight(string) - 6) : CorrectNL_BGHeight(string);
             
-            if(self GetLUIMenuData(self.MenuInstructions, "y") != instructionsY)
-                self SetLUIMenuData(self.MenuInstructions, "y", instructionsY);
+            if(self.MenuInstructionsBG.width != (self.MenuInstructions GetTextWidth() - 105) || self.MenuInstructionsBG.height != height)
+                self.MenuInstructionsBG SetShaderValues(undefined, (self.MenuInstructions GetTextWidth() - 105), height);
         }
 
         wait 0.01;

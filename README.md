@@ -1,6 +1,6 @@
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.1.7.0
+    Version:              1.1.7.5
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
@@ -89,6 +89,30 @@
 
 <details>
     <summary>
+        Version 1.1.7.5
+    </summary>
+
+    - Fixed: Issues With Serious's Compiler
+    - Fixed: Client Bind UI
+    - Fixed: Forge Mode & Gravity Gun Not Picking Up Players
+    - Fixed: Issue on Origins with teleporting to the robot heads, then exiting
+    - Fixed: Max G_Entity Count Is Lower On The Giant, G_Entity Crash Protection Has Been Updated To Fit That
+    - Added: Menu Open/Close Animations
+    - Added: Option To Disable Menu Open/Close Animations
+    - Added: Retain Perks
+    - Changed: Redesigned & Improved Menu Instructions
+    - Changed: Repositioned Menu(Moved Further Left)
+    - Changed: Repositioned Zombie Counter
+    - Changed: Menu Now Loads At The Start Of The Game, Rather Than After The Black Screen
+    - Changed: Decreased The Chances Of The Menu Creating Unnecessary Unique Strings
+    - Changed: Number Pad Now Uses Values, Rather Than Strings(No Lag - Decreases The Amount Of Unique Strings - Auto-Corrects When You Go Over Max Int)
+    - Removed: All LUI Hud
+    - Removed: Unnecessary Utility Functions
+
+</details>
+
+<details>
+    <summary>
         Version 1.1.7.0
     </summary>
 
@@ -112,7 +136,6 @@
     - Fixed: Bug With New Camo Saving System While Un-Pack 'a' Punching A Weapon
     - Fixed: Surface Type Traces That Look For Invalid Surfaces
     - Fixed: Bug With Client Visual Effects
-
 
 </details>
 

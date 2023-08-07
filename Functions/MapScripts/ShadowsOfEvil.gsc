@@ -88,7 +88,7 @@ function_72c3fae0(washuman)
 
 function_96a57786(name)
 {
-	endon("disconnect");
+	self endon("disconnect");
 
 	self bgb::suspend_weapon_cycling();
 	loadout = level.altbody_loadouts[name];
@@ -119,7 +119,7 @@ function_9244ee8e(player)
 
 function_43af326a(name)
 {
-	endon("disconnect");
+	self endon("disconnect");
 
 	if(!isDefined(self.altbody_visionset))
 		self.altbody_visionset = [];
@@ -145,7 +145,7 @@ function_43af326a(name)
 
 function_d97ca744(name, trigger)
 {
-	endon("disconnect");
+	self endon("disconnect");
 
 	loadout = level.altbody_loadouts[name];
 
