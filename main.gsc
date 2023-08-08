@@ -10,9 +10,10 @@
 
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
-    Discord:    cf4_99
-    YouTube:    https://www.youtube.com/c/CF499
-    MXT Server: https://discord.gg/MXT
+    Discord:            cf4_99
+    Apparition Discord: https://discord.gg/WMQpMjHe
+    YouTube:            https://www.youtube.com/c/CF499
+    MXT Server:         https://discord.gg/MXT
 
     If you are using Crafty's Compiler/Injector, make sure you have the latest build. If not, you will get a syntax error.
     Latest Build: https://github.com/LJW-Dev/Black-Ops-3-GSC-Compiler/releases/latest
