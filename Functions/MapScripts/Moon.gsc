@@ -2,6 +2,9 @@ CompleteSamanthaSays(part)
 {
     if(!level flag::get("power_on"))
         return self iPrintlnBold("^1ERROR: ^7The Power Needs To Be Turned On Before Using This Option");
+	
+	if(part == "be2" && !level flag::get("vg_charged"))
+		return self iPrintlnBold("^1ERROR: ^7This Step Can't Be Completed Yet");
     
     if(level flag::get(part))
         return self iPrintlnBold("^1ERROR: ^7Samantha Says Has Already Been Completed");
@@ -67,16 +70,7 @@ FastExcavators()
                 foreach(digger in diggers)
                 {
                     targets = GetEntArray(digger.target, "targetname");
-
-                    if(targets[0].model == "p7_zm_moo_crane_mining_body_vista")
-                        tracks = targets[0];
-                    else
-                        tracks = targets[1];
-
-                    if(digger.script_string == "teleporter_digger_stopped")
-                        tracks = targets[0];
-                    else
-                        tracks = targets[1];
+                    tracks = (digger.script_string == "teleporter_digger_stopped") ? targets[0] : targets[1];
 
                     tracks.digger_speed = 2000; //Set This To Whatever. Default is around 30 - 50. You don't need to reset it since it gets recalculated everytime they move.
                 }

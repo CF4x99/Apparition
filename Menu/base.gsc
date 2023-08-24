@@ -25,9 +25,6 @@ menuMonitor()
             }
             else
             {
-                if(isDefined(self.menu["MenuBlur"]) && !self isInQuickMenu())
-                    self SetBlur(self.menu["MenuBlurValue"], 0.1);
-                
                 if(self isInMenu(false) && !Is_Alive(self))
                     self closeMenu1();
                 
@@ -119,6 +116,8 @@ menuMonitor()
 
 ExeFunction(fnc, i1, i2, i3, i4, i5, i6)
 {
+    self endon("disconnect");
+
     if(!isDefined(fnc))
         return;
     
@@ -141,6 +140,179 @@ ExeFunction(fnc, i1, i2, i3, i4, i5, i6)
         return self thread [[ fnc ]](i1);
 
     return self thread [[ fnc ]]();
+}
+
+openMenu1(showAnim)
+{
+    self endon("disconnect");
+
+    self.menu["currentMenu"] = (isDefined(self.menu["currentMenu"]) && self.menu["currentMenu"] != "") ? self.menu["currentMenu"] : "Main";
+    
+    if(!isDefined(self.menu["curs"][self getCurrent()]))
+        self.menu["curs"][self getCurrent()] = 0;
+    
+    self.menu["ui"]["background"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], self.menu["MenuWidth"], 0, (self.menu["MenuStyle"] == "Nautaremake") ? divideColor(21, 21, 21) : divideColor(0, 0, 0), 2, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
+    
+    if(self.menu["MenuStyle"] == "Nautaremake")
+    {
+        self.menu["ui"]["nautabackground"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"] - 40, self.menu["MenuWidth"], 0, self.menu["Alt_Color"], 1, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
+        self.menu["ui"]["nautaicon"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"] - 57, 32, 54, (1, 1, 1), 4, (isDefined(showAnim) && showAnim) ? 0 : 1, "damage_feedback_tac");
+    }
+
+    self.menu["ui"]["outlines"] = [];
+    
+    //Left Side
+    self.menu["ui"]["outlines"][self.menu["ui"]["outlines"].size] = self createRectangle("TOP", "CENTER", self.menu["X"] - (self.menu["MenuWidth"] / 2), (self.menu["MenuStyle"] == "Nautaremake") ? (self.menu["Y"] - 40) : self.menu["Y"], 1, 0, self.menu["Main_Color"], 5, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
+    
+    //Right Side
+    self.menu["ui"]["outlines"][self.menu["ui"]["outlines"].size] = self createRectangle("TOP", "CENTER", (self.menu["X"] + (self.menu["MenuWidth"] / 2)), (self.menu["MenuStyle"] == "Nautaremake") ? (self.menu["Y"] - 40) : self.menu["Y"], 1, 0, self.menu["Main_Color"], 5, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
+    
+    //Top 2
+    self.menu["ui"]["outlines"][self.menu["ui"]["outlines"].size] = self createRectangle("TOP", "CENTER", self.menu["X"], (self.menu["MenuStyle"] == "Nautaremake") ? self.menu["Y"] : (self.menu["Y"] - 13), (self.menu["MenuStyle"] == "Nautaremake") ? self.menu["MenuWidth"] : (self.menu["MenuWidth"] + 1), (self.menu["MenuStyle"] == "Nautaremake") ? 1 : 14, self.menu["Main_Color"], 5, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
+
+    //Bottom 1
+    self.menu["ui"]["outlines"][self.menu["ui"]["outlines"].size] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], self.menu["MenuWidth"], 1, self.menu["Main_Color"], 5, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
+
+    if(self.menu["MenuStyle"] == "Nautaremake")
+    {
+        //Top 1
+        self.menu["ui"]["outlines"][self.menu["ui"]["outlines"].size] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"] - 40, self.menu["MenuWidth"], 1, self.menu["Main_Color"], 5, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
+
+        //Bottom 2
+        self.menu["ui"]["outlines"][self.menu["ui"]["outlines"].size] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], self.menu["MenuWidth"], 1, self.menu["Main_Color"], 5, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
+    }
+    
+    self.menu["ui"]["scroller"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], self.menu["MenuWidth"], 18, (self.menu["MenuStyle"] == "Nautaremake") ? self.menu["Alt_Color"] : self.menu["Main_Color"], 3, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
+    
+    if(self.menu["MenuStyle"] == level.menuName)
+        self.menu["ui"]["title"] = self createText("default", 1.2, 6, "", "LEFT", "CENTER", (self.menu["X"] - (self.menu["MenuWidth"] / 2) + 4), (self.menu["Y"] - 7), (isDefined(showAnim) && showAnim) ? 0 : 1, (1, 1, 1));
+    
+    self drawText(showAnim);
+
+    if(self getCurrent() == "Players" && !isDefined(self.PlayerInfoHandler))
+        self thread PlayerInfoHandler();
+    
+    self.menuState["isInMenu"] = true;
+}
+
+closeMenu1(showAnim)
+{
+    self endon("disconnect");
+
+    if(self isInQuickMenu())
+    {
+        self closeQuickMenu();
+        return;
+    }
+
+    if(!self isInMenu())
+        return;
+    
+    self notify("menuClosed");
+    
+    vars = ["inKeyboard", "CreditsPlaying"];
+    hud = [self.keyboard, self.credits["MenuCreditsHud"]];
+    
+    for(a = 0; a < vars.size; a++)
+    {
+        if(isDefined(self.menu[vars[a]]))
+        {
+            destroyAll(hud[a]);
+            
+            self.menu[vars[a]] = undefined;
+            self.menu["DisableMenuControls"] = undefined;
+        }
+    }
+
+    if(isDefined(showAnim) && showAnim)
+    {
+        if(isDefined(self.menu["ui"]["scroller"]))
+            self.menu["ui"]["scroller"] DestroyHud();
+        
+        hudElems = [self.menu["ui"]["BoolBack"], self.menu["ui"]["BoolOpt"], self.menu["ui"]["subMenu"], self.menu["ui"]["IntSlider"], self.menu["ui"]["StringSlider"], self.menu["ui"]["text"]];
+        fadeTime = 0.35;
+
+        foreach(hud in hudElems)
+        {
+            if(!isDefined(hud) || !IsArray(hud) || !hud.size)
+                continue;
+            
+            foreach(index, hude in hud)
+                if(isDefined(hude))
+                    hude thread hudFade(0, ((fadeTime + 0.05) / (index + 1)));
+        }
+
+        hudElems = [self.menu["ui"]["background"], self.menu["ui"]["nautabackground"], self.menu["ui"]["outlines"][0], self.menu["ui"]["outlines"][1]];
+        
+        foreach(hud in hudElems)
+        {
+            if(!isDefined(hud))
+                continue;
+            
+            value = (self.menu["MenuStyle"] == "Nautaremake" && hud != self.menu["ui"]["background"]) ? 89 : 29;
+            
+            hud thread hudScaleOverTime(fadeTime, hud.width, value);
+        }
+        
+        if(isDefined(self.menu["ui"]["outlines"][3]))
+            self.menu["ui"]["outlines"][3] thread hudMoveY((self.menu["Y"] + 28), fadeTime);
+
+        if(isDefined(self.menu["ui"]["outlines"][5]))
+            self.menu["ui"]["outlines"][5] thread hudMoveY((self.menu["Y"] + 48), fadeTime);
+        
+        wait (fadeTime + 0.1);
+    }
+    
+    destroyAll(self.menu["ui"]);
+    
+    self.menuState["isInMenu"] = undefined;
+}
+
+openQuickMenu1()
+{
+    self endon("disconnect");
+
+    if(!isDefined(self.menu["ui"]["QMBG"]))
+        self.menu["ui"]["QMBG"] = [];
+    
+    if(!isDefined(self.menu["ui"]["textQM"]))
+        self.menu["ui"]["textQM"] = [];
+    
+    if(!isDefined(self.menu["ui"]["QMScroller"]))
+        self.menu["ui"]["QMScroller"] = [];
+    
+    if(!isDefined(self.menu["cursQM"]))
+        self.menu["cursQM"] = [];
+
+    self.menu["currentMenuQM"] = isDefined(self.menu["currentMenuQM"]) ? self.menu["currentMenuQM"] : "Quick Menu";
+    options = self.menu["items"][self.menu["currentMenuQM"]].name;
+    
+    if(!isDefined(self.menu["cursQM"][self.menu["currentMenuQM"]]))
+        self.menu["cursQM"][self.menu["currentMenuQM"]] = 0;
+
+    self.menu["ui"]["bannerQM"] = self createRectangle("CENTER", "CENTER", self.menu["XQM"], (self.menu["YQM"] - 30), 210, 25, self.menu["Main_Color"], 1, 1, "white");
+    self.menu["ui"]["banner2QM"] = self createRectangle("CENTER", "CENTER", self.menu["XQM"], (self.menu["YQM"] - 30), 209, 23, (0, 0, 0), 2, 1, "white");
+    self.menu["ui"]["title"] = self createText("default", 1.5, 4, "", "CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, (self.menu["YQM"] - 30), 1, (1, 1, 1));
+
+    self.menu["ui"]["QMScroller"][0] = self createRectangle("CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, self.menu["YQM"], 210, 18, (1, 1, 1), 3, 0.2, "white");
+    self.menu["ui"]["QMScroller"][1] = self createRectangle("CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, self.menu["YQM"], 210, 20, self.menu["Main_Color"], 1, 1, "white");
+
+    self.menuState["isInQuickMenu"] = true;
+
+    self drawText();
+}
+
+closeQuickMenu()
+{
+    if(!self isInQuickMenu())
+        return;
+    
+    self endon("disconnect");
+    
+    self DestroyOpts();
+    destroyAll(self.menu["ui"]);
+    
+    self.menuState["isInQuickMenu"] = undefined;
 }
 
 drawText(showAnim)
@@ -181,8 +353,8 @@ drawText(showAnim)
                 {
                     if(self.menu["ToggleStyle"] == "Boxes")
                     {
-                        self.menu["ui"]["BoolBack"][(a + start)] = self createRectangle("CENTER", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) - 8)), (self.menu["Y"] + 14) + (a * 20), 8, 8, (0.25, 0.25, 0.25), 4, 0, "white");
-                        self.menu["ui"]["BoolOpt"][(a + start)] = self createRectangle("CENTER", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) - 8)), (self.menu["Y"] + 14) + (a * 20), 7, 7, (isDefined(self.menu_B[self getCurrent()][(a + start)]) && self.menu_B[self getCurrent()][(a + start)]) ? self.menu["Main_Color"] : (0, 0, 0), 5, 0, "white");
+                        self.menu["ui"]["BoolBack"][(a + start)] = self createRectangle("CENTER", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) - 8)), (self.menu["Y"] + 14) + (a * 20), 8, 8, (self.menu["MenuStyle"] == "Nautaremake") ? self.menu["Main_Color"] : (0.25, 0.25, 0.25), 4, 0, "white");
+                        self.menu["ui"]["BoolOpt"][(a + start)] = self createRectangle("CENTER", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) - 8)), (self.menu["Y"] + 14) + (a * 20), 7, 7, (isDefined(self.menu_B[self getCurrent()][(a + start)]) && self.menu_B[self getCurrent()][(a + start)]) ? (self.menu["MenuStyle"] == "Nautaremake") ? divideColor(100, 100, 100) : self.menu["Main_Color"] : (self.menu["MenuStyle"] == "Nautaremake") ? divideColor(20, 20, 20) : (0, 0, 0), 5, 0, "white");
                     }
                     else
                         self.menu["ui"]["BoolOpt"][(a + start)] = self createText("default", ((a + start) == self getCursor() && isDefined(self.menu["LargeCursor"])) ? 1.3 : 1.1, 4, (isDefined(self.menu_B[self getCurrent()][(a + start)]) && self.menu_B[self getCurrent()][(a + start)]) ? "ON" : "OFF", "RIGHT", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) - 4)), (self.menu["Y"] + 14) + (a * 20), 0, (1, 1, 1));
@@ -207,7 +379,7 @@ drawText(showAnim)
                         continue;
                     
                     if(isDefined(showAnim) && showAnim)
-                        elem thread hudFade(1, (a * 0.1));
+                        elem thread hudFade(1, (a * 0.15));
                     else
                         elem.alpha = 1;
                 }
@@ -335,177 +507,6 @@ ScrollingSystem()
     }
 }
 
-SetMenuTitle(title)
-{
-    if(!isDefined(self.menu["ui"]["title"]))
-        return;
-    
-    if(!isDefined(title))
-        title = self.menu["items"][self getCurrent()].title;
-    
-    self.menu["ui"]["title"] SetTextString(title);
-
-    if(self isInQuickMenu())
-    {
-        self.menu["ui"]["bannerQM"] SetShaderValues(undefined, (self.menu["ui"]["title"] GetTextWidth() - 8), undefined);
-        self.menu["ui"]["banner2QM"] SetShaderValues(undefined, (self.menu["ui"]["bannerQM"].width - 2), undefined);
-    }
-}
-
-openMenu1(showAnim)
-{
-    self endon("disconnect");
-
-    self.menu["currentMenu"] = (isDefined(self.menu["currentMenu"]) && self.menu["currentMenu"] != "") ? self.menu["currentMenu"] : "Main";
-    
-    if(!isDefined(self.menu["curs"][self getCurrent()]))
-        self.menu["curs"][self getCurrent()] = 0;
-    
-    self.menu["ui"]["background"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], self.menu["MenuWidth"], 0, (0, 0, 0), 1, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
-        
-    if(!isDefined(self.menu["ui"]["outlines"]))
-        self.menu["ui"]["outlines"] = [];
-    
-    //Left Side
-    self.menu["ui"]["outlines"][0] = self createRectangle("TOP", "CENTER", self.menu["X"] - (self.menu["MenuWidth"] / 2), self.menu["Y"], 1, 0, self.menu["Main_Color"], 3, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
-    
-    //Right Side
-    self.menu["ui"]["outlines"][1] = self createRectangle("TOP", "CENTER", (self.menu["X"] + (self.menu["MenuWidth"] / 2)), self.menu["Y"], 1, 0, self.menu["Main_Color"], 3, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
-    
-    //Top
-    self.menu["ui"]["outlines"][2] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"] - 13, self.menu["MenuWidth"] + 1, 14, self.menu["Main_Color"], 3, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
-
-    //Bottom
-    self.menu["ui"]["outlines"][3] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], self.menu["MenuWidth"], 1, self.menu["Main_Color"], 3, 1, "white");
-    self.menu["ui"]["scroller"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], self.menu["MenuWidth"], 18, self.menu["Main_Color"], 2, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
-    self.menu["ui"]["title"] = self createText("default", 1.2, 5, "", "LEFT", "CENTER", (self.menu["X"] - (self.menu["MenuWidth"] / 2) + 4), (self.menu["Y"] - 7), (isDefined(showAnim) && showAnim) ? 0 : 1, (1, 1, 1));
-    
-    self drawText(showAnim);
-
-    if(self getCurrent() == "Players" && !isDefined(self.PlayerInfoHandler))
-        self thread PlayerInfoHandler();
-
-    if(isDefined(self.menu["MenuBlur"]))
-        self SetBlur(self.menu["MenuBlurValue"], 0.1);
-    
-    self.menuState["isInMenu"] = true;
-}
-
-closeMenu1(showAnim)
-{
-    if(self isInQuickMenu())
-    {
-        self closeQuickMenu();
-        return;
-    }
-
-    if(!self isInMenu())
-        return;
-    
-    self endon("disconnect");
-    self notify("menuClosed");
-    
-    vars = ["inKeyboard", "CreditsPlaying"];
-    hud = [self.keyboard, self.credits["MenuCreditsHud"]];
-    
-    for(a = 0; a < vars.size; a++)
-    {
-        if(isDefined(self.menu[vars[a]]))
-        {
-            destroyAll(hud[a]);
-            
-            self.menu[vars[a]] = undefined;
-            self.menu["DisableMenuControls"] = undefined;
-        }
-    }
-
-    if(isDefined(showAnim) && showAnim)
-    {
-        if(isDefined(self.menu["ui"]["scroller"]))
-            self.menu["ui"]["scroller"] DestroyHud();
-        
-        hudElems = [self.menu["ui"]["BoolBack"], self.menu["ui"]["BoolOpt"], self.menu["ui"]["subMenu"], self.menu["ui"]["IntSlider"], self.menu["ui"]["StringSlider"], self.menu["ui"]["text"]];
-
-        foreach(hud in hudElems)
-        {
-            if(!isDefined(hud) || !IsArray(hud) || !hud.size)
-                continue;
-            
-            elems = ArrayReverse(hud);
-            
-            for(a = 0; a < elems.size; a++)
-                elems[a] thread hudFade(0, (a * 0.01));
-        }
-
-        hudElems = [self.menu["ui"]["background"], self.menu["ui"]["outlines"][0], self.menu["ui"]["outlines"][1]];
-        
-        foreach(hud in hudElems)
-        {
-            if(!isDefined(hud))
-                continue;
-            
-            hud thread hudScaleOverTime(0.2, hud.width, 1);
-        }
-        
-        if(isDefined(self.menu["ui"]["outlines"][3]))
-            self.menu["ui"]["outlines"][3] hudMoveY(self.menu["Y"], 0.2);
-        
-        wait 0.05;
-    }
-    
-    destroyAll(self.menu["ui"]);
-    self SetBlur(0, 0.1);
-    
-    self.menuState["isInMenu"] = undefined;
-}
-
-openQuickMenu1()
-{
-    self endon("disconnect");
-
-    if(!isDefined(self.menu["ui"]["QMBG"]))
-        self.menu["ui"]["QMBG"] = [];
-    
-    if(!isDefined(self.menu["ui"]["textQM"]))
-        self.menu["ui"]["textQM"] = [];
-    
-    if(!isDefined(self.menu["ui"]["QMScroller"]))
-        self.menu["ui"]["QMScroller"] = [];
-    
-    if(!isDefined(self.menu["cursQM"]))
-        self.menu["cursQM"] = [];
-
-    self.menu["currentMenuQM"] = isDefined(self.menu["currentMenuQM"]) ? self.menu["currentMenuQM"] : "Quick Menu";
-    options = self.menu["items"][self.menu["currentMenuQM"]].name;
-    
-    if(!isDefined(self.menu["cursQM"][self.menu["currentMenuQM"]]))
-        self.menu["cursQM"][self.menu["currentMenuQM"]] = 0;
-
-    self.menu["ui"]["bannerQM"] = self createRectangle("CENTER", "CENTER", self.menu["XQM"], (self.menu["YQM"] - 30), 210, 25, self.menu["Main_Color"], 1, 1, "white");
-    self.menu["ui"]["banner2QM"] = self createRectangle("CENTER", "CENTER", self.menu["XQM"], (self.menu["YQM"] - 30), 209, 23, (0, 0, 0), 2, 1, "white");
-    self.menu["ui"]["title"] = self createText("default", 1.5, 4, "", "CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, (self.menu["YQM"] - 30), 1, (1, 1, 1));
-
-    self.menu["ui"]["QMScroller"][0] = self createRectangle("CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, self.menu["YQM"], 210, 18, (1, 1, 1), 3, 0.2, "white");
-    self.menu["ui"]["QMScroller"][1] = self createRectangle("CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, self.menu["YQM"], 210, 20, self.menu["Main_Color"], 1, 1, "white");
-
-    self.menuState["isInQuickMenu"] = true;
-
-    self drawText();
-}
-
-closeQuickMenu()
-{
-    if(!self isInQuickMenu())
-        return;
-    
-    self endon("disconnect");
-    
-    self DestroyOpts();
-    destroyAll(self.menu["ui"]);
-    
-    self.menuState["isInQuickMenu"] = undefined;
-}
-
 SoftLockMenu(bgHeight)
 {
     if(!self hasMenu() || self hasMenu() && !self isInMenu())
@@ -521,14 +522,20 @@ SoftLockMenu(bgHeight)
     if(isDefined(self.menu["ui"]["background"]))
         self.menu["ui"]["background"] SetShaderValues(undefined, undefined, bgHeight);
     
+    if(isDefined(self.menu["ui"]["nautabackground"]))
+        self.menu["ui"]["nautabackground"] SetShaderValues(undefined, undefined, (40 + bgHeight) + 20);
+    
     if(isDefined(self.menu["ui"]["outlines"][0]))
-        self.menu["ui"]["outlines"][0] SetShaderValues(undefined, undefined, bgHeight);
+        self.menu["ui"]["outlines"][0] SetShaderValues(undefined, undefined, (self.menu["MenuStyle"] == "Nautaremake") ? (40 + bgHeight) + 20 : bgHeight);
     
     if(isDefined(self.menu["ui"]["outlines"][1]))
-        self.menu["ui"]["outlines"][1] SetShaderValues(undefined, undefined, bgHeight);
-    
+        self.menu["ui"]["outlines"][1] SetShaderValues(undefined, undefined, (self.menu["MenuStyle"] == "Nautaremake") ? (40 + bgHeight) + 20 : bgHeight);
+
     if(isDefined(self.menu["ui"]["outlines"][3]))
         self.menu["ui"]["outlines"][3].y = (self.menu["Y"] + (bgHeight - 1));
+
+    if(isDefined(self.menu["ui"]["outlines"][5]))
+        self.menu["ui"]["outlines"][5].y = (self.menu["Y"] + (bgHeight - 1)) + 20;
 }
 
 SoftUnlockMenu()
@@ -551,10 +558,31 @@ SoftUnlockMenu()
     self RefreshMenu();
 }
 
+SetMenuTitle(title)
+{
+    self endon("disconnect");
+
+    if(!isDefined(self.menu["ui"]["title"]))
+        return;
+    
+    if(!isDefined(title))
+        title = self.menu["items"][self getCurrent()].title;
+    
+    self.menu["ui"]["title"] SetTextString(title);
+
+    if(self isInQuickMenu())
+    {
+        self.menu["ui"]["bannerQM"] SetShaderValues(undefined, (self.menu["ui"]["title"] GetTextWidth() - 8), undefined);
+        self.menu["ui"]["banner2QM"] SetShaderValues(undefined, (self.menu["ui"]["bannerQM"].width - 2), undefined);
+    }
+}
+
 UpdateOptCount(showAnim)
 {
+    self endon("disconnect");
+
     height = (((self.menu["items"][self getCurrent()].name.size >= self.menu["MaxOptions"]) ? self.menu["MaxOptions"] : self.menu["items"][self getCurrent()].name.size) * 20);
-    hudElems = [self.menu["ui"]["background"], self.menu["ui"]["outlines"][0], self.menu["ui"]["outlines"][1]];
+    hudElems = [self.menu["ui"]["background"], self.menu["ui"]["nautabackground"], self.menu["ui"]["outlines"][0], self.menu["ui"]["outlines"][1]];
 
     if(isDefined(showAnim) && showAnim)
     {
@@ -575,37 +603,40 @@ UpdateOptCount(showAnim)
     {
         if(!isDefined(hud))
             continue;
+
+        value = (self.menu["MenuStyle"] == "Nautaremake" && hud != self.menu["ui"]["background"]) ? ((40 + (height + 9)) + 20) : (height + 9);
         
         if(isDefined(showAnim) && showAnim)
-            hud thread hudScaleOverTime(0.15, hud.width, (height + 9));
+            hud thread hudScaleOverTime(0.15, hud.width, value);
         else
-            hud SetShaderValues(undefined, undefined, (height + 9));
+            hud SetShaderValues(undefined, undefined, value);
     }
-    
+
     if(isDefined(self.menu["ui"]["outlines"][3]))
     {
         if(isDefined(showAnim) && showAnim)
+        {
             self.menu["ui"]["outlines"][3] thread hudMoveY((self.menu["Y"] + (height + 8)), 0.15);
+
+            if(isDefined(self.menu["ui"]["outlines"][5]))
+                self.menu["ui"]["outlines"][5] thread hudMoveY((self.menu["Y"] + (height + 8)) + 20, 0.15);
+            
+            wait 0.05;
+        }
         else
+        {
             self.menu["ui"]["outlines"][3].y = (self.menu["Y"] + (height + 8));
-    }
-}
 
-DestroyOpts()
-{
-    self endon("disconnect");
-    
-    hud = ["text", "BoolOpt", "BoolBack", "subMenu", "IntSlider", "StringSlider", "textQM", "QMBG"];
-
-    for(a = 0; a < hud.size; a++)
-    {
-        destroyAll(self.menu["ui"][hud[a]]);
-        self.menu["ui"][hud[a]] = [];
+            if(isDefined(self.menu["ui"]["outlines"][5]))
+                self.menu["ui"]["outlines"][5].y = (self.menu["Y"] + (height + 8)) + 20;
+        }
     }
 }
 
 RefreshMenu(menu, curs, force)
 {
+    self endon("disconnect");
+
     if(isDefined(menu) && !isDefined(curs) || !isDefined(menu) && isDefined(curs))
         return;
     
@@ -618,13 +649,13 @@ RefreshMenu(menu, curs, force)
             
             if(player getCurrent() == menu || self != player && player PlayerHasOption(self, menu, curs))
                 if(isDefined(player.menu["ui"]["text"][curs]) || player == self && player getCurrent() == menu && (isDefined(player.menu["ui"]["text"][curs]) || isDefined(self.menu["ui"]["textQM"][curs])) || self != player && player PlayerHasOption(self, menu, curs) || isDefined(force) && force)
-                    player drawText();
+                    player thread drawText();
         }
     }
     else
     {
         if(isDefined(self) && self hasMenu() && self isInMenu(true) && !isDefined(self.menu["DisableMenuControls"]))
-            self drawText(); //if menu or cursor are undefined, it will only refresh the menu for the player it was called on
+            self thread drawText(); //if menu or cursor are undefined, it will only refresh the menu for the player it was called on
     }
 }
 
@@ -638,4 +669,17 @@ PlayerHasOption(source, menu, curs)
                 return true;
 
     return false;
+}
+
+DestroyOpts()
+{
+    self endon("disconnect");
+    
+    hud = ["text", "BoolOpt", "BoolBack", "subMenu", "IntSlider", "StringSlider", "textQM", "QMBG"];
+
+    for(a = 0; a < hud.size; a++)
+    {
+        destroyAll(self.menu["ui"][hud[a]]);
+        self.menu["ui"][hud[a]] = [];
+    }
 }

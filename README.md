@@ -1,6 +1,6 @@
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.1.7.5
+    Version:              1.1.8.0
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
@@ -10,7 +10,7 @@
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
     Discord:            cf4_99
-    Apparition Discord: https://discord.gg/WMQpMjHe
+    Apparition Discord: https://discord.gg/NExXdMhDnW
     YouTube:            https://www.youtube.com/c/CF499
     MXT Server:         https://discord.gg/MXT
 
@@ -87,6 +87,41 @@
     Discord: cf4_99
 
 ## Changelog
+
+<details>
+    <summary>
+        Version 1.1.8.0
+    </summary>
+
+    - Improved: Menu Backend
+    - Improved: Menu Open/Close Animations
+    - Improved: Light Protector(Major Improvements)
+
+    - Changed: Submenus Now Run On Client XUIDs rather than Entity Number
+    - Changed: Camo Selector From Slider To Submenu. It Now Lists By Proper Display Names Rather Than Index
+    - Changed: Drop Camera Is Now In Fun Scripts
+    - Changed: Silent Aimbot Now Only Runs While The Player Is Firing Instead Of While The Player Is Holding Down Their Trigger
+
+    - Added: Client Disconnect Handler. If You're Viewing A Player's Options When They Disconnect, You Will Be Kicked Back To The Player Menu.
+    - Added: Menu Style: "Nautaremake" (Remake Of ItsFebiven's 'Nautalus Design)
+    - Added: Ice Skating To Fun Scripts
+    - Added: All Client God Mode Option
+    - Added: Show Tris Lines
+    - Added: tag_eye To Bone Tags List
+    - Added: A Welcome Message When A Player Is Given The Menu, Or When The Host Spawns
+    - Added: Disable Player Hud
+
+    - Fixed: Samantha Says Part 2 Bug On Moon. It Will Work Now, But Won't Let You Use It Until You Get To That Step In The EE.
+    - Fixed: Issue When Loading Saved Menu Design Color
+    - Fixed: Crashing Issue With Cod Jumper
+    - Fixed: Issue With Rapid Fire Not Turning Off Correctly
+    - Fixed: Force Field Not Killing All AI Types
+
+    - Removed: XP Multiplier
+    - Removed: Menu Blur Option
+    - Removed: Leftover Debug Prints In Shoot To Revive
+
+</details>
 
 <details>
     <summary>

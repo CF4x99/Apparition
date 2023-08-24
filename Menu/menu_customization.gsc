@@ -3,7 +3,10 @@ MenuTheme(color)
     self notify("EndSmoothRainbowTheme");
     self.SmoothRainbowTheme = undefined;
     
-    hud = ["scroller", "outlines"];
+    hud = ["outlines"];
+
+    if(self.menu["MenuStyle"] != "Nautaremake")
+        hud[hud.size] = "scroller";
 
     for(a = 0; a < hud.size; a++)
     {
@@ -22,9 +25,11 @@ MenuTheme(color)
         }
     }
     
+    wHud = (self.menu["MenuStyle"] == "Nautaremake") ? "BoolBack" : "BoolOpt";
+        
     for(a = 0; a < self.menu["items"][self getCurrent()].name.size; a++)
-        if(isDefined(self.menu["ui"]["BoolOpt"][a]) && isDefined(self.menu_B[self getCurrent()][a]) && self.menu_B[self getCurrent()][a] && self.menu["ToggleStyle"] != "Text")
-            self.menu["ui"]["BoolOpt"][a] hudFadeColor(color, 1);
+        if(isDefined(self.menu["ui"][wHud][a]) && (isDefined(self.menu_B[self getCurrent()][a]) && self.menu_B[self getCurrent()][a] || self.menu["MenuStyle"] == "Nautaremake") && self.menu["ToggleStyle"] != "Text")
+            self.menu["ui"][wHud][a].color hudFadeColor(color, 1);
     
     self.menu["Main_Color"] = color;
     self SaveMenuTheme();
@@ -43,7 +48,10 @@ SmoothRainbowTheme()
     
     while(isDefined(self.SmoothRainbowTheme))
     {
-        hud = ["outlines", "scroller", "bannerQM"];
+        hud = ["outlines", "bannerQM"];
+
+        if(self.menu["MenuStyle"] != "Nautaremake")
+            hud[hud.size] = "scroller";
 
         for(a = 0; a < hud.size; a++)
         {
@@ -65,9 +73,11 @@ SmoothRainbowTheme()
         if(isDefined(self.menu["ui"]["QMScroller"][1]))
             self.menu["ui"]["QMScroller"][1].color = level.RGBFadeColor;
         
+        wHud = (self.menu["MenuStyle"] == "Nautaremake") ? "BoolBack" : "BoolOpt";
+        
         for(a = 0; a < self.menu["items"][self getCurrent()].name.size; a++)
-            if(isDefined(self.menu["ui"]["BoolOpt"][a]) && isDefined(self.menu_B[self getCurrent()][a]) && self.menu_B[self getCurrent()][a] && self.menu["ToggleStyle"] != "Text")
-                self.menu["ui"]["BoolOpt"][a].color = level.RGBFadeColor;
+            if(isDefined(self.menu["ui"][wHud][a]) && (isDefined(self.menu_B[self getCurrent()][a]) && self.menu_B[self getCurrent()][a] || self.menu["MenuStyle"] == "Nautaremake") && self.menu["ToggleStyle"] != "Text")
+                self.menu["ui"][wHud][a].color = level.RGBFadeColor;
         
         self.menu["Main_Color"] = level.RGBFadeColor;
         
@@ -87,17 +97,6 @@ MenuMaxOptions(max)
     self.menu["MaxOptions"] = max;
     self RefreshMenu();
     self SaveMenuTheme();
-}
-
-MenuBlur()
-{
-    self.menu["MenuBlur"] = isDefined(self.menu["MenuBlur"]) ? undefined : true;
-    self SetBlur(isDefined(self.menu["MenuBlur"]) ? self.menu["MenuBlurValue"] : 0, 0.1);
-}
-
-MenuBlurAmount(value)
-{
-    self.menu["MenuBlurValue"] = value;
 }
 
 DisableMenuInstructions()
@@ -125,12 +124,40 @@ DisableMenuAnimations()
     self SaveMenuTheme();
 }
 
+MenuStyle(style)
+{
+    if(self.menu["MenuStyle"] == style)
+        return;
+    
+    self closeMenu1();
+
+    self.menu["MenuStyle"] = style;
+
+    switch(style)
+    {
+        case level.menuName:
+            self.menu["Y"] = -150;
+            self.menu["MaxOptions"] = 12;
+            break;
+        
+        case "Nautaremake":
+            self.menu["Y"] = -100;
+            self.menu["MaxOptions"] = 9;
+            break;
+        
+        default:
+            break;
+    }
+
+    self openMenu1();
+    self SaveMenuTheme();
+}
+
 SaveMenuTheme()
 {
-    design = level.menuName + ";" + self.menu["ToggleStyle"] + ";" + self.menu["MaxOptions"] + ";";
+    design = self.menu["MenuStyle"] + ";" + self.menu["ToggleStyle"] + ";" + self.menu["MaxOptions"] + ";" + self.menu["Y"] + ";";
     design += isDefined(self.menu["DisableMenuInstructions"]) ? "Disable;" : "Enable;";
     design += isDefined(self.menu["LargeCursor"]) ? "Enable;" : "Disable;";
-    design += isDefined(self.menu["MenuBlur"]) ? "Enable;" : "Disable;";
     design += isDefined(self.menu["DisableQM"]) ? "Enable;" : "Disable;";
     design += isDefined(self.menu["DisableMenuAnimations"]) ? "Enable;" : "Disable;";
     design += isDefined(self.SmoothRainbowTheme) ? "Rainbow" : self.menu["Main_Color"];
@@ -140,24 +167,23 @@ SaveMenuTheme()
 
 LoadMenuVars() //Pre-Set Menu Variables.
 {
+    self.menu["MenuStyle"] = level.menuName;
+
     self.menu["XQM"] = -1;
     self.menu["YQM"] = -161;
 
     self.menu["X"] = -301;
-    self.menu["Y"] = -150;
+    self.menu["Y"] = (self.menu["MenuStyle"] == "Nautaremake") ? -100 : -150;
 
-    self.menu["MaxOptions"] = 12;
+    self.menu["MaxOptions"] = (self.menu["MenuStyle"] == "Nautaremake") ? 9 : 12;
     self.menu["maxOptionsQM"] = 15;
     self.menu["ToggleStyle"] = "Boxes";
     self.menu["Main_Color"] = divideColor(255, 0, 0); //Default theme color
-    self.menu["MenuBlurValue"] = 2.5; //Amount of blur applied when menu blur is enabled
+    self.menu["Alt_Color"] = divideColor(45, 45, 45);
     self.menu["MenuWidth"] = 210;
 
     //Change 'undefined' to 'true' if you want to disable the instructions by default
     self.menu["DisableMenuInstructions"] = undefined;
-
-    //Change 'undefined' to 'true' if you want to enable menu blur by default
-    self.menu["MenuBlur"] = undefined;
 
     //Change 'undefined' to 'true' if you want to disable the quick menu by default
     self.menu["DisableQM"] = undefined;
@@ -167,15 +193,17 @@ LoadMenuVars() //Pre-Set Menu Variables.
 
     //Loading Saved Menu Variables
     dvar = GetDvarString("MenuTheme" + self GetXUID());
-    dvarSep = StrTok(dvar, ";");
     
-    if(dvar != "" && dvarSep[0] == level.menuName)
+    if(dvar != "")
     {
+        dvarSep = StrTok(dvar, ";");
+
+        self.menu["MenuStyle"] = dvarSep[0];
         self.menu["ToggleStyle"] = dvarSep[1];
         self.menu["MaxOptions"] = Int(dvarSep[2]);
-        self.menu["DisableMenuInstructions"] = (dvarSep[3] == "Disable") ? true : undefined;
-        self.menu["LargeCursor"] = (dvarSep[4] == "Enable") ? true : undefined;
-        self.menu["MenuBlur"] = (dvarSep[5] == "Enable") ? true : undefined;
+        self.menu["Y"] = Int(dvarSep[3]);
+        self.menu["DisableMenuInstructions"] = (dvarSep[4] == "Disable") ? true : undefined;
+        self.menu["LargeCursor"] = (dvarSep[5] == "Enable") ? true : undefined;
         self.menu["DisableQM"] = (dvarSep[6] == "Enable") ? true : undefined;
         self.menu["DisableMenuAnimations"] = (dvarSep[7] == "Enable") ? true : undefined;
         

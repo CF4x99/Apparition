@@ -795,7 +795,6 @@ PlayerShootToRevive()
                     continue;
                 
                 self thread PlayerShootRevive(player);
-                self iPrintlnBold("tracePosition");
             }
         }
         else
@@ -804,7 +803,6 @@ PlayerShootToRevive()
                 continue;
             
             self thread PlayerShootRevive(traceEntity);
-            self iPrintlnBold("traceEntity");
         }
     }
 }
@@ -818,11 +816,6 @@ PlayerShootRevive(player)
         self zombie_utility::show_hit_marker();
 
     self PlayerRevive(player);
-}
-
-ServerXPMultiplier(multiplier)
-{
-    level.ServerXPMultiplier = multiplier;
 }
 
 SetPackCamoIndex(index)

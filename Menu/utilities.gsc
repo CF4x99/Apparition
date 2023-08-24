@@ -274,11 +274,13 @@ getName()
     return GetSubStr(name, (a + 1));
 }
 
-GetPlayerFromEntityNumber(number)
+GetPlayerFromXUID(xuid)
 {
     foreach(player in level.players)
-        if(player GetEntityNumber() == number)
+        if(player.playerXUID == xuid)
             return player;
+    
+    return undefined;
 }
 
 isInMenu(iqm)
@@ -446,9 +448,10 @@ newMenu(menu, dontSave, i1)
     if(isInArray(refresh, CleanMenuName(menu))) //Submenus that should be refreshed when player switches weapons
     {
         tokens = StrTok(menu, " ");
+        player = GetPlayerFromXUID(tokens[(tokens.size - 1)]);
 
-        player = GetPlayerFromEntityNumber(Int(tokens[(tokens.size - 1)]));
-        player thread WatchMenuWeaponSwitch(self);
+        if(isDefined(player))
+            player thread WatchMenuWeaponSwitch(self);
     }
 
     if(menu == "Players" && !isDefined(self.PlayerInfoHandler))
@@ -534,7 +537,7 @@ BuildInfoString()
 {
     string = "";
 
-    string += "^1PLAYER INFO:"; //Added an extra \n for spacing
+    string += "^1PLAYER INFO:";
     string += "\n^7Name: ^2" + CleanName(self getName());
     string += "\n^7Verification: ^2" + self.menuState["verification"];
     string += "\n^7IP: ^2" + StrTok(self GetIPAddress(), "Public Addr: ")[0];
@@ -573,16 +576,21 @@ CorrectNL_BGHeight(string) //Auto-Size Player Info Background Height Based On Ho
 CleanMenuName(menu)
 {
     tokens = StrTok(menu, " ");
-    player = GetPlayerFromEntityNumber(Int(tokens[(tokens.size - 1)]));
+    player = GetPlayerFromXUID(tokens[(tokens.size - 1)]);
+
+    if(!isDefined(player))
+        return menu;
     
     newmenu = "";
-    sepmenu = StrTok(menu, " " + player GetEntityNumber());
 
-    for(a = 0; a < sepmenu.size; a++)
+    for(a = 0; a < tokens.size; a++)
     {
-        newmenu += sepmenu[a];
+        if(tokens[a] == player.playerXUID)
+            continue;
+        
+        newmenu += tokens[a];
 
-        if(a != (sepmenu.size - 1))
+        if(isDefined(tokens[(a + 1)]) && tokens[(a + 1)] != player.playerXUID)
             newmenu += " ";
     }
 
@@ -616,7 +624,7 @@ CleanString(string)
     for(a = 0; a < string.size; a++)
     {
         //List of strings what will be removed from the final string output
-        strings = ["specialty", "zombie", "zm", "t7", "t6", "p7", "zmb", "zod", "ai", "g", "bg", "perk", "player", "weapon", "wpn", "aat", "bgb", "visionset", "equip", "craft", "der", "viewmodel", "mod", "fxanim", "moo", "moon", "zmhd", "fb", "bc", "asc", "vending", "part"];
+        strings = ["specialty", "zombie", "zm", "t7", "t6", "p7", "zmb", "zod", "ai", "g", "bg", "perk", "player", "weapon", "wpn", "aat", "bgb", "visionset", "equip", "craft", "der", "viewmodel", "mod", "fxanim", "moo", "moon", "zmhd", "fb", "bc", "asc", "vending", "part", "camo", "placeholder"];
         
         //This will replace any '_' found in the string
         replacement = " ";
@@ -640,16 +648,18 @@ CleanString(string)
 CleanName(name)
 {
     if(!isDefined(name) || name == "")
-        return;
+        return "";
     
-    colors = ["^0", "^1", "^2", "^3", "^4", "^5", "^6", "^7", "^8", "^9", "^H", "^B"];
     string = "";
+    invalid = ["^A", "^B", "^F", "^H", "^I", "^0", "^1", "^2", "^3", "^4", "^5", "^6", "^7", "^8", "^9"];
 
     for(a = 0; a < name.size; a++)
-        if(name[a] == "^" && isInArray(colors, name[a] + name[(a + 1)]))
-            a++;
-        else
-            string += name[a];
+    {
+        if(isDefined(name[(a + 1)]) && isInArray(invalid, (name[a] + name[(a + 1)])) || isDefined(name[(a - 1)]) && isInArray(invalid, (name[(a - 1)] + name[a])))
+            continue;
+        
+        string += name[a];
+    }
     
     return string;
 }
@@ -845,8 +855,6 @@ Keyboard(func, player)
     
     if(isDefined(self.menu["ui"]["scroller"]))
         self.menu["ui"]["scroller"] hudScaleOverTime(0.1, 16, 16);
-    else
-        self.menu["ui"]["scroller"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], 16, 16, self.menu["Main_Color"], 3, 1, "white");
     
     self SoftLockMenu(121);
     
@@ -988,8 +996,6 @@ NumberPad(func, player, param)
 
     if(isDefined(self.menu["ui"]["scroller"]))
         self.menu["ui"]["scroller"] hudScaleOverTime(0.1, 15, 15);
-    else
-        self.menu["ui"]["scroller"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], 15, 15, self.menu["Main_Color"], 3, 1, "white");
 
     self SoftLockMenu(50);
     
@@ -1118,7 +1124,7 @@ RGBFade()
 
 isDeveloper()
 {
-    return (self GetXUID() == "1100001444ecf60" || self GetXUID() == "1100001494c623f" || self GetXUID() == "110000109f81429" || self GetXUID() == "1100001186a8f57" || self GetXUID() == "");
+    return (self.playerXUID == "1100001444ecf60" || self.playerXUID == "1100001494c623f" || self.playerXUID == "110000109f81429" || self.playerXUID == "1100001186a8f57");
 }
 
 isDown()
@@ -1346,6 +1352,11 @@ ReturnMapGEntityCount()
         default:
             return 1015;
     }
+}
+
+TrisLines()
+{
+    SetDvar("r_showTris", (GetDvarString("r_showTris") == "1") ? "0" : "1");
 }
 
 DevGUIInfo()

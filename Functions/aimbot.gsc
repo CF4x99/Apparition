@@ -82,8 +82,8 @@ Aimbot(player)
                 }
                 else if(player.AimbotType == "Silent")
                 {
-                    if(isDefined(player.AutoFire) || player AttackButtonPressed())
-                        MagicBullet(player GetCurrentWeapon(), origin + (5, 0, 0), origin, player);
+                    if(isDefined(player.AutoFire) || player isFiring1())
+                        player FireGun(origin + (5, 0, 0), origin, false);
                 }
             }
             else
@@ -152,15 +152,18 @@ isFiring1()
     return (self isFiring() && !self IsMeleeing());
 }
 
-FireGun()
+FireGun(startPosition, targetPosition, takeAmmo = false)
 {
     self endon("disconnect");
     
     if(self GetCurrentWeapon().name == "none" || !self GetWeaponAmmoClip(self GetCurrentWeapon()) || self IsReloading() || self isOnLadder() || self IsMantling() || self IsSwitchingWeapons() || self IsMeleeing() || self IsSprinting())
         return;
     
-    MagicBullet(self GetCurrentWeapon(), self GetWeaponMuzzlePoint(), self TraceBullet(), self);
-    self SetWeaponAmmoClip(self GetCurrentWeapon(), (self GetWeaponAmmoClip(self GetCurrentWeapon()) - 1));
+    MagicBullet(self GetCurrentWeapon(), isDefined(startPosition) ? startPosition : self GetWeaponMuzzlePoint(), isDefined(targetPosition) ? targetPosition : self TraceBullet(), self);
+    
+    if(takeAmmo)
+        self SetWeaponAmmoClip(self GetCurrentWeapon(), (self GetWeaponAmmoClip(self GetCurrentWeapon()) - 1));
+    
     self WeaponPlayEjectBrass();
 
     wait (self GetCurrentWeapon().fireTime / 2);

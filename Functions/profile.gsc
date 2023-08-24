@@ -245,6 +245,8 @@ PlayerBoolStat(stat, player)
 
 CompleteDailyChallenges(player)
 {
+    player endon("disconnect");
+    
     for(a = 768; a < 809; a++)
         player AddPlayerStat(TableLookup("gamedata/stats/zm/statsmilestones4.csv", 0, a, 4), Int(TableLookup("gamedata/stats/zm/statsmilestones4.csv", 0, a, 2)));
 

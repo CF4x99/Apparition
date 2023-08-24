@@ -1,5 +1,7 @@
 Godmode(player)
 {
+    player endon("disconnect");
+
     if(isDefined(player.DemiGod))
         player DemiGod(player);
     
@@ -7,8 +9,6 @@ Godmode(player)
 
     if(isDefined(player.godmode))
     {
-        player endon("disconnect");
-        
         while(isDefined(player.godmode))
         {
             player EnableInvulnerability();
@@ -30,6 +30,8 @@ DemiGod(player)
 
 Noclip1(player)
 {
+    player endon("disconnect");
+
     if(!isDefined(player.Noclip) && player isPlayerLinked())
         return self iPrintlnBold("^1ERROR: ^7Player Is Linked To An Entity");
     
@@ -37,8 +39,6 @@ Noclip1(player)
     
     if(isDefined(player.Noclip))
     {
-        player endon("disconnect");
-
         if(player hasMenu() && player isInMenu(true))
             player closeMenu1();
 
@@ -83,6 +83,8 @@ Noclip1(player)
 
 BindNoclip(player)
 {
+    player endon("disconnect");
+
     if(isDefined(player.Jetpack) && !isDefined(player.NoclipBind))
         return self iPrintlnBold("^1ERROR: ^7Player Has Jetpack Enabled");
     
@@ -91,8 +93,6 @@ BindNoclip(player)
     
     player.NoclipBind = isDefined(player.NoclipBind) ? undefined : true;
     
-    player endon("disconnect");
-
     while(isDefined(player.NoclipBind))
     {
         if(player FragButtonPressed() && !isDefined(player.menu["DisableMenuControls"]))
@@ -107,6 +107,8 @@ BindNoclip(player)
 
 UFOMode(player)
 {
+    player endon("disconnect");
+
     if(!isDefined(player.UFOMode) && player isPlayerLinked())
         return self iPrintlnBold("^1ERROR: ^7Player Is Linked To An Entity");
     
@@ -114,8 +116,6 @@ UFOMode(player)
      
     if(isDefined(player.UFOMode))
     {
-        player endon("disconnect");
-
         if(player hasMenu() && player isInMenu(true))
             player closeMenu1();
 
@@ -236,6 +236,8 @@ PlayerRetainPerks(player)
 {
     player._retain_perks = isDefined(player._retain_perks) ? undefined : true;
 
+    player endon("disconnect");
+
     if(!isDefined(player._retain_perks))
     {
         if(isDefined(player._retain_perks_array))
@@ -249,6 +251,8 @@ PlayerRetainPerks(player)
 
 GivePlayerPerk(perk, player)
 {
+    player endon("disconnect");
+
     if(player HasPerk(perk) || player zm_perks::has_perk_paused(perk))
         player notify(perk + "_stop");
     else
@@ -348,12 +352,11 @@ SetMovementSpeed(scale, player)
 {
     player notify("EndMoveSpeed");
     player endon("EndMoveSpeed");
+    player endon("disconnect");
     
     player.MovementSpeed = scale;
     player SetMoveSpeedScale(scale);
     
-    player endon("disconnect");
-
     while(player.MovementSpeed != 1)
     {
         player SetMoveSpeedScale(scale);
@@ -364,6 +367,8 @@ SetMovementSpeed(scale, player)
 
 PlayerClone(type, player)
 {
+    player endon("disconnect");
+
     switch(type)
     {
         case "Clone":
@@ -392,14 +397,14 @@ Invisibility(player)
 
 SaveAndLoad(player)
 {
+    player endon("disconnect");
+
     player.SaveAndLoad = isDefined(player.SaveAndLoad) ? undefined : true;
 
     if(isDefined(player.SaveAndLoad))
     {
         player iPrintlnBold("Press [{+actionslot 3}] To ^2Save Current Location");
         player iPrintlnBold("Press [{+actionslot 2}] To ^2Load Saved Location");
-
-        player endon("disconnect");
 
         while(isDefined(player.SaveAndLoad))
         {
@@ -421,13 +426,13 @@ SaveAndLoad(player)
 }
 
 NoTarget(player)
-{   
+{
+    player endon("disconnect");
+
     player.NoTarget = isDefined(player.NoTarget) ? undefined : true;
 
     if(isDefined(player.NoTarget))
     {
-        player endon("disconnect");
-
         while(isDefined(player.NoTarget))
         {
             player.ignoreme = true;
@@ -441,12 +446,12 @@ NoTarget(player)
 
 ReducedSpread(player)
 {
+    player endon("disconnect");
+
     player.ReducedSpread = isDefined(player.ReducedSpread) ? undefined : true;
 
     if(isDefined(player.ReducedSpread))
     {
-        player endon("disconnect");
-
         while(isDefined(player.ReducedSpread))
         {
             player SetSpreadOverride(1);
@@ -495,6 +500,8 @@ MultiJump(player)
 
 PlayerSetVision(vision, player)
 {
+    player endon("disconnect");
+
     if(vision == "Default")
         player UseServerVisionSet(false);
     else
@@ -557,6 +564,8 @@ GetVisualEffectState(effect)
 
 SetClientVisualEffects(effect, player)
 {
+    player endon("disconnect");
+
     type = GetVisualType(effect);
 
     if(effect == player.ClientVisualEffect)
@@ -593,6 +602,8 @@ SetClientVisualEffects(effect, player)
 
 ZombieCharms(color, player)
 {
+    player endon("disconnect");
+
     switch(color)
     {
         case "None":
@@ -628,8 +639,28 @@ NoExplosiveDamage(player)
     player.NoExplosiveDamage = isDefined(player.NoExplosiveDamage) ? undefined : true;
 }
 
+DisablePlayerHUD(player)
+{
+    player.DisablePlayerHUD = isDefined(player.DisablePlayerHUD) ? undefined : true;
+
+    player endon("disconnect");
+
+    if(isDefined(player.DisablePlayerHUD))
+    {
+        while(isDefined(player.DisablePlayerHUD))
+        {
+            player SetClientUIVisibilityFlag("hud_visible", 0);
+            wait 0.1;
+        }
+    }
+    else
+        player SetClientUIVisibilityFlag("hud_visible", 1);
+}
+
 SetCharacterModelIndex(index, player, disableEffect)
 {
+    player endon("disconnect");
+
     if(!isDefined(disableEffect) || !disableEffect)
     {
         PlayFX(level._effect["teleport_splash"], player.origin);
@@ -643,12 +674,12 @@ SetCharacterModelIndex(index, player, disableEffect)
 
 LoopCharacterModelIndex(player)
 {
+    player endon("disconnect");
+
     player.LoopCharacterModelIndex = isDefined(player.LoopCharacterModelIndex) ? undefined : true;
 
     if(isDefined(player.LoopCharacterModelIndex))
     {
-        player endon("disconnect");
-
         while(isDefined(player.LoopCharacterModelIndex))
         {
             SetCharacterModelIndex(RandomInt(9), player, true);
@@ -660,12 +691,12 @@ LoopCharacterModelIndex(player)
 
 UnlimitedSprint(player)
 {
+    player endon("disconnect");
+
     player.UnlimitedSprint = isDefined(player.UnlimitedSprint) ? undefined : true;
 
     if(isDefined(player.UnlimitedSprint))
     {
-        player endon("disconnect");
-        
         while(isDefined(player.UnlimitedSprint))
         {
             if(!player HasPerk("specialty_unlimitedsprint"))
@@ -680,12 +711,12 @@ UnlimitedSprint(player)
 
 ShootWhileSprinting(player)
 {
+    player endon("disconnect");
+
     player.ShootWhileSprinting = isDefined(player.ShootWhileSprinting) ? undefined : true;
 
     if(isDefined(player.ShootWhileSprinting))
     {
-        player endon("disconnect");
-        
         while(isDefined(player.ShootWhileSprinting))
         {
             if(!player HasPerk("specialty_sprintfire"))
@@ -700,6 +731,8 @@ ShootWhileSprinting(player)
 
 ServerRespawnPlayer(player)
 {
+    player endon("disconnect");
+
     if(player.sessionstate != "spectator")
         return;
     
@@ -725,6 +758,8 @@ ServerRespawnPlayer(player)
 
 PlayerRevive(player)
 {
+    player endon("disconnect");
+
     if(!player isDown())
         return;
 
@@ -733,6 +768,8 @@ PlayerRevive(player)
 
 PlayerDeath(type, player)
 {
+    player endon("disconnect");
+    
     if(isDefined(player.godmode))
         player Godmode(player);
 
@@ -771,7 +808,7 @@ PlayerDeath(type, player)
                 wait 0.25;
             }
             
-            if(player IsDown() && level.players.size > 1) //Not using else, because this needs to run whether the block above runs, or not
+            if(player IsDown() && level.players.size > 1) //This needs to run whether the block above runs, or not
             {
                 player notify("bled_out");
                 player zm_laststand::bleed_out();

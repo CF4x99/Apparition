@@ -42,6 +42,31 @@ AllPlayersTeleport(origin)
     }
 }
 
+AllClientsGodModeCheck()
+{
+    foreach(player in level.players)
+        if(!isDefined(player.godmode))
+            return false;
+    
+    return true;
+}
+
+AllClientsGodMode()
+{
+    if(!AllClientsGodModeCheck())
+    {
+        foreach(player in level.players)
+            if(!isDefined(player.godmode))
+                thread Godmode(player);
+    }
+    else
+    {
+        foreach(player in level.players)
+            if(isDefined(player.godmode))
+                thread Godmode(player);
+    }
+}
+
 MessageAllPLayers(msg)
 {
     foreach(player in level.players)

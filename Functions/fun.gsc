@@ -193,7 +193,7 @@ ForceField(player)
             if(isDefined(zombies[a]) && Distance(player.origin, zombies[a].origin) <= player.ForceFieldSize && IsAlive(zombies[a]) && zombies[a] DamageConeTrace(player GetEye(), player) > 0.1)
             {
                 zombies[a].ZombieFling = true;
-                zombies[a] DoDamage((zombies[a].health + 666), player.origin, player);
+                zombies[a] DoDamage((zombies[a].health + 666), player.origin);
             }
 
         wait 0.05;
@@ -298,37 +298,86 @@ LightProtector(player)
     if(isDefined(player.LightProtector))
     {
         player endon("disconnect");
+        player endon("EndLightProtector");
 
         player.LightProtect = SpawnScriptModel(player GetTagOrigin("j_head") + (0, 0, 45), "tag_origin");
-        PlayFXOnTag(level._effect["powerup_on"], player.LightProtect, "tag_origin");
 
-        while(isDefined(player.LightProtector))
+        if(isDefined(player.LightProtect))
+            PlayFXOnTag(level._effect["powerup_on"], player.LightProtect, "tag_origin");
+
+        while(isDefined(player.LightProtector) && isDefined(player.LightProtect))
         {
-            distance = 500;
-            target = player GetLightProtectorTarget(distance);
-
             player.LightProtect MoveTo(player GetTagOrigin("j_head") + (0, 0, 45), 0.1);
+            target = player GetLightProtectorTarget(500);
             
-            if(target DamageConeTrace(player GetEye(), player) >= 0.01 && Distance(player.origin, target.origin) <= distance)
-            {
-                time = CalcDistance(1100, player.LightProtect.origin, target GetTagOrigin("j_head"));
-                player.LightProtect MoveTo(target GetTagOrigin("j_head"), time);
-                wait time;
-
-                target DoDamage(target.health + 999, (0, 0, 0), player);
-                wait 0.1;
-
-                time = CalcDistance(1100, player.LightProtect.origin, player GetTagOrigin("j_head") + (0, 0, 45));
-                player.LightProtect MoveTo(player GetTagOrigin("j_head") + (0, 0, 45), time);
-
-                wait time;
-            }
+            if(isDefined(target))
+                player LightProtectorMoveToTarget(target);
             
             wait 0.1;
         }
+
+        //In the case that the entity crash protection deletes the light protector, but the light protector variable is still true
+        if(isDefined(player.LightProtector) && !isDefined(player.LightProtect))
+            thread LightProtector(player);
     }
     else
-        player.LightProtect delete();
+    {
+        player notify("EndLightProtector");
+
+        if(isDefined(player.LightProtect))
+            player.LightProtect delete();
+    }
+}
+
+LightProtectorMoveToTarget(target)
+{
+    if(!isDefined(target) || !IsAlive(target) || !isDefined(self.LightProtect))
+        return;
+    
+    self endon("disconnect");
+    self endon("EndLightProtector");
+
+    if(target DamageConeTrace(self GetEye(), self) >= 0.01 && Distance(self.origin, target.origin) <= 500)
+    {
+        origin = target GetTagOrigin("j_head");
+
+        if(!isDefined(origin)) //If the tag origin for the target tag can't be found, this will test the given tags to see if one can be used
+        {
+            tags = ["j_ankle_ri", "j_ankle_le", "pelvis", "j_mainroot", "j_spinelower", "j_spine4", "j_neck", "tag_body"];
+
+            for(a = 0; a < tags.size; a++)
+            {
+                test = target GetTagOrigin(tags[a]);
+
+                if(isDefined(test))
+                    origin = target GetTagOrigin(tags[a]);
+            }
+        }
+
+        time = CalcDistance(1100, self.LightProtect.origin, origin);
+        self.LightProtect MoveTo(origin, time);
+        wait time;
+
+        target.ZombieFling = true;
+        target DoDamage((target.health + 666), self.origin);
+        wait 0.1;
+
+        newTarget = self GetLightProtectorTarget(500);
+
+        if(isDefined(newTarget))
+        {
+            self thread LightProtectorMoveToTarget(target);
+            return;
+        }
+
+        if(!isDefined(self.LightProtect))
+            return;
+        
+        time = CalcDistance(1100, self.LightProtect.origin, self GetTagOrigin("j_head") + (0, 0, 45));
+        self.LightProtect MoveTo(self GetTagOrigin("j_head") + (0, 0, 45), time);
+
+        wait time;
+    }
 }
 
 GetLightProtectorTarget(distance)
@@ -354,10 +403,10 @@ SpecialMovements(player)
 {
     player.SpecialMovements = isDefined(player.SpecialMovements) ? undefined : true;
 
+    player endon("disconnect");
+
     if(isDefined(player.SpecialMovements))
     {
-        player endon("disconnect");
-
         while(isDefined(player.SpecialMovements))
         {
             player.b_wall_run_enabled = 1;
@@ -374,6 +423,70 @@ SpecialMovements(player)
 
         player AllowWallRun(0);
         player AllowDoubleJump(0);
+    }
+}
+
+PlayerMountCamera(tag, player)
+{
+    player endon("disconnect");
+
+    if(isDefined(player.SpecNade) && !isDefined(player.PlayerMountCamera))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Spec-Nade Is Enabled");
+    
+    if(isDefined(player.DropCamera) && !isDefined(player.PlayerMountCamera))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Drop Camera Is Enabled");
+    
+    if(tag != "Disable")
+    {
+        if(isDefined(player.PlayerMountCamera))
+            PlayerMountCamera("Disable", player);
+
+        player.PlayerMountCamera = true;
+
+        player.camlinker = SpawnScriptModel((player GetTagOrigin(tag) + (AnglesToForward(player GetPlayerAngles()) * 9)), "tag_origin");
+        player.camlinker LinkToBlendToTag(player, tag);
+
+        player CameraSetPosition(player.camlinker);
+        player CameraActivate(true);
+    }
+    else
+    {
+        player CameraActivate(false);
+        
+        if(isDefined(player.camlinker))
+            player.camlinker delete();
+        
+        player.PlayerMountCamera = undefined;
+    }
+}
+
+PlayerDropCamera(player)
+{
+    player endon("disconnect");
+    
+    if(isDefined(player.SpecNade) && !isDefined(player.DropCamera))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Spec-Nade Is Enabled");
+    
+    if(isDefined(player.PlayerMountCamera) && !isDefined(player.DropCamera))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Mount Camera Is Enabled");
+    
+    player.DropCamera = isDefined(player.DropCamera) ? undefined : true;
+
+    if(isDefined(player.DropCamera))
+    {
+        player.camlinker = SpawnScriptModel(player GetTagOrigin("j_head"), "tag_origin");
+
+        player CameraSetPosition(player.camlinker);
+        player CameraActivate(true);
+
+        player.camlinker Launch(VectorScale(AnglesToForward(self GetPlayerAngles()), 10));
+    }
+    else
+    {
+        player CameraActivate(false);
+
+        if(isDefined(player.camlinker))
+            player.camlinker delete();
     }
 }
 
@@ -415,6 +528,12 @@ AdventureTime(player)
 SendEarthquake(player)
 {
     Earthquake(1, 15, player.origin, 750);
+}
+
+IceSkating(player)
+{
+    player.IceSkating = isDefined(player.IceSkating) ? undefined : true;
+    player ForceSlick(isDefined(player.IceSkating));
 }
 
 ForgeMode(player)
@@ -518,11 +637,15 @@ SpecNade(player) //Credit to Extinct for his spec-nade
 
 SpecNadeFollow(camera)
 {
+    if(!isDefined(camera))
+        return;
+    
     self endon("death");
 
     while(isDefined(self))
     {
-        camera.origin = (self.origin + (0, 0, 10)) - AnglesToForward(camera.angles) * 50;
+        if(isDefined(camera))
+            camera.origin = ((self.origin + (0, 0, 10)) - (AnglesToForward(camera.angles) * 50));
 
         wait 0.05;
     }
@@ -553,6 +676,9 @@ NukeNades(player)
 
 NukeNade()
 {
+    if(!isDefined(self))
+        return;
+    
     nukeModel = SpawnScriptModel(self.origin, "p7_zm_power_up_nuke", self.angles);
 
     if(isDefined(nukeModel))
@@ -627,6 +753,8 @@ CodJumper(player)
     {
         player endon("disconnect");
 
+        player.codboxes = [];
+
         while(isDefined(player.CodJumper))
         {
             if(player isFiring1())
@@ -634,8 +762,6 @@ CodJumper(player)
                 if(isDefined(player.codboxes))
                     for(a = 0; a < player.codboxes.size; a++)
                         player.codboxes[a] delete();
-                else
-                    player.codboxes = [];
                 
                 color = Pow(2, RandomInt(3));
                 trace = BulletTrace(player GetWeaponMuzzlePoint(), player GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 0, player);
@@ -650,20 +776,9 @@ CodJumper(player)
                         {
                             player.codboxes[player.codboxes.size] = SpawnScriptModel(GetGroundPos(origin + ((a * 20), (b * 10), 0)), "p7_zm_power_up_max_ammo", (0, 0, 0));
                             player.codboxes[(player.codboxes.size - 1)] clientfield::set("powerup_fx", Int(color));
+
+                            player.codboxes[(player.codboxes.size - 1)] thread CodBoxHandler();
                         }
-                }
-            }
-            
-            if(isDefined(player.codboxes) && player.codboxes.size)
-            {
-                foreach(client in level.players)
-                {
-                    if(!Is_Alive(client) || client isDown() || isDefined(client.CodJumperLaunched))
-                        continue;
-                    
-                    for(a = 0; a < player.codboxes.size; a++)
-                        if(Distance(client.origin, player.codboxes[a].origin) < 15 && !isDefined(player.codboxes[a].isRotating))
-                            player.codboxes[a] thread CodJumperBoxTrigger(client);
                 }
             }
             
@@ -672,27 +787,30 @@ CodJumper(player)
     }
     else
     {
-        if(isDefined(player.codboxes))
-            for(a = 0; a < player.codboxes.size; a++)
-                player.codboxes[a] delete();
+        if(isDefined(player.codboxes) && player.codboxes.size)
+            foreach(box in player.codboxes)
+                if(isDefined(box))
+                    box delete();
     }
 }
 
-CodJumperBoxTrigger(player)
+CodBoxHandler()
 {
-    player endon("disconnect");
+    while(isDefined(self))
+    {
+        foreach(player in level.players)
+        {
+            if(!Is_Alive(player) || player isDown() || !player IsTouching(self))
+                continue;
+            
+            if(player IsOnGround())
+                player SetOrigin(player.origin + (0, 0, 5));
+            
+            player SetVelocity((player GetVelocity()[0], player GetVelocity()[1], 600));
+        }
 
-    player SetOrigin(player.origin + (0, 0, 5));
-    player SetVelocity((player GetVelocity()[0], player GetVelocity()[1], 600));
-
-    self RotateYaw(360, 0.5);
-    self.isRotating = true;
-    player.CodJumperLaunched = true;
-    
-    wait 0.5;
-
-    player.CodJumperLaunched = undefined;
-    self.isRotating = undefined;
+        wait 0.01;
+    }
 }
 
 ClusterGrenades(player)
@@ -708,7 +826,7 @@ ClusterGrenades(player)
         {
             player waittill("grenade_fire", grenade, weapon);
 
-            if(zm_utility::is_placeable_mine(weapon))
+            if(!isDefined(grenade) || !isDefined(weapon) || zm_utility::is_placeable_mine(weapon))
                 continue;
             
             while(isDefined(grenade))
@@ -858,10 +976,7 @@ GrapplingGun(player)
             surface = trace["surfacetype"];
 
             if(surface == "none" || surface == "default")
-            {
-                player iPrintlnBold("^1ERROR: ^7Invalid Surface");
                 continue;
-            }
             
             ent = SpawnScriptModel(player.origin, "tag_origin");
 
@@ -959,6 +1074,8 @@ GravityGunUnlinkAfter(time)
 
 DeleteGun(player)
 {
+    player endon("disconnect");
+
     if(isDefined(player.GravityGun))
         player GravityGun(player);
     
@@ -969,8 +1086,6 @@ DeleteGun(player)
 
     if(isDefined(player.DeleteGun))
     {
-        player endon("disconnect");
-
         player iPrintlnBold("Aim At Entities/Zombies To Delete Them");
         
         while(isDefined(player.DeleteGun))
@@ -991,22 +1106,28 @@ DeleteGun(player)
 RapidFire(player)
 {
     player.RapidFire = isDefined(player.RapidFire) ? undefined : true;
-
-    player endon("disconnect");
     
-    while(isDefined(player.RapidFire))
+    if(isDefined(player.RapidFire))
     {
-        player waittill("weapon_fired");
+        player endon("disconnect");
+        player endon("EndRapidFire");
 
-        weapon = player GetCurrentWeapon();
-
-        for(a = 0; a < 3; a++)
+        while(isDefined(player.RapidFire))
         {
-            MagicBullet(weapon, player GetWeaponMuzzlePoint(), BulletTrace(player GetWeaponMuzzlePoint(), player GetWeaponMuzzlePoint() + player GetWeaponForwardDir() * 100, 0, undefined)["position"] + (RandomFloatRange(-5, 5), RandomFloatRange(-5, 5), RandomFloatRange(-5, 5)), player);
+            player waittill("weapon_fired");
 
-            wait 0.05;
+            weapon = player GetCurrentWeapon();
+
+            for(a = 0; a < 3; a++)
+            {
+                MagicBullet(weapon, player GetWeaponMuzzlePoint(), BulletTrace(player GetWeaponMuzzlePoint(), player GetWeaponMuzzlePoint() + player GetWeaponForwardDir() * 100, 0, undefined)["position"] + (RandomFloatRange(-5, 5), RandomFloatRange(-5, 5), RandomFloatRange(-5, 5)), player);
+
+                wait 0.05;
+            }
         }
     }
+    else
+        player notify("EndRapidFire");
 }
 
 ShowHitmarkers(player)

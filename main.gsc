@@ -1,7 +1,7 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.1.7.5
+    Version:              1.1.8.0
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
     
@@ -11,7 +11,7 @@
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
     Discord:            cf4_99
-    Apparition Discord: https://discord.gg/WMQpMjHe
+    Apparition Discord: https://discord.gg/NExXdMhDnW
     YouTube:            https://www.youtube.com/c/CF499
     MXT Server:         https://discord.gg/MXT
 
@@ -179,9 +179,6 @@ init()
     
     level.custom_game_over_hud_elem = ::override_game_over_hud_elem;
     level.player_score_override = ::override_player_points;
-    level.xpmodifiercallback = ::override_server_xp_multiplier;
-
-    level thread override_player_events();
 }
 
 OnPlayerConnect()
@@ -193,6 +190,23 @@ OnPlayerConnect()
 onPlayerSpawned()
 {
     self endon("disconnect");
+
+    if(self IsHost() && !isDefined(self.OnPlayerSpawned))
+    {
+        level.player_out_of_playable_area_monitor = 0;
+        level.player_out_of_playable_area_monitor_callback = ::player_out_of_playable_area_monitor;
+
+        if(!isDefined(level.AntiEndGame))
+            self thread AntiEndGame();
+        
+        if(!isDefined(level.GEntityProtection))
+            self thread GEntityProtection();
+    }
+
+    if(!self IsHost())
+        self thread WatchForDisconnect();
+
+    level flag::wait_till("initial_blackscreen_passed");
 
     self AllowWallRun(0);
     self AllowDoubleJump(0);
@@ -214,15 +228,6 @@ onPlayerSpawned()
 
     if(self IsHost())
     {
-        level.player_out_of_playable_area_monitor = 0;
-        level.player_out_of_playable_area_monitor_callback = ::player_out_of_playable_area_monitor;
-
-        if(!isDefined(level.AntiEndGame))
-            self thread AntiEndGame();
-        
-        if(!isDefined(level.GEntityProtection))
-            self thread GEntityProtection();
-        
         level thread DefineMenuArrays();
 
         //If there is an unknown map detected(custom map) it will display this note to the host.
@@ -240,14 +245,12 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName = "Apparition";
-    level.menuVersion = "1.1.7.5";
+    level.menuVersion = "1.1.8.0";
 
     level.MenuStatus = ["None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer"];
 
     level.colorNames = ["Light Blue", "Raspberry", "Skyblue", "Pink", "Green", "Brown", "Blue", "Red", "Orange", "Purple", "Cyan", "Yellow", "Black", "White"];
     level.colors = [0, 110, 255, 135, 38, 87, 135, 206, 250, 255, 110, 255, 0, 255, 0, 101, 67, 33, 0, 0, 255, 255, 0, 0, 255, 128, 0, 100, 0, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255];
-
-    level.ServerXPMultiplier = 1;
 
     level thread RGBFade();
     level thread WatchForMaxAmmo();
@@ -397,7 +400,7 @@ DefineMenuArrays()
 
     level.savedJokerModel = level.chest_joker_model;
 
-    level.boneTags = "j_head;j_neck;j_spine4;j_spinelower;j_mainroot;pelvis;j_ankle_le;j_ankle_ri";
+    level.boneTags = "j_head;j_neck;tag_eye;j_spine4;j_spinelower;j_mainroot;j_ankle_le;j_ankle_ri";
     level.mapNames = ["zm_zod", "zm_factory", "zm_castle", "zm_island", "zm_stalingrad", "zm_genesis", "zm_prototype", "zm_asylum", "zm_sumpf", "zm_theater", "zm_cosmodrome", "zm_temple", "zm_moon", "zm_tomb"];
     
     SetDvar("wallRun_maxTimeMs_zm", 10000);
@@ -442,6 +445,8 @@ defineVariables()
     
     self.hud_count = 0;
     self.menu["currentMenu"] = "";
+
+    self.playerXUID = (!isDefined(self GetXUID()) || self GetXUID() == "" || self GetXUID() == "0") ? "" + self GetEntityNumber() : self GetXUID();
     
     //Menu Design Variables
     self LoadMenuVars();
@@ -454,6 +459,17 @@ ApparitionWelcomeMessage()
     self.WelcomeDisplay = true;
 
     self endon("disconnect");
+
+    if(!isDefined(self.welcomeMessage))
+    {
+        self.welcomeMessage = self createText("objective", 1.5, 1, "", "CENTER", "CENTER", 0, -75, 1, level.RGBFadeColor);
+
+        if(isDefined(self.welcomeMessage))
+        {
+            self.welcomeMessage thread SetTextFX("Welcome To Apparition Developed By CF4_99", 4);
+            self.welcomeMessage thread HudRGBFade();
+        }
+    }
     
     //Menu Instructions only display when the player is verified
     //Menu Instructions Can Be Disabled In Menu Customization
@@ -470,38 +486,50 @@ ApparitionWelcomeMessage()
                 self.MenuInstructions = self createText("default", 1.1, 2, "", "LEFT", "CENTER", (self.MenuInstructionsBG.x + 1), (self.MenuInstructionsBG.y + 6), 1, (1, 1, 1));
         }
 
-        if(isDefined(self.MenuInstructions) && isDefined(self.menu["DisableMenuInstructions"]) || !self hasMenu())
+        if(isDefined(self.MenuInstructions) && isDefined(self.menu["DisableMenuInstructions"]) || !self hasMenu() || !Is_Alive(self) && !isDefined(self.refreshInstructions))
         {
             self.MenuInstructions DestroyHud();
 
             if(isDefined(self.MenuInstructionsBG))
                 self.MenuInstructionsBG DestroyHud();
+            
+            if(!Is_Alive(self) && !isDefined(self.refreshInstructions))
+                self.refreshInstructions = true; //Instructions Need To Be Refreshed To Make Sure They Are Archived Correctly To Be Shown While Dead
         }
+
+        if(Is_Alive(self) && isDefined(self.refreshInstructions))
+            self.refreshInstructions = undefined;
         
         if(isDefined(self.MenuInstructions))
         {
-            if(!isDefined(self.menu["MenuInstructions"]))
+            if(Is_Alive(self))
             {
-                if(!self isInMenu(true))
+                if(!isDefined(self.menu["MenuInstructions"]))
                 {
-                    string = "[{+speed_throw}] & [{+melee}]: Open";
+                    if(!self isInMenu(true))
+                    {
+                        string = "[{+speed_throw}] & [{+melee}]: Open";
 
-                    if(!isDefined(self.menu["DisableQM"]))
-                        string += "\n[{+speed_throw}] & [{+smoke}]: Open Quick Menu";
+                        if(!isDefined(self.menu["DisableQM"]))
+                            string += "\n[{+speed_throw}] & [{+smoke}]: Open Quick Menu";
+                    }
+                    else
+                        string = "[{+attack}]/[{+speed_throw}]: Scroll\n[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right\n[{+activate}]: Select\n[{+melee}]: Go Back/Exit";
                 }
                 else
-                    string = "[{+attack}]/[{+speed_throw}]: Scroll\n[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right\n[{+activate}]: Select\n[{+melee}]: Go Back/Exit";
+                    string = self.menu["MenuInstructions"];
             }
             else
-                string = self.menu["MenuInstructions"];
+                string = !self isInMenu(true) ? "[{+speed_throw}] & [{+gostand}]: Open Quick Menu" : "[{+attack}]/[{+speed_throw}]: Scroll\n[{+activate}]: Select\n[{+gostand}]: Exit";
             
             if(self.MenuInstructions.text != string)
                 self.MenuInstructions SetTextString(string);
             
-            height = IsSubStr(string, "\n") ? (CorrectNL_BGHeight(string) - 6) : CorrectNL_BGHeight(string);
+            height = IsSubStr(string, "\n") ? (CorrectNL_BGHeight(string) - 5) : CorrectNL_BGHeight(string);
+            width = IsSubStr(string, "[{") ? (self.MenuInstructions GetTextWidth() - 100) : (self.MenuInstructions GetTextWidth() - 35);
             
-            if(self.MenuInstructionsBG.width != (self.MenuInstructions GetTextWidth() - 105) || self.MenuInstructionsBG.height != height)
-                self.MenuInstructionsBG SetShaderValues(undefined, (self.MenuInstructions GetTextWidth() - 105), height);
+            if(self.MenuInstructionsBG.width != width || self.MenuInstructionsBG.height != height)
+                self.MenuInstructionsBG SetShaderValues(undefined, width, height);
         }
 
         wait 0.01;
@@ -511,4 +539,32 @@ ApparitionWelcomeMessage()
 SetMenuInstructions(text)
 {
     self.menu["MenuInstructions"] = (!isDefined(text) || text == "") ? undefined : text;
+}
+
+WatchForDisconnect()
+{
+    xuid = self.playerXUID;
+
+    self waittill("disconnect");
+
+    foreach(player in level.players)
+    {
+        if(!player hasMenu())
+            continue;
+        
+        currentMenu = player getCurrent();
+
+        if(IsSubStr(currentMenu, " " + xuid))
+        {
+            player closeMenu1();
+
+            player.menuParent = [];
+            player.menu["currentMenu"] = "Players";
+            player.menuParent[player.menuParent.size] = "Main";
+
+            player openMenu1();
+
+            player iPrintlnBold("^1ERROR: ^7Player Has Disconnected");
+        }
+    }
 }

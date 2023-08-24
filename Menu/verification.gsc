@@ -22,15 +22,13 @@ setVerification(a, player, msg)
     
     player.menuState["verification"] = level.MenuStatus[a];
     player iPrintlnBold("Your Status Has Been Set To ^2" + player.menuState["verification"]);
-    player.menuParent = [];
-
+    
     if(player isInMenu(true))
         player closeMenu1();
     
+    player.menuParent = [];
     player.menu["currentMenu"] = "";
     player.menu["curs"]["Main"] = 0;
-    
-    player runMenuIndex("Main");
 
     if(player hasMenu())
         player thread ApparitionWelcomeMessage();

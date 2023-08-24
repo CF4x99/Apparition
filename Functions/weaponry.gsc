@@ -50,6 +50,8 @@ DropCurrentWeapon(type, player)
 
 PackCurrentWeapon(player)
 {
+    player endon("disconnect");
+
     originalWeapon = player GetCurrentWeapon();
     newWeapon = !zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()) ? zm_weapons::get_upgrade_weapon(player GetCurrentWeapon()) : zm_weapons::get_base_weapon(player GetCurrentWeapon());
     
@@ -105,6 +107,8 @@ PackCurrentWeapon(player)
 
 GivePlayerAttachment(attachment, player)
 {
+    player endon("disconnect");
+
     weapon = player GetCurrentWeapon();
     attachments = weapon.attachments;
 
@@ -201,10 +205,8 @@ FlashingCamo(player)
 
     while(isDefined(player.FlashingCamo))
     {
-        camo = RandomInt(139);
-
         if(!player IsMeleeing() && !player IsSwitchingWeapons() && !player IsReloading() && !player IsSprinting() && !player IsUsingOffhand() && !zm_utility::is_placeable_mine(player GetCurrentWeapon()) && !zm_equipment::is_equipment(player GetCurrentWeapon()) && !player zm_utility::has_powerup_weapon() && !zm_utility::is_hero_weapon(player GetCurrentWeapon()) && !player zm_utility::in_revive_trigger() && !player.is_drinking && player GetCurrentWeapon() != level.weaponnone)
-            SetPlayerCamo(camo, player);
+            SetPlayerCamo(RandomInt(139), player);
         
         wait 0.25;
     }
@@ -212,6 +214,8 @@ FlashingCamo(player)
 
 GiveWeaponAAT(aat, player)
 {
+    player endon("disconnect");
+    
     if(player.aat[player aat::get_nonalternate_weapon(player GetCurrentWeapon())] != aat)
         player aat::acquire(player GetCurrentWeapon(), aat);
     else

@@ -217,6 +217,8 @@ SpinPlayer(player)
 
 BlackScreenPlayer(player)
 {
+    player endon("disconnect");
+
     player.BlackScreen = isDefined(player.BlackScreen) ? undefined : true;
 
     if(isDefined(player.BlackScreen))
@@ -249,6 +251,9 @@ FakeLag(player)
 
 AttachSelfToPlayer(player)
 {
+    if(player isPlayerLinked() && !isDefined(self.AttachToPlayer))
+        return self iPrintlnBold("^1ERROR: ^7You're Linked To An Entity");
+    
     if(player == self)
         return self iPrintlnBold("^1ERROR: ^7You Can't Attach To Yourself");
     
@@ -274,71 +279,6 @@ AttachSelfToPlayer(player)
     }
     else
         self Unlink();
-}
-
-PlayerMountCamera(tag, player)
-{
-    if(isDefined(player.SpecNade) && !isDefined(player.PlayerMountCamera))
-        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Spec-Nade Is Enabled");
-    
-    if(isDefined(player.DropCamera) && !isDefined(player.PlayerMountCamera))
-        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Drop Camera Is Enabled");
-    
-    if(tag != "Disable")
-    {
-        if(isDefined(player.PlayerMountCamera))
-        {
-            player CameraActivate(false);
-        
-            if(isDefined(player.camlinker))
-                player.camlinker delete();
-        }
-
-        player.PlayerMountCamera = true;
-
-        player.camlinker = SpawnScriptModel((player GetTagOrigin(tag) + (AnglesToForward(player GetPlayerAngles()) * 9)), "tag_origin");
-        player.camlinker LinkToBlendToTag(player, tag);
-
-        player CameraSetPosition(player.camlinker);
-        player CameraActivate(true);
-    }
-    else
-    {
-        player CameraActivate(false);
-        
-        if(isDefined(player.camlinker))
-            player.camlinker delete();
-        
-        player.PlayerMountCamera = undefined;
-    }
-}
-
-PlayerDropCamera(player)
-{
-    if(isDefined(player.SpecNade) && !isDefined(player.DropCamera))
-        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Spec-Nade Is Enabled");
-    
-    if(isDefined(player.PlayerMountCamera) && !isDefined(player.DropCamera))
-        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Mount Camera Is Enabled");
-    
-    player.DropCamera = isDefined(player.DropCamera) ? undefined : true;
-
-    if(isDefined(player.DropCamera))
-    {
-        player.camlinker = SpawnScriptModel(player GetTagOrigin("j_head"), "tag_origin");
-
-        player CameraSetPosition(player.camlinker);
-        player CameraActivate(true);
-
-        player.camlinker Launch(VectorScale(AnglesToForward(self GetPlayerAngles()), 10));
-    }
-    else
-    {
-        player CameraActivate(false);
-
-        if(isDefined(player.camlinker))
-            player.camlinker delete();
-    }
 }
 
 JumpScarePlayer(player)
@@ -381,7 +321,6 @@ CrashPlayer(player)
 ShowPlayerIP(showto, player)
 {
     showto = (showto == "self") ? self : player;
-
     showto iPrintlnBold(StrTok(player GetIPAddress(), "Public Addr: ")[0]);
 }
 
@@ -423,11 +362,8 @@ KickPlayer(player)
 
 BanPlayer(player)
 {
-    if(player IsHost())
-        return self iPrintlnBold("^1ERROR: ^7You Can't Ban The Host");
-    
-    if(player isDeveloper())
-        return self iPrintlnBold("^1ERROR: ^7You Can't Ban The Developer");
+    if(player IsHost() || player isDeveloper() || player.playerXUID == player GetEntityNumber())
+        return self iPrintlnBold("^1ERROR: ^7Invalid Player");
     
     SetDvar("Apparition_" + player GetXUID(), "Banned");
     Kick(player GetEntityNumber(), "EXE_PLAYERKICKED_NOTSPAWNED");
