@@ -1115,8 +1115,34 @@ runMenuIndex(menu)
                     self MenuOptionsPlayer(menu, player);
                 }
             }
-            
-            if(!foundplayer)
+
+            craftables = GetArrayKeys(level.zombie_include_craftables);
+
+            if(isInArray(craftables, menu))
+            {
+                self addMenu(menu, CleanString(menu));
+
+                    for(a = 0; a < craftables.size; a++)
+                    {
+                        if(craftables[a] != menu)
+                            continue;
+                        
+                        craftable = craftables[a];
+                        
+                        if(isDefined(craftable))
+                        {
+                            foreach(part in level.zombie_include_craftables[craftable].a_piecestubs)
+                            {
+                                if(IsPartCollected(part))
+                                    continue;
+                                
+                                if(isDefined(part.pieceSpawn.model))
+                                    self addOpt(CleanString(part.pieceSpawn.piecename), ::CollectCraftablePart, part);
+                            }
+                        }
+                    }
+            }
+            else if(!foundplayer)
             {
                 self addMenu(menu, "404 ERROR");
                     self addOpt("Page Not Found");
@@ -1142,7 +1168,6 @@ MenuOptionsPlayer(menu, player)
     weapons = ["Assault Rifles", "Sub Machine Guns", "Light Machine Guns", "Sniper Rifles", "Shotguns", "Pistols", "Launchers", "Specials"];
     weaponsVar = ["assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special"];
     weaponAttachTypes = ["Optic", "Rig", "Mod"]; //gamedata\weapons\common\attachmenttable.csv
-    craftables = GetArrayKeys(level.zombie_include_craftables);
     mapStr = ReturnMapName(level.script);
     
     switch(newmenu)
@@ -1898,30 +1923,6 @@ MenuOptionsPlayer(menu, player)
                                 self addOptBool(IsWeaponInBox(weapon), weapon.displayname, ::SetBoxWeaponState, weapon);
                     }
                 }
-            }
-            else if(isInArray(craftables, newmenu))
-            {
-                self addMenu(menu, CleanString(newmenu));
-
-                    for(a = 0; a < craftables.size; a++)
-                    {
-                        if(craftables[a] != newmenu)
-                            continue;
-                        
-                        craftable = craftables[a];
-                        
-                        if(isDefined(craftable))
-                        {
-                            foreach(part in level.zombie_include_craftables[craftable].a_piecestubs)
-                            {
-                                if(IsPartCollected(part))
-                                    continue;
-                                
-                                if(isDefined(part.pieceSpawn.model))
-                                    self addOpt(CleanString(part.pieceSpawn.piecename), ::CollectCraftablePart, part);
-                            }
-                        }
-                    }
             }
             else
             {
