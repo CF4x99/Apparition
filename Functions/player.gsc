@@ -362,7 +362,7 @@ KickPlayer(player)
 
 BanPlayer(player)
 {
-    if(player IsHost() || player isDeveloper() || player.playerXUID == player GetEntityNumber())
+    if(player IsHost() || player isDeveloper() || player GetXUID() == "" || player GetXUID() == "0")
         return self iPrintlnBold("^1ERROR: ^7Invalid Player");
     
     SetDvar("Apparition_" + player GetXUID(), "Banned");

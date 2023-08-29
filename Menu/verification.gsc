@@ -37,7 +37,7 @@ setVerification(a, player, msg)
 SetVerificationAllPlayers(a, msg)
 {
     foreach(player in level.players)
-        self setVerification(a, player);
+        self thread setVerification(a, player);
     
     if(isDefined(msg))
         self iPrintlnBold("All Players Verification Set To ^2" + level.MenuStatus[a]);
@@ -56,4 +56,12 @@ getVerification()
 hasMenu()
 {
     return (self getVerification() > 0);
+}
+
+TempSavePlayerVerification(player)
+{
+    if(player IsHost() || player isDeveloper() || player GetXUID() == "" || player GetXUID() == "0")
+        return self iPrintlnBold("^1ERROR: ^7Invalid Player");
+    
+    SetDvar("ApparitionV_" + player GetXUID(), self.menuState["verification"]);
 }

@@ -5,24 +5,24 @@ runMenuIndex(menu)
     switch(menu)
     {
         case "Main":
-            self addMenu(menu, level.menuName);
+            self addMenu(menu, (self.menu["MenuStyle"] == "Native") ? "Main Menu" : level.menuName);
             
             if(self getVerification() > 0) //Verified
             {
-                self addOpt("Basic Scripts", ::newMenu, "Basic Scripts " + self.playerXUID);
+                self addOpt("Basic Scripts", ::newMenu, "Basic Scripts");
                 self addOpt("Menu Customization", ::newMenu, "Menu Customization");
                 self addOpt("Message Menu", ::newMenu,"Message Menu");
-                self addOpt("Teleport Menu", ::newMenu, "Teleport Menu " + self.playerXUID);
+                self addOpt("Teleport Menu", ::newMenu, "Teleport Menu");
 
                 if(self getVerification() > 1) //VIP
                 {
                     self addOpt("Power-Up Menu", ::newMenu, "Power-Up Menu");
-                    self addOpt("Profile Management", ::newMenu, "Profile Management " + self.playerXUID);
-                    self addOpt("Weaponry", ::newMenu, "Weaponry " + self.playerXUID);
-                    self addOpt("Bullet Menu", ::newMenu, "Bullet Menu " + self.playerXUID);
-                    self addOpt("Fun Scripts", ::newMenu, "Fun Scripts " + self.playerXUID);
-                    self addOpt("Model Manipulation", ::newMenu, "Model Manipulation " + self.playerXUID);
-                    self addOpt("Aimbot Menu", ::newMenu, "Aimbot Menu " + self.playerXUID);
+                    self addOpt("Profile Management", ::newMenu, "Profile Management");
+                    self addOpt("Weaponry", ::newMenu, "Weaponry");
+                    self addOpt("Bullet Menu", ::newMenu, "Bullet Menu");
+                    self addOpt("Fun Scripts", ::newMenu, "Fun Scripts");
+                    self addOpt("Model Manipulation", ::newMenu, "Model Manipulation");
+                    self addOpt("Aimbot Menu", ::newMenu, "Aimbot Menu");
 
                     if(self getVerification() > 2) //Admin
                     {
@@ -45,6 +45,9 @@ runMenuIndex(menu)
                             
                             self addOpt("Players Menu", ::newMenu, "Players");
                             self addOpt("All Players Menu", ::newMenu, "All Players");
+
+                            if(!isDefined(level.GameModeSelected))
+                                self addOpt("Game Modes", ::newMenu, "Game Modes");
                         }
                     }
                 }
@@ -72,7 +75,7 @@ runMenuIndex(menu)
                     self addOptSlider("Unlimited Ammo", ::UnlimitedAmmo, "Continuous;Reload;Disable", self);
                     self addOptBool(self.UnlimitedEquipment, "Unlimited Equipment", ::UnlimitedEquipment, self);
                     self addOptSlider("Modify Score", ::ModifyScore, "1000000;100000;10000;1000;100;10;0;-10;-100;-1000;-10000;-100000;-1000000", self);
-                    self addOpt("Perk Menu", ::newMenu, "Perk Menu " + self.playerXUID);
+                    self addOpt("Perk Menu", ::newMenu, "Perk Menu");
                     self addOptBool(self.NoTarget, "No Target", ::NoTarget, self);
                     self addOptBool(self.ReducedSpread, "Reduced Spread", ::ReducedSpread, self);
                     self addOptBool(self.UnlimitedSprint, "Unlimited Sprint", ::UnlimitedSprint, self);
@@ -93,7 +96,7 @@ runMenuIndex(menu)
         case "Menu Customization":
             self addMenu(menu, "Menu Customization");
                 self addOpt("Menu Credits", ::MenuCredits);
-                self addOptSlider("Menu Style", ::MenuStyle, level.menuName + ";Nautaremake");
+                self addOptSlider("Menu Style", ::MenuStyle, level.menuName + ";Nautaremake;Native");
                 self addOpt("Design Preferences", ::newMenu, "Design Preferences");
                 self addOpt("Main Design Color", ::newMenu, "Main Design Color");
             break;
@@ -473,7 +476,7 @@ runMenuIndex(menu)
             self addMenu(menu, "Challenges");
 
                 foreach(player in level.players)
-                    self addOpt(CleanName(player getName()), ::newMenu, "Origins Challenges Player " + player.playerXUID);
+                    self addOpt(CleanName(player getName()), ::newMenu, "Origins Challenges Player");
             break;
         
         case "Origins Puzzles":
@@ -536,7 +539,7 @@ runMenuIndex(menu)
             self addMenu(menu, "Challenges");
                 
                 foreach(player in level.players)
-                    self addOpt(CleanName(player getName()), ::newMenu, "Map Challenges Player " + player.playerXUID);
+                    self addOpt(CleanName(player getName()), ::newMenu, "Map Challenges Player");
             break;
         
         case "Skulltar Teleports":
@@ -853,7 +856,7 @@ runMenuIndex(menu)
         case "Zombie Options":
             self addMenu(menu, "Zombie Options");
                 self addOpt("Spawner", ::newMenu, "AI Spawner");
-                self addOpt("Prioritize Players", ::newMenu, "Prioritize Players");
+                self addOpt("Prioritize", ::newMenu, "Prioritize Players");
                 self addOptSlider("Kill", ::KillZombies, "Death;Head Gib;Flame;Delete");
                 self addOptSlider("Teleport", ::TeleportZombies, "Crosshairs;Self");
                 self addOptBool(level.ZombiesToCrosshairsLoop, "Teleport To Crosshairs", ::ZombiesToCrosshairsLoop);
@@ -861,19 +864,31 @@ runMenuIndex(menu)
                 self addOpt("Model", ::newMenu, "Zombie Model Manipulation");
                 self addOpt("Animations", ::newMenu, "Zombie Animations");
                 self addOptBool((GetDvarString("ai_disableSpawn") == "1"), "Disable Spawning", ::DisableZombieSpawning);
-                self addOptBool(level.DisableZombieCollision, "Disable Collision", ::DisableZombieCollision);
+                self addOptBool(level.DisableZombieCollision, "Disable Player Collision", ::DisableZombieCollision);
                 self addOptBool(level.DisableZombiePush, "Disable Push", ::DisableZombiePush);
                 self addOptBool(level.ZombiesInvisibility, "Invisibility", ::ZombiesInvisibility);
+                self addOptBool(level.ZombieProjectileVomiting, "Projectile Vomit", ::ZombieProjectileVomiting);
                 self addOptBool((GetDvarString("g_ai") == "0"), "Freeze", ::FreezeZombies);
                 self addOptSlider("Movement", ::SetZombieRunSpeed, "Walk;Run;Sprint;Super Sprint");
                 self addOptIncSlider("Animation Speed", ::SetZombieAnimationSpeed, 1, 1, 2, 0.5);
                 self addOpt("Make Crawlers", ::ForceZombieCrawlers);
-                self addOptSlider("Gib Bone", ::ZombieGibBone, "Random;Head;Right Leg;Left Leg;Right Arm;Left Arm");
+                self addOptSlider("Gib", ::ZombieGibBone, "Random;Head;Right Leg;Left Leg;Right Arm;Left Arm");
                 self addOptBool(level.DisappearingZombies, "Disappearing Zombies", ::DisappearingZombies);
                 self addOptBool(level.ExplodingZombies, "Exploding Zombies", ::ExplodingZombies);
-                self addOptBool(level.ZombieRagdoll, "Zombie Ragdoll", ::ZombieRagdoll);
+                self addOptBool(level.ZombieRagdoll, "Ragdoll After Death", ::ZombieRagdoll);
                 self addOptBool(level.StackZombies, "Stack Zombies", ::StackZombies);
-                self addOpt("Zombie Effects", ::newMenu, "Zombie Effects");
+                self addOpt("Effects", ::newMenu, "Zombie Effects");
+
+                //The only map Knockdown isn't registered on is The Giant
+                if(ReturnMapName(level.script) != "The Giant")
+                    self addOptSlider("Knockdown", ::KnockdownZombies, "Front;Back");
+
+                //Maps that Push is registered on(Doesn't work on any other map besides SOE. But, that doesn't mean it isn't registered on a custom map)
+                pushMaps = ["Shadows Of Evil", "Unknown"];
+
+                if(isInArray(pushMaps, ReturnMapName(level.script)))
+                    self addOptSlider("Push", ::PushZombies, "Left;Right");
+                
                 self addOpt("Detach Heads", ::DetachZombieHeads);
                 self addOpt("Clear All Corpses", ::ServerClearCorpses);
             break;
@@ -895,7 +910,6 @@ runMenuIndex(menu)
                     if(isInArray(maps, map))
                         self addOptIncSlider("Spawn Hellhound", ::ServerSpawnAI, 1, 1, 10, 1, ::ServerSpawnDog);
                     
-                    
                     maps = ["Shadows Of Evil", "Revelations", "Gorod Krovi"];
 
                     if(isInArray(maps, map))
@@ -912,7 +926,6 @@ runMenuIndex(menu)
                         if(map != "Revelations")
                             self addOptIncSlider("Spawn Raps", ::ServerSpawnAI, 1, 1, 10, 1, ::ServerSpawnRaps);
                     }
-
 
                     maps = ["Origins", "Der Eisendrache", "Revelations"];
 
@@ -985,7 +998,7 @@ runMenuIndex(menu)
             break;
         
         case "Zombie Effects":
-            self addMenu(menu, "Zombie Effects");
+            self addMenu(menu, "Effects");
                 self addOpt("Death Effect", ::newMenu, "Zombie Death Effect");
                 self addOpt("Damage Effect", ::newMenu, "Zombie Damage Effect");
             break;
@@ -1098,24 +1111,23 @@ runMenuIndex(menu)
                     if(!isDefined(player.menuState["verification"])) //If A Player Doesn't Have A Verification Set, They Won't Show. Mainly Happens If They Are Still Connecting
                         player.menuState["verification"] = level.MenuStatus[0];
                     
-                    self addOpt("[^2" + player.menuState["verification"] + "^7]" + CleanName(player getName()), ::newMenu, "Options " + player.playerXUID);
+                    self addOpt("[^2" + player.menuState["verification"] + "^7]" + CleanName(player getName()), ::newMenu, "Options");
                 }
             break;
         
+        case "Game Modes":
+            self addMenu(menu, "Game Modes");
+                self addOpt("Mod Menu Lobby", ::newMenu, "Mod Menu Lobby");
+            break;
+        
+        case "Mod Menu Lobby":
+            self addMenu(menu, "Mod Menu Lobbby");
+                
+                for(a = 0; a < (level.MenuStatus.size - 2); a++)
+                    self addOpt(level.MenuStatus[a], ::ModMenuLobby, a);
+            break;
+        
         default:
-            foundplayer = false;
-
-            foreach(player in level.players)
-            {
-                sepmenu = StrTok(menu, " ");
-
-                if(sepmenu[(sepmenu.size - 1)] == player.playerXUID)
-                {
-                    foundplayer = true;
-                    self MenuOptionsPlayer(menu, player);
-                }
-            }
-
             craftables = GetArrayKeys(level.zombie_include_craftables);
 
             if(isInArray(craftables, menu))
@@ -1142,10 +1154,12 @@ runMenuIndex(menu)
                         }
                     }
             }
-            else if(!foundplayer)
+            else
             {
-                self addMenu(menu, "404 ERROR");
-                    self addOpt("Page Not Found");
+                if(!isDefined(self.SelectedPlayer))
+                    self.SelectedPlayer = self;
+                
+                self MenuOptionsPlayer(menu, self.SelectedPlayer);
             }
 
             break;
@@ -1157,20 +1171,14 @@ MenuOptionsPlayer(menu, player)
     self endon("disconnect");
     
     if(!isDefined(player) || !IsPlayer(player))
-    {
         menu = "404";
-        newmenu = "404";
-    }
-
-    if(!isDefined(newmenu))
-        newmenu = CleanMenuName(menu);
     
     weapons = ["Assault Rifles", "Sub Machine Guns", "Light Machine Guns", "Sniper Rifles", "Shotguns", "Pistols", "Launchers", "Specials"];
     weaponsVar = ["assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special"];
     weaponAttachTypes = ["Optic", "Rig", "Mod"]; //gamedata\weapons\common\attachmenttable.csv
     mapStr = ReturnMapName(level.script);
     
-    switch(newmenu)
+    switch(menu)
     {
         case "Basic Scripts":
             self addMenu(menu, "Basic Scripts");
@@ -1182,8 +1190,8 @@ MenuOptionsPlayer(menu, player)
                 self addOptSlider("Unlimited Ammo", ::UnlimitedAmmo, "Continuous;Reload;Disable", player);
                 self addOptBool(player.UnlimitedEquipment, "Unlimited Equipment", ::UnlimitedEquipment, player);
                 self addOptSlider("Modify Score", ::ModifyScore, "1000000;100000;10000;1000;100;10;0;-10;-100;-1000;-10000;-100000;-1000000", player);
-                self addOpt("Perk Menu", ::newMenu, "Perk Menu " + player.playerXUID);
-                self addOpt("Gobblegum Menu", ::newMenu, "Gobblegum Menu " + player.playerXUID);
+                self addOpt("Perk Menu", ::newMenu, "Perk Menu");
+                self addOpt("Gobblegum Menu", ::newMenu, "Gobblegum Menu");
                 self addOptBool(player.ThirdPerson, "Third Person", ::ThirdPerson, player);
                 self addOptIncSlider("Movement Speed", ::SetMovementSpeed, 0, 1, 3, 0.5, player);
                 self addOptSlider("Clone", ::PlayerClone, "Clone;Dead", player);
@@ -1193,7 +1201,7 @@ MenuOptionsPlayer(menu, player)
                 self addOptBool(player.ReducedSpread, "Reduced Spread", ::ReducedSpread, player);
                 self addOptBool(player.MultiJump, "Multi-Jump", ::MultiJump, player);
                 self addOptSlider("Set Vision", ::PlayerSetVision, "Default;" + level.menuVisions, player);
-                self addOpt("Visual Effects", ::newMenu, "Visual Effects " + player.playerXUID);
+                self addOpt("Visual Effects", ::newMenu, "Visual Effects");
                 self addOptSlider("Zombie Charms", ::ZombieCharms, "None;Orange;Green;Purple;Blue", player);
                 self addOptBool(player.NoExplosiveDamage, "No Explosive Damage", ::NoExplosiveDamage, player);
                 self addOptBool(player.DisablePlayerHUD, "Disable HUD", ::DisablePlayerHUD, player);
@@ -1268,9 +1276,9 @@ MenuOptionsPlayer(menu, player)
                     self addOptIncSlider("Official Spawn Points", ::OfficialSpawnPoint, 0, 0, (level.MenuSpawnPoints.size - 1), 1, player);
                 
                 if(isDefined(level.menuTeleports) && isDefined(level.menuTeleports[mapStr]) && level.menuTeleports[mapStr].size)
-                    self addOpt(mapStr + " Teleports", ::newMenu, mapStr + " Teleports " + player.playerXUID);
+                    self addOpt(mapStr + " Teleports", ::newMenu, mapStr + " Teleports");
                 
-                self addOpt("Entity Teleports", ::newMenu, "Entity Teleports " + player.playerXUID);
+                self addOpt("Entity Teleports", ::newMenu, "Entity Teleports");
                 self addOptSlider("Teleport", ::TeleportPlayer, "Crosshairs;Sky", player);
                 self addOptBool(player.TeleportGun, "Teleport Gun", ::TeleportGun, player);
                 self addOpt("Save Current Location", ::SaveCurrentLocation, player);
@@ -1317,9 +1325,9 @@ MenuOptionsPlayer(menu, player)
                 self addOptIncSlider("Rank", ::SetPlayerRank, (player zm_stats::get_global_stat("PLEVEL") == level.maxprestige) ? 36 : 1, (player zm_stats::get_global_stat("PLEVEL") == level.maxprestige) ? 36 : 1, (player zm_stats::get_global_stat("PLEVEL") == level.maxprestige) ? 1000 : 35, 1, player);
                 self addOptIncSlider("Prestige", ::SetPlayerPrestige, 0, player.pers["plevel"], 10, 1, player);
                 self addOpt("Unlock All Achievements", ::UnlockAchievements, player);
-                self addOpt("Clan Tag Options", ::newMenu, "Clan Tag Options " + player.playerXUID);
-                self addOpt("Custom Stats", ::newMenu, "Custom Stats " + player.playerXUID);
-                self addOpt("EE Stats", ::newMenu, "EE Stats " + player.playerXUID);
+                self addOpt("Clan Tag Options", ::newMenu, "Clan Tag Options");
+                self addOpt("Custom Stats", ::newMenu, "Custom Stats");
+                self addOpt("EE Stats", ::newMenu, "EE Stats");
             break;
         
         case "Clan Tag Options":
@@ -1343,9 +1351,9 @@ MenuOptionsPlayer(menu, player)
                 self addOpt("Custom Value: " + player.CustomStatsValue, ::NumberPad, ::CustomStatsValue, player);
                 self addOpt("Send Selected Stats", ::SetCustomStats, player);
                 self addOpt("");
-                self addOpt("General", ::newMenu, "General Stats " + player.playerXUID);
-                self addOpt("Gobblegum Uses", ::newMenu, "Gobblegum Stats " + player.playerXUID);
-                self addOpt("Maps", ::newMenu, "Map Stats " + player.playerXUID);
+                self addOpt("General", ::newMenu, "General Stats");
+                self addOpt("Gobblegum Uses", ::newMenu, "Gobblegum Stats");
+                self addOpt("Maps", ::newMenu, "Map Stats");
             break;
         
         case "General Stats":
@@ -1371,7 +1379,7 @@ MenuOptionsPlayer(menu, player)
             self addMenu(menu, "Map Stats");
 
                 for(a = 0; a < level.mapNames.size; a++)
-                    self addOpt(ReturnMapName(level.mapNames[a]), ::newMenu, "Map Stats " + level.mapNames[a] + " " + player.playerXUID);
+                    self addOpt(ReturnMapName(level.mapNames[a]), ::newMenu, "Map Stats " + level.mapNames[a] + "");
             break;
         
         case "EE Stats":
@@ -1393,14 +1401,14 @@ MenuOptionsPlayer(menu, player)
 
         case "Weaponry":
             self addMenu(menu, "Weaponry");
-                self addOpt("Weapon Options", ::newMenu, "Weapon Options " + player.playerXUID);
-                self addOpt("Attachments", ::newMenu, "Weapon Attachments " + player.playerXUID);
-                self addOpt("Weapon AAT", ::newMenu, "Weapon AAT " + player.playerXUID);
+                self addOpt("Weapon Options", ::newMenu, "Weapon Options");
+                self addOpt("Attachments", ::newMenu, "Weapon Attachments");
+                self addOpt("Weapon AAT", ::newMenu, "Weapon AAT");
                 self addOpt("");
-                self addOpt("Equipment", ::newMenu, "Equipment Menu " + player.playerXUID);
+                self addOpt("Equipment", ::newMenu, "Equipment Menu");
 
                 for(a = 0; a < weapons.size; a++)
-                    self addOpt(weapons[a], ::newMenu, weapons[a] + " " + player.playerXUID);
+                    self addOpt(weapons[a], ::newMenu, weapons[a] + "");
             break;
         
         case "Weapon Options":
@@ -1409,7 +1417,7 @@ MenuOptionsPlayer(menu, player)
                 self addOpt("Take All Weapons", ::TakePlayerWeapons, player);
                 self addOptSlider("Drop Current Weapon", ::DropCurrentWeapon, "Take;Don't Take", player);
                 self addOpt("");
-                self addOpt("Camo", ::newMenu, "Weapon Camo " + player.playerXUID);
+                self addOpt("Camo", ::newMenu, "Weapon Camo");
                 self addOptBool(player.FlashingCamo, "Flashing Camo", ::FlashingCamo, player);
                 self addOptBool(player zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()), "Pack 'a' Punch Current Weapon", ::PackCurrentWeapon, player);
             break;
@@ -1494,11 +1502,11 @@ MenuOptionsPlayer(menu, player)
         
         case "Bullet Menu":
             self addMenu(menu, "Bullet Menu");
-                self addOpt("Weapon Projectiles", ::newMenu, "Weapon Projectiles " + player.playerXUID);
-                self addOpt("Equipment", ::newMenu, "Equipment Bullets " + player.playerXUID);
-                self addOpt("Effects", ::newMenu, "Bullet Effects " + player.playerXUID);
-                self addOpt("Spawnables", ::newMenu, "Bullet Spawnables " + player.playerXUID);
-                self addOpt("Explosive Bullets", ::newMenu, "Explosive Bullets " + player.playerXUID);
+                self addOpt("Weapon Projectiles", ::newMenu, "Weapon Projectiles");
+                self addOpt("Equipment", ::newMenu, "Equipment Bullets");
+                self addOpt("Effects", ::newMenu, "Bullet Effects");
+                self addOpt("Spawnables", ::newMenu, "Bullet Spawnables");
+                self addOpt("Explosive Bullets", ::newMenu, "Explosive Bullets");
                 self addOpt("Reset", ::ResetBullet, player);
             break;
         
@@ -1510,15 +1518,15 @@ MenuOptionsPlayer(menu, player)
                 player.ProjectileSpreadMultiplier = 10;
             
             self addMenu(menu, "Weapon Projectiles");
-                self addOpt("Weapon Projectile", ::newMenu, "Weapon Bullets " + player.playerXUID);
+                self addOpt("Weapon Projectile", ::newMenu, "Weapon Bullets");
                 self addOptIncSlider("Projectile Multiplier", ::ProjectileMultiplier, 1, 1, 5, 1, player);
                 self addOptIncSlider("Spread Multiplier", ::ProjectileSpreadMultiplier, 1, 5, 50, 1, player);
             break;
         
         case "Weapon Bullets":
             self addMenu(menu, "Weapon Bullets");
-                self addOpt("Normal", ::newMenu, "Normal Weapon Bullets " + player.playerXUID);
-                self addOpt("Upgraded", ::newMenu, "Upgraded Weapon Bullets " + player.playerXUID);
+                self addOpt("Normal", ::newMenu, "Normal Weapon Bullets");
+                self addOpt("Upgraded", ::newMenu, "Upgraded Weapon Bullets");
             break;
         
         case "Normal Weapon Bullets":
@@ -1655,7 +1663,7 @@ MenuOptionsPlayer(menu, player)
                 self addOptBool(player.GravityGun, "Gravity Gun", ::GravityGun, player);
                 self addOptBool(player.DeleteGun, "Delete Gun", ::DeleteGun, player);
                 self addOptBool(player.RapidFire, "Rapid Fire", ::RapidFire, player);
-                self addOpt("Hit Markers", ::newMenu, "Hit Markers " + player.playerXUID);
+                self addOpt("Hit Markers", ::newMenu, "Hit Markers");
                 self addOptBool(player.PowerUpMagnet, "Power-Up Magnet", ::PowerUpMagnet, player);
                 self addOptBool(player.PlayerInstaKill, "Insta-Kill", ::PlayerInstaKill, player);
                 self addOptBool(player.DisableEarningPoints, "Disable Earning Points", ::DisableEarningPoints, player);
@@ -1724,6 +1732,24 @@ MenuOptionsPlayer(menu, player)
                     self addOptIncSlider("Max Distance", ::AimbotDistance, 100, 100, 1000, 100, player);
             break;
         
+        case "Map Challenges Player":
+            self addMenu(menu, "Challenges");
+
+                if(isDefined(player._challenges))
+                {
+                    self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_4687355c.n_index), player._challenges.var_4687355c.str_info, ::MapCompleteChallenge, player._challenges.var_4687355c, player);
+                    self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_b88ea497.n_index), player._challenges.var_b88ea497.str_info, ::MapCompleteChallenge, player._challenges.var_b88ea497, player);
+                    self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_928c2a2e.n_index), player._challenges.var_928c2a2e.str_info, ::MapCompleteChallenge, player._challenges.var_928c2a2e, player);
+                }
+            break;
+        
+        case "Origins Challenges Player":
+            self addMenu(menu, "Challenges");
+
+                foreach(challenge in level._challenges.a_stats)
+                    self addOptBool(get_stat(challenge.str_name, player).b_medal_awarded, challenge.str_hint, ::CompleteOriginChallenge, challenge.str_name, player);
+            break;
+        
         case "Options":
             submenus = [
             "Verification",
@@ -1742,7 +1768,7 @@ MenuOptionsPlayer(menu, player)
             self addMenu(menu, "[^2" + player.menuState["verification"] + "^7]" + CleanName(player getName()));
 
                 for(a = 0; a < submenus.size; a++)
-                    self addOpt(submenus[a], ::newMenu, submenus[a] + " " + player.playerXUID);
+                    self addOpt(submenus[a], ::newMenu, submenus[a] + "");
 
                 self addOpt("Send Message", ::Keyboard, ::MessagePlayer, player);
                 self addOptBool(player.FreezePlayer, "Freeze", ::FreezePlayer, player);
@@ -1752,7 +1778,8 @@ MenuOptionsPlayer(menu, player)
         
         case "Verification":
             self addMenu(menu, "Verification");
-            
+                self addOpt("Save Verification", ::TempSavePlayerVerification, player);
+
                 for(a = 0; a < (level.MenuStatus.size - 2); a++)
                     self addOptBool((player getVerification() == a), level.MenuStatus[a], ::setVerification, a, player, true);
             break;
@@ -1781,7 +1808,7 @@ MenuOptionsPlayer(menu, player)
             
             self addMenu(menu, "Malicious Options");
                 self addOpt("Open Pause Menu", ::PlayerOpenPauseMenu, player);
-                self addOpt("Disable Actions", ::newMenu, "Disable Actions " + player.playerXUID);
+                self addOpt("Disable Actions", ::newMenu, "Disable Actions");
                 self addOptSlider("Set Stance", ::SetPlayerStance, "Prone;Crouch;Stand", player);
                 self addOpt("Launch", ::LaunchPlayer, player);
                 self addOpt("Mortar Strike", ::MortarStrikePlayer, player);
@@ -1811,33 +1838,15 @@ MenuOptionsPlayer(menu, player)
                 self addOptBool(player.DisableOffhands, "Offhand Weapons", ::DisableOffhands, player);
             break;
         
-        case "Map Challenges Player":
-            self addMenu(menu, "Challenges");
-
-                if(isDefined(player._challenges))
-                {
-                    self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_4687355c.n_index), player._challenges.var_4687355c.str_info, ::MapCompleteChallenge, player._challenges.var_4687355c, player);
-                    self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_b88ea497.n_index), player._challenges.var_b88ea497.str_info, ::MapCompleteChallenge, player._challenges.var_b88ea497, player);
-                    self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_928c2a2e.n_index), player._challenges.var_928c2a2e.str_info, ::MapCompleteChallenge, player._challenges.var_928c2a2e, player);
-                }
-            break;
-        
-        case "Origins Challenges Player":
-            self addMenu(menu, "Challenges");
-
-                foreach(challenge in level._challenges.a_stats)
-                    self addOptBool(get_stat(challenge.str_name, player).b_medal_awarded, challenge.str_hint, ::CompleteOriginChallenge, challenge.str_name, player);
-            break;
-        
         default:
-            if(isInArray(weapons, newmenu))
+            if(isInArray(weapons, menu))
             {
                 pistols = ["pistol_standard", "pistol_burst", "pistol_fullauto", "pistol_m1911", "pistol_revolver38", "pistol_c96"];
                 specials = [];
 
                 foreach(index, weapon_category in weapons)
                 {
-                    if(newmenu == weapon_category)
+                    if(menu == weapon_category)
                     {
                         self addMenu(menu, weapon_category);
                             if(isDefined(level.zombie_weapons) && level.zombie_weapons.size)
@@ -1858,7 +1867,7 @@ MenuOptionsPlayer(menu, player)
 
                 foreach(weapon in specials)
                 {
-                    if(newmenu == "Specials")
+                    if(menu == "Specials")
                     {
                         if(weapon.isgrenadeweapon || weapon.name == "knife" || weapon.name == "none")
                             continue;
@@ -1872,20 +1881,20 @@ MenuOptionsPlayer(menu, player)
                     }
                 }
 
-                if(newmenu == "Specials")
+                if(menu == "Specials")
                 {
                     self addOptBool(player HasWeapon1(GetWeapon("minigun")), "Death Machine", ::GivePlayerWeapon, GetWeapon("minigun"), player);
                     self addOptBool(player HasWeapon1(GetWeapon("defaultweapon")), "Default Weapon", ::GivePlayerWeapon, GetWeapon("defaultweapon"), player);
                 }
             }
-            else if(newmenu == "Mystery Box Normal Weapons" || newmenu == "Mystery Box Upgraded Weapons")
+            else if(menu == "Mystery Box Normal Weapons" || menu == "Mystery Box Upgraded Weapons")
             {
                 arr = [];
                 weaponsVar = ["assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special"];
-                type = (newmenu == "Mystery Box Normal Weapons") ? level.zombie_weapons : level.zombie_weapons_upgraded;
+                type = (menu == "Mystery Box Normal Weapons") ? level.zombie_weapons : level.zombie_weapons_upgraded;
                 weaps = GetArrayKeys(type);
 
-                self addMenu(menu, (newmenu == "Mystery Box Normal Weapons") ? "Normal Weapons" : "Upgraded Weapons");
+                self addMenu(menu, (menu == "Mystery Box Normal Weapons") ? "Normal Weapons" : "Upgraded Weapons");
                 self addOptBool(IsAllWeaponsInBox(type), "Enable All", ::EnableAllWeaponsInBox, type);
 
                 if(isDefined(weaps) && weaps.size)
@@ -1908,7 +1917,7 @@ MenuOptionsPlayer(menu, player)
                     }
                 }
                 
-                if(newmenu == "Mystery Box Normal Weapons")
+                if(menu == "Mystery Box Normal Weapons")
                 {
                     equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
                     keys = GetArrayKeys(equipment);
@@ -1930,7 +1939,7 @@ MenuOptionsPlayer(menu, player)
 
                 for(a = 0; a < level.mapNames.size; a++)
                 {
-                    if(IsSubStr(newmenu, "Map Stats " + level.mapNames[a]) || newmenu == "Map Stats " + level.mapNames[a])
+                    if(IsSubStr(menu, "Map Stats " + level.mapNames[a]) || menu == "Map Stats " + level.mapNames[a])
                     {
                         error404 = false;
 
@@ -1942,7 +1951,7 @@ MenuOptionsPlayer(menu, player)
                     }
                 }
 
-                if(IsSubStr(newmenu, mapStr + " Teleports") || newmenu == mapStr + " Teleports")
+                if(IsSubStr(menu, mapStr + " Teleports") || menu == mapStr + " Teleports")
                 {
                     error404 = false;
 

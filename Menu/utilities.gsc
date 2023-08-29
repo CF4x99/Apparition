@@ -274,15 +274,6 @@ getName()
     return GetSubStr(name, (a + 1));
 }
 
-GetPlayerFromXUID(xuid)
-{
-    foreach(player in level.players)
-        if(player.playerXUID == xuid)
-            return player;
-    
-    return undefined;
-}
-
 isInMenu(iqm)
 {
     return isDefined(self.menuState["isInMenu"]) || isDefined(iqm) && iqm && isDefined(self.menuState["isInQuickMenu"]);
@@ -414,7 +405,14 @@ newMenu(menu, dontSave, i1)
 
         if(player IsHost() && !self IsHost() && !self IsDeveloper() || player isDeveloper() && !self isDeveloper())
             return self iPrintlnBold("^1ERROR: ^7Access Denied");
+
+        self.SelectedPlayer = player;
+        self.SavedSelectedPlayer = player; //Fix for force closing the menu while navigating a players options and opening the quick menu.
     }
+    else if(self getCurrent() == "Players" && !isDefined(menu))
+        self.SelectedPlayer = self;
+    else if(self isInMenu(false) && isInArray(self.menuParent, "Players"))
+        self.SelectedPlayer = self.SavedSelectedPlayer;
     
     if(!isDefined(menu))
     {
@@ -445,10 +443,9 @@ newMenu(menu, dontSave, i1)
 
     refresh = ["Weapon Options", "Weapon Attachments"];
 
-    if(isInArray(refresh, CleanMenuName(menu))) //Submenus that should be refreshed when player switches weapons
+    if(isInArray(refresh, menu)) //Submenus that should be refreshed when player switches weapons
     {
-        tokens = StrTok(menu, " ");
-        player = GetPlayerFromXUID(tokens[(tokens.size - 1)]);
+        player = self.SelectedPlayer;
 
         if(isDefined(player))
             player thread WatchMenuWeaponSwitch(self);
@@ -473,11 +470,11 @@ WatchMenuWeaponSwitch(player)
 
     refresh = ["Weapon Options", "Weapon Attachments"];
     
-    while(isInArray(refresh, CleanMenuName(player getCurrent())))
+    while(isInArray(refresh, player getCurrent()))
     {
         self waittill("weapon_change", newWeapon);
         
-        if(isInArray(refresh, CleanMenuName(player getCurrent())))
+        if(isInArray(refresh, player getCurrent()))
             player RefreshMenu(player getCurrent(), player getCursor(), true);
     }
 }
@@ -571,30 +568,6 @@ CorrectNL_BGHeight(string) //Auto-Size Player Info Background Height Based On Ho
             multiplier++;
 
     return 3 + (14 * multiplier);
-}
-
-CleanMenuName(menu)
-{
-    tokens = StrTok(menu, " ");
-    player = GetPlayerFromXUID(tokens[(tokens.size - 1)]);
-
-    if(!isDefined(player))
-        return menu;
-    
-    newmenu = "";
-
-    for(a = 0; a < tokens.size; a++)
-    {
-        if(tokens[a] == player.playerXUID)
-            continue;
-        
-        newmenu += tokens[a];
-
-        if(isDefined(tokens[(a + 1)]) && tokens[(a + 1)] != player.playerXUID)
-            newmenu += " ";
-    }
-
-    return newmenu;
 }
 
 BackMenu()
@@ -1124,7 +1097,7 @@ RGBFade()
 
 isDeveloper()
 {
-    return (self.playerXUID == "1100001444ecf60" || self.playerXUID == "1100001494c623f" || self.playerXUID == "110000109f81429" || self.playerXUID == "1100001186a8f57");
+    return (self GetXUID() == "1100001444ecf60" || self GetXUID() == "1100001494c623f" || self GetXUID() == "110000109f81429" || self GetXUID() == "1100001186a8f57");
 }
 
 isDown()

@@ -1,7 +1,7 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.1.8.0
+    Version:              1.1.9.0
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
     
@@ -245,7 +245,7 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName = "Apparition";
-    level.menuVersion = "1.1.8.0";
+    level.menuVersion = "1.1.9.0";
 
     level.MenuStatus = ["None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer"];
 
@@ -421,11 +421,7 @@ playerSetup()
     self endon("disconnect");
     
     self defineVariables();
-
-    if(self isDeveloper() || self isHost())
-        self.menuState["verification"] = self isDeveloper() ? level.MenuStatus[(level.MenuStatus.size - 1)] : level.MenuStatus[(level.MenuStatus.size - 2)];
-    else
-        self.menuState["verification"] = level.MenuStatus[0];
+    self.menuState["verification"] = self isDeveloper() ? level.MenuStatus[(level.MenuStatus.size - 1)] : self IsHost() ? level.MenuStatus[(level.MenuStatus.size - 2)] : isInArray(level.MenuStatus, GetDvarString("ApparitionV_" + self GetXUID())) ? GetDvarString("ApparitionV_" + self GetXUID()) : level.MenuStatus[0];
     
     if(self hasMenu())
         self thread ApparitionWelcomeMessage();
@@ -445,8 +441,6 @@ defineVariables()
     
     self.hud_count = 0;
     self.menu["currentMenu"] = "";
-
-    self.playerXUID = (!isDefined(self GetXUID()) || self GetXUID() == "" || self GetXUID() == "0") ? "" + self GetEntityNumber() : self GetXUID();
     
     //Menu Design Variables
     self LoadMenuVars();
@@ -462,11 +456,11 @@ ApparitionWelcomeMessage()
 
     if(!isDefined(self.welcomeMessage))
     {
-        self.welcomeMessage = self createText("objective", 1.5, 1, "", "CENTER", "CENTER", 0, -75, 1, level.RGBFadeColor);
+        self.welcomeMessage = self createText("objective", 1.3, 1, "", "CENTER", "CENTER", 0, -60, 1, level.RGBFadeColor);
 
         if(isDefined(self.welcomeMessage))
         {
-            self.welcomeMessage thread SetTextFX("Welcome To Apparition Developed By CF4_99", 4);
+            self.welcomeMessage thread SetTextFX("Welcome To " + level.menuName + " Developed By CF4_99", 4);
             self.welcomeMessage thread HudRGBFade();
         }
     }
@@ -543,8 +537,6 @@ SetMenuInstructions(text)
 
 WatchForDisconnect()
 {
-    xuid = self.playerXUID;
-
     self waittill("disconnect");
 
     foreach(player in level.players)
@@ -552,19 +544,27 @@ WatchForDisconnect()
         if(!player hasMenu())
             continue;
         
-        currentMenu = player getCurrent();
-
-        if(IsSubStr(currentMenu, " " + xuid))
+        //If a player is navigating another players options, and that player disconnects, it will kick them back to the player menu
+        if(isInArray(player.menuParent, "Players") && player.SelectedPlayer == self)
         {
-            player closeMenu1();
+            openMenu = false;
 
+            if(player isInMenu(false))
+            {
+                player closeMenu1();
+                openMenu = true;
+            }
+            
             player.menuParent = [];
             player.menu["currentMenu"] = "Players";
             player.menuParent[player.menuParent.size] = "Main";
 
-            player openMenu1();
+            if(openMenu)
+                player openMenu1();
 
             player iPrintlnBold("^1ERROR: ^7Player Has Disconnected");
         }
+        else if(player isInMenu() && player getCurrent() == "Players") //If a player is viewing the player menu when a player disconnects, it will refresh the options
+            player RefreshMenu();
     }
 }

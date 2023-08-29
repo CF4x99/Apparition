@@ -1,6 +1,6 @@
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.1.8.0
+    Version:              1.1.9.0
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
@@ -87,6 +87,25 @@
     Discord: cf4_99
 
 ## Changelog
+
+<details>
+    <summary>
+        Version 1.1.9.0
+    </summary>
+
+    - Improved: Major Backend Improvements
+    - Improved: Client Disconnect Handler(If a player is navigating another players options, and that player disconnects, it will kick them back to the player menu. If a player is viewing the player menu when a player disconnects, it will refresh the options)
+
+    - Added: Native Design Back
+    - Added: Option To Temp Save A Player's Verification
+    - Added: Projectile Vomiting(Zombie Options)
+    - Added: Knockdown(Zombie Options || All Maps But The Giant)
+    - Added: Push(Zombie Options || Only Available On SOE)
+    - Added: Start Of Game Mode Options(Mod Menu Lobby Only Atm)
+
+    - Changed: Submenu system now doesn't rely on player info to find the correct submenu
+
+</details>
 
 <details>
     <summary>

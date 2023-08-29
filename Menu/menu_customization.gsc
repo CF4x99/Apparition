@@ -16,6 +16,9 @@ MenuTheme(color)
             {
                 for(b = 0; b < self.menu["ui"][hud[a]].size; b++)
                 {
+                    if(self.menu["MenuStyle"] == "Native" && hud[a] == "outlines" && b)
+                        continue;
+                    
                     if(isDefined(self.menu["ui"][hud[a]][b]))
                         self.menu["ui"][hud[a]][b] hudFadeColor(color, 1);
                 }
@@ -61,6 +64,9 @@ SmoothRainbowTheme()
                 {
                     for(b = 0; b < self.menu["ui"][hud[a]].size; b++)
                     {
+                        if(self.menu["MenuStyle"] == "Native" && hud[a] == "outlines" && b)
+                            continue;
+
                         if(isDefined(self.menu["ui"][hud[a]][b]))
                             self.menu["ui"][hud[a]][b].color = level.RGBFadeColor;
                     }
@@ -145,6 +151,11 @@ MenuStyle(style)
             self.menu["MaxOptions"] = 9;
             break;
         
+        case "Native":
+            self.menu["Y"] = -100;
+            self.menu["MaxOptions"] = 12;
+            break;
+        
         default:
             break;
     }
@@ -173,7 +184,7 @@ LoadMenuVars() //Pre-Set Menu Variables.
     self.menu["YQM"] = -161;
 
     self.menu["X"] = -301;
-    self.menu["Y"] = (self.menu["MenuStyle"] == "Nautaremake") ? -100 : -150;
+    self.menu["Y"] = (self.menu["MenuStyle"] != level.menuName) ? -100 : -150;
 
     self.menu["MaxOptions"] = (self.menu["MenuStyle"] == "Nautaremake") ? 9 : 12;
     self.menu["maxOptionsQM"] = 15;

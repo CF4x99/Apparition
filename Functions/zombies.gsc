@@ -424,6 +424,40 @@ ZombiesInvisibility()
     }
 }
 
+ZombieProjectileVomiting()
+{
+    level.ZombieProjectileVomiting = isDefined(level.ZombieProjectileVomiting) ? undefined : true;
+
+    while(isDefined(level.ZombieProjectileVomiting))
+    {
+        zombies = GetAITeamArray(level.zombie_team);
+
+        for(a = 0; a < zombies.size; a++)
+        {
+            if(!isDefined(zombies[a]) || !IsAlive(zombies[a]) || isDefined(zombies[a].ProjectileVomit))
+                continue;
+            
+            zombies[a] thread ZombieProjectileVomit();
+        }
+
+        wait 0.1;
+    }
+}
+
+ZombieProjectileVomit()
+{
+    if(!isDefined(self) || !IsAlive(self) || isDefined(self.ProjectileVomit))
+        return;
+    
+    self endon("death");
+    
+    self.ProjectileVomit = true;
+    self clientfield::increment("projectile_vomit", 1);
+    wait 6;
+
+    self.ProjectileVomit = undefined;
+}
+
 FreezeZombies()
 {
     SetDvar("g_ai", (GetDvarString("g_ai") == "1") ? "0" : "1");
@@ -642,7 +676,68 @@ DetachZombieHeads()
     zombies = GetAITeamArray(level.zombie_team);
     
     for(a = 0; a < zombies.size; a++)
-        zombies[a] DetachAll();
+        if(isDefined(zombies[a]) && IsAlive(zombies[a]))
+            zombies[a] DetachAll();
+}
+
+KnockdownZombies(dir)
+{
+    switch(dir)
+    {
+        case "Front":
+            knockDir = "front";
+            upDir = "getup_back";
+            break;
+        
+        case "Back":
+        
+        default:
+            knockDir = "back";
+            upDir = "getup_belly";
+            break;
+    }
+
+    zombies = GetAITeamArray(level.zombie_team);
+    
+    foreach(zombie in zombies)
+    {
+        if(!isDefined(zombie) || !IsAlive(zombie) || zombie.missinglegs || isDefined(zombie.knockdown) && zombie.knockdown)
+            continue;
+        
+        zombie.knockdown = 1;
+        zombie.knockdown_direction = knockDir;
+        zombie.getup_direction = upDir;
+        zombie.knockdown_type = "knockdown_shoved";
+
+        BlackBoardAttribute(zombie, "_knockdown_direction", zombie.knockdown_direction);
+        BlackBoardAttribute(zombie, "_knockdown_type", zombie.knockdown_type);
+        BlackBoardAttribute(zombie, "_getup_direction", zombie.getup_direction);
+    }
+}
+
+PushZombies(dir)
+{
+    zombies = GetAITeamArray(level.zombie_team);
+    
+    foreach(zombie in zombies)
+    {
+        if(!isDefined(zombie) || !IsAlive(zombie) || zombie.missinglegs || isDefined(zombie.pushed) && zombie.pushed)
+            continue;
+        
+        zombie.pushed = 1;
+        zombie.push_direction = ToLower(dir);
+
+        BlackBoardAttribute(zombie, "_push_direction", zombie.push_direction);
+    }
+}
+
+BlackBoardAttribute(entity, attributename, attributevalue)
+{
+    if(isDefined(entity.__blackboard[attributename]))
+		if(!isDefined(attributevalue) && IsFunctionPtr(entity.__blackboard[attributename]))
+			return;
+
+    entity.__blackboard[attributename] = attributevalue;
 }
 
 ServerClearCorpses()
