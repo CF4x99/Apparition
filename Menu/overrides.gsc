@@ -42,7 +42,7 @@ CommonDamageOverride(mod, hit_location, hit_origin, player, amount, team, weapon
 
         player thread DamageFeedBack();
 
-        if(isDefined(player.PlayerInstaKill))
+        if(isDefined(player.PlayerInstaKill) && (player.PlayerInstaKill == "All" || player.PlayerInstaKill == "Melee" && mod == "MOD_MELEE"))
         {
             self.health = 1;
             modname = zm_utility::remove_mod_from_methodofdeath(mod);

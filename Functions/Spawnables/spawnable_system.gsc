@@ -17,23 +17,39 @@ SpawnSystem(action, type, func)
     if(isDefined(level.spawnable[type + "_Deleted"]))
         return self iPrintlnBold("^1ERROR: ^7" + CleanString(type) + " Is Being Deleted");
     
-    if(!isDefined(level.spawnable[type + "_Spawned"]))
+    if(!isDefined(level.spawnable[type + "_Spawned"]) && type != "Skybase")
     {
         traceSurface = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["surfacetype"];
 
         if(traceSurface == "none" || traceSurface == "default")
             return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
     }
+
+    if(action != "Spawn")
+    {
+        if(!isDefined(level.spawnable[type + "_Spawned"]))
+            return self iPrintlnBold("^1ERROR: ^7" + CleanString(type) + " Hasn't Been Spawned Yet");
+    }
+    else
+    {
+        if(isDefined(level.spawnable["LargeSpawnable"]) && isLargeSpawnable(type))
+            return self iPrintlnBold("^1ERROR: ^7You Must Delete The " + level.spawnable["LargeSpawnable"] + " First");
+        
+        if(isDefined(level.spawnable[type + "_Spawned"]))
+            return self iPrintlnBold("^1ERROR: ^7" + CleanString(type) + " Has Already Been Spawned");
+    }
+
+    if(isDefined(level.SpawnableSystemBusy))
+        return self iPrintlnBold("^1ERROR: ^7The Spawnable System Is Currently Busy");
+    
+    level.SpawnableSystemBusy = type;
+
+    menu = self getCurrent();
+    curs = self getCursor();
     
     switch(action)
     {
         case "Spawn":
-            if(isDefined(level.spawnable[type + "_Spawned"]))
-                return self iPrintlnBold("^1ERROR: ^7" + CleanString(type) + " Has Already Been Spawned");
-            
-            if(isDefined(level.spawnable["LargeSpawnable"]) && isLargeSpawnable(type))
-                return self iPrintlnBold("^1ERROR: ^7You Must Delete The " + level.spawnable["LargeSpawnable"] + " First");
-            
             if(isLargeSpawnable(type))
                 level.spawnable["LargeSpawnable"] = type;
             
@@ -47,9 +63,6 @@ SpawnSystem(action, type, func)
             break;
         
         case "Delete":
-            if(!isDefined(level.spawnable[type + "_Spawned"]))
-                return self iPrintlnBold("^1ERROR: ^7" + CleanString(type) + " Hasn't Been Spawned Yet");
-            
             level notify(type + "_Stop");
 
             if(isLargeSpawnable(type))
@@ -73,9 +86,6 @@ SpawnSystem(action, type, func)
             break;
         
         case "Dismantle":
-            if(!isDefined(level.spawnable[type + "_Spawned"]))
-                return self iPrintlnBold("^1ERROR: ^7" + CleanString(type) + " Hasn't Been Spawned Yet");
-            
             level notify(type + "_Stop");
 
             if(isLargeSpawnable(type))
@@ -94,7 +104,7 @@ SpawnSystem(action, type, func)
                     
                     level.SpawnableArray[type][a] NotSolid();
                     level.SpawnableArray[type][a] Unlink();
-                    level.SpawnableArray[type][a] Launch(VectorScale(AnglesToForward(level.SpawnableArray[type][a].angles), 500));
+                    level.SpawnableArray[type][a] Launch(VectorScale(AnglesToForward(level.SpawnableArray[type][a].angles), RandomIntRange(-255, 255)));
                     level.SpawnableArray[type][a] thread deleteAfter(5);
                 }
             }
@@ -114,11 +124,14 @@ SpawnSystem(action, type, func)
         default:
             break;
     }
+
+    level.SpawnableSystemBusy = undefined;
+    RefreshMenu(menu, curs);
 }
 
 isLargeSpawnable(type)
 {
-    spawns = ["Merry Go Round", "Drop Tower"];
+    spawns = ["Skybase", "Merry Go Round", "Drop Tower"];
 
     return isInArray(spawns, type);
 }
@@ -143,7 +156,6 @@ SeatSystem(type)
         return;
     
     level endon(type + "_Stop");
-    level endon("disconnect");
 
     self MakeUsable();
     self SetCursorHint("HINT_NOICON");
@@ -207,11 +219,16 @@ StopRidingSpawnable(type, seat)
     self.OnSpawnable = undefined;
 }
 
-GetSpawnableBaseModel()
+GetSpawnableBaseModel(favor)
 {
     for(a = 0; a < level.MenuModels.size; a++)
         if(IsSubStr(level.MenuModels[a], "vending_doubletap") || IsSubStr(level.MenuModels[a], "vending_sleight") || IsSubStr(level.MenuModels[a], "vending_three_gun"))
+        {
             model = level.MenuModels[a];
+
+            if(model == favor || IsSubStr(model, favor))
+                return model;
+        }
     
     return model;
 }

@@ -1,3 +1,323 @@
+ControlLunarLander()
+{
+    if((level.lander_in_use || level flag::get("lander_inuse")) && !isDefined(self.ControlLunarLander))
+        return self iPrintlnBold("^1ERROR: ^7Lunar Lander Is In Use");
+    
+    if(level.lander_in_use && isDefined(self.ControlLunarLander))
+        return self iPrintlnBold("^1ERROR: ^7You're Already Controling The Lunar Lander");
+    
+    self endon("disconnect");
+    
+    self closeMenu1();
+
+    self.ControlLunarLander = true;
+    level.lander_in_use = true;
+    level flag::set("lander_inuse");
+
+    lander = GetEnt("lander", "targetname");
+    spots = GetEntArray("zipline_spots", "script_noteworthy");
+    base = GetEnt("lander_base", "script_noteworthy");
+    zipline_door1 = GetEnt("zipline_door_n", "script_noteworthy");
+    zipline_door2 = GetEnt("zipline_door_s", "script_noteworthy");
+    lander_trig = GetEnt("zip_buy", "script_noteworthy");
+    rider_trigger = GetEnt(lander.station + "_riders", "targetname");
+    
+    level.LanderSavedPosition = lander.anchor.origin;
+    level.LanderSavedAngles = lander.anchor.angles;
+
+    for(a = 0; a < level.players.size; a++)
+    {
+        player = level.players[a];
+
+        if(!isDefined(player) || !IsAlive(player) || isDefined(player.lander) && player.lander || !player IsTouching(zipline_door1) && !player IsTouching(zipline_door2) && !player IsTouching(lander_trig) && !player IsTouching(rider_trigger) && !player IsTouching(base) && player != self)
+            continue;
+        
+        player SetOrigin(spots[a].origin);
+        player PlayerLinkTo(spots[a]);
+        player EnableInvulnerability();
+
+        player.lander = true;
+        player.menu["DisableMenuControls"] = true;
+
+        lander.riders++;
+    }
+
+    close_lander_gate(0.05);
+    lander thread takeoff_nuke(undefined, 80, 1, rider_trigger);
+
+    lander.anchor MoveTo(lander.anchor.origin + (0, 0, 950), 3, 2, 1);
+    lander.anchor thread lander_takeoff_wobble();
+    base clientfield::set("COSMO_LANDER_ENGINE_FX", 1);
+    SetLanderFX(lander, base, 1);
+
+    lander.anchor waittill("movedone");
+    lander.anchor notify("KillWobble");
+
+    wait 1;
+
+    self thread ControlLander(lander);
+}
+
+ControlLander(lander)
+{
+    self endon("disconnect");
+    level endon("KillLanderControls");
+
+    base = GetEnt("lander_base", "script_noteworthy");
+    self SetMenuInstructions("[{+attack}] - Move Forward\n[{+melee}] - Exit");
+    
+    while(1)
+    {
+        if(self AttackButtonPressed())
+        {
+            lander.anchor MoveTo(lander.anchor.origin + AnglesToForward(self GetPlayerAngles()) * 60, 0.1);
+            lander.anchor thread lander_takeoff_wobble();
+
+            SetLanderFX(lander, base, 1);
+        }
+        else if(self MeleeButtonPressed())
+        {
+            break;
+        }
+        else
+        {
+            SetLanderFX(lander, base, 0);
+            lander.anchor.wobble = undefined;
+        }
+
+        wait 0.1;
+    }
+
+    SetLanderFX(lander, base, 1);
+
+    lander.anchor thread lander_takeoff_wobble();
+    lander.anchor MoveTo((lander.anchor.origin[0], lander.anchor.origin[1], level.LanderSavedPosition[2] + 950), 3, 2, 1);
+    lander.anchor waittill("movedone");
+
+    lander.anchor MoveTo((level.LanderSavedPosition[0], level.LanderSavedPosition[1], level.LanderSavedPosition[2] + 950), 3, 2, 1);
+    lander.anchor waittill("movedone");
+
+    SetLanderFX(lander, base, 0);
+    lander.anchor.wobble = undefined;
+    lander.anchor waittill("rotatedone");
+
+    lander.anchor thread lander_takeoff_wobble();
+    lander.anchor MoveTo(level.LanderSavedPosition, 3, 2, 1);
+    player_blocking_lander();
+    lander.anchor waittill("movedone");
+
+    lander.anchor.wobble = undefined;
+
+    PlayFX(level._effect["lunar_lander_dust"], base.origin);
+    base clientfield::set("COSMO_LANDER_ENGINE_FX", 0);
+    SetLanderFX(lander, base, 0);
+
+    wait 0.5;
+    
+    open_lander_gate();
+
+    for(a = 0; a < level.players.size; a++)
+    {
+        player = level.players[a];
+
+        if(!isDefined(player) || !IsAlive(player) || !isDefined(player.lander) || !player.lander)
+            continue;
+        
+        player Unlink();
+        player DisableInvulnerability();
+        player.menu["DisableMenuControls"] = undefined;
+        player.lander = false;
+    }
+
+    self SetMenuInstructions();
+
+    lander.riders = 0;
+    lander clientfield::set("COSMO_LANDER_MOVE_FX", 0);
+
+    self.ControlLunarLander = undefined;
+    level.lander_in_use = false;
+    level flag::clear("lander_inuse");
+}
+
+SetLanderFX(lander, base, state)
+{
+    lander clientfield::set("COSMO_LANDER_MOVE_FX", state);
+    base clientfield::set("COSMO_LANDER_RUMBLE_AND_QUAKE", state);
+}
+
+lander_takeoff_wobble()
+{
+    if(isDefined(self.wobble))
+        return;
+
+    self.wobble = true;
+
+    while(isDefined(self.wobble))
+    {
+        self RotateTo((RandomFloatRange(-5, 5), 0, RandomFloatRange(-5, 5)), 0.5);
+
+        wait 0.5;
+    }
+
+    self RotateTo(level.LanderSavedAngles, 0.1);
+}
+
+open_lander_gate()
+{
+	lander = GetEnt("lander", "targetname");
+	north_pos = GetEnt("zipline_door_n_pos", "script_noteworthy");
+	south_pos = GetEnt("zipline_door_s_pos", "script_noteworthy");
+
+	lander.door_north thread move_gate(north_pos, 1);
+	lander.door_south thread move_gate(south_pos, 1);
+}
+
+close_lander_gate(time)
+{
+	lander = GetEnt("lander", "targetname");
+	north_pos = GetEnt("zipline_door_n_pos", "script_noteworthy");
+	south_pos = GetEnt("zipline_door_s_pos", "script_noteworthy");
+
+	lander.door_north thread move_gate(north_pos, 0, time);
+	lander.door_south thread move_gate(south_pos, 0, time);
+}
+
+move_gate(pos, lower, time = 1)
+{
+	lander = GetEnt("lander", "targetname");
+	self Unlink();
+
+	if(lower)
+	{
+		self NotSolid();
+
+		if(self.classname == "script_brushmodel")
+			self MoveTo(pos.origin + (VectorScale((0, 0, -1), 132)), time);
+		else
+		{
+			self PlaySound("zmb_lander_gate");
+			self MoveTo(pos.origin + (VectorScale((0, 0, -1), 44)), time);
+		}
+
+		self waittill("movedone");
+
+		if(self.classname == "script_brushmodel")
+			self NotSolid();
+	}
+	else
+	{
+		if(self.classname != "script_brushmodel")
+			self PlaySound("zmb_lander_gate");
+
+		self NotSolid();
+		self MoveTo(pos.origin, time);
+		self waittill("movedone");
+
+		if(self.classname == "script_brushmodel")
+			self Solid();
+	}
+
+	self LinkTo(lander.anchor);
+}
+
+takeoff_nuke(max_zombies, range, delay, trig)
+{
+	if(isDefined(delay))
+		wait delay;
+    
+	zombies = GetAISpeciesArray("axis");
+	spot = self.origin;
+	zombies = util::get_array_of_closest(self.origin, zombies, undefined, max_zombies, range);
+
+	for(i = 0; i < zombies.size; i++)
+	{
+		if(!zombies[i] IsTouching(trig))
+			continue;
+        
+		zombies[i] thread zombie_burst();
+	}
+
+	wait 0.5;
+	lander_clean_up_corpses(spot, 250);
+}
+
+zombie_burst()
+{
+	self endon("death");
+
+	wait RandomFloatRange(0.2, 0.3);
+	level.zombie_total++;
+
+	PlaySoundAtPosition("nuked", self.origin);
+	PlayFX(level._effect["zomb_gib"], self.origin);
+
+	if(isDefined(self.lander_death))
+		self [[ self.lander_death ]]();
+    
+	self delete();
+}
+
+lander_clean_up_corpses(spot, range)
+{
+	corpses = GetCorpseArray();
+
+	if(isDefined(corpses))
+		for(i = 0; i < corpses.size; i++)
+			if(DistanceSquared(spot, corpses[i].origin) <= (range * range))
+				corpses[i] thread lander_remove_corpses();
+}
+
+lander_remove_corpses()
+{
+	wait RandomFloatRange(0.05, 0.25);
+
+	if(!isDefined(self))
+		return;
+    
+	PlayFX(level._effect["zomb_gib"], self.origin);
+	self delete();
+}
+
+player_blocking_lander()
+{
+	players = GetPlayers();
+	lander = GetEnt("lander", "targetname");
+	rider_trigger = GetEnt(lander.station + "_riders", "targetname");
+	crumb = struct::get(rider_trigger.target, "targetname");
+
+	for(i = 0; i < players.size; i++)
+	{
+		if(rider_trigger IsTouching(players[i]))
+		{
+			players[i] SetOrigin(crumb.origin + (RandomIntRange(-20, 20), RandomIntRange(-20, 20), 0));
+			players[i] DoDamage(players[i].health + 10000, players[i].origin);
+		}
+	}
+
+	zombies = GetAISpeciesArray("axis");
+
+	for(i = 0; i < zombies.size; i++)
+	{
+		if(isDefined(zombies[i]))
+		{
+			if(rider_trigger IsTouching(zombies[i]))
+			{
+				level.zombie_total++;
+                
+				PlaySoundAtPosition("nuked", zombies[i].origin);
+				PlayFX(level._effect["zomb_gib"], zombies[i].origin);
+
+				if(isDefined(zombies[i].lander_death))
+					zombies[i] [[zombies[i].lander_death]]();
+                
+				zombies[i] delete();
+			}
+		}
+	}
+
+	wait 0.5;
+}
+
 TeleportGenerator()
 {
     if(level flag::get("target_teleported"))

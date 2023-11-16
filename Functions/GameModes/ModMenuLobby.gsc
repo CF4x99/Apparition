@@ -20,7 +20,7 @@ ModMenuLobby(index)
         level.DoheartStyle = "Pulsing";
     
     if(!isDefined(level.DoheartSavedText))
-        level.DoheartSavedText = "Apparition <3";
+        level.DoheartSavedText = "Apparition Developed By CF4_99 <3";
     
     if(!isDefined(level.Doheart))
         self thread Doheart();

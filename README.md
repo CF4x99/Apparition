@@ -1,6 +1,6 @@
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.1.9.0
+    Version:              1.2.0.0
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
@@ -12,7 +12,6 @@
     Discord:            cf4_99
     Apparition Discord: https://discord.gg/NExXdMhDnW
     YouTube:            https://www.youtube.com/c/CF499
-    MXT Server:         https://discord.gg/MXT
 
     If you are using Crafty's Compiler/Injector, make sure you have the latest build. If not, you will get a syntax error.
     Latest Build: https://github.com/LJW-Dev/Black-Ops-3-GSC-Compiler/releases/latest
@@ -87,6 +86,47 @@
     Discord: cf4_99
 
 ## Changelog
+
+<details>
+    <summary>
+        Version 1.2.0.0
+    </summary>
+    
+    - Added: Auto-Correction For Menu Hud While Using Resolutions That Would Normally Put The Hud Off Screen
+    - Added: Zodiac Menu Style
+    - Added: Ability To Have Shaders As Options(Won't Use It On BO3. But, Wanted To Do It Anyways)
+    - Added: Mexican Wave
+    - Added: Flyable Lunar Lander(Ascension Only)
+    - Added: Option To Disable Menu Sounds
+    - Added: Option To Collect All Craftables At Once, Collect All Pieces Of Specific Craftable, Or Specific Parts Of A Craftable
+    - Added: Pre-Set Teleports For Every Map
+    - Added: Option To Clear Selected Stats
+    - Added: Auto-Down Player(Malicious Options)
+    - Added: Custom Teleporters(Decided On This Instead Of Ziplines, Which Have Been Requested A Lot)
+    - Added: Skybase(Works On All Maps -- You Could Still Hit G_Entity Limit On Some Maps Though)
+    - Added: New Debug Printing(Prints Bottom Left -- Will Only Be Used For Host Prints Like G_Entity Protection)
+
+    - Improved: Align 115 Rings(Origins) -- Works Perfectly Now
+    - Improved: Rank/Prestige Options -- There was a lot of confusion, and issues with this. Everything should be good now.
+    - Improved: Menu Credits
+    - Improved: G_Entity Protection(Should Adjust To All Maps Now)
+    - Improved: Unnecessary menu threads on players
+
+    - Changed: Menu Instructions Location To Bottom Center Of Screen
+    - Changed: Moved Menu Position Up
+    - Changed: Max Options Shown To 9 -- Zodiac Style Is 12
+    - Changed: Prestige Slider Max Is Now 11(Master Prestige)
+    - Changed: Player Insta-Kill To Slider(Disable, All, Melee)
+    - Changed: Spawnable System Dismantle Option -- Now Dismantles Each Piece With A Random Amount Of Force
+    - Changed: Model Scaling(Maximum: 10 || Minimum: 0.5 || Increment: 0.5)
+    - Changed: Moved Save & Load Position To Teleport Menu
+    - Changed: Welcome Message Style
+
+    - Fixed: Issue With Slider Max/Min Value Not Correctly Refreshing
+    - Fixed: Hud Count Confliction With Zombie Counter And Menu Hud
+    - Fixed: Crash With Spiral Staircase Spawning While G_Entity Crash Protection Is Deleting Entities
+
+</details>
 
 <details>
     <summary>

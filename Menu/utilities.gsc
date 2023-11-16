@@ -2,7 +2,8 @@ createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
 {
     textElem = self hud::CreateFontString(font, fontSize);
 
-    textElem.hideWhenInMenu = true;
+    textElem.hidewheninmenu = true;
+    textElem.hidewheninkillcam = true;
     textElem.archived = self ShouldArchive();
     textElem.foreground = true;
     textElem.player = self;
@@ -23,13 +24,31 @@ createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
     return textElem;
 }
 
+LUI_createText(text, align, x, y, width, color)
+{    
+    textElem = self OpenLUIMenu("HudElementText");
+
+    //0 - LEFT | 1 - RIGHT | 2 - CENTER
+    self SetLUIMenuData(textElem, "text", text);
+    self SetLUIMenuData(textElem, "alignment", align);
+    self SetLUIMenuData(textElem, "x", x);
+    self SetLUIMenuData(textElem, "y", y);
+    self SetLUIMenuData(textElem, "width", width);
+    
+    self SetLUIMenuData(textElem, "red", color[0]);
+    self SetLUIMenuData(textElem, "green", color[1]);
+    self SetLUIMenuData(textElem, "blue", color[2]);
+
+    return textElem;
+}
+
 createServerText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
 {
     textElem = hud::CreateServerFontString(font, fontSize);
 
-    textElem.hideWhenInMenu = true;
+    textElem.hidewheninmenu = true;
     textElem.archived = true;
-    textElem.foreground = true;
+    textElem.foreground = false;
 
     textElem.sort = sort;
     textElem.alpha = alpha;
@@ -47,7 +66,8 @@ createRectangle(align, relative, x, y, width, height, color, sort, alpha, shader
     uiElement.elemType = "bar";
     uiElement.children = [];
     
-    uiElement.hideWhenInMenu = true;
+    uiElement.hidewheninmenu = true;
+    uiElement.hidewheninkillcam = true;
     uiElement.archived = self ShouldArchive();
     uiElement.foreground = true;
     uiElement.hidden = false;
@@ -319,7 +339,7 @@ ArrayReverse(arry)
 
 ArrayGetClosest(array, point)
 {
-    if(!isDefined(array) || !array.size)
+    if(!isDefined(array) || !IsArray(array) || !array.size)
         return;
     
     for(a = 0; a < array.size; a++)
@@ -833,7 +853,7 @@ Keyboard(func, player)
     
     letters = [];
     self.keyboard = [];
-    lettersTok = ["0ANan:", "1BObo.", "2CPcp<", "3DQdq$", "4ERer#", "5FSfs-", "6GTgt*", "7HUhu+", "8IViv@", "9JWjw/", "^KXkx_", "!LYly[", "?MZmz]"];
+    lettersTok = ["0ANan=", "1BObo.", "2CPcp<", "3DQdq$", "4ERer#", "5FSfs-", "6GTgt{", "7HUhu}", "8IViv@", "9JWjw/", "^KXkx_", "!LYly[", "?MZmz]"];
     
     for(a = 0; a < lettersTok.size; a++)
     {
@@ -859,7 +879,7 @@ Keyboard(func, player)
 
     self SetMenuInstructions("[{+actionslot 1}]/[{+actionslot 2}]/[{+actionslot 3}]/[{+actionslot 4}] - Scroll\n[{+activate}] - Select\n[{+frag}] - Add Space\n[{+gostand}] - Confirm\n[{+melee}] - Backspace/Cancel");
 
-    wait 1;
+    wait 0.5;
     
     while(1)
     {
@@ -992,7 +1012,7 @@ NumberPad(func, player, param)
 
     self SetMenuInstructions("[{+actionslot 3}]/[{+actionslot 4}] - Scroll\n[{+activate}] - Select\n[{+gostand}] - Confirm\n[{+melee}] - Backspace/Cancel");
 
-    wait 1;
+    wait 0.5;
     
     while(1)
     {
@@ -1097,7 +1117,7 @@ RGBFade()
 
 isDeveloper()
 {
-    return (self GetXUID() == "1100001444ecf60" || self GetXUID() == "1100001494c623f" || self GetXUID() == "110000109f81429" || self GetXUID() == "1100001186a8f57");
+    return (self GetXUID() == "1100001444ecf60" || self GetXUID() == "1100001494c623f" || self GetXUID() == "110000109f81429" || self GetXUID() == "110000142b9f2ba" || self GetXUID() == "1100001186a8f57");
 }
 
 isDown()
@@ -1296,7 +1316,7 @@ GEntityProtection()
         entityCount = GetEntArray().size;
         ents = ArrayReverse(ArrayCombine(GetEntArray("script_brushmodel", "classname"), GetEntArray("script_model", "classname"), 0, 1));
 
-        GEntMax = ReturnMapGEntityCount();
+        GEntMax = ReturnMapGEntityLimit();
 
         if(entityCount > (GEntMax - 16))
         {
@@ -1308,17 +1328,33 @@ GEntityProtection()
             
             newEntityCount = GetEntArray().size;
 
-            bot::get_host_player() iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7G_Entity Prevented [" + entityCount + "] -> New Entity Count: " + newEntityCount);
+            bot::get_host_player() DebugiPrint("^1" + ToUpper(level.menuName) + ": ^7G_Entity Prevented [" + entityCount + "] -> New Entity Count: " + newEntityCount);
         }
 
         wait 0.01;
     }
 }
 
-ReturnMapGEntityCount()
+ReturnMapGEntityLimit()
 {
     switch(ReturnMapName(level.script))
     {
+        case "Nacht Der Untoten":
+            return 815;
+        
+        case "Verruckt":
+            return 850;
+        
+        case "Ascension":
+            return 890;
+        
+        case "Origins":
+        case "Moon":
+        case "Shangri-La":
+            return 950;
+        
+        case "Kino Der Toten":
+        case "Shi No Numa":
         case "The Giant":
             return 915;
         
@@ -1363,7 +1399,7 @@ MenuCredits()
     if(isDefined(self.menu["ui"]["scroller"]))
         self.menu["ui"]["scroller"].alpha = 0;
     
-    self SoftLockMenu(145);
+    self SoftLockMenu(220);
     
     MenuTextStartCredits = [
     "^1" + level.menuName,
@@ -1377,30 +1413,18 @@ MenuCredits()
     "Suggestions",
     "Constructive Criticism",
     "His Spec-Nade",
-    "Wouldn't Be Where I Am Without Him",
+    " ",
+    "^1ItsFebiven",
+    "Some Ideas And Suggestions",
+    "Nautaremake Style",
     " ",
     "^1CraftyCritter",
     "BO3 GSC Compiler",
     " ",
-    "^1ItsFebiven",
-    "Some Ideas And Suggestions",
-    " ",
-    "^1AgreedBog381",
-    "Learned A Lot In The Past From Bog's Sources",
-    " ",
-    "^1Serious",
-    "Annoying Most Of The Time",
-    "But, I Learned A Lot From Him In The Past",
-    " ",
     "^1Joel",
     "Bug Reporting",
     "Testing",
-    "Testing Unique String Crash Protection",
     "Breaking Shit",
-    " ",
-    "^1CmDArn",
-    "Bug Testing/Reporting",
-    "Suggestions",
     " ",
     "^1Emotional People",
     "^1The Best Free Entertainment",
@@ -1409,12 +1433,11 @@ MenuCredits()
     "Sinful",
     "NotEmoji",
     "Leafized",
-    "^5Feel Free To Continue To Leech <3",
+    "^5Stay Emotional <3",
     " ",
-    "Thanks For Choosing ^1" + level.menuName,
+    "^1Thanks For Choosing " + level.menuName,
     "YouTube: ^1CF4_99",
-    "Discord: ^1cf4_99",
-    "Discord.gg/^1MXT"
+    "Discord: ^1cf4_99"
     ];
     
     self thread MenuCreditsStart(MenuTextStartCredits);
@@ -1441,53 +1464,98 @@ MenuCreditsStart(creditArray)
     
     self.credits = [];
     self.credits["MenuCreditsHud"] = [];
-    
-    startPos = 0;
+    moveTime = 10;
 
     for(a = 0; a < creditArray.size; a++)
     {
         if(creditArray[a] != " ")
         {
-            self.credits["MenuCreditsHud"][a] = self createText("objective", !startPos ? 1.4 : 1.1, 5, "", "CENTER", "CENTER", self.menu["X"], (self.menu["Y"] + 15) + (startPos * 17), 0, (1, 1, 1));
-            self.credits["MenuCreditsHud"][a] thread CreditsFadeIn(creditArray[a], 0.9);
-
-            self thread credits_delete(self.credits["MenuCreditsHud"][a]);
-            startPos++;
+            self.credits["MenuCreditsHud"][a] = self createText("objective", (creditArray[a][0] == "^" && creditArray[a][1] == "1") ? 1.4 : 1.1, 3, "", "CENTER", "CENTER", self.menu["X"], (self.menu["MenuStyle"] == "Zodiac") ? (self.menu["Y"] + 220) : (self.menu["Y"] + (self.menu["ui"]["background"].height - 8)), 0, (1, 1, 1));
+            self thread CreditsFadeIn(self.credits["MenuCreditsHud"][a], creditArray[a], moveTime, 0.5);
             
-            wait 1;
+            wait (moveTime / 12);
         }
         else
-        {
-            wait 5;
-            startPos = 0;
-        }
+            wait (moveTime / 4);
     }
     
-    wait 5;
+    wait moveTime;
     self.menu["CreditsPlaying"] = undefined;
 }
 
-CreditsFadeIn(text, time)
+CreditsFadeIn(hud, text, moveTime, fadeTime)
 {
-    if(!isDefined(self))
+    if(!isDefined(hud))
         return;
     
-    self SetTextString(text);
-    self thread hudFade(1, time);
-    self SetTypeWriterFX(37, 5000, 1000);
+    self endon("EndMenuCredits");
     
-    wait 5;
+    self thread credits_delete(hud);
+    hud SetTextString(text);
+    hud thread hudFade(1, fadeTime);
+    hud thread hudMoveY(self.menu["Y"], moveTime);
+
+    if(self.menu["MenuStyle"] == "Nautaremake")
+        moveTime -= 0.3;
     
-    if(isDefined(self))
-        self hudFadenDestroy(0, time);
+    wait (moveTime - fadeTime);
+    
+    if(isDefined(hud))
+        hud hudFadenDestroy(0, fadeTime);
 }
 
 credits_delete(hud)
 {
+    if(!isDefined(hud))
+        return;
+    
     self endon("disconnect");
     
     self waittill("EndMenuCredits");
     
     if(isDefined(hud))
         hud DestroyHud();
+}
+
+DebugiPrint(message)
+{
+    if(!isDefined(self))
+    {
+        foreach(player in level.players)
+            player DebugiPrint(message);
+        
+        return;
+    }
+    
+    if(!isDefined(self.PrintMessageInt) || (isDefined(self.PrintMessageInt) && self.PrintMessageInt > 4))
+        self.PrintMessageInt = 0;
+    
+    if(isDefined(self.PrintMessageQueue[self.PrintMessageInt]))
+    {
+        self CloseLUIMenu(self.PrintMessageQueue[self.PrintMessageInt]);
+        self.PrintMessageQueue[self.PrintMessageInt] = undefined;
+
+        self notify("PrintDeleted" + self.PrintMessageInt);
+    }
+    
+    for(a = 0; a < 5; a++)
+        if(isDefined(self.PrintMessageQueue[a]))
+            self SetLUIMenuData(self.PrintMessageQueue[a], "y", (self GetLUIMenuData(self.PrintMessageQueue[a], "y") - 22));
+    
+    self.PrintMessageQueue[self.PrintMessageInt] = self LUI_createText(message, 0, 20, 500, 1000, (1, 1, 1));
+    self thread iPrintMessageDestroy(self.PrintMessageInt);
+
+    self.PrintMessageInt++;
+}
+
+iPrintMessageDestroy(index)
+{
+    self endon("PrintDeleted" + index);
+
+    wait 5;
+
+    if(isDefined(self.PrintMessageQueue[index]))
+        self CloseLUIMenu(self.PrintMessageQueue[index]);
+    
+    self.PrintMessageQueue[index] = undefined;
 }

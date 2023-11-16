@@ -427,10 +427,9 @@ ArtilleryStrike()
     while(1)
     {
         trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
-            
+        
         origin = trace["position"];
         surface = trace["surfacetype"];
-        
         goalPos.origin = origin;
 
         if(self UseButtonPressed() || self AttackButtonPressed())
@@ -1157,6 +1156,115 @@ GetBodyGuardTarget(player)
     return zombie;
 }
 
+SpawnTeleporter(action = "Spawn", origin, skipLink = false, skipDelete = false)
+{
+    if(isDefined(action) && action == "Delete All")
+    {
+        DeleteTeleporters();
+        return;
+    }
+
+    if(!isDefined(origin))
+    {
+        traceSurface = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["surfacetype"];
+
+        if(traceSurface == "none" || traceSurface == "default")
+            return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
+        
+        origin = self TraceBullet() + (0, 0, 45);
+    }
+
+    linker = SpawnScriptModel(origin, "tag_origin");
+    linker thread AddActiveTeleporter(skipLink);
+
+    return linker;
+}
+
+DeleteTeleporters()
+{
+    if(!isDefined(level.ActiveTeleporters) || !level.ActiveTeleporters.size)
+        return;
+    
+    foreach(teleporter in level.ActiveTeleporters)
+        if(isDefined(teleporter) && (isDefined(teleporter.skipDelete) && teleporter.skipDelete))
+            teleporter delete();
+}
+
+AddActiveTeleporter(skipLink = false, skipDelete = false)
+{
+    if(!isDefined(level.ActiveTeleporters))
+        level.ActiveTeleporters = [];
+    
+    if(isInArray(level.ActiveTeleporters, self))
+        return;
+    
+    if(level.ActiveTeleporters.size && !skipLink)
+    {
+        if(isDefined(level.ActiveTeleporters[(level.ActiveTeleporters.size - 1)]) && !isDefined(level.ActiveTeleporters[(level.ActiveTeleporters.size - 1)].LinkedTeleporter))
+        {
+            self.LinkedTeleporter = level.ActiveTeleporters[(level.ActiveTeleporters.size - 1)];
+            level.ActiveTeleporters[(level.ActiveTeleporters.size - 1)].LinkedTeleporter = self;
+        }
+    }
+
+    self.skipDelete = skipDelete;
+    level.ActiveTeleporters[level.ActiveTeleporters.size] = self;
+
+    self MakeUsable();
+    self SetCursorHint("HINT_NOICON");
+    self SetHintString("Press [{+activate}] To Teleport");
+
+    self thread ActivateTeleporter();
+
+    while(isDefined(self))
+    {
+        PlayFXOnTag(level._effect["teleport_aoe_kill"], self, "tag_origin");
+
+        wait 0.25;
+    }
+}
+
+ActivateTeleporter()
+{
+    if(isDefined(self.TeleporterActivated))
+        return;
+    self.TeleporterActivated = true;
+
+    while(isDefined(self))
+    {
+        self waittill("trigger", player);
+        
+        if(isDefined(player.UsingTeleporter) || !isDefined(self))
+            continue;
+        
+        if(!isDefined(self.LinkedTeleporter))
+        {
+            player iPrintlnBold("^1ERROR: ^7No Linked Teleporter Found");
+            continue;
+        }
+        
+        player thread UseTeleporter(self);
+    }
+}
+
+UseTeleporter(teleporter)
+{
+    if(!isDefined(teleporter) || isDefined(self.UsingTeleporter) || !isDefined(teleporter.LinkedTeleporter))
+        return;
+    
+    self.UsingTeleporter = true;
+    PlayFX(level._effect["teleport_splash"], teleporter.origin);
+
+    wait 0.05;
+
+    self SetOrigin(teleporter.LinkedTeleporter.origin);
+    PlayFX(level._effect["teleport_splash"], teleporter.LinkedTeleporter.origin);
+
+    wait 3;
+
+    self.UsingTeleporter = undefined;
+}
+
 SpiralStaircase(size)
 {
     model = GetSpawnableBaseModel();
@@ -1204,16 +1312,57 @@ SpiralStaircase(size)
         if(!isDefined(level.SpiralStaircase))
             level.SpiralStaircase = [];
         
-        level.SpiralStaircase[0] = SpawnScriptModel(origin, model, (-28, self.angles[1], 90));
+        startAngles = (-28, self.angles[1], 90);
+        level.SpiralStaircase[0] = SpawnScriptModel(origin, model, startAngles);
         
         for(a = 1; a < size; a++)
         {
+            if(!isDefined(level.SpiralStaircase[(level.SpiralStaircase.size - 1)]))
+                continue;
+            
             origin = level.SpiralStaircase[(level.SpiralStaircase.size - 1)].origin;
             angles = level.SpiralStaircase[(level.SpiralStaircase.size - 1)].angles;
             
-            level.SpiralStaircase[level.SpiralStaircase.size] = SpawnScriptModel((origin + (AnglesToForward(angles) * 10) + (0, 0, 8)), model, (level.SpiralStaircase[0].angles[0], (angles[1] + 12), level.SpiralStaircase[0].angles[2]), 0.01);
+            level.SpiralStaircase[level.SpiralStaircase.size] = SpawnScriptModel((origin + (AnglesToForward(angles) * 10) + (0, 0, 8)), model, (startAngles[0], (angles[1] + 12), startAngles[2]), 0.01);
         }
 
         level.SpiralStaircaseSpawning = undefined;
+    }
+}
+
+MexicanWave(size)
+{
+    if(isDefined(self.MexicanWave) && self.MexicanWave.size)
+    {
+        for(a = 0; a < self.MexicanWave.size; a++)
+            self.MexicanWave[a] delete();
+        
+        self.MexicanWave = undefined;
+        
+        return;
+    }
+    
+    self.MexicanWave = [];
+
+    for(a = 0; a < size; a++)
+    {
+        self.MexicanWave[self.MexicanWave.size] = SpawnScriptModel(self.origin + AnglesToRight(self.angles) * (a * 45), "defaultactor", self.angles);
+        self.MexicanWave[(self.MexicanWave.size - 1)] thread MexicanWaveMove(a);
+    }
+}
+
+MexicanWaveMove(index)
+{
+    wait (index * 0.2);
+
+    while(isDefined(self))
+    {
+        self MoveZ(55, 0.75);
+        wait 0.74;
+
+        if(isDefined(self))
+            self MoveZ(-55, 0.75);
+        
+        wait 0.74;
     }
 }

@@ -117,11 +117,15 @@ SetClanTag(tag, player)
             break;
         
         default:
-            tag = tag;
             break;
     }
     
     player SetDStat("clanTagStats", "clanName", tag);
+}
+
+ClearCustomStats(player)
+{
+    player.CustomStatsArray = [];
 }
 
 CustomStatsValue(value, player)
@@ -216,11 +220,15 @@ SetPlayerPrestige(prestige, player)
 {
     player endon("disconnect");
 
+    menu = self getCurrent();
+    curs = self getCursor();
+
     player SetDStat("PlayerStatsList", "plevel", "StatValue", prestige);
     player SetRank(player rank::getRankForXp(player rank::getRankXP()), player GetDStat("PlayerStatsList", "plevel", "StatValue"));
 
     wait 0.1;
 
+    RefreshMenu(menu, curs);
     UploadStats(player);
 }
 
@@ -228,10 +236,11 @@ SetPlayerRank(rank, player)
 {
     player endon("disconnect");
 
-    add = (rank > 35) ? Int(TableLookup("gamedata/tables/zm/zm_paragonranktable.csv", 0, (rank - 36), (rank == 100) ? 7 : 2)) : Int(TableLookup("gamedata/tables/zm/zm_ranktable.csv", 0, (rank - 1), (rank == 35) ? 7 : 2));
-    current = (rank > 35) ? Int(player GetDStat("PlayerStatsList", "paragon_rankxp", "StatValue")) : Int(player GetDStat("PlayerStatsList", "rankxp", "StatValue"));
-
-    player AddRankXPValue("win", (add - current));
+    stat = (rank > 35) ? "paragon_rankxp" : "rankxp";
+    rtnColumn = (rank == 35 || rank == 1000) ? 7 : 2;
+    value = (rank > 35) ? Int(TableLookup("gamedata/tables/zm/zm_paragonranktable.csv", 13, rank, rtnColumn)) : Int(TableLookup("gamedata/tables/zm/zm_ranktable.csv", 0, (rank - 1), rtnColumn));
+    
+    self AddRankXPValue("win", (value - player GetDStat("PlayerStatsList", stat, "StatValue")));
 
     wait 0.1;
 

@@ -154,6 +154,31 @@ MortarStrikePlayer(player)
     }
 }
 
+AutoDownPlayer(player)
+{
+    player.AutoDown = isDefined(player.AutoDown) ? undefined : true;
+
+    player endon("disconnect");
+
+    while(isDefined(player.AutoDown))
+    {
+        if(Is_Alive(player) && !player IsDown() && !player IsHost() && !player isDeveloper())
+        {
+            if(isDefined(player.godmode))
+                player Godmode(player);
+
+            if(isDefined(player.DemiGod))
+                player DemiGod(player);
+            
+            player DisableInvulnerability(); //Just to ensure that the player is able to be damaged.
+
+            player DoDamage(player.health + 999, (0, 0, 0));
+        }
+
+        wait 0.1;
+    }
+}
+
 FlashLoop(player)
 {
     player.FlashLoop = isDefined(player.FlashLoop) ? undefined : true;

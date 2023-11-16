@@ -28,6 +28,10 @@ MenuArrays(menu)
     self.menu["items"][menu].incslidermin = [];
     self.menu["items"][menu].incsliderstart = [];
     self.menu["items"][menu].incslidermax = [];
+    self.menu["items"][menu].shader = [];
+    self.menu["items"][menu].width = [];
+    self.menu["items"][menu].height = [];
+    self.menu["items"][menu].color = [];
     
     if(!isDefined(self.menu_B))
         self.menu_B = [];
@@ -100,6 +104,9 @@ addOptIncSlider(name, fnc, min = 0, start = 0, max = 1, increment = 1, input1, i
 {
     menu = self.temp["memory"];
     size = self.menu["items"][menu].name.size;
+
+    if(start > max || start < min)
+        start = (start > max) ? max : min;
     
     self.menu["items"][menu].name[size] = name;
     self.menu["items"][menu].func[size] = fnc;
@@ -115,6 +122,11 @@ addOptIncSlider(name, fnc, min = 0, start = 0, max = 1, increment = 1, input1, i
     
     if(!isDefined(self.menu_SS[menu][size]))
         self.menu_SS[menu][size] = start;
+    else
+    {
+        if(self.menu_SS[menu][size] > max || self.menu_SS[menu][size] < min)
+            self.menu_SS[menu][size] = (self.menu_SS[menu][size] > max) ? max : min;
+    }
 }
 
 addOptSlider(name, fnc, values, input1, input2, input3, input4)
@@ -134,4 +146,21 @@ addOptSlider(name, fnc, values, input1, input2, input3, input4)
     
     if(!isDefined(self.menu_SS[menu][size]))
         self.menu_SS[menu][size] = 0;
+}
+
+addOptShader(shader = "white", color = (1, 1, 1), width = 1, height = 1, fnc, input1, input2, input3, input4)
+{
+    menu = self.temp["memory"];
+    size = self.menu["items"][menu].name.size;
+
+    self.menu["items"][menu].name[size] = shader;
+    self.menu["items"][menu].func[size] = fnc;
+    self.menu["items"][menu].input1[size] = input1;
+    self.menu["items"][menu].input2[size] = input2;
+    self.menu["items"][menu].input3[size] = input3;
+    self.menu["items"][menu].input4[size] = input4;
+    self.menu["items"][menu].shader[size] = shader;
+    self.menu["items"][menu].width[size] = width;
+    self.menu["items"][menu].height[size] = height;
+    self.menu["items"][menu].color[size] = color;
 }

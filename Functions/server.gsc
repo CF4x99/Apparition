@@ -33,9 +33,7 @@ SetRound(round)
         round = 1;
     
     level.zombie_total = 0;
-	level.round_number = round;
 	world.roundnumber = (round ^ 115);
-
     SetRoundsPlayed(round);
 
     level notify("kill_round");
@@ -71,19 +69,14 @@ AntiEndGame()
 
     if(isDefined(level.AntiEndGame))
     {
-        while(isDefined(level.AntiEndGame))
+        foreach(player in level.players)
         {
-            foreach(player in level.players)
-            {
-                if(isDefined(player.AntiEndGameHandler))
-                    continue;
-                
-                player.AntiEndGameHandler = true;
-
-                player thread WatchForEndRound();
-            }
+            if(isDefined(player.AntiEndGameHandler))
+                continue;
             
-            wait 0.01;
+            player.AntiEndGameHandler = true;
+
+            player thread WatchForEndRound();
         }
     }
     else
@@ -117,29 +110,16 @@ WatchForEndRound()
 
         self waittill("menuresponse", menu, response);
 
-        if(response == "endround" || response == "killserverpc" || response == "endgame")
+        if(response == "endround")
         {
-            if(self IsHost())
-            {
-                level.hostforcedend = false;
-                level.forcedend = false;
-                level.gameended = false;
+            level.hostforcedend = true;
+            level.forcedend = true;
+            level.gameended = true;
 
-                wait 0.1;
+            self iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7Blocked End Game Response");
+            bot::get_host_player() DebugiPrint("^1" + ToUpper(level.menuName) + ": ^2" + CleanName(self getName()) + " ^7Tried To End The Game");
 
-                level thread globallogic::forceEnd();
-            }
-            else
-            {
-                level.hostforcedend = true;
-                level.forcedend = true;
-                level.gameended = true;
-
-                self iPrintlnBold("^1ERROR: ^2" + level.menuName + " ^7Blocked End Game Response");
-                bot::get_host_player() iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^2" + CleanName(self getName()) + " ^7Tried To End The Game");
-
-                wait 0.5; //buffer
-            }
+            wait 0.5; //buffer
         }
     }
 }
@@ -474,6 +454,23 @@ SpawnBot()
         ServerRespawnPlayer(bot);
 }
 
+CollectAllCraftables()
+{
+    menu = self getCurrent();
+    curs = self getCursor();
+    
+    keys = GetArrayKeys(level.zombie_include_craftables);
+
+    foreach(key in keys)
+        foreach(part in level.zombie_include_craftables[key].a_piecestubs)
+            if(isDefined(part.pieceSpawn))
+                self zm_craftables::player_take_piece(part.pieceSpawn);
+    
+    wait 0.05;
+
+    self RefreshMenu(menu, curs);
+}
+
 CollectCraftableParts(craftable)
 {
     menu = self getCurrent();
@@ -503,7 +500,7 @@ CollectCraftablePart(part)
 
 IsCraftableCollected(craftable)
 {
-    if(craftable == "open_table")
+    if(craftable == "open_table" || IsSubStr(craftable, "ritual_"))
         return true;
     
     foreach(part in level.zombie_include_craftables[craftable].a_piecestubs)
@@ -526,7 +523,7 @@ IsAllCraftablesCollected()
     craftables = GetArrayKeys(level.zombie_include_craftables);
 
     for(a = 0; a < craftables.size; a++)
-        if(isDefined(craftables[a]) && craftables[a] != "open_table" && !IsCraftableCollected(craftables[a]))
+        if(isDefined(craftables[a]) && !IsSubStr(craftables[a], "ritual_") && craftables[a] != "open_table" && !IsCraftableCollected(craftables[a]))
             return false;
     
     return true;
@@ -968,12 +965,4 @@ ServerRestartGame()
         Map(level.script);
     else
         MissionFailed();
-}
-
-ServerEndGame()
-{
-    if(isDefined(level.AntiEndGame))
-        return self iPrintlnBold("^1ERROR: ^7You Can't End The Game While Anti-End Game Is Enabled");
-    
-    level globallogic::forceend();
 }

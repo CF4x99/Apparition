@@ -1,7 +1,7 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.1.9.0
+    Version:              1.2.0.0
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
     
@@ -13,7 +13,6 @@
     Discord:            cf4_99
     Apparition Discord: https://discord.gg/NExXdMhDnW
     YouTube:            https://www.youtube.com/c/CF499
-    MXT Server:         https://discord.gg/MXT
 
     If you are using Crafty's Compiler/Injector, make sure you have the latest build. If not, you will get a syntax error.
     Latest Build: https://github.com/LJW-Dev/Black-Ops-3-GSC-Compiler/releases/latest
@@ -232,7 +231,7 @@ onPlayerSpawned()
 
         //If there is an unknown map detected(custom map) it will display this note to the host.
         if(ReturnMapName(level.script) == "Unknown")
-            self iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7On Custom Maps, Some Things Might Not Work As They Should.");
+            self DebugiPrint("^1" + ToUpper(level.menuName) + ": ^7On Custom Maps, Some Things Might Not Work As They Should.");
     }
     
     self thread playerSetup();
@@ -245,7 +244,7 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName = "Apparition";
-    level.menuVersion = "1.1.9.0";
+    level.menuVersion = "1.2.0.0";
 
     level.MenuStatus = ["None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer"];
 
@@ -292,12 +291,13 @@ DefineMenuArrays()
     {
         level.menuTeleports = [];
         
+        //Teleport Name, Followed By The Origin
         //[< teleport location name >, < (x, y, z) origin >]
 
         switch(map)
         {
             case "Shadows Of Evil":
-                locations = ["Spawn", (1077.87, -5364.46, 124.719), "Pack 'a' Punch", (2614.68, -2348.33, -351.875)];
+                locations = ["Spawn", (1077.87, -5364.46, 124.719), "Pack 'a' Punch", (2614.68, -2348.33, -351.875), "Prison", (3007, -6542, 296.125)];
                 break;
             
             case "The Giant":
@@ -309,11 +309,43 @@ DefineMenuArrays()
                 break;
             
             case "Zetsubou No Shima":
-                locations = ["Spawn", (393.455, -3181.32, -501.117), "Power", (-1475.2, 3456.67, -426.877), "Pack 'a' Punch", (246.815, 3818.53, -503.875)];
+                locations = ["Spawn", (393.455, -3181.32, -501.117), "Power", (-1475.2, 3456.67, -426.877), "Pack 'a' Punch", (246.815, 3818.53, -503.875), "Prison", (2608, 1135, -175.875)];
+                break;
+            
+            case "Gorod Krovi":
+                locations = ["Spawn", (-144, -184, 0.125), "Power", (102, 4969, 144.125), "Pack 'a' Punch", (-2967, 21660, 0.125), "Prison", (-2152, 3644, 160.125)];
+                break;
+            
+            case "Revelations":
+                locations = ["Spawn", (-4812, 72, -451.2), "Pack 'a' Punch", (819, 145, -3301.9), "Origins", (-3006, 3470, 1066), "Nacht Der Untoten", (109, 448, -379.6), "Verruckt", (5027, -2366, 230), "Kino Der Toten", (-1393, -9218, -1663.5), "Shangri-La", (-2023, -4151, -1699.5), "Mob Of The Dead", (478, 3301, 1264.125), "Prison", (154, 474, -740.125)];
+                break;
+            
+            case "Nacht Der Untoten":
+                locations = ["Spawn", (53, 415, 5.25), "Prison", (-162, -396, 1.125)];
+                break;
+            
+            case "Verruckt":
+                locations = ["Spawn", (1097, 302, 64.125), "Power", (-357, -219, 226.125), "Prison", (1154, 791, 64.125)];
+                break;
+            
+            case "Shi No Numa":
+                locations = ["Spawn", (10267, 514, -528.875), "Out Of The Map", (12374, 4523, -664.875), "Under The Map", (11838, -1614, -1217.94), "Prison", (12500, -939, -644.875)];
                 break;
             
             case "Kino Der Toten":
                 locations = ["Spawn", (13.2366, -1262.8, 90.125), "Power", (-619.298, 1391.23, -15.875), "Pack 'a' Punch", (5.74551, -376.756, 320.125), "Air Force Room", (1154.75, 2650.46, -367.875), "Surgical Room", (1948.13, -2204.91, 136.125), "Samantha's Room", (-2636.31, 189.825, 52.125), "Samantha's Red Room", (-2620.55, -1106.91, 53.3851), "Prison", (-1590.36, -4760.5, -167.875)];
+                break;
+            
+            case "Ascension":
+                locations = ["Spawn", (-512, 3, -484.875), "Power", (-464, 1028, 220.125), "Pack 'a' Punch", (487, 389, -303.875), "Prison", (-228, 1306, -485.875)];
+                break;
+            
+            case "Shangri-La":
+                locations = ["Spawn", (-10, -740, 20.125), "Pack 'a' Punch", (-2, 381, 289.125), "Prison", (1052, 1275, -547.875)];
+                break;
+            
+            case "Moon":
+                locations = ["Earth Spawn", (22250, -38663, -679.875), "Moon Spawn", (-4, 32, -1.875), "Power", (42, 3100, -587.875), "Dome", (-162, 6893, 0.45), "Prison", (743, 966, -220.875)];
                 break;
             
             case "Origins":
@@ -386,8 +418,10 @@ DefineMenuArrays()
 
     foreach(DeathBarrier in GetEntArray("trigger_hurt", "classname"))
         DeathBarrier delete();
+    
+    level.SavedMapEntities = [];
 
-    foreach(entity in GetEntArray("script_model", "classname")) //Needed For Moon Doors
+    foreach(entity in GetEntArray("script_model", "classname"))
     {
         if(entity.model == "tag_origin" || IsSubStr(entity.model, "collision"))
             continue;
@@ -424,9 +458,10 @@ playerSetup()
     self.menuState["verification"] = self isDeveloper() ? level.MenuStatus[(level.MenuStatus.size - 1)] : self IsHost() ? level.MenuStatus[(level.MenuStatus.size - 2)] : isInArray(level.MenuStatus, GetDvarString("ApparitionV_" + self GetXUID())) ? GetDvarString("ApparitionV_" + self GetXUID()) : level.MenuStatus[0];
     
     if(self hasMenu())
-        self thread ApparitionWelcomeMessage();
-    
-    self thread menuMonitor();
+    {
+        self thread ApparitionWelcomeMessage("Welcome To ^1" + level.menuName + ",Status: ^1" + self.menuState["verification"] + ",[{+speed_throw}] & [{+melee}] To ^1Open");
+        self thread menuMonitor();
+    }
 }
  
 defineVariables()
@@ -440,13 +475,27 @@ defineVariables()
     self.menuState = [];
     
     self.hud_count = 0;
-    self.menu["currentMenu"] = "";
     
     //Menu Design Variables
     self LoadMenuVars();
 }
 
-ApparitionWelcomeMessage()
+NotifyWelcomeMessage(message = "", time = 5)
+{
+    WelcomeMessage = [];
+    msg            = StrTok(message, ",");
+    
+    for(a = 0; a < msg.size; a++)
+    {
+        WelcomeMessage[a] = self createText("objective", 1.3, 0, "", "CENTER", "CENTER", 800, 30 + (a * 15), 0, (1, 1, 1));
+        WelcomeMessage[a] thread SetTextFX(msg[a], time);
+        WelcomeMessage[a] thread hudMoveX(0, 0.4);
+        
+        wait 0.5;
+    }
+}
+
+ApparitionWelcomeMessage(message)
 {
     if(isDefined(self.WelcomeDisplay))
         return;
@@ -454,27 +503,19 @@ ApparitionWelcomeMessage()
 
     self endon("disconnect");
 
-    if(!isDefined(self.welcomeMessage))
-    {
-        self.welcomeMessage = self createText("objective", 1.3, 1, "", "CENTER", "CENTER", 0, -60, 1, level.RGBFadeColor);
-
-        if(isDefined(self.welcomeMessage))
-        {
-            self.welcomeMessage thread SetTextFX("Welcome To " + level.menuName + " Developed By CF4_99", 4);
-            self.welcomeMessage thread HudRGBFade();
-        }
-    }
+    self thread NotifyWelcomeMessage(message);
     
     //Menu Instructions only display when the player is verified
     //Menu Instructions Can Be Disabled In Menu Customization
     //If you want to disable by default: menu_customization.gsc -> LoadMenuVars() -> self.menu["DisableMenuInstructions"] = undefined; <- Change to true
+    inY = 230;
     
     while(1)
     {
         if(!isDefined(self.menu["DisableMenuInstructions"]) && self hasMenu() && (!isDefined(self.MenuInstructionsBG) || !isDefined(self.MenuInstructions)))
         {
             if(!isDefined(self.MenuInstructionsBG))
-                self.MenuInstructionsBG = self createRectangle("TOP_LEFT", "CENTER", (self.menu["X"] - (self.menu["MenuWidth"] / 2) - 1), -235, 0, 15, (0, 0, 0), 1, 0.8, "white");
+                self.MenuInstructionsBG = self createRectangle("TOP_LEFT", "CENTER", -100, inY, 0, 15, (0, 0, 0), 1, 0.8, "white");
             
             if(!isDefined(self.MenuInstructions))
                 self.MenuInstructions = self createText("default", 1.1, 2, "", "LEFT", "CENTER", (self.MenuInstructionsBG.x + 1), (self.MenuInstructionsBG.y + 6), 1, (1, 1, 1));
@@ -486,6 +527,9 @@ ApparitionWelcomeMessage()
 
             if(isDefined(self.MenuInstructionsBG))
                 self.MenuInstructionsBG DestroyHud();
+            
+            if(!self hasMenu())
+                break;
             
             if(!Is_Alive(self) && !isDefined(self.refreshInstructions))
                 self.refreshInstructions = true; //Instructions Need To Be Refreshed To Make Sure They Are Archived Correctly To Be Shown While Dead
@@ -520,10 +564,16 @@ ApparitionWelcomeMessage()
                 self.MenuInstructions SetTextString(string);
             
             height = IsSubStr(string, "\n") ? (CorrectNL_BGHeight(string) - 5) : CorrectNL_BGHeight(string);
-            width = IsSubStr(string, "[{") ? (self.MenuInstructions GetTextWidth() - 100) : (self.MenuInstructions GetTextWidth() - 35);
+            width = (IsSubStr(string, "[{") && self.MenuInstructions GetTextWidth() >= 225) ? (self.MenuInstructions GetTextWidth() - 100) : (self.MenuInstructions GetTextWidth() - 35);
             
             if(self.MenuInstructionsBG.width != width || self.MenuInstructionsBG.height != height)
                 self.MenuInstructionsBG SetShaderValues(undefined, width, height);
+            
+            if(self.MenuInstructionsBG.y != (inY - height))
+            {
+                self.MenuInstructionsBG.y = (inY - height);
+                self.MenuInstructions.y = (self.MenuInstructionsBG.y + 6);
+            }
         }
 
         wait 0.01;
@@ -560,9 +610,10 @@ WatchForDisconnect()
             player.menuParent[player.menuParent.size] = "Main";
 
             if(openMenu)
+            {
                 player openMenu1();
-
-            player iPrintlnBold("^1ERROR: ^7Player Has Disconnected");
+                player iPrintlnBold("^1ERROR: ^7Player Has Disconnected");
+            }
         }
         else if(player isInMenu() && player getCurrent() == "Players") //If a player is viewing the player menu when a player disconnects, it will refresh the options
             player RefreshMenu();

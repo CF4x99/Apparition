@@ -168,16 +168,11 @@ enable_perk_machines_in_zone()
 	{
 		a_keys = GetArrayKeys(self.perk_machines);
 
-		i = 0;
-		while(i < a_keys.size)
+		for(a = 0; a < a_keys.size; a++)
 		{
-			level notify(a_keys[i] + "_on");
-			i++;
-		}
+			level notify(a_keys[a] + "_on");
 
-		for(i = 0; i < a_keys.size; i++)
-		{
-			e_perk_trigger = self.perk_machines[a_keys[i]];
+			e_perk_trigger = self.perk_machines[a_keys[a]];
 			e_perk_trigger.is_locked = 0;
 			e_perk_trigger zm_perks::reset_vending_hint_string();
 		}
@@ -219,6 +214,7 @@ enable_mystery_boxes_in_zone()
 	foreach(var_ee5097f2, mystery_box in self.mystery_boxes)
 	{
 		mystery_box.is_locked = 0;
+
 		mystery_box.zbarrier [[ level.magic_box_zbarrier_state_func ]]("player_controlled"); 
 		mystery_box.zbarrier clientfield::set("magicbox_runes", 1);
 	}
@@ -226,8 +222,7 @@ enable_mystery_boxes_in_zone()
 
 function_c3b54f6d()
 {
-	var_43157bc9 = "power_on" + self.script_int;
-	level flag::set(var_43157bc9);
+	level flag::set("power_on" + self.script_int);
 }
 
 disable_perk_machines_in_zone()
@@ -236,16 +231,11 @@ disable_perk_machines_in_zone()
 	{
 		a_keys = GetArrayKeys(self.perk_machines);
 
-		i = 0;
-		while(i < a_keys.size)
+		for(a = 0; a < a_keys.size; a++)
 		{
-			level notify(a_keys[i] + "_off");
-			i++;
-		}
+			level notify(a_keys[a] + "_off");
 
-		for(i = 0; i < a_keys.size; i++)
-		{
-			e_perk_trigger = self.perk_machines[a_keys[i]];
+			e_perk_trigger = self.perk_machines[a_keys[a]];
 			e_perk_trigger.is_locked = 1;
 			e_perk_trigger SetHintString(&"ZM_TOMB_ZC");
 		}
@@ -276,6 +266,7 @@ disable_mystery_boxes_in_zone()
 	foreach(var_c5cf7f78, mystery_box in self.mystery_boxes)
 	{
 		mystery_box.is_locked = 1;
+
 		mystery_box.zbarrier [[ level.magic_box_zbarrier_state_func ]]("zombie_controlled");
 		mystery_box.zbarrier clientfield::set("magicbox_runes", 0);
 	}
@@ -424,6 +415,7 @@ check_stat_complete(s_stat)
 				player clientfield::set_to_player(s_stat.s_parent.cf_complete, 1);
 				player function_fbbc8608(s_stat.s_parent.str_hint, s_stat.s_parent.n_index);
 				player PlaySound("evt_medal_acquired");
+
 				util::wait_network_frame();
 			}
 		}
@@ -432,6 +424,7 @@ check_stat_complete(s_stat)
 			s_player_stats = level._challenges.a_players[self.characterindex];
 			s_player_stats.n_completed++;
 			s_player_stats.n_medals_held++;
+
 			self PlaySound("evt_medal_acquired");
 			self clientfield::set_to_player(s_stat.s_parent.cf_complete, 1);
 			self function_fbbc8608(s_stat.s_parent.str_hint, s_stat.s_parent.n_index);
@@ -452,6 +445,7 @@ check_stat_complete(s_stat)
 					if(level._challenges.a_players[player.characterindex].n_completed + level._challenges.s_team.n_completed == level._challenges.a_stats.size)
 						player notify("all_challenges_complete");
 		}
+
 		util::wait_network_frame();
 	}
 }
@@ -866,49 +860,59 @@ Align115Rings(type)
 	switch(type)
 	{
 		case "Ice":
-			num = 1;
+			num = 0;
 			break;
 		
 		case "Lightning":
-			num = 2;
+			num = 1;
 			break;
 		
 		case "Fire":
-			num = 3;
+			num = 2;
 			break;
 		
 		case "Wind":
-			num = 4;
+			num = 3;
 			break;
 		
 		default:
-			num = 1;
+			num = 0;
 			break;
 	}
 	
 	rings = GetEntArray("crypt_puzzle_disc", "script_noteworthy");
 	level flag::set("disc_rotation_active");
-
+	
 	foreach(ring in rings)
 	{
-		if(ring.position == (num - 1) || !isDefined(ring.target))
+		if(ring.position == num || !isDefined(ring.target))
 			continue;
 		
-		ring.position = (num - 1);
-		new_angles = (ring.angles[0], ring.position * 90, ring.angles[2]);
+		ring.position = num;
 
-		ring RotateTo(new_angles, 1, 0, 0);
-		ring PlaySound("zmb_crypt_disc_turn");
+		self RotateTo((self.angles[0], (self.position * 90), self.angles[2]), 1, 0, 0);
+		self PlaySound("zmb_crypt_disc_turn");
+
+		wait 0.75;
+
+		self.n_bryce_cake = ((self.n_bryce_cake + 1) % 2);
+
+		if(isDefined(self.var_b1c02d8a))
+			self.var_b1c02d8a clientfield::set("bryce_cake", self.n_bryce_cake);
+		
+		wait 0.25;
+
+		self.n_bryce_cake = ((self.n_bryce_cake + 1) % 2);
+
+		if(isDefined(self.var_b1c02d8a))
+			self.var_b1c02d8a clientfield::set("bryce_cake", self.n_bryce_cake);
+		
+		self PlaySound("zmb_crypt_disc_stop");
+		rumble_nearby_players(self.origin, 1000, 2);
 
 		wait 1;
 
-		ring.n_bryce_cake = (num - 1);
-
-		if(isDefined(ring.var_b1c02d8a))
-			ring.var_b1c02d8a clientfield::set("bryce_cake", ring.n_bryce_cake);	
-		
-		ring PlaySound("zmb_crypt_disc_stop");
-		rumble_nearby_players(ring.origin, 1000, 2);
+		level notify("crypt_disc_rotation");
 	}
 
 	level flag::clear("disc_rotation_active");

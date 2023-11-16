@@ -96,7 +96,7 @@ runMenuIndex(menu)
         case "Menu Customization":
             self addMenu(menu, "Menu Customization");
                 self addOpt("Menu Credits", ::MenuCredits);
-                self addOptSlider("Menu Style", ::MenuStyle, level.menuName + ";Nautaremake;Native");
+                self addOptSlider("Menu Style", ::MenuStyle, level.menuName + ";Zodiac;Nautaremake;Native");
                 self addOpt("Design Preferences", ::newMenu, "Design Preferences");
                 self addOpt("Main Design Color", ::newMenu, "Main Design Color");
             break;
@@ -104,11 +104,12 @@ runMenuIndex(menu)
         case "Design Preferences":
             self addMenu(menu, "Design Preferences");
                 self addOptSlider("Toggle Style", ::ToggleStyle, "Boxes;Text;Text Color");
-                self addOptIncSlider("Max Options", ::MenuMaxOptions, 5, 5, (self.menu["MenuStyle"] == "Nautaremake") ? 9 : 12, 1);
+                self addOptIncSlider("Max Options", ::MenuMaxOptions, 5, 5, (self.menu["MenuStyle"] == "Zodiac") ? 12 : 9, 1);
                 self addOptBool(self.menu["LargeCursor"], "Large Cursor", ::LargeCursor);
                 self addOptBool(self.menu["DisableMenuInstructions"], "Disable Instructions", ::DisableMenuInstructions);
                 self addOptBool(self.menu["DisableQM"], "Disable Quick Menu", ::DisableQuickMenu);
                 self addOptBool(self.menu["DisableMenuAnimations"], "Disable Menu Animations", ::DisableMenuAnimations);
+                self addOptBool(self.menu["DisableMenuSounds"], "Disable Menu Sounds", ::DisableMenuSounds);
             break;
         
         case "Main Design Color":
@@ -141,7 +142,6 @@ runMenuIndex(menu)
                 self addOpt("Welcome", ::DisplayMessage, "Welcome To " + level.menuName);
                 self addOpt("Developer", ::DisplayMessage, level.menuName + " Was Developed By CF4_99");
                 self addOpt("YouTube", ::DisplayMessage, "YouTube: CF4_99");
-                self addOpt("Discord.gg/MXT", ::DisplayMessage, "Discord.gg/MXT");
             break;
         
         case "Power-Up Menu":
@@ -186,7 +186,9 @@ runMenuIndex(menu)
 
                 self addOptSlider("Controllable Zombie", ::ControllableZombie, "Friendly;Enemy");
                 self addOptBool(self.BodyGuard, "Body Guard", ::BodyGuard);
+                self addOptSlider("Teleporter", ::SpawnTeleporter, "Spawn;Delete All");
                 self addOptIncSlider("Spiral Staircase", ::SpiralStaircase, 5, 5, 50, 1);
+                self addOptIncSlider("Mexican Wave", ::MexicanWave, 2, 2, 15, 1);
             break;
         
         case "Rain Options":
@@ -278,7 +280,7 @@ runMenuIndex(menu)
             
             self addMenu(menu, "Forge Options");
                 self addOpt("Spawn", ::newMenu, "Spawn Script Model");
-                self addOptIncSlider("Scale", ::ForgeModelScale, 1, 1, 10, 1);
+                self addOptIncSlider("Scale", ::ForgeModelScale, 0.5, 1, 10, 0.5);
                 self addOpt("Place", ::ForgePlaceModel);
                 self addOpt("Copy", ::ForgeCopyModel);
                 self addOpt("Rotate", ::newMenu, "Rotate Script Model");
@@ -315,7 +317,7 @@ runMenuIndex(menu)
                     self addOptBool(AllEntitiesInvisible(), "Invisibility", ::EntitiesInvisibility);
                     self addOpt("Delete", ::DeleteEntities);
                     self addOpt("Rotation", ::newMenu, "Entities Rotation");
-                    self addOptIncSlider("Scale", ::EntitiesScale, 1, 1, 10, 1);
+                    self addOptIncSlider("Scale", ::EntitiesScale, 0.5, 1, 10, 0.5);
                     self addOptSlider("Teleport", ::TeleportEntities, "Self;Crosshairs");
                     self addOpt("Reset Origin", ::EntitiesResetOrigins);
                 }
@@ -337,7 +339,7 @@ runMenuIndex(menu)
                 self addOpt("Delete", ::DeleteEntity, level.SavedMapEntities[self.EntityEditorNumber]);
                 self addOptBool(level.SavedMapEntities[self.EntityEditorNumber].Invisibility, "Invisibility", ::EntityInvisibility, level.SavedMapEntities[self.EntityEditorNumber]);
                 self addOpt("Rotation", ::newMenu, "Entity Rotation", false, self.EntityEditorNumber);
-                self addOptIncSlider("Scale", ::EntityScale, 1, 1, 10, 1, level.SavedMapEntities[self.EntityEditorNumber]);
+                self addOptIncSlider("Scale", ::EntityScale, 0.5, 1, 10, 0.5, level.SavedMapEntities[self.EntityEditorNumber]);
                 self addOptSlider("Teleport", ::TeleportEntity, "Self;Self To Entity;Crosshairs", level.SavedMapEntities[self.EntityEditorNumber]);
                 self addOpt("Reset Origin", ::EntityResetOrigin, level.SavedMapEntities[self.EntityEditorNumber]);
             break;
@@ -486,7 +488,7 @@ runMenuIndex(menu)
                 self addOpt("Fire", ::newMenu, "Fire Puzzles");
                 self addOpt("Lightning", ::newMenu, "Lightning Puzzles");
                 self addOpt("");
-                self addOptSlider("115 Rings(Buggy)", ::Align115Rings, "Ice;Lightning;Fire;Wind");
+                self addOptSlider("115 Rings", ::Align115Rings, "Ice;Lightning;Fire;Wind");
             break;
         
         case "Ice Puzzles":
@@ -553,6 +555,7 @@ runMenuIndex(menu)
         
         case "ZNS Bucket Water":
             self addMenu(menu, "Bucket Water Type");
+
                 foreach(source in GetEntArray("water_source", "targetname"))
                     self addOptBool(self.var_c6cad973 == source.script_int, ZNSReturnWaterType(source.script_int), ::ZNSFillBucket, source);
                 
@@ -562,6 +565,8 @@ runMenuIndex(menu)
         case "Ascension Scripts":
             self addMenu(menu, "Ascension Scripts");
                 self addOptBool(level flag::get("power_on"), "Turn On Power", ::ActivatePower);
+                self addOpt("Control Lunar Lander", ::ControlLunarLander);
+                self addOpt("");
 
                 if(!level flag::get("target_teleported"))
                     self addOpt("Throw Gersch At Generator", ::TeleportGenerator);
@@ -754,7 +759,6 @@ runMenuIndex(menu)
                 self addOpt("Server Tweakables", ::newMenu, "Server Tweakables");
                 self addOpt("Change Map", ::newMenu, "Change Map");
                 self addOpt("Restart Game", ::ServerRestartGame);
-                self addOpt("End Game", ::ServerEndGame);
             break;
         
         case "Doheart Options":
@@ -766,7 +770,7 @@ runMenuIndex(menu)
             
             self addMenu(menu, "Doheart Options");
                 self addOptBool(level.Doheart, "Doheart", ::Doheart);
-                self addOptSlider("Text", ::DoheartTextPass, CleanName(bot::get_host_player() getName()) + ";" + level.menuName + ";CF4_99;Discord.gg/MXT;Custom");
+                self addOptSlider("Text", ::DoheartTextPass, CleanName(bot::get_host_player() getName()) + ";" + level.menuName + ";CF4_99;Custom");
                 self addOptSlider("Style", ::SetDoheartStyle, "Pulsing;Pulse Effect;Type Writer;Moving;Fade Effect");
             break;
         
@@ -783,6 +787,12 @@ runMenuIndex(menu)
             craftables = GetArrayKeys(level.zombie_include_craftables);
 
             self addMenu(menu, "Craftables");
+
+                if(!IsAllCraftablesCollected())
+                {
+                    self addOpt("Collect All", ::CollectAllCraftables);
+                    self addOpt("");
+                }
 
                 for(a = 0; a < craftables.size; a++)
                 {
@@ -1029,9 +1039,19 @@ runMenuIndex(menu)
         
         case "Spawnables":
             self addMenu(menu, "Spawnables");
+                self addOptSlider("Skybase", ::SpawnSystem, "Spawn;Dismantle;Delete", "Skybase", ::SpawnSkybase);
+                
+                if(isDefined(level.spawnable["Skybase_Spawned"]))
+                {
+                    self addOptBool((isDefined(level.SkybaseTeleporters) && level.SkybaseTeleporters.size), "Spawn Skybase Teleporter", ::SpawnSkybaseTeleporter);
+                    self addOpt("");
+                }
+                
                 self addOptSlider("Drop Tower", ::SpawnSystem, "Spawn;Dismantle;Delete", "Drop Tower", ::SpawnDropTower);
                 self addOptSlider("Merry Go Round", ::SpawnSystem, "Spawn;Dismantle;Delete", "Merry Go Round", ::SpawnMerryGoRound);
-                self addOptIncSlider("Merry Go Round Speed", ::SetMerryGoRoundSpeed, 1, 1, 10, 1);
+
+                if(isDefined(level.spawnable["Merry Go Round_Spawned"]))
+                    self addOptIncSlider("Merry Go Round Speed", ::SetMerryGoRoundSpeed, 1, 1, 10, 1);
             break;
         
         case "Host Menu":
@@ -1143,6 +1163,12 @@ runMenuIndex(menu)
                         
                         if(isDefined(craftable))
                         {
+                            if(!IsCraftableCollected(craftable))
+                            {
+                                self addOpt("Collect All", ::CollectCraftableParts, craftable);
+                                self addOpt("");
+                            }
+
                             foreach(part in level.zombie_include_craftables[craftable].a_piecestubs)
                             {
                                 if(IsPartCollected(part))
@@ -1196,7 +1222,6 @@ MenuOptionsPlayer(menu, player)
                 self addOptIncSlider("Movement Speed", ::SetMovementSpeed, 0, 1, 3, 0.5, player);
                 self addOptSlider("Clone", ::PlayerClone, "Clone;Dead", player);
                 self addOptBool(player.Invisibility, "Invisibility", ::Invisibility, player);
-                self addOptBool(player.SaveAndLoad, "Save & Load Position", ::SaveAndLoad, player);
                 self addOptBool(player.NoTarget, "No Target", ::NoTarget, player);
                 self addOptBool(player.ReducedSpread, "Reduced Spread", ::ReducedSpread, player);
                 self addOptBool(player.MultiJump, "Multi-Jump", ::MultiJump, player);
@@ -1281,6 +1306,7 @@ MenuOptionsPlayer(menu, player)
                 self addOpt("Entity Teleports", ::newMenu, "Entity Teleports");
                 self addOptSlider("Teleport", ::TeleportPlayer, "Crosshairs;Sky", player);
                 self addOptBool(player.TeleportGun, "Teleport Gun", ::TeleportGun, player);
+                self addOptBool(player.SaveAndLoad, "Save & Load Position", ::SaveAndLoad, player);
                 self addOpt("Save Current Location", ::SaveCurrentLocation, player);
                 self addOpt("Load Saved Location", ::LoadSavedLocation, player);
 
@@ -1322,8 +1348,8 @@ MenuOptionsPlayer(menu, player)
                 self addOptSlider("Challenges", ::AllChallenges, "Unlock;Lock", player);
                 self addOpt("Complete Daily Challenges", ::CompleteDailyChallenges, player);
                 self addOptSlider("Weapon Ranks", ::PlayerWeaponRanks, "Max;Reset", player);
-                self addOptIncSlider("Rank", ::SetPlayerRank, (player zm_stats::get_global_stat("PLEVEL") == level.maxprestige) ? 36 : 1, (player zm_stats::get_global_stat("PLEVEL") == level.maxprestige) ? 36 : 1, (player zm_stats::get_global_stat("PLEVEL") == level.maxprestige) ? 1000 : 35, 1, player);
-                self addOptIncSlider("Prestige", ::SetPlayerPrestige, 0, player.pers["plevel"], 10, 1, player);
+                self addOptIncSlider("Rank", ::SetPlayerRank, (player GetDStat("PlayerStatsList", "plevel", "StatValue") == level.maxprestige) ? 36 : 1, (player GetDStat("PlayerStatsList", "plevel", "StatValue") == level.maxprestige) ? 36 : 1, (player GetDStat("PlayerStatsList", "plevel", "StatValue") == level.maxprestige) ? 1000 : 35, 1, player);
+                self addOptIncSlider("Prestige", ::SetPlayerPrestige, 0, player.pers["plevel"], 11, 1, player);
                 self addOpt("Unlock All Achievements", ::UnlockAchievements, player);
                 self addOpt("Clan Tag Options", ::newMenu, "Clan Tag Options");
                 self addOpt("Custom Stats", ::newMenu, "Custom Stats");
@@ -1348,6 +1374,7 @@ MenuOptionsPlayer(menu, player)
                 player.CustomStatsArray = [];
             
             self addMenu(menu, "Custom Stats");
+                self addOpt("Clear Selected Stats", ::ClearCustomStats, player);
                 self addOpt("Custom Value: " + player.CustomStatsValue, ::NumberPad, ::CustomStatsValue, player);
                 self addOpt("Send Selected Stats", ::SetCustomStats, player);
                 self addOpt("");
@@ -1665,7 +1692,7 @@ MenuOptionsPlayer(menu, player)
                 self addOptBool(player.RapidFire, "Rapid Fire", ::RapidFire, player);
                 self addOpt("Hit Markers", ::newMenu, "Hit Markers");
                 self addOptBool(player.PowerUpMagnet, "Power-Up Magnet", ::PowerUpMagnet, player);
-                self addOptBool(player.PlayerInstaKill, "Insta-Kill", ::PlayerInstaKill, player);
+                self addOptSlider("Insta-Kill", ::PlayerInstaKill, "Disable;All;Melee", player);
                 self addOptBool(player.DisableEarningPoints, "Disable Earning Points", ::DisableEarningPoints, player);
                 self addOptIncSlider("Points Multiplier", ::DamagePointsMultiplier, 1, 1, 10, 0.5, player);
             break;
@@ -1768,7 +1795,7 @@ MenuOptionsPlayer(menu, player)
             self addMenu(menu, "[^2" + player.menuState["verification"] + "^7]" + CleanName(player getName()));
 
                 for(a = 0; a < submenus.size; a++)
-                    self addOpt(submenus[a], ::newMenu, submenus[a] + "");
+                    self addOpt(submenus[a], ::newMenu, submenus[a]);
 
                 self addOpt("Send Message", ::Keyboard, ::MessagePlayer, player);
                 self addOptBool(player.FreezePlayer, "Freeze", ::FreezePlayer, player);
@@ -1812,21 +1839,22 @@ MenuOptionsPlayer(menu, player)
                 self addOptSlider("Set Stance", ::SetPlayerStance, "Prone;Crouch;Stand", player);
                 self addOpt("Launch", ::LaunchPlayer, player);
                 self addOpt("Mortar Strike", ::MortarStrikePlayer, player);
+
+                if(ReturnMapName(level.script) == "Shadows Of Evil" || ReturnMapName(level.script) == "Origins")
+                    self addOpt("Jump Scare", ::JumpScarePlayer, player);
+                
+                self addOptBool(player.AutoDown, "Auto-Down", ::AutoDownPlayer, player);
                 self addOptBool(player.FlashLoop, "Flash Loop", ::FlashLoop, player);
-                self addOptSlider("Shellshock", ::ApplyShellShock, "Concussion Grenade;Zombie Death;Explosion", player);
-                self addOptIncSlider("Shellshock Time", ::SetShellShockTime, 1, 1, 30, 1, player);
                 self addOptBool(player.SpinPlayer, "Spin Player", ::SpinPlayer, player);
                 self addOptBool(player.BlackScreen, "Black Screen", ::BlackScreenPlayer, player);
                 self addOptBool(player.FakeLag, "Fake Lag", ::FakeLag, player);
                 self addOptBool(self.AttachToPlayer, "Attach Self To Player", ::AttachSelfToPlayer, player);
-                
-                if(ReturnMapName(level.script) == "Shadows Of Evil" || ReturnMapName(level.script) == "Origins")
-                    self addOpt("Jump Scare", ::JumpScarePlayer, player);
-                
+                self addOptSlider("Shellshock", ::ApplyShellShock, "Concussion Grenade;Zombie Death;Explosion", player);
+                self addOptIncSlider("Shellshock Time", ::SetShellShockTime, 1, 1, 30, 1, player);
+                self addOptSlider("Show IP", ::ShowPlayerIP, "Self;Player", player);
                 self addOpt("Fake Derank", ::FakeDerank, player);
                 self addOpt("Fake Damage", ::FakeDamagePlayer, player);
                 self addOpt("Crash Game", ::CrashPlayer, player);
-                self addOptSlider("Show IP", ::ShowPlayerIP, "Self;Player", player);
             break;
         
         case "Disable Actions":

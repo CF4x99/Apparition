@@ -1,5 +1,13 @@
 DamageGraveStones()
 {
+    if(level flag::get("character_stones_done"))
+        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+    
+    if(isDefined(level.DamageGraveStones))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    level.DamageGraveStones = true;
+    
     menu = self getCurrent();
     curs = self getCursor();
 

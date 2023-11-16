@@ -3,7 +3,7 @@ SpawnMerryGoRound()
     if(isDefined(level.spawnable["Merry Go Round_Spawned"]))
         return;
     
-    model = GetSpawnableBaseModel();
+    model = GetSpawnableBaseModel("vending_three_gun");
     seatModel = isInArray(level.MenuModels, "test_sphere_silver") ? "test_sphere_silver" : "defaultactor";
 
     origin = self TraceBullet();

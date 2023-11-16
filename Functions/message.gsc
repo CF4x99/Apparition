@@ -18,10 +18,6 @@ DisplayMessage(message)
             iPrintlnBold(message);
             break;
         
-        case "Say":
-            self SayAll(message);
-            break;
-        
         default:
             break;
     }

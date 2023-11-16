@@ -259,7 +259,16 @@ ZombieCounter(player)
                     if(!isDefined(player.ZombieCounterHud))
                         player.ZombieCounterHud = [];
                     
-                    player.ZombieCounterHud[0] = player createText("default", 1.4, 1, "Alive:", "LEFT", "CENTER", -407, -145, 1, level.RGBFadeColor);
+                    xValue = -407;
+                    resolution = StrTok(GetDvarString("r_mode"), "x");
+                    diff = (Int(resolution[0]) - Int(resolution[1]));
+
+                    if(diff < 550 && diff > 260)
+                        xValue += (xValue > 0) ? -44 : 44;
+                    else if(diff <= 260)
+                        xValue += (xValue > 0) ? -106 : 106;
+                    
+                    player.ZombieCounterHud[0] = player createText("default", 1.4, 1, "Alive:", "LEFT", "CENTER", xValue, -145, 1, level.RGBFadeColor);
                     player.ZombieCounterHud[1] = player createText("default", 1.4, 1, "Remaining For Round:", "LEFT", "CENTER", player.ZombieCounterHud[0].x, (player.ZombieCounterHud[0].y + 15), 1, level.RGBFadeColor);
                     
                     player.ZombieCounterHud[2] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (player.ZombieCounterHud[0].x + (player.ZombieCounterHud[0] GetTextWidth() - 8)), player.ZombieCounterHud[0].y, 1, level.RGBFadeColor);
@@ -1182,9 +1191,9 @@ PowerUpMagnet(player)
     }
 }
 
-PlayerInstaKill(player)
+PlayerInstaKill(type, player)
 {
-    player.PlayerInstaKill = isDefined(player.PlayerInstaKill) ? undefined : true;
+    player.PlayerInstaKill = (type == "Disable") ? undefined : type;
 }
 
 DisableEarningPoints(player)

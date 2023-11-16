@@ -4,6 +4,7 @@ menuMonitor()
         return;
     self.menuMonitor = true;
     
+    self endon("endMenuMonitor");
     self endon("disconnect");
     
     while(1)
@@ -41,7 +42,9 @@ menuMonitor()
                             self.menu["cursQM"][menu] += (self AttackButtonPressed() || self ActionSlotTwoButtonPressed()) ? 1 : -1;
 
                         self ScrollingSystem();
-                        self PlaySoundToPlayer("fly_870mcs_pull", self);
+
+                        if(!isDefined(self.menu["DisableMenuSounds"]))
+                            self PlaySoundToPlayer("fly_870mcs_pull", self);
 
                         wait 0.13;
                     }
@@ -66,7 +69,8 @@ menuMonitor()
                             }
                         }
 
-                        self PlaySoundToPlayer("fly_mr6_slide_forward", self);
+                        if(!isDefined(self.menu["DisableMenuSounds"]))
+                            self PlaySoundToPlayer("fly_mr6_slide_forward", self);
                         
                         wait 0.2;
                     }
@@ -85,7 +89,8 @@ menuMonitor()
                             else
                                 self SetIncSlider(dir);
                             
-                            self PlaySoundToPlayer("fly_870mcs_pull", self);
+                            if(!isDefined(self.menu["DisableMenuSounds"]))
+                                self PlaySoundToPlayer("fly_870mcs_pull", self);
 
                             wait 0.13;
                         }
@@ -103,7 +108,8 @@ menuMonitor()
                     else
                         self newMenu();
                     
-                    self PlaySoundToPlayer("fly_mr6_slide_back", self);
+                    if(!isDefined(self.menu["DisableMenuSounds"]))
+                        self PlaySoundToPlayer("fly_mr6_slide_back", self);
 
                     wait 0.2;
                 }
@@ -146,6 +152,10 @@ openMenu1(showAnim)
 {
     self endon("disconnect");
 
+    self.menuState["isInMenu"] = true;
+
+    wait 0.05;
+
     self.menu["currentMenu"] = (isDefined(self.menu["currentMenu"]) && self.menu["currentMenu"] != "") ? self.menu["currentMenu"] : "Main";
 
     if(isInArray(self.menuParent, "Players") && isDefined(self.SavedSelectedPlayer))
@@ -154,46 +164,49 @@ openMenu1(showAnim)
     if(!isDefined(self.menu["curs"][self getCurrent()]))
         self.menu["curs"][self getCurrent()] = 0;
     
-    self.menu["ui"]["background"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], self.menu["MenuWidth"], 0, (self.menu["MenuStyle"] == "Nautaremake") ? divideColor(21, 21, 21) : divideColor(0, 0, 0), 2, (isDefined(showAnim) && showAnim) ? 0 : (self.menu["MenuStyle"] == "Native") ? 0.75 : 1, "white");
+    self.menu["ui"]["background"] = self createRectangle("TOP", "CENTER", self.menu["X"], (self.menu["MenuStyle"] == "Zodiac") ? (self.menu["Y"] - 60) : self.menu["Y"], self.menu["MenuWidth"], 0, (self.menu["MenuStyle"] == "Nautaremake") ? divideColor(21, 21, 21) : divideColor(0, 0, 0), 2, (isDefined(showAnim) && showAnim) ? 0 : (self.menu["MenuStyle"] == "Native" || self.menu["MenuStyle"] == "Zodiac") ? (self.menu["MenuStyle"] == "Zodiac") ? 0.8 : 0.45 : 1, "white");
     
     if(self.menu["MenuStyle"] == "Nautaremake")
     {
-        self.menu["ui"]["nautabackground"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"] - 40, self.menu["MenuWidth"], 0, self.menu["Alt_Color"], 1, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
-        self.menu["ui"]["nautaicon"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"] - 57, 32, 54, (1, 1, 1), 4, (isDefined(showAnim) && showAnim) ? 0 : 1, "damage_feedback_tac");
+        self.menu["ui"]["nautabackground"] = self createRectangle("TOP", "CENTER", self.menu["X"], (self.menu["Y"] - 40), self.menu["MenuWidth"], 0, self.menu["Alt_Color"], 1, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
+        self.menu["ui"]["nautaicon"] = self createRectangle("TOP", "CENTER", self.menu["X"], (self.menu["Y"] - 57), 32, 54, (1, 1, 1), 4, (isDefined(showAnim) && showAnim) ? 0 : 1, "damage_feedback_tac");
     }
 
-    self.menu["ui"]["outlines"] = [];
-    
-    if(self.menu["MenuStyle"] != "Native")
+    if(self.menu["MenuStyle"] != "Zodiac")
     {
-        //Left Side
-        self.menu["ui"]["outlines"][self.menu["ui"]["outlines"].size] = self createRectangle("TOP", "CENTER", self.menu["X"] - (self.menu["MenuWidth"] / 2), (self.menu["MenuStyle"] == "Nautaremake") ? (self.menu["Y"] - 40) : self.menu["Y"], 1, 0, self.menu["Main_Color"], 5, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
+        self.menu["ui"]["outlines"] = [];
         
-        //Right Side
-        self.menu["ui"]["outlines"][self.menu["ui"]["outlines"].size] = self createRectangle("TOP", "CENTER", (self.menu["X"] + (self.menu["MenuWidth"] / 2)), (self.menu["MenuStyle"] == "Nautaremake") ? (self.menu["Y"] - 40) : self.menu["Y"], 1, 0, self.menu["Main_Color"], 5, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
-    }
+        if(self.menu["MenuStyle"] != "Native")
+        {
+            //Left Side
+            self.menu["ui"]["outlines"][self.menu["ui"]["outlines"].size] = self createRectangle("TOP", "CENTER", self.menu["X"] - (self.menu["MenuWidth"] / 2), (self.menu["MenuStyle"] == "Nautaremake") ? (self.menu["Y"] - 40) : self.menu["Y"], 1, 0, self.menu["Main_Color"], 5, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
+            
+            //Right Side
+            self.menu["ui"]["outlines"][self.menu["ui"]["outlines"].size] = self createRectangle("TOP", "CENTER", (self.menu["X"] + (self.menu["MenuWidth"] / 2)), (self.menu["MenuStyle"] == "Nautaremake") ? (self.menu["Y"] - 40) : self.menu["Y"], 1, 0, self.menu["Main_Color"], 5, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
+        }
 
-    //Top 2 || Native Design Banner
-    self.menu["ui"]["outlines"][self.menu["ui"]["outlines"].size] = self createRectangle("TOP", "CENTER", self.menu["X"], (self.menu["MenuStyle"] == "Nautaremake") ? self.menu["Y"] : (self.menu["MenuStyle"] == "Native") ? (self.menu["Y"] - 49) : (self.menu["Y"] - 13), (self.menu["MenuStyle"] != level.menuName) ? self.menu["MenuWidth"] : (self.menu["MenuWidth"] + 1), (self.menu["MenuStyle"] == "Nautaremake") ? 1 : (self.menu["MenuStyle"] == "Native") ? 39 : 14, self.menu["Main_Color"], 5, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
+        //Top 2 || Native Design Banner
+        self.menu["ui"]["outlines"][self.menu["ui"]["outlines"].size] = self createRectangle("TOP", "CENTER", self.menu["X"], (self.menu["MenuStyle"] == "Nautaremake") ? self.menu["Y"] : (self.menu["MenuStyle"] == "Native") ? (self.menu["Y"] - 49) : (self.menu["Y"] - 13), (self.menu["MenuStyle"] != level.menuName) ? self.menu["MenuWidth"] : (self.menu["MenuWidth"] + 1), (self.menu["MenuStyle"] == "Nautaremake") ? 1 : (self.menu["MenuStyle"] == "Native") ? 39 : 14, self.menu["Main_Color"], 5, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
 
-    //Bottom 1
-    if(self.menu["MenuStyle"] != "Native")
-        self.menu["ui"]["outlines"][self.menu["ui"]["outlines"].size] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], self.menu["MenuWidth"], 1, self.menu["Main_Color"], 5, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
-
-    if(self.menu["MenuStyle"] == "Nautaremake" || self.menu["MenuStyle"] == "Native")
-    {
-        //Top 1 || Native Design Title Bar
-        self.menu["ui"]["outlines"][self.menu["ui"]["outlines"].size] = self createRectangle("TOP", "CENTER", self.menu["X"], (self.menu["MenuStyle"] == "Native") ? (self.menu["Y"] - 11) : (self.menu["Y"] - 40), self.menu["MenuWidth"], (self.menu["MenuStyle"] == "Native") ? 17 : 1, (self.menu["MenuStyle"] == "Native") ? (0, 0, 0) : self.menu["Main_Color"], 6, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
-
-        //Bottom 2
-        if(self.menu["MenuStyle"] == "Nautaremake")
+        //Bottom 1
+        if(self.menu["MenuStyle"] != "Native")
             self.menu["ui"]["outlines"][self.menu["ui"]["outlines"].size] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], self.menu["MenuWidth"], 1, self.menu["Main_Color"], 5, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
+
+        if(self.menu["MenuStyle"] == "Nautaremake" || self.menu["MenuStyle"] == "Native")
+        {
+            //Top 1 || Native Design Title Bar
+            self.menu["ui"]["outlines"][self.menu["ui"]["outlines"].size] = self createRectangle("TOP", "CENTER", self.menu["X"], (self.menu["MenuStyle"] == "Native") ? (self.menu["Y"] - 11) : (self.menu["Y"] - 40), self.menu["MenuWidth"], (self.menu["MenuStyle"] == "Native") ? 17 : 1, (self.menu["MenuStyle"] == "Native") ? (0, 0, 0) : self.menu["Main_Color"], 6, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
+
+            //Bottom 2
+            if(self.menu["MenuStyle"] == "Nautaremake")
+                self.menu["ui"]["outlines"][self.menu["ui"]["outlines"].size] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], self.menu["MenuWidth"], 1, self.menu["Main_Color"], 5, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
+        }
     }
     
     self.menu["ui"]["scroller"] = self createRectangle("TOP", "CENTER", self.menu["X"], self.menu["Y"], self.menu["MenuWidth"], 18, (self.menu["MenuStyle"] == "Nautaremake") ? self.menu["Alt_Color"] : self.menu["Main_Color"], 3, (isDefined(showAnim) && showAnim) ? 0 : 1, "white");
     
     if(self.menu["MenuStyle"] != "Nautaremake")
-        self.menu["ui"]["title"] = self createText("default", 1.2, 7, "", "LEFT", "CENTER", (self.menu["X"] - (self.menu["MenuWidth"] / 2) + 4), (self.menu["MenuStyle"] == "Native") ? (self.menu["Y"] - 3) : (self.menu["Y"] - 7), (isDefined(showAnim) && showAnim) ? 0 : 1, (1, 1, 1));
+        self.menu["ui"]["title"] = self createText("default", (self.menu["MenuStyle"] == "Zodiac") ? 1.5 : 1.2, 7, "", "LEFT", "CENTER", (self.menu["X"] - (self.menu["MenuWidth"] / 2) + 4), (self.menu["MenuStyle"] == "Native") ? (self.menu["Y"] - 3) : (self.menu["MenuStyle"] == "Zodiac") ? (self.menu["Y"] - 20) : (self.menu["Y"] - 7), (isDefined(showAnim) && showAnim) ? 0 : 1, (self.menu["MenuStyle"] == "Zodiac") ? self.menu["Main_Color"] : (1, 1, 1));
     
     if(self.menu["MenuStyle"] == "Native")
         self.menu["ui"]["MenuName"] = self createText("default", 1.5, 7, level.menuName, "CENTER", "CENTER", self.menu["X"], (self.menu["Y"] - 29), (isDefined(showAnim) && showAnim) ? 0 : 1, (1, 1, 1));
@@ -202,8 +215,6 @@ openMenu1(showAnim)
 
     if(self getCurrent() == "Players" && !isDefined(self.PlayerInfoHandler))
         self thread PlayerInfoHandler();
-    
-    self.menuState["isInMenu"] = true;
 }
 
 closeMenu1(showAnim)
@@ -307,14 +318,9 @@ openQuickMenu1()
 {
     self endon("disconnect");
 
-    if(!isDefined(self.menu["ui"]["QMBG"]))
-        self.menu["ui"]["QMBG"] = [];
-    
-    if(!isDefined(self.menu["ui"]["textQM"]))
-        self.menu["ui"]["textQM"] = [];
-    
-    if(!isDefined(self.menu["ui"]["QMScroller"]))
-        self.menu["ui"]["QMScroller"] = [];
+    self.menu["ui"]["QMBG"] = [];
+    self.menu["ui"]["textQM"] = [];
+    self.menu["ui"]["QMScroller"] = [];
     
     if(!isDefined(self.menu["cursQM"]))
         self.menu["cursQM"] = [];
@@ -405,7 +411,15 @@ drawText(showAnim)
                 if(isDefined(self.menu["items"][self getCurrent()].slider[(a + start)]))
                     self.menu["ui"]["StringSlider"][(a + start)] = self createText("default", ((a + start) == self getCursor() && isDefined(self.menu["LargeCursor"])) ? 1.3 : 1.1, 4, "< " + self.menu_S[self getCurrent()][(a + start)][self.menu_SS[self getCurrent()][(a + start)]] + " > [" + (self.menu_SS[self getCurrent()][(a + start)] + 1) + "/" + self.menu_S[self getCurrent()][(a + start)].size + "]", "RIGHT", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) - 4)), (self.menu["Y"] + 14) + (a * 20), 0, (1, 1, 1));
 
-                self.menu["ui"]["text"][(a + start)] = self createText("default", ((a + start) == self getCursor() && isDefined(self.menu["LargeCursor"])) ? 1.3 : 1.1, 5, self.menu["items"][self getCurrent()].name[(a + start)], "LEFT", "CENTER", (self.menu["X"] - (self.menu["MenuWidth"] / 2) + 4), (self.menu["Y"] + 14) + (a * 20), 0, (isDefined(self.menu["items"][self getCurrent()].bool[(a + start)]) && isDefined(self.menu_B[self getCurrent()][(a + start)]) && self.menu_B[self getCurrent()][(a + start)] && self.menu["ToggleStyle"] == "Text Color") ? divideColor(0, 255, 0) : (1, 1, 1));
+                if(!isDefined(self.menu["items"][self getCurrent()].shader[(a + start)]))
+                    self.menu["ui"]["text"][(a + start)] = self createText("default", ((a + start) == self getCursor() && isDefined(self.menu["LargeCursor"])) ? 1.3 : 1.1, 5, self.menu["items"][self getCurrent()].name[(a + start)], "LEFT", "CENTER", (self.menu["X"] - (self.menu["MenuWidth"] / 2) + 4), (self.menu["Y"] + 14) + (a * 20), 0, (isDefined(self.menu["items"][self getCurrent()].bool[(a + start)]) && isDefined(self.menu_B[self getCurrent()][(a + start)]) && self.menu_B[self getCurrent()][(a + start)] && self.menu["ToggleStyle"] == "Text Color") ? divideColor(0, 255, 0) : (1, 1, 1));
+                else
+                {
+                    self.menu["ui"]["text"][(a + start)] = self createRectangle("LEFT", "CENTER", (self.menu["X"] - (self.menu["MenuWidth"] / 2) + 4), (self.menu["Y"] + 14) + (a * 20), self.menu["items"][self getCurrent()].width[(a + start)], self.menu["items"][self getCurrent()].height[(a + start)], (self.menu["items"][self getCurrent()].color[(a + start)] == "Rainbow") ? level.RGBFadeColor : self.menu["items"][self getCurrent()].color[(a + start)], 4, 0, self.menu["items"][self getCurrent()].shader[(a + start)]);
+                    
+                    if(self.menu["items"][self getCurrent()].color[(a + start)] == "Rainbow")
+                        self.menu["ui"]["text"][(a + start)] thread HudRGBFade();
+                }
 
                 elems = [self.menu["ui"]["BoolBack"][(a + start)], self.menu["ui"]["BoolOpt"][(a + start)], self.menu["ui"]["subMenu"][(a + start)], self.menu["ui"]["IntSlider"][(a + start)], self.menu["ui"]["StringSlider"][(a + start)], self.menu["ui"]["text"][(a + start)]];
 
@@ -452,8 +466,8 @@ drawText(showAnim)
             if(isDefined(self.menu["items"][self getCurrent()].slider[(start + a)]) || isDefined(self.menu["items"][self getCurrent()].incslider[(start + a)]))
                 optStr = isDefined(self.menu["items"][self getCurrent()].slider[(start + a)]) ? optStr + " < " + self.menu_S[self getCurrent()][(start + a)][self.menu_SS[self getCurrent()][(start + a)]] + " > [" + (self.menu_SS[self getCurrent()][(start + a)] + 1) + "/" + self.menu_S[self getCurrent()][(start + a)].size + "]" : optStr + " < " + self.menu_SS[self getCurrent()][(start + a)] + " >";
 
-            self.menu["ui"]["textQM"][(start + a)] = self createText("default", 1.1, 5, optStr, "CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, (self.menu["YQM"]) + (a * 20), 1, (isDefined(self.menu["items"][self getCurrent()].bool[(start + a)]) && isDefined(self.menu_B[self getCurrent()][(start + a)]) && self.menu_B[self getCurrent()][(start + a)]) ? divideColor(0, 255, 0) : (1, 1, 1));
-            self.menu["ui"]["QMBG"][(start + a)] = self createRectangle("CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, self.menu["YQM"] + (a * 20), (self.menu["ui"]["textQM"][(start + a)] GetTextWidth() - 8), 18, (0, 0, 0), 2, 0.95, "white");
+            self.menu["ui"]["textQM"][(start + a)] = self createText("default", 1.1, 5, optStr, "CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, (self.menu["YQM"]) + (a * 21), 1, (isDefined(self.menu["items"][self getCurrent()].bool[(start + a)]) && isDefined(self.menu_B[self getCurrent()][(start + a)]) && self.menu_B[self getCurrent()][(start + a)]) ? divideColor(0, 255, 0) : (1, 1, 1));
+            self.menu["ui"]["QMBG"][(start + a)] = self createRectangle("CENTER", "CENTER", self.menu["ui"]["bannerQM"].x, self.menu["YQM"] + (a * 21), (self.menu["ui"]["textQM"][(start + a)] GetTextWidth() - 8), 18, (0, 0, 0), 2, 0.95, "white");
         }
         
         if(!isDefined(self.menu["ui"]["textQM"][self getCursor()]))
@@ -554,6 +568,9 @@ SoftLockMenu(bgHeight)
     self DestroyOpts();
 
     self.menu["SoftMenuReset"] = true;
+
+    if(self.menu["MenuStyle"] == "Zodiac")
+        return;
     
     if(isDefined(self.menu["ui"]["background"]))
         self.menu["ui"]["background"] SetShaderValues(undefined, undefined, bgHeight);
@@ -623,6 +640,9 @@ UpdateOptCount(showAnim)
     height = (((self.menu["items"][self getCurrent()].name.size >= self.menu["MaxOptions"]) ? self.menu["MaxOptions"] : self.menu["items"][self getCurrent()].name.size) * 20);
     hudElems = [self.menu["ui"]["background"], self.menu["ui"]["nautabackground"], self.menu["ui"]["outlines"][0], self.menu["ui"]["outlines"][1]];
 
+    if(self.menu["MenuStyle"] == "Zodiac")
+        height = 1000;
+    
     if(isDefined(showAnim) && showAnim)
     {
         foreach(hud in self.menu["ui"])
@@ -630,7 +650,7 @@ UpdateOptCount(showAnim)
             if(!isDefined(hud))
                 continue;
             
-            alpha = (self.menu["MenuStyle"] == "Native" && hud == self.menu["ui"]["background"]) ? 0.75 : 1;
+            alpha = ((self.menu["MenuStyle"] == "Native" || self.menu["MenuStyle"] == "Zodiac") && hud == self.menu["ui"]["background"]) ? (self.menu["MenuStyle"] == "Zodiac") ? 0.8 : 0.45 : 1;
             
             if(IsArray(hud))
                 foreach(addHud in hud)
