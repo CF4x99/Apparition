@@ -1175,7 +1175,7 @@ SpawnTeleporter(action = "Spawn", origin, skipLink = false, skipDelete = false)
     }
 
     linker = SpawnScriptModel(origin, "tag_origin");
-    linker thread AddActiveTeleporter(skipLink);
+    linker thread AddActiveTeleporter(skipLink, skipDelete);
 
     return linker;
 }
@@ -1186,7 +1186,7 @@ DeleteTeleporters()
         return;
     
     foreach(teleporter in level.ActiveTeleporters)
-        if(isDefined(teleporter) && (isDefined(teleporter.skipDelete) && teleporter.skipDelete))
+        if(isDefined(teleporter) && !(isDefined(teleporter.skipDelete) && teleporter.skipDelete))
             teleporter delete();
 }
 
@@ -1260,7 +1260,7 @@ UseTeleporter(teleporter)
     self SetOrigin(teleporter.LinkedTeleporter.origin);
     PlayFX(level._effect["teleport_splash"], teleporter.LinkedTeleporter.origin);
 
-    wait 3;
+    wait 1.5;
 
     self.UsingTeleporter = undefined;
 }

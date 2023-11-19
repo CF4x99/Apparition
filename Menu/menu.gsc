@@ -105,6 +105,7 @@ runMenuIndex(menu)
             self addMenu(menu, "Design Preferences");
                 self addOptSlider("Toggle Style", ::ToggleStyle, "Boxes;Text;Text Color");
                 self addOptIncSlider("Max Options", ::MenuMaxOptions, 5, 5, (self.menu["MenuStyle"] == "Zodiac") ? 12 : 9, 1);
+                self addOptIncSlider("Scrolling Buffer", ::MenuScrollingBuffer, 1, 12, 15, 1);
                 self addOptBool(self.menu["LargeCursor"], "Large Cursor", ::LargeCursor);
                 self addOptBool(self.menu["DisableMenuInstructions"], "Disable Instructions", ::DisableMenuInstructions);
                 self addOptBool(self.menu["DisableQM"], "Disable Quick Menu", ::DisableQuickMenu);
@@ -1805,7 +1806,7 @@ MenuOptionsPlayer(menu, player)
         
         case "Verification":
             self addMenu(menu, "Verification");
-                self addOpt("Save Verification", ::TempSavePlayerVerification, player);
+                self addOpt("Save Verification", ::SavePlayerVerification, player);
 
                 for(a = 0; a < (level.MenuStatus.size - 2); a++)
                     self addOptBool((player getVerification() == a), level.MenuStatus[a], ::setVerification, a, player, true);

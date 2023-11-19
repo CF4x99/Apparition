@@ -111,6 +111,12 @@ MenuMaxOptions(max)
     self SaveMenuTheme();
 }
 
+MenuScrollingBuffer(buffer)
+{
+    self.menu["ScrollingBuffer"] = buffer;
+    self SaveMenuTheme();
+}
+
 DisableMenuInstructions()
 {
     self.menu["DisableMenuInstructions"] = isDefined(self.menu["DisableMenuInstructions"]) ? undefined : true;
@@ -182,15 +188,15 @@ MenuStyle(style)
 
 SaveMenuTheme()
 {
-    design = self.menu["MenuStyle"] + ";" + self.menu["ToggleStyle"] + ";" + self.menu["MaxOptions"] + ";" + self.menu["X"] + ";" + self.menu["MenuWidth"] + ";";
+    design = self.menu["MenuStyle"] + ";" + self.menu["ToggleStyle"] + ";" + self.menu["MaxOptions"] + ";" + self.menu["ScrollingBuffer"] + ";" + self.menu["X"] + ";" + self.menu["MenuWidth"] + ";";
     design += isDefined(self.menu["DisableMenuInstructions"]) ? "Disable;" : "Enable;";
     design += isDefined(self.menu["LargeCursor"]) ? "Enable;" : "Disable;";
     design += isDefined(self.menu["DisableQM"]) ? "Enable;" : "Disable;";
     design += isDefined(self.menu["DisableMenuAnimations"]) ? "Enable;" : "Disable;";
     design += isDefined(self.menu["DisableMenuSounds"]) ? "Enable;" : "Disable;";
-    design += isDefined(self.SmoothRainbowTheme) ? "Rainbow" : self.menu["Main_Color"];
     
     SetDvar("MenuTheme" + self GetXUID(), design);
+    SetDvar(self GetXUID() + "Color", isDefined(self.SmoothRainbowTheme) ? "Rainbow" : self.menu["Main_Color"]);
 }
 
 LoadMenuVars() //Pre-Set Menu Variables.
@@ -214,6 +220,7 @@ LoadMenuVars() //Pre-Set Menu Variables.
 
     self.menu["MaxOptions"] = 9;
     self.menu["maxOptionsQM"] = 15;
+    self.menu["ScrollingBuffer"] = 12;
     self.menu["ToggleStyle"] = "Boxes";
     self.menu["Main_Color"] = divideColor(255, 0, 0); //Default theme color
     self.menu["Alt_Color"] = divideColor(45, 45, 45);
@@ -244,21 +251,21 @@ LoadMenuVars() //Pre-Set Menu Variables.
         self.menu["MenuStyle"] = dvarSep[0];
         self.menu["ToggleStyle"] = dvarSep[1];
         self.menu["MaxOptions"] = Int(dvarSep[2]);
-        self.menu["X"] = Int(dvarSep[3]);
-        self.menu["MenuWidth"] = Int(dvarSep[4]);
-        self.menu["DisableMenuInstructions"] = (dvarSep[5] == "Disable") ? true : undefined;
-        self.menu["LargeCursor"] = (dvarSep[6] == "Enable") ? true : undefined;
-        self.menu["DisableQM"] = (dvarSep[7] == "Enable") ? true : undefined;
-        self.menu["DisableMenuAnimations"] = (dvarSep[8] == "Enable") ? true : undefined;
-        self.menu["DisableMenuSounds"] = (dvarSep[9] == "Enable") ? true : undefined;
+        self.menu["ScrollingBuffer"] = Int(dvarSep[3]);
+        self.menu["X"] = Int(dvarSep[4]);
+        self.menu["MenuWidth"] = Int(dvarSep[5]);
+        self.menu["DisableMenuInstructions"] = (dvarSep[6] == "Disable") ? true : undefined;
+        self.menu["LargeCursor"] = (dvarSep[7] == "Enable") ? true : undefined;
+        self.menu["DisableQM"] = (dvarSep[8] == "Enable") ? true : undefined;
+        self.menu["DisableMenuAnimations"] = (dvarSep[9] == "Enable") ? true : undefined;
+        self.menu["DisableMenuSounds"] = (dvarSep[10] == "Enable") ? true : undefined;
+
+        dColor = GetDvarString(self GetXUID() + "Color");
         
-        if(dvarSep[10] == "Rainbow")
+        if(dColor == "Rainbow")
             self thread SmoothRainbowTheme();
         else
-        {
-            SetDvar(self GetXUID() + level.menuName + "Color", dvarSep[10]);
-            self.menu["Main_Color"] = GetDvarVector1(self GetXUID() + level.menuName + "Color");
-        }
+            self.menu["Main_Color"] = GetDvarVector1(self GetXUID() + "Color");
     }
     else
     {

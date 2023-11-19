@@ -110,17 +110,20 @@ WatchForEndRound()
 
         self waittill("menuresponse", menu, response);
 
-        if(response == "endround")
-        {
-            level.hostforcedend = true;
-            level.forcedend = true;
-            level.gameended = true;
+        if(response != "endround")
+            continue;
+        
+        if(self IsHost())
+            break;
 
-            self iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7Blocked End Game Response");
-            bot::get_host_player() DebugiPrint("^1" + ToUpper(level.menuName) + ": ^2" + CleanName(self getName()) + " ^7Tried To End The Game");
+        level.hostforcedend = true;
+        level.forcedend = true;
+        level.gameended = true;
 
-            wait 0.5; //buffer
-        }
+        self iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7Blocked End Game Response");
+        bot::get_host_player() DebugiPrint("^1" + ToUpper(level.menuName) + ": ^2" + CleanName(self getName()) + " ^7Tried To End The Game");
+
+        wait 0.5; //buffer
     }
 }
 

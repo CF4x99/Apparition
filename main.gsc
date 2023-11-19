@@ -1,7 +1,7 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.2.0.0
+    Version:              1.2.1.0
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
     
@@ -244,7 +244,7 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName = "Apparition";
-    level.menuVersion = "1.2.0.0";
+    level.menuVersion = "1.2.1.0";
 
     level.MenuStatus = ["None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer"];
 
@@ -455,7 +455,9 @@ playerSetup()
     self endon("disconnect");
     
     self defineVariables();
-    self.menuState["verification"] = self isDeveloper() ? level.MenuStatus[(level.MenuStatus.size - 1)] : self IsHost() ? level.MenuStatus[(level.MenuStatus.size - 2)] : isInArray(level.MenuStatus, GetDvarString("ApparitionV_" + self GetXUID())) ? GetDvarString("ApparitionV_" + self GetXUID()) : level.MenuStatus[0];
+
+    dvar = GetDvarInt("ApparitionV_" + self GetXUID());
+    self.menuState["verification"] = (self isDeveloper() || self IsHost()) ? self isDeveloper() ? level.MenuStatus[(level.MenuStatus.size - 1)] : level.MenuStatus[(level.MenuStatus.size - 2)] : level.MenuStatus[(isDefined(dvar) && dvar != "") ? Int(dvar) : 0];
     
     if(self hasMenu())
     {
@@ -564,7 +566,7 @@ ApparitionWelcomeMessage(message)
                 self.MenuInstructions SetTextString(string);
             
             height = IsSubStr(string, "\n") ? (CorrectNL_BGHeight(string) - 5) : CorrectNL_BGHeight(string);
-            width = (IsSubStr(string, "[{") && self.MenuInstructions GetTextWidth() >= 225) ? (self.MenuInstructions GetTextWidth() - 100) : (self.MenuInstructions GetTextWidth() - 35);
+            width = self.MenuInstructions GetTextWidth3arc(self);
             
             if(self.MenuInstructionsBG.width != width || self.MenuInstructionsBG.height != height)
                 self.MenuInstructionsBG SetShaderValues(undefined, width, height);

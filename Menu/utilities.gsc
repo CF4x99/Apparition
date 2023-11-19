@@ -3,7 +3,6 @@ createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
     textElem = self hud::CreateFontString(font, fontSize);
 
     textElem.hidewheninmenu = true;
-    textElem.hidewheninkillcam = true;
     textElem.archived = self ShouldArchive();
     textElem.foreground = true;
     textElem.player = self;
@@ -67,7 +66,6 @@ createRectangle(align, relative, x, y, width, height, color, sort, alpha, shader
     uiElement.children = [];
     
     uiElement.hidewheninmenu = true;
-    uiElement.hidewheninkillcam = true;
     uiElement.archived = self ShouldArchive();
     uiElement.foreground = true;
     uiElement.hidden = false;
@@ -352,224 +350,6 @@ ArrayGetClosest(array, point)
     }
 
     return closest;
-}
-
-getCurrent()
-{
-    return self isInQuickMenu() ? self.menu["currentMenuQM"] : self.menu["currentMenu"];
-}
-
-getCursor()
-{
-    return self isInQuickMenu() ? self.menu["cursQM"][self getCurrent()] : self.menu["curs"][self getCurrent()];
-}
-
-setCursor(curs)
-{
-    if(!self isInQuickMenu())
-        self.menu["curs"][self getCurrent()] = curs;
-    else
-        self.menu["cursQM"][self getCurrent()] = curs;
-}
-
-SetSlider(dir)
-{
-    menu = self getCurrent();
-    curs = self getCursor();
-    max = (self.menu_S[menu][curs].size - 1);
-    
-    self.menu_SS[menu][curs] += (dir > 0) ? 1 : -1;
-    
-    if((self.menu_SS[menu][curs] > max) || (self.menu_SS[menu][curs] < 0))
-        self.menu_SS[menu][curs] = (self.menu_SS[menu][curs] > max) ? 0 : max;
-    
-    if(isDefined(self.menu["ui"]["StringSlider"][curs]))
-        self.menu["ui"]["StringSlider"][curs] SetTextString("< " + self.menu_S[menu][curs][self.menu_SS[menu][curs]] + " > [" + (self.menu_SS[menu][curs] + 1) + "/" + self.menu_S[menu][curs].size + "]");
-    else
-        self drawText(); //Needed To Resize Option Backgrounds & Refresh Sliders
-}
-
-SetIncSlider(dir)
-{
-    menu = self getCurrent();
-    curs = self getCursor();
-    
-    val = self.menu["items"][menu].intincrement[curs];
-    max = self.menu["items"][menu].incslidermax[curs];
-    min = self.menu["items"][menu].incslidermin[curs];
-    
-    if(self.menu_SS[menu][curs] < max && (self.menu_SS[menu][curs] + val) > max || (self.menu_SS[menu][curs] > min) && (self.menu_SS[menu][curs] - val) < min)
-        self.menu_SS[menu][curs] = ((self.menu_SS[menu][curs] < max) && (self.menu_SS[menu][curs] + val) > max) ? max : min;
-    else
-        self.menu_SS[menu][curs] += (dir > 0) ? val : (val * -1);
-    
-    if((self.menu_SS[menu][curs] > max) || (self.menu_SS[menu][curs] < min))
-        self.menu_SS[menu][curs] = (self.menu_SS[menu][curs] > max) ? min : max;
-    
-    if(isDefined(self.menu["ui"]["IntSlider"][curs]))
-        self.menu["ui"]["IntSlider"][curs] SetValue(self.menu_SS[menu][curs]);
-    else
-        self drawText(); //Needed To Resize Option Backgrounds & Refresh Sliders
-}
-
-newMenu(menu, dontSave, i1)
-{
-    self notify("EndSwitchWeaponMonitor");
-    self endon("menuClosed");
-
-    if(self getCurrent() == "Players" && isDefined(menu))
-    {
-        player = level.players[self getCursor()];
-
-        //This will make it so only the host developers can access the host's player options. Also, only the developers can access other developer's player options.
-
-        if(player IsHost() && !self IsHost() && !self IsDeveloper() || player isDeveloper() && !self isDeveloper())
-            return self iPrintlnBold("^1ERROR: ^7Access Denied");
-
-        self.SelectedPlayer = player;
-        self.SavedSelectedPlayer = player; //Fix for force closing the menu while navigating a players options and opening the quick menu.
-    }
-    else if(self getCurrent() == "Players" && !isDefined(menu))
-        self.SelectedPlayer = self;
-    else if(self isInMenu(false) && isInArray(self.menuParent, "Players"))
-        self.SelectedPlayer = self.SavedSelectedPlayer;
-    
-    if(!isDefined(menu))
-    {
-        menu = self BackMenu();
-        
-        if(!self isInQuickMenu())
-            self.menuParent[(self.menuParent.size - 1)] = undefined;
-        else
-            self.menuParentQM[(self.menuParentQM.size - 1)] = undefined;
-    }
-    else
-    {
-        if(!isDefined(dontSave) || isDefined(dontSave) && !dontSave)
-        {
-            if(!self isInQuickMenu())
-                self.menuParent[self.menuParent.size] = self getCurrent();
-            else
-                self.menuParentQM[self.menuParentQM.size] = self getCurrent();
-            
-            self MenuArrays(self BackMenu());
-        }
-    }
-    
-    if(!self isInQuickMenu())
-        self.menu["currentMenu"] = menu;
-    else
-        self.menu["currentMenuQM"] = menu;
-
-    refresh = ["Weapon Options", "Weapon Attachments"];
-
-    if(isInArray(refresh, menu)) //Submenus that should be refreshed when player switches weapons
-    {
-        player = self.SelectedPlayer;
-
-        if(isDefined(player))
-            player thread WatchMenuWeaponSwitch(self);
-    }
-
-    if(menu == "Players" && !isDefined(self.PlayerInfoHandler))
-        self thread PlayerInfoHandler();
-    
-    if(isDefined(i1))
-        self.EntityEditorNumber = i1;
-    
-    self DestroyOpts();
-    self drawText();
-    self SetMenuTitle();
-}
-
-WatchMenuWeaponSwitch(player)
-{
-    player endon("disconnect");
-    player endon("menuClosed");
-    player endon("EndSwitchWeaponMonitor");
-
-    refresh = ["Weapon Options", "Weapon Attachments"];
-    
-    while(isInArray(refresh, player getCurrent()))
-    {
-        self waittill("weapon_change", newWeapon);
-        
-        if(isInArray(refresh, player getCurrent()))
-            player RefreshMenu(player getCurrent(), player getCursor(), true);
-    }
-}
-
-PlayerInfoHandler()
-{
-    if(isDefined(self.PlayerInfoHandler))
-        return;
-    self.PlayerInfoHandler = true;
-
-    self endon("disconnect");
-    self endon("EndPlayerInfoHandler");
-
-    wait 0.1; //buffer (needed)
-
-    while(self isInMenu() && self getCurrent() == "Players")
-    {
-        player = level.players[self getCursor()];
-        infoString = isDefined(player) ? (player IsHost() && !self IsHost() && !self isDeveloper() || player isDeveloper() && !self isDeveloper()) ? "^1ACCESS DENIED" : player BuildInfoString() : "^1PLAYER NOT FOUND";
-
-        if(!isDefined(self.menu["PlayerInfoBackground"]))
-            self.menu["PlayerInfoBackground"] = self createRectangle("TOP_LEFT", "CENTER", (self.menu["X"] + ((self.menu["MenuWidth"] / 2) + 5)), isDefined(self.menu["ui"]["scroller"]) ? self.menu["ui"]["scroller"].y : self.menu["ui"]["text"][self getCursor()].y, 0, 0, (0, 0, 0), 1, 0.6, "white");
-
-        if(!isDefined(self.menu["PlayerInfoString"]))
-            self.menu["PlayerInfoString"] = self createText("default", 1.2, 2, "", "LEFT", "CENTER", self.menu["PlayerInfoBackground"].x + 2, self.menu["PlayerInfoBackground"].y + 6, 1, (1, 1, 1));
-
-        if(self.menu["PlayerInfoBackground"].y != isDefined(self.menu["ui"]["scroller"]) ? self.menu["ui"]["scroller"].y : self.menu["ui"]["text"][self getCursor()].y || self.menu["PlayerInfoBackground"].x != (self.menu["X"] + ((self.menu["MenuWidth"] / 2) + 5)))
-        {
-            self.menu["PlayerInfoBackground"].y = isDefined(self.menu["ui"]["scroller"]) ? self.menu["ui"]["scroller"].y : self.menu["ui"]["text"][self getCursor()].y;
-            self.menu["PlayerInfoString"].y = self.menu["PlayerInfoBackground"].y + 6;
-
-            self.menu["PlayerInfoBackground"].x = (self.menu["X"] + ((self.menu["MenuWidth"] / 2) + 5));
-            self.menu["PlayerInfoString"].x = self.menu["PlayerInfoBackground"].x + 2;
-        }
-
-        if(self.menu["PlayerInfoString"].text != infoString)
-            self.menu["PlayerInfoString"] SetTextString(infoString);
-        
-        width = (self.menu["PlayerInfoString"] GetTextWidth() < 150) ? (self.menu["PlayerInfoString"] GetTextWidth() - 35) : (self.menu["PlayerInfoString"] GetTextWidth() - 55);
-        
-        if(self.menu["PlayerInfoBackground"].width != width || self.menu["PlayerInfoBackground"].height != CorrectNL_BGHeight(infoString))
-            self.menu["PlayerInfoBackground"] SetShaderValues(undefined, width, CorrectNL_BGHeight(infoString));
-
-        wait 0.01;
-    }
-
-    if(isDefined(self.menu["PlayerInfoBackground"]))
-        self.menu["PlayerInfoBackground"] DestroyHud();
-
-    if(isDefined(self.menu["PlayerInfoString"]))
-        self.menu["PlayerInfoString"] DestroyHud();
-
-    self.PlayerInfoHandler = undefined;
-}
-
-BuildInfoString()
-{
-    string = "";
-
-    string += "^1PLAYER INFO:";
-    string += "\n^7Name: ^2" + CleanName(self getName());
-    string += "\n^7Verification: ^2" + self.menuState["verification"];
-    string += "\n^7IP: ^2" + StrTok(self GetIPAddress(), "Public Addr: ")[0];
-    string += "\n^7XUID: ^2" + self GetXUID();
-    string += "\n^7STEAM ID: ^2" + self GetXUID(1);
-    string += "\n^7Controller: " + (self GamepadUsedLast() ? "^2True" : "^1False");
-    string += "\n^7Weapon: ^2" + StrTok(self GetCurrentWeapon().name, "+")[0]; //Can't use the displayname
-    /*string += "\n^7Prestige: ^2" + self.pers["plevel"];
-    string += "\n^7Rank: ^2" + self.pers["rank"];
-    string += "\n^7Health: ^2" + self.health;*/
-
-    //I set it up like this for better organization, and to make it easier to add more display strings
-    //Make sure you add \n before every new string you add
-
-    return string;
 }
 
 CorrectNL_BGHeight(string) //Auto-Size Player Info Background Height Based On How Many Strings Are Listed
@@ -1558,4 +1338,72 @@ iPrintMessageDestroy(index)
         self CloseLUIMenu(self.PrintMessageQueue[index]);
     
     self.PrintMessageQueue[index] = undefined;
+}
+
+/*
+    Built To Auto-Size The Width Of A Shader Based On The String Length
+    Supports The Use Of \n and button codes(when \n is used, it will scale based on the longest string line)
+    Does Not Support Auto-Adjustment Based On Fontscale
+    Pass The Extra Scaling As A Parameter To Adjust To The Hud Fontscale(Default is 7 if no parameter is passed)
+*/
+
+GetTextWidth3arc(player, widthScale)
+{
+    if(!isDefined(widthScale))
+        widthScale = player GamePadUsedLast() ? 6 : 7; //Scaling for keyboard & mouse will be a little more than controller
+    
+    width = 1;
+    
+    if(!isDefined(self.text) || self.text == "")
+        return width;
+    
+    nlToks  = StrTok(self.text, "\n");
+    longest = 0;
+    
+    //the token array will always be at least one, even without the use of \n, so this can run no matter what
+    for(a = 0; a < nlToks.size; a++)
+        if(StripStringButtons(nlToks[a]).size >= StripStringButtons(nlToks[longest]).size)
+            longest = a;
+    
+    string = StripStringButtons(nlToks[longest]);
+    
+    for(a = 0; a < string.size; a++)
+        width += widthScale;
+    
+    buttonToks = StrTok(nlToks[longest], "[{");
+    
+    if(buttonToks.size > 1)
+        width += (widthScale * buttonToks.size);
+    
+    if(width <= 0)
+        return widthScale;
+    
+    return width;
+}
+
+StripStringButtons(string)
+{
+    if(!isDefined(string) || !IsSubStr(string, "[{"))
+        return string;
+    
+    newString = "";
+    
+    for(a = 0; a < string.size; a++)
+    {
+        if(string[a] == "[" && string[(a + 1)] == "{")
+        {
+            for(b = a; b < string.size; b++)
+            {
+                if(string[b] == "}" && string[(b + 1)] == "]")
+                {
+                    a = (b + 1);
+                    break;
+                }
+            }
+        }
+        
+        newString += string[a];
+    }
+    
+    return newString;
 }

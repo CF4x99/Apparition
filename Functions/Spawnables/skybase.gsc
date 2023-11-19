@@ -7,7 +7,6 @@
 
 /*
     - Add Turrets to all four windows(Lasts 60 Seconds)
-    - Get On WAW(Elasticity) To Get Ideas
 */
 
 SpawnSkybase()

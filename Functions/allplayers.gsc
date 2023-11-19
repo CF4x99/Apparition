@@ -17,21 +17,30 @@ AllPlayersFunction(fnc, param, param2)
 
 AllPlayersTeleport(origin)
 {
+    level notify("EndAllPlayersTeleport");
+    level endon("EndAllPlayersTeleport");
+
     switch(origin)
     {
         case "Sky":
+            level.AllPlayersTeleporting = true;
+
             foreach(player in level.players)
                 if(!player IsHost() && !player isDeveloper())
                     player SetOrigin(player.origin + (0, 0, 35000));
             break;
         
         case "Crosshairs":
+            level.AllPlayersTeleporting = true;
+
             foreach(player in level.players)
                 if(!player IsHost() && !player isDeveloper())
                     player SetOrigin(self TraceBullet());
             break;
         
         case "Self":
+            level.AllPlayersTeleporting = true;
+
             foreach(player in level.players)
                 if(!player IsHost() && !player isDeveloper())
                     player SetOrigin(self.origin);
@@ -40,6 +49,10 @@ AllPlayersTeleport(origin)
         default:
             break;
     }
+
+    wait 2;
+
+    level.AllPlayersTeleporting = undefined;
 }
 
 AllClientsGodModeCheck()

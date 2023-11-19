@@ -89,6 +89,26 @@
 
 <details>
     <summary>
+        Version 1.2.1.0
+    </summary>
+
+    - Added: Menu Customization Option To Change Menu Scrolling Buffer(Speed)
+    
+    - Improved: Shader Auto-Sizing -- Remade The Games 'GetTextWidth' function to be able to auto-adjust to better fit keybinds when switching between controller and keyboard
+    - Improved: Scrolling system to skip any blank or invalid options
+
+    - Fixed: Save Player Verification
+    - Fixed: Bug with hud not showing while dead
+    - Fixed: Teleporting all players will no longer do damage to them
+    - Fixed: Bugs between skybase teleporter, and spawned teleporters
+    - Fixed: Origins 115 rings not working(Officially working flawlessly)
+    - Fixed: Player rank applying to yourself, rather than the selected player
+    - Fixed: Anti-End Game not allowing the host to end the game, even in a private match
+
+</details>
+
+<details>
+    <summary>
         Version 1.2.0.0
     </summary>
     

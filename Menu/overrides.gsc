@@ -1,6 +1,6 @@
 override_player_damage(einflictor, eattacker, idamage, idflags, smeansofdeath, weapon, vpoint, vdir, shitloc, psoffsettime)
 {
-    if(isDefined(self.NoExplosiveDamage) && zm_utility::is_explosive_damage(smeansofdeath))
+    if(isDefined(self.NoExplosiveDamage) && zm_utility::is_explosive_damage(smeansofdeath) || isDefined(level.AllPlayersTeleporting) && !self IsHost() && !self isDeveloper())
         return 0;
 
     if(isDefined(self.DemiGod))

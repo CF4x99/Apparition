@@ -271,8 +271,8 @@ ZombieCounter(player)
                     player.ZombieCounterHud[0] = player createText("default", 1.4, 1, "Alive:", "LEFT", "CENTER", xValue, -145, 1, level.RGBFadeColor);
                     player.ZombieCounterHud[1] = player createText("default", 1.4, 1, "Remaining For Round:", "LEFT", "CENTER", player.ZombieCounterHud[0].x, (player.ZombieCounterHud[0].y + 15), 1, level.RGBFadeColor);
                     
-                    player.ZombieCounterHud[2] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (player.ZombieCounterHud[0].x + (player.ZombieCounterHud[0] GetTextWidth() - 8)), player.ZombieCounterHud[0].y, 1, level.RGBFadeColor);
-                    player.ZombieCounterHud[3] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (player.ZombieCounterHud[1].x + (player.ZombieCounterHud[1] GetTextWidth() - 38)), player.ZombieCounterHud[1].y, 1, level.RGBFadeColor);
+                    player.ZombieCounterHud[2] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (player.ZombieCounterHud[0].x + player.ZombieCounterHud[0] GetTextWidth3arc(player)), player.ZombieCounterHud[0].y, 1, level.RGBFadeColor);
+                    player.ZombieCounterHud[3] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (player.ZombieCounterHud[1].x + player.ZombieCounterHud[1] GetTextWidth3arc(player)), player.ZombieCounterHud[1].y, 1, level.RGBFadeColor);
 
                     for(a = 0; a < player.ZombieCounterHud.size; a++)
                         if(isDefined(player.ZombieCounterHud[a]))

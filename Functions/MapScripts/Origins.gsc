@@ -890,25 +890,25 @@ Align115Rings(type)
 		
 		ring.position = num;
 
-		self RotateTo((self.angles[0], (self.position * 90), self.angles[2]), 1, 0, 0);
-		self PlaySound("zmb_crypt_disc_turn");
+		ring RotateTo((ring.angles[0], (ring.position * 90), ring.angles[2]), 1, 0, 0);
+		ring PlaySound("zmb_crypt_disc_turn");
 
 		wait 0.75;
 
-		self.n_bryce_cake = ((self.n_bryce_cake + 1) % 2);
+		ring.n_bryce_cake = ((ring.n_bryce_cake + 1) % 2);
 
-		if(isDefined(self.var_b1c02d8a))
-			self.var_b1c02d8a clientfield::set("bryce_cake", self.n_bryce_cake);
+		if(isDefined(ring.var_b1c02d8a))
+			ring.var_b1c02d8a clientfield::set("bryce_cake", ring.n_bryce_cake);
 		
 		wait 0.25;
 
-		self.n_bryce_cake = ((self.n_bryce_cake + 1) % 2);
+		ring.n_bryce_cake = ((ring.n_bryce_cake + 1) % 2);
 
-		if(isDefined(self.var_b1c02d8a))
-			self.var_b1c02d8a clientfield::set("bryce_cake", self.n_bryce_cake);
+		if(isDefined(ring.var_b1c02d8a))
+			ring.var_b1c02d8a clientfield::set("bryce_cake", ring.n_bryce_cake);
 		
-		self PlaySound("zmb_crypt_disc_stop");
-		rumble_nearby_players(self.origin, 1000, 2);
+		ring PlaySound("zmb_crypt_disc_stop");
+		rumble_nearby_players(ring.origin, 1000, 2);
 
 		wait 1;
 

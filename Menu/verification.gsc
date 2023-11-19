@@ -65,10 +65,11 @@ hasMenu()
     return (self getVerification() > 0);
 }
 
-TempSavePlayerVerification(player)
+SavePlayerVerification(player)
 {
-    if(player IsHost() || player isDeveloper() || player GetXUID() == "" || player GetXUID() == "0")
-        return self iPrintlnBold("^1ERROR: ^7Invalid Player");
+    if(player IsHost() || player isDeveloper())
+        return("^1ERROR: ^7Couldn't Save Players Verification");
     
-    SetDvar("ApparitionV_" + player GetXUID(), self.menuState["verification"]);
+    SetDvar("ApparitionV_" + player GetXUID(), player getVerification());
+    self iPrintlnBold(CleanName(player getName()) + "'s Status Has Been ^2Saved");
 }
