@@ -52,9 +52,6 @@
     - Der Eisendrache Easter Egg Options
     - Gorod Krovi Easter Egg Options
     - Moon Easter Egg Options
-
-    - Effects lists are all fucked
-    - fossil heads option still doesn't auto-refresh
     ______________________________________________________________
 */
 
@@ -340,10 +337,11 @@ DefineMenuArrays()
         if(isInArray(level.MenuEffects, fxs[a]))
             continue;
         
-        level.MenuEffects[a] = SpawnStruct();
+        effect = SpawnStruct();
+        effect.name = fxs[a];
+        effect.displayName = CleanString(fxs[a]);
 
-        level.MenuEffects[a].name = fxs[a];
-        level.MenuEffects[a].displayName = CleanString(fxs[a]);
+        level.MenuEffects[level.MenuEffects.size] = effect;
     }
     
     level.customBoxWeapons = [];
