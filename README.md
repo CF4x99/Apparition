@@ -89,6 +89,51 @@
 
 <details>
     <summary>
+        Version 1.3.0.0
+    </summary>
+
+    - Whole Apparition menu structure has been remade
+    - Due to hitting the function size bytecode limit for runMenuIndex, I chose to populate most sub menus by jumping to separate functions(to reduce the size of runMenuIndex)
+    - Apparition can now be compiled on Infinity Loader(IL doesn't support '===' and '!==' which has been removed from AI spawners)
+
+    - Added: Entity count display at the bottom left of the screen
+    - Added: Menu customization option to disable the entity count display
+    - Added: Menu customization option to reposition the menu for all styles(Zodiac style can only move left and right)
+    - Added: Menu customization option to change the title color
+    - Added: Menu customization option to change the options color
+    - Added: Menu customization option to change the scrolling option color
+    - Added: Menu customization option to change the toggled Option color(for when toggle style is set to text color)
+    - Added: New temp-ban player system(you can now view a list of banned players, and unban them)
+    - Added: Dead Ops View
+    - Added: Newsbar
+    - Added: Der Eisendrache Enable All Landing Pads
+    - Added: Wunderwaffe DG-2 for SOE
+
+    - Fixed: Der Eisendrache Void Bow steps
+    - Fixed: Der Eisendrache Fire Bow Fireplace step
+    - Fixed: Keyboard/Numberpad UI
+    - Fixed: Bug with scrolling system
+    - Fixed: Possible crash while using rain projectiles
+    - Fixed: Possible crash with unlimited ammo/equipment
+    - Fixed: Zombie counter UI
+    - Fixed: Repair all window barriers
+    - Fixed: Save & Load binds no longer work while in the menu
+    - Fixed: Issues with the tornado
+    - Fixed: Collecting all craftables breaking the rituals on SOE
+
+    - Removed: Mod Menu Lobby Game mode
+    - Removed: Anti-Join(useless)
+
+    - Changed: Reorganized several menus
+    - Changed: Increased the RGB Fade speed
+    - Changed: Anti-End Game is now located in host menu
+    - Changed: Force Field now has it's own submenu(still in fun scripts)
+    - Changed: SOE Fumigator is now a submenu that will allow you to give Fumigators to selective players
+
+</details>
+
+<details>
+    <summary>
         Version 1.2.1.0
     </summary>
 
