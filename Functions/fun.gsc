@@ -271,8 +271,8 @@ ZombieCounter(player)
                     player.ZombieCounterHud[0] = player createText("default", 1.4, 1, "Alive:", "LEFT", "CENTER", xValue, -145, 1, level.RGBFadeColor);
                     player.ZombieCounterHud[1] = player createText("default", 1.4, 1, "Remaining For Round:", "LEFT", "CENTER", player.ZombieCounterHud[0].x, (player.ZombieCounterHud[0].y + 15), 1, level.RGBFadeColor);
                     
-                    player.ZombieCounterHud[2] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (player.ZombieCounterHud[0].x + player.ZombieCounterHud[0] GetTextWidth3arc(player)), player.ZombieCounterHud[0].y, 1, level.RGBFadeColor);
-                    player.ZombieCounterHud[3] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (player.ZombieCounterHud[1].x + player.ZombieCounterHud[1] GetTextWidth3arc(player)), player.ZombieCounterHud[1].y, 1, level.RGBFadeColor);
+                    player.ZombieCounterHud[2] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (player.ZombieCounterHud[0].x + (player.ZombieCounterHud[0] GetTextWidth() - 8)), player.ZombieCounterHud[0].y, 1, level.RGBFadeColor);
+                    player.ZombieCounterHud[3] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (player.ZombieCounterHud[1].x + (player.ZombieCounterHud[1] GetTextWidth() - 38)), player.ZombieCounterHud[1].y, 1, level.RGBFadeColor);
 
                     for(a = 0; a < player.ZombieCounterHud.size; a++)
                         if(isDefined(player.ZombieCounterHud[a]))
@@ -327,7 +327,7 @@ LightProtector(player)
 
         //In the case that the entity crash protection deletes the light protector, but the light protector variable is still true
         if(isDefined(player.LightProtector) && !isDefined(player.LightProtect))
-            thread LightProtector(player);
+            LightProtector(player);
     }
     else
     {
@@ -445,6 +445,9 @@ PlayerMountCamera(tag, player)
     if(isDefined(player.DropCamera) && !isDefined(player.PlayerMountCamera))
         return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Drop Camera Is Enabled");
     
+    if(isDefined(player.DeadOpsView) && !isDefined(player.PlayerMountCamera))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Dead Ops View Is Enabled");
+    
     if(tag != "Disable")
     {
         if(isDefined(player.PlayerMountCamera))
@@ -479,6 +482,9 @@ PlayerDropCamera(player)
     if(isDefined(player.PlayerMountCamera) && !isDefined(player.DropCamera))
         return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Mount Camera Is Enabled");
     
+    if(isDefined(player.DeadOpsView) && !isDefined(player.DropCamera))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Dead Ops View Is Enabled");
+    
     player.DropCamera = isDefined(player.DropCamera) ? undefined : true;
 
     if(isDefined(player.DropCamera))
@@ -494,6 +500,52 @@ PlayerDropCamera(player)
     {
         player CameraActivate(false);
 
+        if(isDefined(player.camlinker))
+            player.camlinker delete();
+    }
+}
+
+DeadOpsView(player)
+{
+    if(!Is_Alive(player) && !isDefined(player.DeadOpsView))
+        return iPrintlnBold("^1ERROR: ^7Player Needs To Be Alive To Enable Dead Ops View");
+    
+    if(isDefined(player.SpecNade) && !isDefined(player.DeadOpsView))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Spec-Nade Is Enabled");
+    
+    if(isDefined(player.DropCamera) && !isDefined(player.DeadOpsView))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Drop Camera Is Enabled");
+    
+    player.DeadOpsView = isDefined(player.DeadOpsView) ? undefined : true;
+    
+    if(isDefined(player.DeadOpsView))
+    {
+        player endon("disconnect");
+        
+        tracePosition    = BulletTrace(player.origin, player.origin + (0, 0, 350), 0, player)["position"];
+        player.camlinker = SpawnScriptModel(tracePosition, "tag_origin", (90, 90, 0));
+        
+        player CameraSetPosition(player.camlinker);
+        player CameraSetLookat(player.camlinker);
+        player CameraActivate(true);
+        
+        while(isDefined(player.DeadOpsView))
+        {
+            if(IsAlive(player))
+            {
+                tracePosition = BulletTrace(player.origin, player.origin + (0, 0, 350), 0, player)["position"];
+                
+                if(isDefined(player.camlinker) && player.camlinker.origin != tracePosition)
+                    player.camlinker.origin = tracePosition;
+            }
+            
+            wait 0.01;
+        }
+    }
+    else
+    {
+        player CameraActivate(false);
+        
         if(isDefined(player.camlinker))
             player.camlinker delete();
     }
@@ -599,10 +651,16 @@ SpecNade(player) //Credit to Extinct for his spec-nade
         return self iPrintlnBold("^1ERROR: ^7Player Is Linked To An Entity");
     
     if(isDefined(player.NoclipBind) && !isDefined(player.SpecNade))
-        return self iPrintlnBold("^1ERROR: ^7Player Has Noclip Bind Enabled");
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Noclip Bind Is Enabled");
     
     if(isDefined(player.DropCamera) && !isDefined(player.SpecNade))
-        return self iPrintlnBold("^1ERROR: ^7Player's Camera Has Been Dropped");
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Drop Camera Is Enabled");
+    
+    if(isDefined(player.DeadOpsView) && !isDefined(player.SpecNade))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Dead Ops View Is Enabled");
+    
+    if(isDefined(player.PlayerMountCamera) && !isDefined(player.SpecNade))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Mount Camera Is Enabled");
 
     player.SpecNade = isDefined(player.SpecNade) ? undefined : true;
 

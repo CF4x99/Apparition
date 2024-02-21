@@ -206,7 +206,9 @@ WatchForMaxAmmo()
         return;
     level.WatchForMaxAmmo = true;
 
-    while(1)
+    level endon("EndMaxAmmoMonitor");
+
+    while(isDefined(level.ServerMaxAmmoClips))
     {
         level waittill("zmb_max_ammo_level");
         

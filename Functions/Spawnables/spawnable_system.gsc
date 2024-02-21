@@ -1,3 +1,30 @@
+PopulateSpawnables(menu)
+{
+    switch(menu)
+    {
+        case "Spawnables":
+            self addMenu("Spawnables");
+                self addOptSlider("Skybase", ::SpawnSystem, "Spawn;Dismantle;Delete", "Skybase", ::SpawnSkybase);
+                
+                if(isDefined(level.spawnable["Skybase_Spawned"]))
+                {
+                    self addOptBool((isDefined(level.SkybaseTeleporters) && level.SkybaseTeleporters.size), "Spawn Skybase Teleporter", ::SpawnSkybaseTeleporter);
+                    self addOpt("");
+                }
+                
+                self addOptSlider("Drop Tower", ::SpawnSystem, "Spawn;Dismantle;Delete", "Drop Tower", ::SpawnDropTower);
+                self addOptSlider("Merry Go Round", ::SpawnSystem, "Spawn;Dismantle;Delete", "Merry Go Round", ::SpawnMerryGoRound);
+
+                if(isDefined(level.spawnable["Merry Go Round_Spawned"]))
+                    self addOptIncSlider("Merry Go Round Speed", ::SetMerryGoRoundSpeed, 1, 1, 10, 1);
+            break;
+        
+        default:
+            self addMenu("404 Error");
+            break;
+    }
+}
+
 SpawnSystem(action, type, func)
 {
     checkModel = GetSpawnableBaseModel();

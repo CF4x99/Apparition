@@ -1,3 +1,24 @@
+PopulateMoonScripts(menu)
+{
+	switch(menu)
+	{
+		case "Moon Scripts":
+            self addMenu("Moon Scripts");
+                self addOptBool(level flag::get("power_on"), "Turn On Power", ::ActivatePower);
+                self addOptSlider("Activate Excavator", ::ActivateDigger, "Teleporter;Hangar;Biodome");
+                self addOptBool(level.FastExcavators, "Fast Excavators", ::FastExcavators);
+
+                if(level flag::get("power_on"))
+                {
+                    self addOptBool(level flag::get("ss1"), "Samantha Says Part 1", ::CompleteSamanthaSays, "ss1");
+
+                    if(level flag::get("ss1"))
+                        self addOptBool(level flag::get("be2"), "Samantha Says Part 2", ::CompleteSamanthaSays, "be2");
+                }
+            break;
+	}
+}
+
 CompleteSamanthaSays(part)
 {
     if(!level flag::get("power_on"))

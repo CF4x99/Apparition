@@ -1,9 +1,12 @@
 setVerification(a, player, msg)
 {
-    if(player isHost() || player isDeveloper() || player getVerification() == a || player == self)
+    if(player isHost() || player isDeveloper() || player getVerification() == a || player == self || player util::is_bot())
     {
         if(isDefined(msg) && msg)
         {
+            if(player util::is_bot())
+                return self iPrintlnBold("^1ERROR: ^7You Can't Change The Verification Of A Bot");
+            
             if(player isHost())
                 return self iPrintlnBold("^1ERROR: ^7You Can't Change The Status Of The Host");
             
@@ -20,23 +23,23 @@ setVerification(a, player, msg)
         return;
     }
     
-    player.menuState["verification"] = level.MenuStatus[a];
-    player iPrintlnBold("Your Status Has Been Set To ^2" + player.menuState["verification"]);
+    player.verification = level.MenuStatus[a];
+    player iPrintlnBold("Your Status Has Been Set To ^2" + player.verification);
     player.menuParent = [];
     
     if(player isInMenu(true))
         player closeMenu1();
     
-    player.menu["currentMenu"] = "";
-    player.menu["curs"]["Main"] = 0;
-
+    player.currentMenu = "";
+    player.menuCurs["Main"] = 0;
+    
     player notify("endMenuMonitor");
     player.menuMonitor    = undefined;
     player.WelcomeDisplay = undefined;
 
     if(player hasMenu())
     {
-        player thread ApparitionWelcomeMessage("Welcome To ^1" + level.menuName + ",Status: ^1" + player.menuState["verification"] + ",[{+speed_throw}] & [{+melee}] To ^1Open");
+        player thread WelcomeMessage("Welcome To ^1" + level.menuName + ",Status: ^1" + player.verification + ",[{+speed_throw}] & [{+melee}] To ^1Open");
         player thread menuMonitor();
     }
 }
@@ -52,11 +55,11 @@ SetVerificationAllPlayers(a, msg)
 
 getVerification()
 {
-    if(!isDefined(self.menuState["verification"]))
+    if(!isDefined(self.verification))
         return 0;
 
     for(a = 0; a < level.MenuStatus.size; a++)
-        if(self.menuState["verification"] == level.MenuStatus[a])
+        if(self.verification == level.MenuStatus[a])
             return a;
 }
 
@@ -67,7 +70,7 @@ hasMenu()
 
 SavePlayerVerification(player)
 {
-    if(player IsHost() || player isDeveloper())
+    if(player IsHost() || player isDeveloper() || player util::is_bot())
         return("^1ERROR: ^7Couldn't Save Players Verification");
     
     SetDvar("ApparitionV_" + player GetXUID(), player getVerification());

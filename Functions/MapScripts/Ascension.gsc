@@ -1,3 +1,34 @@
+PopulateAscensionScripts(menu)
+{
+    switch(menu)
+    {
+        case "Ascension Scripts":
+            self addMenu("Ascension Scripts");
+                self addOptBool(level flag::get("power_on"), "Turn On Power", ::ActivatePower);
+                self addOpt("Control Lunar Lander", ::ControlLunarLander);
+                self addOpt("");
+
+                if(!level flag::get("target_teleported"))
+                    self addOpt("Throw Gersch At Generator", ::TeleportGenerator);
+                
+                if(!level flag::get("rerouted_power"))
+                    self addOpt("Activate Computer", ::ActivateComputer);
+                
+                if(!level flag::get("switches_synced"))
+                    self addOpt("Activate Switches", ::ActivateSwitches);
+                
+                if(!(level flag::get("lander_a_used") && level flag::get("lander_b_used") && level flag::get("lander_c_used") && level flag::get("launch_activated")))
+                    self addOpt("Refuel The Rocket", ::RefuelRocket);
+                
+                if(!level flag::get("launch_complete"))
+                    self addOpt("Launch The Rocket", ::LaunchRocket);
+                
+                if(!level flag::get("pressure_sustained"))
+                    self addOpt("Complete Time Clock", ::CompleteTimeClock);
+            break;
+    }
+}
+
 ControlLunarLander()
 {
     if((level.lander_in_use || level flag::get("lander_inuse")) && !isDefined(self.ControlLunarLander))
@@ -37,7 +68,7 @@ ControlLunarLander()
         player EnableInvulnerability();
 
         player.lander = true;
-        player.menu["DisableMenuControls"] = true;
+        player.DisableMenuControls = true;
 
         lander.riders++;
     }
@@ -125,7 +156,7 @@ ControlLander(lander)
         
         player Unlink();
         player DisableInvulnerability();
-        player.menu["DisableMenuControls"] = undefined;
+        player.DisableMenuControls = undefined;
         player.lander = false;
     }
 

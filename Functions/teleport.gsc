@@ -102,6 +102,39 @@ TeleportGun(player)
         player notify("EndTeleportGun");
 }
 
+SaveAndLoad(player)
+{
+    player endon("disconnect");
+
+    player.SaveAndLoad = isDefined(player.SaveAndLoad) ? undefined : true;
+
+    if(isDefined(player.SaveAndLoad))
+    {
+        player iPrintlnBold("Press [{+actionslot 3}] To ^2Save Current Location");
+        player iPrintlnBold("Press [{+actionslot 2}] To ^2Load Saved Location");
+
+        while(isDefined(player.SaveAndLoad))
+        {
+            if(!player isInMenu(true))
+            {
+                if(player ActionslotThreeButtonPressed())
+                {
+                    player SaveCurrentLocation(player);
+                    wait 0.05;
+                }
+
+                if(player ActionslotTwoButtonPressed() && isDefined(player.SavedOrigin))
+                {
+                    player LoadSavedLocation(player);
+                    wait 0.05;
+                }
+            }
+
+            wait 0.05;
+        }
+    }
+}
+
 SaveCurrentLocation(player)
 {
     player.SavedOrigin = player.origin;

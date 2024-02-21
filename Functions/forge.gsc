@@ -1,3 +1,46 @@
+PopulateForgeOptions(menu)
+{
+    switch(menu)
+    {
+        case "Forge Options":
+            if(!isDefined(self.forge["ModelDistance"]))
+                self.forge["ModelDistance"] = 200;
+            
+            if(!isDefined(self.forge["ModelScale"]))
+                self.forge["ModelScale"] = 1;
+            
+            self addMenu("Forge Options");
+                self addOpt("Spawn", ::newMenu, "Spawn Script Model");
+                self addOptIncSlider("Scale", ::ForgeModelScale, 0.5, 1, 10, 0.5);
+                self addOpt("Place", ::ForgePlaceModel);
+                self addOpt("Copy", ::ForgeCopyModel);
+                self addOpt("Rotate", ::newMenu, "Rotate Script Model");
+                self addOpt("Delete", ::ForgeDeleteModel);
+                self addOpt("Drop", ::ForgeDropModel);
+                self addOptIncSlider("Distance", ::ForgeModelDistance, 100, 200, 500, 25);
+                self addOptBool(self.forge["ignoreCollisions"], "Ignore Collisions", ::ForgeIgnoreCollisions);
+                self addOpt("Delete Last Spawn", ::ForgeDeleteLastSpawn);
+                self addOpt("Delete All Spawned", ::ForgeDeleteAllSpawned);
+                self addOptBool(self.ForgeShootModel, "Shoot Model", ::ForgeShootModel);
+            break;
+        
+        case "Spawn Script Model":
+            self addMenu("Spawn");
+
+                for(a = 0; a < level.MenuModels.size; a++)
+                    self addOpt(CleanString(level.MenuModels[a]), ::ForgeSpawnModel, level.MenuModels[a]);
+            break;
+        
+        case "Rotate Script Model":
+            self addMenu("Rotate");
+                self addOpt("Reset", ::ForgeRotateModel, 0, "Reset");
+                self addOptIncSlider("Roll", ::ForgeRotateModel, -10, 0, 10, 1, "Roll");
+                self addOptIncSlider("Yaw", ::ForgeRotateModel, -10, 0, 10, 1, "Yaw");
+                self addOptIncSlider("Pitch", ::ForgeRotateModel, -10, 0, 10, 1, "Pitch");
+            break;
+    }
+}
+
 ForgeSpawnModel(model)
 {
     if(isDefined(self.ForgeShootModel))

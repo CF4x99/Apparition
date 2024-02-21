@@ -47,7 +47,7 @@ Noclip1(player)
 
         player.nocliplinker = SpawnScriptModel(player.origin, "tag_origin");
         player PlayerLinkTo(player.nocliplinker, "tag_origin");
-        player.menu["DisableMenuControls"] = true;
+        player.DisableMenuControls = true;
 
         player SetMenuInstructions("[{+attack}] - Move Forward\n[{+speed_throw}] - Move Backwards\n[{+melee}] - Exit");
         
@@ -75,7 +75,7 @@ Noclip1(player)
         player EnableWeapons();
         player EnableOffHandWeapons();
 
-        player.menu["DisableMenuControls"] = undefined;
+        player.DisableMenuControls = undefined;
 
         player SetMenuInstructions();
     }
@@ -95,7 +95,7 @@ BindNoclip(player)
     
     while(isDefined(player.NoclipBind))
     {
-        if(player FragButtonPressed() && !isDefined(player.menu["DisableMenuControls"]))
+        if(player FragButtonPressed() && !isDefined(player.DisableMenuControls))
         {
             player thread Noclip1(player);
             wait 0.2;
@@ -124,7 +124,7 @@ UFOMode(player)
 
         player.ufolinker = SpawnScriptModel(player.origin, "tag_origin");
         player PlayerLinkTo(player.ufolinker, "tag_origin");
-        player.menu["DisableMenuControls"] = true;
+        player.DisableMenuControls = true;
 
         player SetMenuInstructions("[{+attack}] - Move Up\n[{+speed_throw}] - Move Down\n[{+frag}] - Move Forward\n[{+melee}] - Exit");
         
@@ -157,7 +157,7 @@ UFOMode(player)
         player EnableWeapons();
         player EnableOffHandWeapons();
 
-        player.menu["DisableMenuControls"] = undefined;
+        player.DisableMenuControls = undefined;
 
         player SetMenuInstructions();
     }
@@ -173,10 +173,15 @@ UnlimitedAmmo(type, player)
     {
         while(1)
         {
-            player GiveMaxAmmo(player GetCurrentWeapon());
+            weapon = player GetCurrentWeapon();
 
-            if(type == "Continuous")
-                player SetWeaponAmmoClip(player GetCurrentWeapon(), player GetCurrentWeapon().clipsize);
+            if(isDefined(weapon))
+            {
+                player GiveMaxAmmo(weapon);
+
+                if(type == "Continuous")
+                    player SetWeaponAmmoClip(weapon, weapon.clipsize);
+            }
 
             wait 0.05;
         }
@@ -191,7 +196,10 @@ UnlimitedEquipment(player)
 
     while(isDefined(player.UnlimitedEquipment))
     {
-        player GiveMaxAmmo(player GetCurrentOffhand());
+        offhand = player GetCurrentOffhand();
+
+        if(isDefined(offhand))
+            player GiveMaxAmmo(offhand);
 
         wait 0.05;
     }
@@ -395,36 +403,6 @@ Invisibility(player)
         player Show();
 }
 
-SaveAndLoad(player)
-{
-    player endon("disconnect");
-
-    player.SaveAndLoad = isDefined(player.SaveAndLoad) ? undefined : true;
-
-    if(isDefined(player.SaveAndLoad))
-    {
-        player iPrintlnBold("Press [{+actionslot 3}] To ^2Save Current Location");
-        player iPrintlnBold("Press [{+actionslot 2}] To ^2Load Saved Location");
-
-        while(isDefined(player.SaveAndLoad))
-        {
-            if(player ActionslotThreeButtonPressed())
-            {
-                player SaveCurrentLocation(player);
-                wait 0.05;
-            }
-
-            if(player ActionslotTwoButtonPressed() && isDefined(player.SavedOrigin))
-            {
-                player LoadSavedLocation(player);
-                wait 0.05;
-            }
-
-            wait 0.05;
-        }
-    }
-}
-
 NoTarget(player)
 {
     player endon("disconnect");
@@ -506,16 +484,8 @@ PlayerSetVision(vision, player)
         player UseServerVisionSet(false);
     else
     {
-        visions = StrTok(level.menuVisions, ";");
-
-        for(a = 0; a < visions.size; a++)
-            if(visions[a] == vision)
-            {
-                player UseServerVisionSet(true);
-                player SetVisionSetForPlayer(level.menuVis[a], 0);
-                
-                break;
-            }
+        player UseServerVisionSet(true);
+        player SetVisionSetForPlayer(vision, 0);
     }
 }
 

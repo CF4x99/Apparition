@@ -1,3 +1,142 @@
+PopulateServerModifications(menu)
+{
+    switch(menu)
+    {
+        case "Server Modifications":
+            self addMenu("Server Modifications");
+                self addOptBool(level.SuperJump, "Super Jump", ::SuperJump);
+                self addOptBool((GetDvarInt("bg_gravity") == 200), "Low Gravity", ::LowGravity);
+                self addOptBool((GetDvarString("g_speed") == "500"), "Super Speed", ::SuperSpeed);
+                self addOptIncSlider("Timescale", ::ServerSetTimeScale, 0.5, GetDvarInt("timescale"), 5, 0.5);
+                self addOpt("Set Round", ::NumberPad, ::SetRound);
+                self addOptBool(level.AntiQuit, "Anti-Quit", ::AntiQuit);
+                self addOptBool(level.AutoRevive, "Auto-Revive", ::AutoRevive);
+                self addOptBool(level.AutoRespawn, "Auto-Respawn", ::AutoRespawn);
+                self addOptBool(level.ServerPauseWorld, "Pause World", ::ServerPauseWorld);
+                self addOptBool(level.Newsbar, "Newsbar", ::Newsbar);
+                self addOpt("Doheart Options", ::newMenu, "Doheart Options");
+                self addOpt("Lobby Timer Options", ::newMenu, "Lobby Timer Options");
+                self addOptBool(IsAllDoorsOpen(), "Open All Doors & Debris", ::OpenAllDoors);
+                self addOptSlider("Zombie Barriers", ::SetZombieBarrierState, "Break All;Repair All");
+                self addOpt("Spawn Bot", ::SpawnBot);
+
+                if(isDefined(level.zombie_include_craftables) && level.zombie_include_craftables.size && !isDefined(level.all_parts_required))
+                    if(level.zombie_include_craftables.size > 1 || level.zombie_include_craftables.size && GetArrayKeys(level.zombie_include_craftables)[0] != "open_table")
+                        self addOpt("Craftables", ::newMenu, "Zombie Craftables");
+
+                if(isDefined(level.MenuZombieTraps) && level.MenuZombieTraps.size)
+                    self addOpt("Zombie Traps", ::newMenu, "Zombie Traps");
+                
+                self addOpt("Mystery Box Options", ::newMenu, "Mystery Box Options");
+                self addOpt("Server Tweakables", ::newMenu, "Server Tweakables");
+                self addOpt("Change Map", ::newMenu, "Change Map");
+                self addOpt("Restart Game", ::ServerRestartGame);
+            break;
+        
+        case "Doheart Options":
+            if(!isDefined(level.DoheartStyle))
+                level.DoheartStyle = "Pulsing";
+            
+            if(!isDefined(level.DoheartSavedText))
+                level.DoheartSavedText = CleanName(bot::get_host_player() getName());
+            
+            self addMenu("Doheart Options");
+                self addOptBool(level.Doheart, "Doheart", ::Doheart);
+                self addOptSlider("Text", ::DoheartTextPass, CleanName(bot::get_host_player() getName()) + ";" + level.menuName + ";CF4_99;Custom");
+                self addOptSlider("Style", ::SetDoheartStyle, "Pulsing;Pulse Effect;Type Writer;Moving;Fade Effect");
+            break;
+        
+        case "Lobby Timer Options":
+            if(!isDefined(level.LobbyTime))
+                level.LobbyTime = 10;
+            
+            self addMenu("Lobby Timer Options");
+                self addOptBool(level.LobbyTimer, "Lobby Timer", ::LobbyTimer);
+                self addOptIncSlider("Set Lobby Timer", ::SetLobbyTimer, 1, 10, 30, 1);
+            break;
+        
+        case "Zombie Craftables":
+            craftables = GetArrayKeys(level.zombie_include_craftables);
+
+            self addMenu("Craftables");
+
+                if(!IsAllCraftablesCollected())
+                {
+                    self addOpt("Collect All", ::CollectAllCraftables);
+                    self addOpt("");
+                }
+
+                for(a = 0; a < craftables.size; a++)
+                {
+                    if(IsCraftableCollected(craftables[a]) || craftables[a] == "open_table" || IsSubStr(craftables[a], "ritual_"))
+                        continue;
+                    
+                    self addOpt(CleanString(craftables[a]), ::newMenu, craftables[a]);
+                }
+            break;
+        
+        case "Zombie Traps":
+            self addMenu("Zombie Traps");
+
+                if(isDefined(level.MenuZombieTraps) && level.MenuZombieTraps.size)
+                {
+                    self addOpt("Activate All Traps", ::ActivateAllZombieTraps);
+
+                    for(a = 0; a < level.MenuZombieTraps.size; a++)
+                        if(isDefined(level.MenuZombieTraps[a]))
+                            self addOpt(isDefined(level.MenuZombieTraps[a].prefabname) ? CleanString(level.MenuZombieTraps[a].prefabname) : "Trap " + (a + 1), ::ActivateZombieTrap, a);
+                }
+            break;
+        
+        case "Mystery Box Options":
+            self addMenu("Mystery Box Options");
+                self addOptBool(level.chests[level.chest_index].old_cost != 950, "Custom Price", ::NumberPad, ::SetBoxPrice);
+                self addOptBool(AllBoxesActive(), "Show All", ::ShowAllChests);
+                self addOpt("Force Joker", ::BoxForceJoker);
+                self addOptBool((GetDvarString("magic_chest_movable") == "0"), "Never Moves", ::BoxNeverMoves);
+                self addOpt("Weapons", ::newMenu, "Mystery Box Weapons");
+                self addOpt("Joker Model", ::newMenu, "Joker Model");
+            break;
+        
+        case "Mystery Box Weapons":
+            self addMenu("Weapons");
+                self addOpt("Normal", ::newMenu, "Mystery Box Normal Weapons");
+                self addOpt("Upgraded", ::newMenu, "Mystery Box Upgraded Weapons");
+            break;
+        
+        case "Joker Model":
+            self addMenu("Joker Model");
+                self addOptBool((level.chest_joker_model == level.savedJokerModel), "Reset", ::SetBoxJokerModel, level.savedJokerModel);
+
+                for(a = 0; a < level.MenuModels.size; a++)
+                    self addOptBool((level.chest_joker_model == level.MenuModels[a]), CleanString(level.MenuModels[a]), ::SetBoxJokerModel, level.MenuModels[a]);
+            break;
+        
+        case "Server Tweakables":
+            self addMenu("Server Tweakables");
+                self addOptIncSlider("Pack 'a' Punch Camo Index", ::SetPackCamoIndex, 0, level.pack_a_punch_camo_index, 138, 1);
+                self addOptIncSlider("Player Weapon Limit", ::SetPlayerWeaponLimit, 0, 0, 15, 1);
+                self addOptIncSlider("Player Perk Limit", ::SetPlayerPerkLimit, 0, 0, level.MenuPerks.size, 1);
+                self addOptIncSlider("Clip Size Multiplier", ::ServerSetClipSizeMultiplier, 1, 1, 10, 1);
+                self addOptBool(level.ServerMaxAmmoClips, "Max Ammo Powerups Fill Clips", ::ServerMaxAmmoClips);
+                self addOptBool(level.IncreasedDropRate, "Increased Power-Up Drop Rate", ::IncreasedDropRate);
+                self addOptBool(level.PowerupsNeverLeave, "Power-Ups Never Leave", ::PowerupsNeverLeave);
+                self addOptBool(level.DisablePowerups, "Disable Power-Ups", ::DisablePowerups);
+                self addOptBool(level.ShootToRevive, "Shoot To Revive", ::ShootToRevive);
+                self addOptBool(level.headshots_only, "Headshots Only", ::headshots_only);
+                self addOpt("Pack 'a' Punch Price", ::NumberPad, ::EditPackAPunchPrice);
+                self addOpt("Repack 'a' Punch Price", ::NumberPad, ::EditRepackAPunchPrice);
+            break;
+        
+        case "Change Map":
+            self addMenu("Change Map");
+
+                for(a = 0; a < level.mapNames.size; a++)
+                    self addOptBool((level.script == level.mapNames[a]), ReturnMapName(level.mapNames[a]), ::ServerChangeMap, level.mapNames[a]);
+            break;
+    }
+}
+
 SuperJump()
 {
     level.SuperJump = isDefined(level.SuperJump) ? undefined : true;
@@ -56,11 +195,6 @@ AntiQuit()
 {
     level.AntiQuit = isDefined(level.AntiQuit) ? undefined : true;
     SetMatchFlag("disableIngameMenu", isDefined(level.AntiQuit));
-}
-
-AntiJoin()
-{
-    level.AntiJoin = isDefined(level.AntiJoin) ? undefined : true;
 }
 
 AntiEndGame()
@@ -159,6 +293,55 @@ ServerPauseWorld()
 {
     level.ServerPauseWorld = isDefined(level.ServerPauseWorld) ? undefined : true;
     SetPauseWorld(isDefined(level.ServerPauseWorld));
+}
+
+Newsbar()
+{
+    level.Newsbar = isDefined(level.Newsbar) ? undefined : true;
+    
+    if(isDefined(level.Newsbar))
+    {
+        level.NewsbarBG   = level createServerRectangle("CENTER", "CENTER", 0, -232, 1000, 18, (0, 0, 0), 1, 0.6, "white");
+        level.NewsbarText = level createServerText("default", 1, 3, "", "CENTER", "CENTER", 0, -255, 1, (1, 1, 1));
+        
+        strings = [
+        "Welcome To ^1" + level.menuName + " ^7Developed By ^1CF4_99",
+        "Your Host Today Is ^1" + CleanName(bot::get_host_player() getName()),
+        "[{+speed_throw}] & [{+melee}] To Open ^1" + level.menuName,
+        "YouTube.Com/^1CF4_99",
+        "^5Enjoy Your Stay!"
+        ];
+        
+        level endon("EndNewsBar");
+        
+        while(isDefined(level.Newsbar))
+        {
+            for(a = 0; a < strings.size; a++)
+            {
+                level.NewsbarText SetTextString(strings[a]);
+                level.NewsbarText hudMoveY(-232, 0.55);
+                level.NewsbarText ChangeFontscaleOverTime1(1.2, 0.75);
+                
+                wait 5;
+                
+                level.NewsbarText ChangeFontscaleOverTime1(1, 0.3);
+                wait 0.3;
+                
+                level.NewsbarText thread hudMoveY(-255, 0.55);
+                wait 0.55;
+            }
+        }
+    }
+    else
+    {
+        if(isDefined(level.NewsbarBG))
+            level.NewsbarBG destroy();
+        
+        if(isDefined(level.NewsbarText))
+            level.NewsbarText destroy();
+        
+        level notify("EndNewsBar");
+    }
 }
 
 Doheart()
@@ -422,13 +605,13 @@ SetZombieBarrierState(state)
 
                     windows[a] thread zm_blockers::replace_chunk(windows[a], chunk, undefined, zm_powerups::is_carpenter_boards_upgraded(), 1);
 
-                    if(isDefined(windows.clip))
+                    if(isDefined(windows[a].clip))
                     {
-                        windows.clip TriggerEnable(1);
-                        windows.clip DisconnectPaths();
+                        windows[a].clip TriggerEnable(1);
+                        windows[a].clip DisconnectPaths();
                     }
                     else
-                        zm_blockers::blocker_disconnect_paths(windows.neg_start, windows.neg_end);
+                        zm_blockers::blocker_disconnect_paths(windows[a].neg_start, windows[a].neg_end);
                 }
             }
             break;
@@ -465,9 +648,14 @@ CollectAllCraftables()
     keys = GetArrayKeys(level.zombie_include_craftables);
 
     foreach(key in keys)
+    {
+        if(IsCraftableCollected(key) || key == "open_table" || IsSubStr(key, "ritual_"))
+            continue;
+        
         foreach(part in level.zombie_include_craftables[key].a_piecestubs)
             if(isDefined(part.pieceSpawn))
                 self zm_craftables::player_take_piece(part.pieceSpawn);
+    }
     
     wait 0.05;
 
@@ -752,6 +940,11 @@ SetMapSpawn(plyer, type)
 ServerMaxAmmoClips()
 {
     level.ServerMaxAmmoClips = isDefined(level.ServerMaxAmmoClips) ? undefined : true;
+
+    if(isDefined(level.ServerMaxAmmoClips))
+        level thread WatchForMaxAmmo();
+    else
+        level notify("EndMaxAmmoMonitor");
 }
 
 ShootToRevive()

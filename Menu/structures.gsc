@@ -1,166 +1,88 @@
-MenuArrays(menu)
+addMenu(title)
 {
-    if(!isDefined(self.menu["items"]))
-        self.menu["items"] = [];
-    
-    if(!isDefined(self.menu["items"][menu]))
-        self.menu["items"][menu] = SpawnStruct();
-    
-    if(!isDefined(self.menuParent))
-        self.menuParent = [];
-    
-    if(!isDefined(self.menuParentQM))
-        self.menuParentQM = [];
-    
-    if(!isDefined(self.menu["curs"]))
-        self.menu["curs"] = [];
-    
-    self.menu["items"][menu].name = [];
-    self.menu["items"][menu].name2 = [];
-    self.menu["items"][menu].func = [];
-    self.menu["items"][menu].input1 = [];
-    self.menu["items"][menu].input2 = [];
-    self.menu["items"][menu].input3 = [];
-    self.menu["items"][menu].input4 = [];
-    self.menu["items"][menu].bool = [];
-    self.menu["items"][menu].slider = [];
-    self.menu["items"][menu].incslider = [];
-    self.menu["items"][menu].incslidermin = [];
-    self.menu["items"][menu].incsliderstart = [];
-    self.menu["items"][menu].incslidermax = [];
-    self.menu["items"][menu].shader = [];
-    self.menu["items"][menu].width = [];
-    self.menu["items"][menu].height = [];
-    self.menu["items"][menu].color = [];
-    
-    if(!isDefined(self.menu_B))
-        self.menu_B = [];
-    
-    if(!isDefined(self.menu_B[menu]))
-        self.menu_B[menu] = [];
-    
-    if(!isDefined(self.menu_S))
-        self.menu_S = [];
-    
-    if(!isDefined(self.menu_S[menu]))
-        self.menu_S[menu] = [];
-    
-    if(!isDefined(self.menu_SS))
-        self.menu_SS = [];
-    
-    if(!isDefined(self.menu_SS[menu]))
-        self.menu_SS[menu] = [];
-    
-    if(!isDefined(self.menu_ST))
-        self.menu_ST = [];
-    
-    if(!isDefined(self.menu_ST[menu]))
-        self.menu_ST[menu] = [];
-}
-
-addMenu(menu, title)
-{
-    self MenuArrays(menu);
+    self.menuStructure = [];
 
     if(isDefined(title))
-        self.menu["items"][menu].title = title;
-    
-    if(!isDefined(self.temp))
-        self.temp = [];
-    
-    self.temp["memory"] = menu;
+        self.menuTitle = title;
 }
 
 addOpt(name, fnc, input1, input2, input3, input4)
 {
-    menu = self.temp["memory"];
-    size = self.menu["items"][menu].name.size;
+    option = SpawnStruct();
     
-    self.menu["items"][menu].name[size] = name;
-    self.menu["items"][menu].func[size] = fnc;
-    self.menu["items"][menu].input1[size] = input1;
-    self.menu["items"][menu].input2[size] = input2;
-    self.menu["items"][menu].input3[size] = input3;
-    self.menu["items"][menu].input4[size] = input4;
+    option.name   = name;
+    option.func   = fnc;
+    option.input1 = input1;
+    option.input2 = input2;
+    option.input3 = input3;
+    option.input4 = input4;
+    
+    self.menuStructure[self.menuStructure.size] = option;
 }
 
 addOptBool(var, name, fnc, input1, input2, input3, input4)
 {
-    menu = self.temp["memory"];
-    size = self.menu["items"][menu].name.size;
+    option = SpawnStruct();
     
-    self.menu["items"][menu].name[size] = name;
-    self.menu["items"][menu].func[size] = fnc;
-    self.menu["items"][menu].input1[size] = input1;
-    self.menu["items"][menu].input2[size] = input2;
-    self.menu["items"][menu].input3[size] = input3;
-    self.menu["items"][menu].input4[size] = input4;
-    self.menu["items"][menu].bool[size] = true;
+    option.name   = name;
+    option.func   = fnc;
+    option.input1 = input1;
+    option.input2 = input2;
+    option.input3 = input3;
+    option.input4 = input4;
+    option.bool   = (isDefined(var) && var);
     
-    self.menu_B[menu][size] = (isDefined(var) && var) ? true : undefined;
+    self.menuStructure[self.menuStructure.size] = option;
 }
 
 addOptIncSlider(name, fnc, min = 0, start = 0, max = 1, increment = 1, input1, input2, input3, input4)
 {
-    menu = self.temp["memory"];
-    size = self.menu["items"][menu].name.size;
-
-    if(start > max || start < min)
-        start = (start > max) ? max : min;
+    menu  = self isInQuickMenu() ? self.currentMenuQM : self.currentMenu;
+    index = self.menuStructure.size;
     
-    self.menu["items"][menu].name[size] = name;
-    self.menu["items"][menu].func[size] = fnc;
-    self.menu["items"][menu].input1[size] = input1;
-    self.menu["items"][menu].input2[size] = input2;
-    self.menu["items"][menu].input3[size] = input3;
-    self.menu["items"][menu].input4[size] = input4;
-    self.menu["items"][menu].incslidermin[size] = min;
-    self.menu["items"][menu].incsliderstart[size] = start;
-    self.menu["items"][menu].incslidermax[size] = max;
-    self.menu["items"][menu].intincrement[size] = increment;
-    self.menu["items"][menu].incslider[size] = true;
+    option = SpawnStruct();
     
-    if(!isDefined(self.menu_SS[menu][size]))
-        self.menu_SS[menu][size] = start;
+    option.name      = name;
+    option.func      = fnc;
+    option.input1    = input1;
+    option.input2    = input2;
+    option.input3    = input3;
+    option.input4    = input4;
+    option.incslider = true;
+    option.min       = min;
+    option.max       = max;
+    option.start     = (start > max || start < min) ? (start > max) ? max : min : start;
+    option.increment = increment;
+    
+    if(!isDefined(self.menuSS[menu + "_" + index]))
+        self.menuSS[menu + "_" + index] = option.start;
     else
     {
-        if(self.menu_SS[menu][size] > max || self.menu_SS[menu][size] < min)
-            self.menu_SS[menu][size] = (self.menu_SS[menu][size] > max) ? max : min;
+        if(self.menuSS[menu + "_" + index] > max || self.menuSS[menu + "_" + index] < min)
+            self.menuSS[menu + "_" + index] = (self.menuSS[menu + "_" + index] > max) ? max : min;
     }
+    
+    self.menuStructure[self.menuStructure.size] = option;
 }
 
 addOptSlider(name, fnc, values, input1, input2, input3, input4)
 {
-    menu = self.temp["memory"];
-    size = self.menu["items"][menu].name.size;
+    menu  = self isInQuickMenu() ? self.currentMenuQM : self.currentMenu;
+    index = self.menuStructure.size;
     
-    self.menu_S[menu][size] = IsArray(values) ? values : StrTok(values, ";");
+    option = SpawnStruct();
 
-    self.menu["items"][menu].name[size] = name;
-    self.menu["items"][menu].func[size] = fnc;
-    self.menu["items"][menu].input1[size] = input1;
-    self.menu["items"][menu].input2[size] = input2;
-    self.menu["items"][menu].input3[size] = input3;
-    self.menu["items"][menu].input4[size] = input4;
-    self.menu["items"][menu].slider[size] = true;
+    option.name         = name;
+    option.func         = fnc;
+    option.input1       = input1;
+    option.input2       = input2;
+    option.input3       = input3;
+    option.input4       = input4;
+    option.slider       = true;
+    option.sliderValues = IsString(values) ? StrTok(values, ";") : values;
     
-    if(!isDefined(self.menu_SS[menu][size]))
-        self.menu_SS[menu][size] = 0;
-}
-
-addOptShader(shader = "white", color = (1, 1, 1), width = 1, height = 1, fnc, input1, input2, input3, input4)
-{
-    menu = self.temp["memory"];
-    size = self.menu["items"][menu].name.size;
-
-    self.menu["items"][menu].name[size] = shader;
-    self.menu["items"][menu].func[size] = fnc;
-    self.menu["items"][menu].input1[size] = input1;
-    self.menu["items"][menu].input2[size] = input2;
-    self.menu["items"][menu].input3[size] = input3;
-    self.menu["items"][menu].input4[size] = input4;
-    self.menu["items"][menu].shader[size] = shader;
-    self.menu["items"][menu].width[size] = width;
-    self.menu["items"][menu].height[size] = height;
-    self.menu["items"][menu].color[size] = color;
+    if(!isDefined(self.menuSS[menu + "_" + index]))
+        self.menuSS[menu + "_" + index] = 0;
+    
+    self.menuStructure[self.menuStructure.size] = option;
 }

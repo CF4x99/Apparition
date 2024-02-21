@@ -1,3 +1,26 @@
+PopulateTheGiantScripts(menu)
+{
+    switch(menu)
+    {
+        case "The Giant Scripts":
+            self addMenu("The Giant Scripts");
+                self addOptBool(level flag::get("power_on"), "Turn On Power", ::ActivatePower);
+                self addOpt("Link Teleporters", ::newMenu, "The Giant Teleporters");
+                self addOptBool(level flag::get("snow_ee_completed"), "Complete Sixth Perk", ::GiantCompleteSixthPerk);
+                self addOptBool((isDefined(level.HideAndSeekInit) || level flag::get("hide_and_seek")), "Start Hide & Seek", ::InitializeGiantHideAndSeek);
+                self addOptBool((isDefined(level.GiantHideAndSeekCompleted) || level flag::get("hide_and_seek") && !level flag::get("flytrap")), "Complete Hide & Seek", ::GiantCompleteHideAndSeek);
+            break;
+        
+        case "The Giant Teleporters":
+            self addMenu("The Giant Teleporters");
+                self addOptBool((level.active_links == 3), "Link All", ::GiantLinkAllTeleporters);
+
+                for(a = 0; a < 3; a++)
+                    self addOptBool((level.teleport[a] == "active"), "Teleporter " + (a + 1), ::GiantLinkTeleporterToMainframe, a);
+            break;
+    }
+}
+
 GiantLinkAllTeleporters()
 {
     curs = self getCursor();

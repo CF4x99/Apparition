@@ -1,3 +1,14 @@
+PopulateRevelationsScripts(menu)
+{
+    switch(menu)
+    {
+        case "Revelations Scripts":
+            self addMenu("Revelations Scripts");
+                self addOptBool(level flag::get("character_stones_done"), "Damage Tombstones", ::DamageGraveStones);
+            break;
+    }
+}
+
 DamageGraveStones()
 {
     if(level flag::get("character_stones_done"))

@@ -23,7 +23,7 @@ SpawnSkybase()
     goalPos = SpawnScriptModel(GetGroundPos(self TraceBullet()), "tag_origin");
     PlayFXOnTag(level._effect["powerup_on"], goalPos, "tag_origin");
 
-    self.menu["DisableMenuControls"] = true;
+    self.DisableMenuControls = true;
     self SetMenuInstructions("[{+attack}] - Increase Distance\n[{+speed_throw}] - Decrease Distance\n[{+activate}] - Confirm Location");
 
     while(1)
@@ -52,7 +52,7 @@ SpawnSkybase()
     }
 
     goalPos delete();
-    self.menu["DisableMenuControls"] = undefined;
+    self.DisableMenuControls = undefined;
     self SetMenuInstructions();
 
     floor = [];

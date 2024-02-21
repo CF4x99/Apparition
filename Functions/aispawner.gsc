@@ -1063,7 +1063,7 @@ ServerSpawnMechz()
 		
 		ai ForceTeleport(var_1750e965, var_89f898ad);
 
-		if(flyin === 1)
+		if(flyin == 1)
 		{
 			ai thread function_d07fd448();
 			ai thread scene::play("cin_zm_castle_mechz_entrance", ai);
@@ -1105,7 +1105,7 @@ function_949a3fdf()
 	{
 		if(isDefined(ai_enemy))
 		{
-			if(ai_enemy.archetype === "mechz")
+			if(ai_enemy.archetype == "mechz")
 				ai_enemy DoDamage(level.mechz_health * 0.25, v_origin);
 			else
 				ai_enemy DoDamage(ai_enemy.health + 100, v_origin);
@@ -1119,12 +1119,9 @@ function_b03abc02(inflictor, attacker, damage, dflags, mod, weapon, point, dir, 
 {
 	if(isDefined(attacker) && IsPlayer(attacker))
 	{
-		if(zm_spawner::player_using_hi_score_weapon(attacker))
-			damage_type = "damage";
-		else
-			damage_type = "damage_light";
+		damage_type = zm_spawner::player_using_hi_score_weapon(attacker) ? "damage" : "damage_light";
 
-		if(!(isdefined(self.no_damage_points) && self.no_damage_points))
+		if(!(isDefined(self.no_damage_points) && self.no_damage_points))
 			attacker zm_score::player_add_points(damage_type, mod, hitloc, self.isdog, self.team, weapon);
 	}
 }
@@ -1299,7 +1296,7 @@ function_bbdc1f34(var_678a2319)
 		{
 			dist_sq = DistanceSquared(e_zombie.origin, var_678a2319);
 
-			if(dist_sq <= var_f0dad551 && self.var_e05d0be2 !== 1)
+			if(dist_sq <= var_f0dad551 && self.var_e05d0be2 != 1)
 			{
 				self function_3efae612(e_zombie);
 				e_zombie function_f4defbc2();
@@ -1336,12 +1333,12 @@ function_d41418b8()
 
 function_b804eb62(ai_zombie)
 {
-	return ai_zombie.is_elemental_zombie !== 1;
+	return ai_zombie.is_elemental_zombie != 1;
 }
 
 function_361f6caa(ai_zombie, type)
 {
-	return ai_zombie.var_9a02a614 === type;
+	return ai_zombie.var_9a02a614 == type;
 }
 
 function_f4defbc2()
@@ -1388,7 +1385,7 @@ napalm_zombie_death()
 	ai_zombie = self;
 	ai_zombie waittill("death", attacker);
 
-	if(!isDefined(ai_zombie) || ai_zombie.nuked === 1)
+	if(!isDefined(ai_zombie) || ai_zombie.nuked == 1)
 		return;
 	
 	ai_zombie clientfield::set("napalm_zombie_death_fx", 1);
@@ -1616,7 +1613,7 @@ sentinel_introcompleted()
 is_instate(statename)
 {
 	if(isDefined(self.current_role) && isDefined(self.state_machines[self.current_role].current_state))
-		return self.state_machines[self.current_role].current_state.name === statename;
+		return self.state_machines[self.current_role].current_state.name == statename;
 	
 	return 0;
 }
@@ -1853,11 +1850,7 @@ sentinel_getnextmovepositiontactical(b_do_not_chase_enemy)
 	self endon("change_state");
 	self endon("death");
 
-	if(isDefined(self.sentinel_droneenemy))
-		selfdisttotarget = Distance2D(self.origin, self.sentinel_droneenemy.origin);
-	else
-		selfdisttotarget = 0;
-
+	selfdisttotarget = isDefined(self.sentinel_droneenemy) ? Distance2D(self.origin, self.sentinel_droneenemy.origin) : 0;
 	gooddist = 0.5 * sentinel_getengagementdistmin() + sentinel_getengagementdistmax();
 	closedist = 1.2 * gooddist;
 	fardist = 3 * gooddist;
@@ -2139,7 +2132,7 @@ sentinel_is_target_valid(target)
 
 get_sentinel_nearest_zombie(b_ignore_elemental = 1, b_outside_playable_area = 1, radius = 2000)
 {
-	if(isdefined(self.sentinel_getnearestzombie))
+	if(isDefined(self.sentinel_getnearestzombie))
 	{
 		ai_zombie = [[ self.sentinel_getnearestzombie ]](self.origin, b_ignore_elemental, b_outside_playable_area, radius);
 		return ai_zombie;

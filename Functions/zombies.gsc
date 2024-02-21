@@ -1,3 +1,180 @@
+PopulateZombieOptions(menu)
+{
+    switch(menu)
+    {
+        case "Zombie Options":
+            self addMenu("Zombie Options");
+                self addOpt("Spawner", ::newMenu, "AI Spawner");
+                self addOpt("Prioritize", ::newMenu, "Prioritize Players");
+                self addOpt("Death Effect", ::newMenu, "Zombie Death Effect");
+                self addOpt("Damage Effect", ::newMenu, "Zombie Damage Effect");
+                self addOpt("Animations", ::newMenu, "Zombie Animations");
+                self addOpt("Model", ::newMenu, "Zombie Model Manipulation");
+                self addOptSlider("Gib", ::ZombieGibBone, "Random;Head;Right Leg;Left Leg;Right Arm;Left Arm");
+                self addOptSlider("Kill", ::KillZombies, "Death;Head Gib;Flame;Delete");
+                self addOptSlider("Health", ::SetZombieHealth, "Custom;Reset");
+                self addOptSlider("Movement", ::SetZombieRunSpeed, "Walk;Run;Sprint;Super Sprint");
+                self addOptIncSlider("Animation Speed", ::SetZombieAnimationSpeed, 1, 1, 2, 0.5);
+
+                //The only map Knockdown isn't registered on is The Giant
+                if(ReturnMapName(level.script) != "The Giant")
+                    self addOptSlider("Knockdown", ::KnockdownZombies, "Front;Back");
+
+                //Push is only registered on SOE
+                if(ReturnMapName(level.script) == "Shadows Of Evil")
+                    self addOptSlider("Push", ::PushZombies, "Left;Right");
+                
+                self addOptSlider("Teleport", ::TeleportZombies, "Crosshairs;Self");
+                self addOptBool(level.ZombiesToCrosshairsLoop, "Teleport To Crosshairs", ::ZombiesToCrosshairsLoop);
+                self addOptBool((GetDvarString("ai_disableSpawn") == "1"), "Disable Spawning", ::DisableZombieSpawning);
+                self addOptBool(level.DisableZombieCollision, "Disable Player Collision", ::DisableZombieCollision);
+                self addOptBool(level.DisableZombiePush, "Disable Push", ::DisableZombiePush);
+                self addOptBool(level.ZombiesInvisibility, "Invisibility", ::ZombiesInvisibility);
+                self addOptBool((GetDvarString("g_ai") == "0"), "Freeze", ::FreezeZombies);
+                self addOptBool(level.ZombieProjectileVomiting, "Projectile Vomit", ::ZombieProjectileVomiting);
+                self addOptBool(level.DisappearingZombies, "Disappearing Zombies", ::DisappearingZombies);
+                self addOptBool(level.ExplodingZombies, "Exploding Zombies", ::ExplodingZombies);
+                self addOptBool(level.ZombieRagdoll, "Ragdoll After Death", ::ZombieRagdoll);
+                self addOptBool(level.StackZombies, "Stack Zombies", ::StackZombies);
+                self addOpt("Make Crawlers", ::ForceZombieCrawlers);
+                self addOpt("Detach Heads", ::DetachZombieHeads);
+                self addOpt("Clear All Corpses", ::ServerClearCorpses);
+            break;
+        
+        case "AI Spawner":
+            if(!isDefined(self.AISpawnLocation))
+                self.AISpawnLocation = "Crosshairs";
+            
+            map = ReturnMapName(level.script);
+            
+            self addMenu("Spawner");
+                self addOptSlider("Spawn Location", ::AISpawnLocation, "Crosshairs;Random;Self");
+                self addOptIncSlider("Spawn Zombie", ::ServerSpawnAI, 1, 1, 10, 1, ::ServerSpawnZombie);
+
+                if(map != "Unknown")
+                {
+                    maps = ["Shi No Numa", "The Giant", "Moon", "Kino Der Toten", "Der Eisendrache"];
+
+                    if(isInArray(maps, map))
+                        self addOptIncSlider("Spawn Hellhound", ::ServerSpawnAI, 1, 1, 10, 1, ::ServerSpawnDog);
+                    
+                    maps = ["Shadows Of Evil", "Revelations", "Gorod Krovi"];
+
+                    if(isInArray(maps, map))
+                    {
+                        if(map != "Gorod Krovi")
+                        {
+                            self addOptIncSlider("Spawn Wasp", ::ServerSpawnAI, 1, 1, 10, 1, ::ServerSpawnWasp);
+                            self addOptIncSlider("Spawn Margwa", ::ServerSpawnAI, 1, 1, 10, 1, ::ServerSpawnMargwa);
+
+                            if(map == "Shadows Of Evil")
+                                self addOptIncSlider("Spawn Civil Protector", ::ServerSpawnAI, 1, 1, 10, 1, ::ServerSpawnCivilProtector);
+                        }
+                        
+                        if(map != "Revelations")
+                            self addOptIncSlider("Spawn Raps", ::ServerSpawnAI, 1, 1, 10, 1, ::ServerSpawnRaps);
+                    }
+
+                    maps = ["Origins", "Der Eisendrache", "Revelations"];
+
+                    if(isInArray(maps, map))
+                        self addOptIncSlider("Spawn Mechz", ::ServerSpawnAI, 1, 1, 10, 1, ::ServerSpawnMechz);
+                    
+                    if(map == "Gorod Krovi")
+                    {
+                        self addOptIncSlider("Spawn Sentinel Drone", ::ServerSpawnAI, 1, 1, 10, 1, ::ServerSpawnSentinelDrone);
+                        self addOptIncSlider("Spawn Mangler", ::ServerSpawnAI, 1, 1, 10, 1, ::ServerSpawnMangler);
+                    }
+
+                    if(map == "Zetsubou No Shima" || map == "Revelations")
+                    {
+                        if(map == "Zetsubou No Shima")
+                            self addOptIncSlider("Spawn Thrasher", ::ServerSpawnAI, 1, 1, 10, 1, ::ServerSpawnThrasher);
+                        
+                        self addOptIncSlider("Spawn Spider", ::ServerSpawnAI, 1, 1, 10, 1, ::ServerSpawnSpider);
+                    }
+
+                    if(map == "Revelations")
+                        self addOptIncSlider("Spawn Fury", ::ServerSpawnAI, 1, 1, 10, 1, ::ServerSpawnFury);
+                    
+                    if(map == "Kino Der Toten")
+                        self addOptIncSlider("Spawn Nova Zombie", ::ServerSpawnAI, 1, 1, 10, 1, ::ServerSpawnNovaZombie);
+                }
+            break;
+        
+        case "Prioritize Players":
+            self addMenu("Prioritize Players");
+            
+                foreach(player in level.players)
+                    self addOptBool(player.AIPrioritizePlayer, CleanName(player getName()), ::AIPrioritizePlayer, player);
+            break;
+        
+        case "Zombie Model Manipulation":
+            self addMenu("Model Manipulation");
+                
+                if(isDefined(level.MenuModels) && level.MenuModels.size)
+                {
+                    self addOptBool(!isDefined(level.ZombieModel), "Disable", ::DisableZombieModel);
+                    self addOpt("");
+
+                    for(a = 0; a < level.MenuModels.size; a++)
+                        self addOptBool(level.ZombieModel == level.MenuModels[a], CleanString(level.MenuModels[a]), ::SetZombieModel, level.MenuModels[a]);
+                }
+            break;
+        
+        case "Zombie Animations":
+
+            //These are base animations that will work on every map
+            anims = ["ai_zombie_base_ad_attack_v1", "ai_zombie_base_ad_attack_v2", "ai_zombie_base_ad_attack_v3", "ai_zombie_base_ad_attack_v4", "ai_zombie_taunts_4"];
+            notifies = ["attack_anim", "attack_anim", "attack_anim", "attack_anim", "taunt_anim"];
+
+            //These are the animations that are map specific
+            if(ReturnMapName(level.script) == "Origins")
+            {
+                add_anims = ["ai_zombie_mech_ft_burn_player", "ai_zombie_mech_exit", "ai_zombie_mech_exit_hover", "ai_zombie_mech_arrive"];
+                add_notifies = ["flamethrower_anim", "zm_fly_out", "zm_fly_hover_finished", "zm_fly_in"];
+            }
+            
+            if(isDefined(add_anims) && add_anims.size)
+            {
+                anims = ArrayCombine(anims, add_anims, 0, 1);
+                notifies = ArrayCombine(notifies, add_notifies, 0, 1);
+            }
+
+            self addMenu("Animations");
+
+                for(a = 0; a < anims.size; a++)
+                    self addOpt(CleanString(anims[a]), ::ZombieAnimScript, anims[a], notifies[a]);
+            break;
+        
+        case "Zombie Death Effect":
+            
+            if(!isDefined(level.ZombiesDeathFX))
+                level.ZombiesDeathFX = level.MenuEffects[0];
+            
+            self addMenu("Death Effect");
+                self addOptBool(level.ZombiesDeathEffect, "Death Effect", ::ZombiesDeathEffect);
+                self addOpt("");
+
+                for(a = 0; a < level.MenuEffects.size; a++)
+                    self addOptBool((level.ZombiesDeathFX == level.MenuEffects[a].name), level.MenuEffects[a].displayName, ::SetZombiesDeathEffect, level.MenuEffects[a].name);
+            break;
+
+        case "Zombie Damage Effect":
+
+            if(!isDefined(level.ZombiesDamageFX))
+                level.ZombiesDamageFX = level.MenuEffects[0];
+            
+            self addMenu("Damage Effect");
+                self addOptBool(level.ZombiesDamageEffect, "Damage Effect", ::ZombiesDamageEffect);
+                self addOpt("");
+
+                for(a = 0; a < level.MenuEffects.size; a++)
+                    self addOptBool((level.ZombiesDamageFX == level.MenuEffects[a].name), level.MenuEffects[a].displayName, ::SetZombiesDamageEffect, level.MenuEffects[a].name);
+            break;
+    }
+}
+
 AIPrioritizePlayer(player)
 {
     player.AIPrioritizePlayer = isDefined(player.AIPrioritizePlayer) ? undefined : true;

@@ -53,6 +53,10 @@ PackCurrentWeapon(player)
     player endon("disconnect");
 
     originalWeapon = player GetCurrentWeapon();
+
+    if(!isDefined(originalWeapon))
+        return self iPrintlnBold("^1ERROR: ^7Invalid Weapon");
+    
     newWeapon = !zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()) ? zm_weapons::get_upgrade_weapon(player GetCurrentWeapon()) : zm_weapons::get_base_weapon(player GetCurrentWeapon());
     
     base_weapon = newWeapon;
@@ -66,7 +70,6 @@ PackCurrentWeapon(player)
 
     if(zm_weapons::is_weapon_included(base_weapon))
 		force_attachments = zm_weapons::get_force_attachments(base_weapon.rootweapon);
-    
     
     camo = (!upgraded && isDefined(originalWeapon.savedCamo) && originalWeapon.savedCamo != level.pack_a_punch_camo_index) ? originalWeapon.savedCamo : upgraded ? level.pack_a_punch_camo_index : undefined;
 

@@ -1,3 +1,100 @@
+PopulateDerEisendracheScripts(menu)
+{
+    switch(menu)
+    {
+        case "Der Eisendrache Scripts":
+            self addMenu("Der Eisendrache Scripts");
+                self addOptBool(level flag::get("power_on"), "Turn On Power", ::ActivatePower);
+                self addOptBool(level flag::get("soul_catchers_charged"), "Feed Dragons", ::FeedDragons);
+                self addOptBool(AreLandingPadsEnabled(), "Enable All Landing Pads", ::EnableAllLandingPads);
+
+                if(level flag::get("soul_catchers_charged"))
+                    self addOpt("Bow Quests", ::newMenu, "Bow Quests");
+            break;
+        
+        case "Bow Quests":
+            self addMenu("Bow Quests");
+                self addOpt("Fire", ::newMenu, "Fire Bow");
+                self addOpt("Lightning", ::newMenu, "Lightning Bow");
+                self addOpt("Void", ::newMenu, "Void Bow");
+                //self addOpt("Wolf", ::newMenu, "Wolf Bow");
+            break;
+        
+        case "Fire Bow":
+            //level.var_c62829c7 <- player bound to fire quest
+
+            self addMenu("Fire");
+                self addOptBool(isDefined(level.var_714fae39), "Initiate Quest", ::InitFireBow);
+
+                if(isDefined(level.var_714fae39))
+                {
+                    if(isDefined(level.var_c62829c7))
+                    {
+                        self addOptBool((level flag::get("rune_prison_obelisk") && !isDefined(level.MagmaRock)), "Shoot Magma Rock", ::MagmaRock);
+                        self addOptBool(AllRunicCirclesCharged(), "Activate & Charge Runic Circles", ::RunicCircles);
+                        self addOptBool(IsClockFireplaceComplete(), "Complete Fireplace Step", ::ClockFireplaceStep);
+                        self addOptBool(level flag::get("rune_prison_repaired"), "Collect Repaired Arrows", ::CollectRepairedFireArrows);
+                    }
+                    else
+                    {
+                        self addOpt("");
+                        self addOpt("Quest Hasn't Been Bound Yet");
+                    }
+                }
+            break;
+        
+        case "Lightning Bow":
+            //level.var_f8d1dc16 <- player bound to lightning quest
+
+            trig = GetEnt("aq_es_weather_vane_trig", "targetname");
+
+            self addMenu("Lightning");
+                self addOptBool(!isDefined(trig), "Initiate Quest", ::InitLightningBow);
+
+                if(!isDefined(trig))
+                {
+                    if(isDefined(level.var_f8d1dc16))
+                    {
+                        self addOptBool(AreBeaconsLit(), "Light Beacons", ::LightningBeacons);
+                        self addOptBool(level flag::get("elemental_storm_wallrun"), "Wallrun Step", ::LightningWallrun);
+                        self addOptBool(LightningBeaconsCharged(), "Fill Urns & Charge Beacons", ::LightningChargeBeacons);
+                        self addOptBool(level flag::get("elemental_storm_repaired"), "Charge & Collect Arrows", ::ChargeLightningArrows);
+                    }
+                    else
+                    {
+                        self addOpt("");
+                        self addOpt("Quest Hasn't Been Bound Yet");
+                    }
+                }
+            break;
+        
+        case "Void Bow":
+            //level.var_6e68c0d8 <- player bound to void quest
+            symbol = GetEnt("aq_dg_gatehouse_symbol_trig", "targetname");
+
+            self addMenu("Void");
+                self addOptBool(IsDemonSymbolDestroyed(), "Initiate Quest", ::InitVoidBow);
+
+                if(IsDemonSymbolDestroyed())
+                {
+                    if(isDefined(level.var_6e68c0d8))
+                    {
+                        fossils = GetEntArray("aq_dg_fossil", "script_noteworthy");
+
+                        self addOptBool(level flag::get("demon_gate_seal"), "Release Demon Urn", ::ReleaseDemonUrn);
+                        self addOptBool((!isDefined(fossils) || !fossils.size), "Trigger Fossil Heads", ::TriggerDemonFossils);
+                        self addOptBool(level flag::get("demon_gate_crawlers"), "Feed Demon Urn", ::FeedDemonUrn);
+                    }
+                    else
+                    {
+                        self addOpt("");
+                        self addOpt("Quest Hasn't Been Bound Yet");
+                    }
+                }
+            break;
+    }
+}
+
 FeedDragons()
 {
     if(level flag::get("soul_catchers_charged"))
@@ -32,6 +129,49 @@ FeedDragon(player)
         
         wait 0.01;
     }
+}
+
+EnableAllLandingPads()
+{
+    if(AreLandingPadsEnabled())
+        return self iPrintlnBold("^1ERROR: ^7All Landing Pads Are Already Enabled");
+    
+    pads = GrabPadUniTriggers();
+
+    foreach(pad in pads)
+        pad notify("trigger");
+}
+
+AreLandingPadsEnabled()
+{
+    pads = GrabPadUniTriggers();
+    return !pads.size;
+}
+
+GrabPadUniTriggers()
+{
+    if(!isDefined(level._unitriggers))
+        return;
+    
+    if(!isDefined(level._unitriggers.trigger_stubs))
+        return;
+    
+    pads      = [];
+    padStruct = struct::get_array("115_flinger_landing_pad", "targetname");
+    
+    for(a = 0; a < level._unitriggers.trigger_stubs.size; a++)
+    {
+        if(isDefined(level._unitriggers.trigger_stubs[a]))
+        {
+            for(b = 0; b < padStruct.size; b++)
+            {
+                if(isDefined(padStruct[b]) && level._unitriggers.trigger_stubs[a].origin == padStruct[b].origin + vectorScale((0, 0, 1), 30))
+                    pads[pads.size] = level._unitriggers.trigger_stubs[a];
+            }
+        }
+    }
+
+    return pads;
 }
 
 
@@ -212,6 +352,7 @@ ClockFireplaceStep()
     while(!isDefined(level.var_2e55cb98))
         wait 1;
 
+    level.var_c62829c7 FreezeControls(1);
     level.var_2e55cb98.origin = level.var_c62829c7.origin;
     level.var_2e55cb98 LinkTo(level.var_c62829c7);
 
@@ -224,12 +365,13 @@ ClockFireplaceStep()
         for(a = 0; a < 2; a++) //Target must be hit twice
         {
             MagicBullet(GetWeapon("elemental_bow"), target.origin, target.origin + (0, 5, 0), level.var_c62829c7);
-
             wait 0.1;
         }
 
     if(isDefined(firePlace))
         firePlace.var_67b5dd94 notify("trigger", level.var_c62829c7);
+    
+    level.var_c62829c7 FreezeControls(0);
 
     while(!IsClockFireplaceComplete())
         wait 0.1;
@@ -587,7 +729,7 @@ InitVoidBow()
     if(isDefined(symbol))
         MagicBullet(GetWeapon("elemental_bow"), symbol.origin, symbol.origin + (0, 0, 5), self);
 
-    while(!IsDemonSymbolDestroyed())
+    while(isDefined(symbol))
         wait 0.1;
 
     self RefreshMenu(menu, curs);
@@ -595,8 +737,7 @@ InitVoidBow()
 
 IsDemonSymbolDestroyed()
 {
-    //return (level clientfield::get("quest_state_demon") > 0 || isDefined(level.InitVoidBow));
-    return isDefined(level.InitVoidBow); //The check above can cause a crash. So just settling with this for now.
+    return (level clientfield::get("quest_state_demon") > 0 || isDefined(level.InitVoidBow));
 }
 
 ReleaseDemonUrn()
@@ -623,8 +764,7 @@ ReleaseDemonUrn()
         wait 0.1;
     
     self RefreshMenu(menu, curs);
-
-    wait 3;
+    wait 5;
 
     level.ReleaseDemonUrn = undefined;
 }
@@ -634,18 +774,21 @@ TriggerDemonFossils()
     if(!level flag::get("demon_gate_seal") || level clientfield::get("quest_state_demon") < 2)
         return self iPrintlnBold("^1ERROR: ^7The Demon Urn Must Be Released First");
     
-    if(IsAllFossilsTriggered())
+    fossils = GetEntArray("aq_dg_fossil", "script_noteworthy");
+
+    if(!isDefined(fossils) || !fossils.size)
         return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
     
     if(isDefined(level.TriggerDemonFossils))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
     
+    if(isDefined(level.ReleaseDemonUrn))
+        return self iPrintlnBold("^1ERROR: ^7Release Demon Urn Is Still Being Completed");
+    
     level.TriggerDemonFossils = true;
 
     menu = self getCurrent();
     curs = self getCursor();
-
-    fossils = GetEntArray("aq_dg_fossil", "script_noteworthy");
 
     for(a = 0; a < fossils.size; a++)
     {
@@ -657,25 +800,23 @@ TriggerDemonFossils()
         wait 0.1;
     }
 
-    while(!IsAllFossilsTriggered())
+    while(1)
+    {
+        if(!isDefined(fossils) || !fossils.size)
+            break;
+        
         wait 0.1;
+    }
     
+    iPrintlnBold("fossils complete");
     self RefreshMenu(menu, curs);
-}
-
-IsAllFossilsTriggered()
-{
-    fossils = GetEntArray("aq_dg_fossil", "script_noteworthy");
-
-    if(isDefined(fossils) && fossils.size)
-        return false;
-    
-    return true;
 }
 
 FeedDemonUrn()
 {
-    if(!IsAllFossilsTriggered() || level clientfield::get("quest_state_demon") < 3)
+    fossils = GetEntArray("aq_dg_fossil", "script_noteworthy");
+
+    if(isDefined(fossils) && fossils.size || level clientfield::get("quest_state_demon") < 3)
         return self iPrintlnBold("^1ERROR: ^7All Fossil Heads Must Be Triggered First");
     
     if(level flag::get("demon_gate_crawlers"))
@@ -701,7 +842,6 @@ FeedDemonUrn()
     while(urn.var_e1f456ae < 6)
     {
         SpawnSacrificedZombie();
-
         wait 0.5;
     }
 
@@ -730,7 +870,7 @@ SpawnSacrificedZombie()
     
     zombie = zombie_utility::spawn_zombie(level.zombie_spawners[0]);
 
-	if(isDefined(zombie))
+    if(isDefined(zombie))
     {
         wait 0.1;
 

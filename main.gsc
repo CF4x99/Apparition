@@ -4,49 +4,20 @@
     Version:              1.2.1.0
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
-    
-    Menu Source & Current Update: https://github.com/CF4x99/Apparition
-    Make sure you check my github link for updates. This menu is updated often.
-
-    IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
     Discord:            cf4_99
     Apparition Discord: https://discord.gg/NExXdMhDnW
     YouTube:            https://www.youtube.com/c/CF499
-
-    If you are using Crafty's Compiler/Injector, make sure you have the latest build. If not, you will get a syntax error.
-    Latest Build: https://github.com/LJW-Dev/Black-Ops-3-GSC-Compiler/releases/latest
-
-
-    Controls:
-        - Apparition: Aim & Knife
-        - Quick Menu: Aim & Secondary Offhand Button
-        - Scroll: Aim/Shoot Or Actionslots 1 & 2(Controller Users: Dpad up/down)
-        - Slider Scroll: Actionslot 3 & 4(Controller Users: Dpad left/right)
-        - Select: Use Button(PlayStation Controller: Square || Xbox Controller: X)
-        - Go Back/Exit: Knife
     
-
+    Menu Source & Current Update: https://github.com/CF4x99/Apparition
+    IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
+    
     Credits:
         - CF4_99 ~ Project Developer
         - Extinct ~ Ideas, Suggestions, Constructive Criticism, and His Spec-Nade
         - CraftyCritter ~ BO3 Compiler
         - ItsFebiven ~ Some Ideas and Suggestions
         - Joel ~ Suggestions, Bug Reports, and Testing The Unique String Crash Protection
-
-    IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
-
-
-
-    Apparition has been in development for a long time(too long).
-    While I haven't spent every second of every day on this project, a lot of time and work has gone into it.
-    Every step of the way, I have tried to make it one of the biggest, and best menus for BO3 Zombies.
-    I have spent countless hours not only developing, but also bug testing every option in this menu.
-    While I don't think it will ever officially be finished, I thought it was in a good state to be released.
-
-    While I do test everything I add, or change, there are probably things I have missed.
-    If you come across any bugs, please message me on discord.
-
 
 
     Custom Maps:
@@ -58,33 +29,33 @@
                 ~ I am aware of this. There isn't anything I can do about it. Most of them, if not all, are moved into the 'Specials' Category.
 
 
-
     Map EE Options:
         I have created scripts to complete the EE's for the classic maps that have smaller EE's.
         As for the bigger maps that have bigger and more complex EE's, I have made scripts to make completing the EE's, a lot easier.
         The reason for me not adding an option to complete the whole EE for bigger maps, isn't because I can't do it.
-        It saves myself time, which I don't have a lot of.
-
-        If I missed something that would help with EE's, or you just want to request a USEFUL script, feel free to message me on discord.
 
         Where to find options that help completing EE's:
             Main Menu -> [map name] Scripts
             Server Modifications -> Craftables
-        
-        Whole EE's Completed:
-            - The Giant
-            - Nacht Der Untoten
-            - Verruckt
-            - Shi No Numa
-            - Kino Der Toten
 
 
 
     If you find any bugs, or come across something that you feel isn't working as it should, please message me on discord.
 
-    IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
-
     Discord: cf4_99
+*/
+
+/*
+                            TO DO
+    ______________________________________________________________
+    - Revelations Easter Egg Options
+    - Der Eisendrache Easter Egg Options
+    - Gorod Krovi Easter Egg Options
+    - Moon Easter Egg Options
+
+    - Effects lists are all fucked
+    - fossil heads option still doesn't auto-refresh
+    ______________________________________________________________
 */
 
 #include scripts\codescripts\struct;
@@ -182,7 +153,7 @@ init()
 
 OnPlayerConnect()
 {
-    if((isDefined(level.AntiJoin) || GetDvarString("Apparition_" + self GetXUID()) == "Banned") && !self util::is_bot())
+    if(IsPlayerBanned(self))
         Kick(self GetEntityNumber());
 }
 
@@ -192,14 +163,14 @@ onPlayerSpawned()
 
     if(self IsHost() && !isDefined(self.OnPlayerSpawned))
     {
-        level.player_out_of_playable_area_monitor = 0;
-        level.player_out_of_playable_area_monitor_callback = ::player_out_of_playable_area_monitor;
-
         if(!isDefined(level.AntiEndGame))
             self thread AntiEndGame();
         
-        if(!isDefined(level.GEntityProtection))
-            self thread GEntityProtection();
+        if(!isDefined(level.GSpawnProtection))
+            self thread GSpawnProtection();
+        
+        level.player_out_of_playable_area_monitor = 0;
+        level.player_out_of_playable_area_monitor_callback = ::player_out_of_playable_area_monitor;
     }
 
     if(!self IsHost())
@@ -244,15 +215,14 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName = "Apparition";
-    level.menuVersion = "1.2.1.0";
+    level.menuVersion = "1.3.0.0";
 
     level.MenuStatus = ["None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer"];
 
-    level.colorNames = ["Light Blue", "Raspberry", "Skyblue", "Pink", "Green", "Brown", "Blue", "Red", "Orange", "Purple", "Cyan", "Yellow", "Black", "White"];
-    level.colors = [0, 110, 255, 135, 38, 87, 135, 206, 250, 255, 110, 255, 0, 255, 0, 101, 67, 33, 0, 0, 255, 255, 0, 0, 255, 128, 0, 100, 0, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255];
-
+    level.colorNames = ["Ciper Purple", "xbOnline Blue", "Skyblue", "Pink", "Green", "Brown", "Blue", "Red", "Orange", "Purple", "Cyan", "Yellow", "Black", "White"];
+    level.colors     = [100, 0, 100, 57, 152, 254, 135, 206, 250, 255, 110, 255, 0, 255, 0, 101, 67, 33, 0, 0, 255, 255, 0, 0, 255, 128, 0, 100, 0, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255];
+    
     level thread RGBFade();
-    level thread WatchForMaxAmmo();
 }
 
 DefineMenuArrays()
@@ -263,15 +233,6 @@ DefineMenuArrays()
     
     level.BgGravity = GetDvarInt("bg_gravity");
     level.GSpeed = GetDvarString("g_speed");
-    
-    level.menuVis = StrTok("zombie_last_stand,zombie_death", ",");
-    level.menuVisions = "";
-
-    for(a = 0; a < level.menuVis.size; a++)
-        if(a != (level.menuVis.size - 1))
-            level.menuVisions += CleanString(level.menuVis[a]) + ";";
-        else
-            level.menuVisions += CleanString(level.menuVis[a]);
     
     level.MenuPerks = [];
     perks = GetArrayKeys(level._custom_perks);
@@ -289,8 +250,6 @@ DefineMenuArrays()
 
     if(map != "Unknown") //Feel free to add your own custom teleport locations
     {
-        level.menuTeleports = [];
-        
         //Teleport Name, Followed By The Origin
         //[< teleport location name >, < (x, y, z) origin >]
 
@@ -357,7 +316,7 @@ DefineMenuArrays()
         }
 
         if(isDefined(locations) && locations.size)
-            level.menuTeleports[map] = locations;
+            level.menuTeleports = locations;
     }
     
     level.MenuModels = ["defaultactor", "defaultvehicle"];
@@ -439,11 +398,9 @@ DefineMenuArrays()
     
     SetDvar("wallRun_maxTimeMs_zm", 10000);
     SetDvar("playerEnergy_maxReserve_zm", 200);
-
-    sdvars = ["doublejump_enabled", "playerEnergy_enabled", "wallrun_enabled"];
-
-    for(a = 0; a < sdvars.size; a++)
-        SetDvar(sdvars[a], 1);
+    SetDvar("doublejump_enabled", 1);
+    SetDvar("playerEnergy_enabled", 1);
+    SetDvar("wallrun_enabled", 1);
 }
 
 playerSetup()
@@ -451,17 +408,24 @@ playerSetup()
     if(isDefined(self.menuThreaded))
         return;
     self.menuThreaded = true;
+    self.hud_count = 0;
     
     self endon("disconnect");
     
     self defineVariables();
 
+    if(self util::is_bot())
+    {
+        self.verification = "Bot";
+        return;
+    }
+
     dvar = GetDvarInt("ApparitionV_" + self GetXUID());
-    self.menuState["verification"] = (self isDeveloper() || self IsHost()) ? self isDeveloper() ? level.MenuStatus[(level.MenuStatus.size - 1)] : level.MenuStatus[(level.MenuStatus.size - 2)] : level.MenuStatus[(isDefined(dvar) && dvar != "") ? Int(dvar) : 0];
+    self.verification = (self isDeveloper() || self IsHost()) ? self isDeveloper() ? level.MenuStatus[(level.MenuStatus.size - 1)] : level.MenuStatus[(level.MenuStatus.size - 2)] : level.MenuStatus[(isDefined(dvar) && dvar != "") ? Int(dvar) : 0];
     
     if(self hasMenu())
     {
-        self thread ApparitionWelcomeMessage("Welcome To ^1" + level.menuName + ",Status: ^1" + self.menuState["verification"] + ",[{+speed_throw}] & [{+melee}] To ^1Open");
+        self thread WelcomeMessage("Welcome To ^1" + level.menuName + ",Status: ^1" + self.verification + ",[{+speed_throw}] & [{+melee}] To ^1Open");
         self thread menuMonitor();
     }
 }
@@ -472,11 +436,12 @@ defineVariables()
         return;
     self.DefinedVariables = true;
     
-    self.menu = [];
-    self.menu["ui"] = [];
-    self.menuState = [];
-    
-    self.hud_count = 0;
+    self.menuHud      = [];
+    self.menuParent   = []; 
+    self.menuParentQM = [];
+    self.menuCurs     = [];
+    self.menuCursQM   = [];
+    self.menuSS       = [];
     
     //Menu Design Variables
     self LoadMenuVars();
@@ -497,7 +462,7 @@ NotifyWelcomeMessage(message = "", time = 5)
     }
 }
 
-ApparitionWelcomeMessage(message)
+WelcomeMessage(message)
 {
     if(isDefined(self.WelcomeDisplay))
         return;
@@ -509,26 +474,61 @@ ApparitionWelcomeMessage(message)
     
     //Menu Instructions only display when the player is verified
     //Menu Instructions Can Be Disabled In Menu Customization
-    //If you want to disable by default: menu_customization.gsc -> LoadMenuVars() -> self.menu["DisableMenuInstructions"] = undefined; <- Change to true
+    //If you want to disable by default: menu_customization.gsc -> LoadMenuVars() -> self.DisableMenuInstructions = undefined; <- Change to true
     inY = 230;
     
     while(1)
     {
-        if(!isDefined(self.menu["DisableMenuInstructions"]) && self hasMenu() && (!isDefined(self.MenuInstructionsBG) || !isDefined(self.MenuInstructions)))
+        if(self hasMenu() && (!isDefined(self.DisableMenuInstructions) && (!isDefined(self.MenuInstructionsBG) || !isDefined(self.MenuInstructions)) || !isDefined(self.DisableEntityCount) && !self isInMenu(true) && (!isDefined(self.EntCountBG) || !isDefined(self.EntityCount) || !isDefined(self.EntArrayCount))))
         {
-            if(!isDefined(self.MenuInstructionsBG))
-                self.MenuInstructionsBG = self createRectangle("TOP_LEFT", "CENTER", -100, inY, 0, 15, (0, 0, 0), 1, 0.8, "white");
-            
-            if(!isDefined(self.MenuInstructions))
-                self.MenuInstructions = self createText("default", 1.1, 2, "", "LEFT", "CENTER", (self.MenuInstructionsBG.x + 1), (self.MenuInstructionsBG.y + 6), 1, (1, 1, 1));
+            if(!isDefined(self.DisableMenuInstructions))
+            {
+                if(!isDefined(self.MenuInstructionsBG))
+                    self.MenuInstructionsBG = self createRectangle("TOP_LEFT", "CENTER", -100, inY, 0, 15, (0, 0, 0), 1, 0.8, "white");
+                
+                if(!isDefined(self.MenuInstructions))
+                    self.MenuInstructions = self createText("default", 1.1, 2, "", "LEFT", "CENTER", (self.MenuInstructionsBG.x + 1), (self.MenuInstructionsBG.y + 7), 1, (1, 1, 1));
+            }
+
+            if(!isDefined(self.DisableEntityCount))
+            {
+                if(!isDefined(self.EntCountBG))
+                    self.EntCountBG = self createRectangle("LEFT", "CENTER", -410, 230, 0, 15, (0, 0, 0), 1, 0.8, "white");
+                
+                max = ReturnMapGSpawnLimit();
+                
+                if(!isDefined(self.EntityCount))
+                    self.EntityCount = self createText("default", 1.1, 2, "Entity Count(Max: " + max + "):", "LEFT", "CENTER", (self.EntCountBG.x + 1), self.EntCountBG.y, 1, (1, 1, 1));
+                
+                if(!isDefined(self.EntArrayCount)) //This will be using SetValue, rather than SetText(won't contribute to string overflow)
+                    self.EntArrayCount = self createText("default", 1.1, 2, GetEntArray().size, "RIGHT", "CENTER", self.EntityCount.x + self.EntityCount GetTextWidth3arc() - 35, self.EntCountBG.y, 1, (1, 1, 1));
+                
+                self.EntCountBG SetShaderValues(undefined, (self.EntityCount GetTextWidth3arc() + self.EntArrayCount GetTextWidth3arc()) - 34);
+            }
         }
 
-        if(isDefined(self.MenuInstructions) && isDefined(self.menu["DisableMenuInstructions"]) || !self hasMenu() || !Is_Alive(self) && !isDefined(self.refreshInstructions))
+        if(isDefined(self.MenuInstructions) && isDefined(self.DisableMenuInstructions) || isDefined(self.EntityCount) && (isDefined(self.DisableEntityCount) || self isInMenu(true)) || !self hasMenu() || !Is_Alive(self) && !isDefined(self.refreshInstructions))
         {
-            self.MenuInstructions DestroyHud();
+            if(isDefined(self.DisableMenuInstructions) || !self hasMenu() || !Is_Alive(self) && !isDefined(self.refreshInstructions))
+            {
+                if(isDefined(self.MenuInstructions))
+                    self.MenuInstructions DestroyHud();
 
-            if(isDefined(self.MenuInstructionsBG))
-                self.MenuInstructionsBG DestroyHud();
+                if(isDefined(self.MenuInstructionsBG))
+                    self.MenuInstructionsBG DestroyHud();
+            }
+
+            if(isDefined(self.DisableEntityCount) || !self hasMenu() || self isInMenu(true) || !Is_Alive(self) && !isDefined(self.refreshInstructions))
+            {
+                if(isDefined(self.EntCountBG))
+                    self.EntCountBG DestroyHud();
+                
+                if(isDefined(self.EntityCount))
+                    self.EntityCount DestroyHud();
+                
+                if(isDefined(self.EntArrayCount))
+                    self.EntArrayCount DestroyHud();
+            }
             
             if(!self hasMenu())
                 break;
@@ -544,20 +544,20 @@ ApparitionWelcomeMessage(message)
         {
             if(Is_Alive(self))
             {
-                if(!isDefined(self.menu["MenuInstructions"]))
+                if(!isDefined(self.MenuInstructionsString))
                 {
                     if(!self isInMenu(true))
                     {
-                        string = "[{+speed_throw}] & [{+melee}]: Open";
+                        string = "[{+speed_throw}] & [{+melee}]: Open " + level.menuName;
 
-                        if(!isDefined(self.menu["DisableQM"]))
+                        if(!isDefined(self.DisableQM))
                             string += "\n[{+speed_throw}] & [{+smoke}]: Open Quick Menu";
                     }
                     else
                         string = "[{+attack}]/[{+speed_throw}]: Scroll\n[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right\n[{+activate}]: Select\n[{+melee}]: Go Back/Exit";
                 }
                 else
-                    string = self.menu["MenuInstructions"];
+                    string = self.MenuInstructionsString;
             }
             else
                 string = !self isInMenu(true) ? "[{+speed_throw}] & [{+gostand}]: Open Quick Menu" : "[{+attack}]/[{+speed_throw}]: Scroll\n[{+activate}]: Select\n[{+gostand}]: Exit";
@@ -578,13 +578,16 @@ ApparitionWelcomeMessage(message)
             }
         }
 
+        if(isDefined(self.EntArrayCount))
+            self.EntArrayCount SetValue(GetEntArray().size);
+
         wait 0.01;
     }
 }
 
 SetMenuInstructions(text)
 {
-    self.menu["MenuInstructions"] = (!isDefined(text) || text == "") ? undefined : text;
+    self.MenuInstructionsString = (!isDefined(text) || text == "") ? undefined : text;
 }
 
 WatchForDisconnect()
@@ -597,23 +600,23 @@ WatchForDisconnect()
             continue;
         
         //If a player is navigating another players options, and that player disconnects, it will kick them back to the player menu
-        if(isInArray(player.menuParent, "Players") && player.SelectedPlayer == self)
+        if(isDefined(player.menuParent) && isInArray(player.menuParent, "Players") && player.SelectedPlayer == self)
         {
             openMenu = false;
 
             if(player isInMenu(false))
             {
-                player closeMenu1();
+                player thread closeMenu1();
                 openMenu = true;
             }
             
             player.menuParent = [];
-            player.menu["currentMenu"] = "Players";
+            player.currentMenu = "Players";
             player.menuParent[player.menuParent.size] = "Main";
 
             if(openMenu)
             {
-                player openMenu1();
+                player thread openMenu1();
                 player iPrintlnBold("^1ERROR: ^7Player Has Disconnected");
             }
         }

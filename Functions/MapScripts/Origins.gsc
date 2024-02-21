@@ -1,3 +1,99 @@
+PopulateOriginsScripts(menu)
+{
+	switch(menu)
+	{
+		case "Origins Scripts":
+            self addMenu("Origins Scripts");
+                self addOptSlider("Weather", ::OriginsSetWeather, "None;Rain;Snow");
+                self addOpt("Generators", ::newMenu, "Origins Generators");
+                self addOpt("Gateways", ::newMenu, "Origins Gateways");
+                self addOpt("Give Shovel", ::newMenu, "Give Shovel Origins");
+                self addOptBool(isDefined(level.a_e_slow_areas), "Mud Slowdown", ::MudSlowdown);
+                self addOpt("Soul Boxes", ::newMenu, "Soul Boxes");
+                self addOpt("Challenges", ::newMenu, "Origins Challenges");
+                self addOpt("Staff Puzzles", ::newMenu, "Origins Puzzles");
+            break;
+        
+        case "Origins Generators":
+            generators = struct::get_array("s_generator", "targetname");
+
+            self addMenu("Generators");
+
+                for(a = 0; a < generators.size; a++)
+                    self addOptBool(generators[a] flag::get("player_controlled"), "Generator " + generators[a].script_int, ::SetGeneratorState, a);
+            break;
+        
+        case "Origins Gateways":
+            gateways = struct::get_array("trigger_teleport_pad", "targetname");
+
+            self addMenu("Gateways");
+
+                for(a = 0; a < gateways.size; a++)
+                    self addOptBool(GetGatewayState(gateways[a]), ReturnGatewayName(gateways[a].target), ::SetGatewayState, gateways[a]);
+            break;
+        
+        case "Give Shovel Origins":
+            self addMenu("Give Shovel");
+            
+                foreach(player in level.players)
+                    self addOptBool(player.dig_vars["has_shovel"], CleanName(player getName()), ::GivePlayerShovel, player);
+            break;
+        
+        case "Soul Boxes":
+            boxes = GetEntArray("foot_box", "script_noteworthy");
+
+            self addMenu("Soul Boxes");
+
+                if(boxes.size)
+                {
+                    for(a = 0; a < boxes.size; a++)
+                        self addOpt("Soul Box " + (a + 1), ::CompleteSoulbox, boxes[a]);
+                }
+            break;
+        
+        case "Origins Challenges":
+            self addMenu("Challenges");
+
+                foreach(player in level.players)
+                    self addOpt(CleanName(player getName()), ::newMenu, "Origins Challenges Player");
+            break;
+        
+        case "Origins Puzzles":
+            self addMenu("Puzzles");
+                self addOpt("Ice", ::newMenu, "Ice Puzzles");
+                self addOpt("Wind", ::newMenu, "Wind Puzzles");
+                self addOpt("Fire", ::newMenu, "Fire Puzzles");
+                self addOpt("Lightning", ::newMenu, "Lightning Puzzles");
+                self addOpt("");
+                self addOptSlider("115 Rings", ::Align115Rings, "Ice;Lightning;Fire;Wind");
+            break;
+        
+        case "Ice Puzzles":
+            self addMenu("Ice");
+                self addOptBool(level flag::get("ice_puzzle_1_complete"), "Tiles", ::CompleteIceTiles);
+                self addOptBool(level flag::get("ice_puzzle_2_complete"), "Tombstones", ::CompleteIceTombstones);
+            break;
+        
+        case "Wind Puzzles":
+            self addMenu("Wind");
+                self addOptBool(level flag::get("air_puzzle_1_complete"), "Rings", ::CompleteWindRings);
+                self addOptBool(level flag::get("air_puzzle_2_complete"), "Smoke", ::CompleteWindSmoke);
+            break;
+        
+        case "Fire Puzzles":
+            self addMenu("Fire");
+                self addOptBool(level flag::get("fire_puzzle_1_complete"), "Fill Cauldrons", ::ComepleteFireCauldrons);
+                self addOptBool(level flag::get("fire_puzzle_2_complete"), "Light Torches", ::CompleteFireTorches);
+            break;
+        
+        case "Lightning Puzzles":
+            self addMenu("Lightning");
+                self addOptBool(level flag::get("electric_puzzle_1_complete"), "Song", ::CompleteLightningSong);
+                self addOptBool(level flag::get("electric_puzzle_2_complete"), "Turn Dials", ::CompleteLightningDials);
+            break;
+	}
+}
+
 CompleteSoulbox(box)
 {
 	if(!isDefined(box) || box.n_souls_absorbed >= 30)
@@ -534,7 +630,6 @@ CompleteIceTombstones()
 				if(tombstone.e_model.model != "p7_zm_ori_note_rock_01_anim")
 				{
 					tombstone.e_model notify("damage", 1, self, (0, 0, 0), tombstone.e_model.origin, undefined, undefined, undefined, undefined, GetWeapon("staff_water"));
-
 					wait 0.5;
 				}
 
@@ -623,6 +718,7 @@ CompleteWindSmoke()
 
 	curs = self getCursor();
     menu = self getCurrent();
+
 	smokes = struct::get_array("puzzle_smoke_origin", "targetname");
 	s_dest = struct::get("puzzle_smoke_dest", "targetname");
 
@@ -794,10 +890,9 @@ CompleteLightningSong()
 
 	for(a = 0; a < 3; a++)
 	{
-		for(b = (0 + (3 * a)); b < ((0 + (3 * a)) + 3); b++)
+		for(b = (0 + (3 * a)); b < (3 + (3 * a)); b++)
 		{
 			self notify("projectile_impact", GetWeapon("staff_lightning"), a_piano_keys[order[b]].origin);
-
 			wait 0.5;
 		}
 

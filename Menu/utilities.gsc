@@ -9,7 +9,7 @@ createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
 
     textElem.sort = sort;
     textElem.alpha = alpha;
-    textElem.color = color;
+    textElem.color = (color == "Rainbow") ? level.RGBFadeColor : color;
 
     textElem hud::SetPoint(align, relative, x, y);
 
@@ -47,7 +47,7 @@ createServerText(font, fontSize, sort, text, align, relative, x, y, alpha, color
 
     textElem.hidewheninmenu = true;
     textElem.archived = true;
-    textElem.foreground = false;
+    textElem.foreground = true;
 
     textElem.sort = sort;
     textElem.alpha = alpha;
@@ -76,7 +76,7 @@ createRectangle(align, relative, x, y, width, height, color, sort, alpha, shader
     uiElement.xOffset = 0;
     uiElement.yOffset = 0;
     uiElement.sort = sort;
-    uiElement.color = color;
+    uiElement.color = (color == "Rainbow") ? level.RGBFadeColor : color;
     uiElement.alpha = alpha;
     
     uiElement SetShaderValues(shader, width, height);
@@ -84,6 +84,32 @@ createRectangle(align, relative, x, y, width, height, color, sort, alpha, shader
     uiElement hud::SetPoint(align, relative, x, y);
 
     self.hud_count++;
+    
+    return uiElement;
+}
+
+createServerRectangle(align, relative, x, y, width, height, color, sort, alpha, shader)
+{
+    uiElement = NewHudElem();
+    uiElement.elemType = "bar";
+    uiElement.children = [];
+    
+    uiElement.hidewheninmenu = true;
+    uiElement.archived = true;
+    uiElement.foreground = true;
+    uiElement.hidden = false;
+
+    uiElement.align = align;
+    uiElement.relative = relative;
+    uiElement.xOffset = 0;
+    uiElement.yOffset = 0;
+    uiElement.sort = sort;
+    uiElement.color = color;
+    uiElement.alpha = alpha;
+    
+    uiElement SetShaderValues(shader, width, height);
+    uiElement hud::SetParent(level.uiParent);
+    uiElement hud::SetPoint(align, relative, x, y);
     
     return uiElement;
 }
@@ -292,16 +318,6 @@ getName()
     return GetSubStr(name, (a + 1));
 }
 
-isInMenu(iqm)
-{
-    return isDefined(self.menuState["isInMenu"]) || isDefined(iqm) && iqm && isDefined(self.menuState["isInQuickMenu"]);
-}
-
-isInQuickMenu()
-{
-    return isDefined(self.menuState["isInQuickMenu"]);
-}
-
 isInArray(arry, text)
 {
     for(a = 0; a < arry.size; a++)
@@ -368,11 +384,6 @@ CorrectNL_BGHeight(string) //Auto-Size Player Info Background Height Based On Ho
             multiplier++;
 
     return 3 + (14 * multiplier);
-}
-
-BackMenu()
-{
-    return !self isInQuickMenu() ? self.menuParent[(self.menuParent.size - 1)] : self.menuParentQM[(self.menuParentQM.size - 1)];
 }
 
 isConsole()
@@ -624,10 +635,10 @@ Keyboard(func, player)
     
     self endon("disconnect");
 
-    self.menu["inKeyboard"] = true;
+    self.inKeyboard = true;
     
-    if(isDefined(self.menu["ui"]["scroller"]))
-        self.menu["ui"]["scroller"] hudScaleOverTime(0.1, 16, 16);
+    if(isDefined(self.menuHud["scroller"]))
+        self.menuHud["scroller"] hudScaleOverTime(0.1, 16, 16);
     
     self SoftLockMenu(121);
     
@@ -643,13 +654,13 @@ Keyboard(func, player)
             letters[a] += lettersTok[a][b] + "\n";
     }
 
-    self.keyboard["string"] = self createText("objective", 1.1, 5, "", "CENTER", "CENTER", self.menu["X"], (self.menu["Y"] + 15), 1, (1, 1, 1));
+    self.keyboard["string"] = self createText("objective", 1.1, 5, "", "CENTER", "CENTER", self.menuX, (self.menuY + 15), 1, (1, 1, 1));
 
     for(a = 0; a < letters.size; a++)
-        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menu["X"] - (self.menu["MenuWidth"] / 2)) + 15 + (a * 15), (self.menu["Y"] + 35), 1, (1, 1, 1));
+        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menuX - (self.MenuWidth / 2)) + ((self.MenuWidth / 2) / 5) + 10 + (a * 15), (self.menuY + 35), 1, (1, 1, 1));
     
-    if(isDefined(self.menu["ui"]["scroller"]))
-        self.menu["ui"]["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), 0.1);
+    if(isDefined(self.menuHud["scroller"]))
+        self.menuHud["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), 0.1);
     
     cursY = 0;
     cursX = 0;
@@ -670,8 +681,8 @@ Keyboard(func, player)
             if(cursY < 0 || cursY > 5)
                 cursY = (cursY < 0) ? 5 : 0;
             
-            if(isDefined(self.menu["ui"]["scroller"]))
-                self.menu["ui"]["scroller"] hudMoveY((self.keyboard["keys0"].y - 8) + (multiplier * cursY), 0.05);
+            if(isDefined(self.menuHud["scroller"]))
+                self.menuHud["scroller"] hudMoveY((self.keyboard["keys0"].y - 8) + (multiplier * cursY), 0.05);
 
             wait 0.025;
         }
@@ -683,8 +694,8 @@ Keyboard(func, player)
             if(cursX < 0 || cursX > 12)
                 cursX = (cursX < 0) ? 12 : 0;
             
-            if(isDefined(self.menu["ui"]["scroller"]))
-                self.menu["ui"]["scroller"] hudMoveX(self.keyboard["keys0"].x + (15 * cursX), 0.05);
+            if(isDefined(self.menuHud["scroller"]))
+                self.menuHud["scroller"] hudMoveX(self.keyboard["keys0"].x + (15 * cursX), 0.05);
 
             wait 0.025;
         }
@@ -765,10 +776,10 @@ NumberPad(func, player, param)
     
     self endon("disconnect");
 
-    self.menu["inKeyboard"] = true;
+    self.inKeyboard = true;
 
-    if(isDefined(self.menu["ui"]["scroller"]))
-        self.menu["ui"]["scroller"] hudScaleOverTime(0.1, 15, 15);
+    if(isDefined(self.menuHud["scroller"]))
+        self.menuHud["scroller"] hudScaleOverTime(0.1, 15, 15);
 
     self SoftLockMenu(50);
     
@@ -778,13 +789,13 @@ NumberPad(func, player, param)
     for(a = 0; a < 10; a++)
         letters[a] = a;
     
-    self.keyboard["string"] = self createText("objective", 1.2, 5, 0, "CENTER", "CENTER", self.menu["X"], (self.menu["Y"] + 15), 1, (1, 1, 1));
+    self.keyboard["string"] = self createText("objective", 1.2, 5, 0, "CENTER", "CENTER", self.menuX, (self.menuY + 15), 1, (1, 1, 1));
 
     for(a = 0; a < letters.size; a++)
-        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menu["X"] - (self.menu["MenuWidth"] / 2)) + 36 + (a * 15), (self.menu["Y"] + 35), 1, (1, 1, 1));
+        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menuX - (self.MenuWidth / 2)) + ((self.MenuWidth / 2) / 3) + 10 + (a * 15), (self.menuY + 35), 1, (1, 1, 1));
     
-    if(isDefined(self.menu["ui"]["scroller"]))
-        self.menu["ui"]["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), 0.1);
+    if(isDefined(self.menuHud["scroller"]))
+        self.menuHud["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), 0.1);
     
     cursX = 0;
     stringLimit = 10;
@@ -804,8 +815,8 @@ NumberPad(func, player, param)
             if(cursX < 0 || cursX > 9)
                 cursX = (cursX < 0) ? 9 : 0;
 
-            if(isDefined(self.menu["ui"]["scroller"]))
-                self.menu["ui"]["scroller"] hudMoveX(self.keyboard["keys0"].x + (15 * cursX), 0.05);
+            if(isDefined(self.menuHud["scroller"]))
+                self.menuHud["scroller"] hudMoveX(self.keyboard["keys0"].x + (15 * cursX), 0.05);
 
             wait 0.025;
         }
@@ -881,11 +892,11 @@ RGBFade()
         {
             while((level.RGBFadeColor[a] * 255) < 255)
             {
-                RGBValues[a] = ((level.RGBFadeColor[a] * 255) + 1);
+                RGBValues[a] = ((level.RGBFadeColor[a] * 255) + 3);
 
                 for(b = 0; b < 3; b++)
                     if(b != a)
-                        RGBValues[b] = (level.RGBFadeColor[b] > 0) ? ((level.RGBFadeColor[b] * 255) - 1) : 0;
+                        RGBValues[b] = (level.RGBFadeColor[b] > 0) ? ((level.RGBFadeColor[b] * 255) - 3) : 0;
                 
                 level.RGBFadeColor = divideColor(RGBValues[0], RGBValues[1], RGBValues[2]);
 
@@ -1087,55 +1098,55 @@ ForceHost()
     }
 }
 
-GEntityProtection()
+GSpawnProtection()
 {
-    level.GEntityProtection = isDefined(level.GEntityProtection) ? undefined : true;
-
-    while(isDefined(level.GEntityProtection))
+    level.GSpawnProtection = isDefined(level.GSpawnProtection) ? undefined : true;
+    
+    if(isDefined(level.GSpawnProtection))
     {
-        entityCount = GetEntArray().size;
-        ents = ArrayReverse(ArrayCombine(GetEntArray("script_brushmodel", "classname"), GetEntArray("script_model", "classname"), 0, 1));
-
-        GEntMax = ReturnMapGEntityLimit();
-
-        if(entityCount > (GEntMax - 16))
+        while(isDefined(level.GSpawnProtection))
         {
-            amount = (entityCount >= GEntMax) ? 30 : 5;
+            entityCount = GetEntArray().size;
+            ents = ArrayReverse(ArrayCombine(GetEntArray("script_brushmodel", "classname"), GetEntArray("script_model", "classname"), 0, 1));
+            GSpawnMax = ReturnMapGSpawnLimit();
 
-            for(a = 0; a < amount; a++)
-                if(isDefined(ents[a]))
-                    ents[a] delete();
+            if(entityCount > (GSpawnMax - 20))
+            {
+                amount = (entityCount >= GSpawnMax) ? 30 : 5;
+
+                for(a = 0; a < amount; a++)
+                    if(isDefined(ents[a]))
+                        ents[a] delete();
+                
+                bot::get_host_player() DebugiPrint("^1" + ToUpper(level.menuName) + ": ^7G_Spawn Prevented [" + entityCount + "] -> New Entity Count: " + GetEntArray().size);
+            }
             
-            newEntityCount = GetEntArray().size;
-
-            bot::get_host_player() DebugiPrint("^1" + ToUpper(level.menuName) + ": ^7G_Entity Prevented [" + entityCount + "] -> New Entity Count: " + newEntityCount);
+            wait 0.01;
         }
-
-        wait 0.01;
     }
 }
 
-ReturnMapGEntityLimit()
+ReturnMapGSpawnLimit()
 {
-    switch(ReturnMapName(level.script))
+    switch(level.script)
     {
-        case "Nacht Der Untoten":
+        case "zm_prototype":
             return 815;
         
-        case "Verruckt":
+        case "zm_asylum":
             return 850;
         
-        case "Ascension":
+        case "zm_cosmodrome":
             return 890;
         
-        case "Origins":
-        case "Moon":
-        case "Shangri-La":
+        case "zm_tomb":
+        case "zm_moon":
+        case "zm_temple":
             return 950;
         
-        case "Kino Der Toten":
-        case "Shi No Numa":
-        case "The Giant":
+        case "zm_theater":
+        case "zm_sumpf":
+        case "zm_factory":
             return 915;
         
         default:
@@ -1170,14 +1181,14 @@ GetGroundPos(position)
 
 MenuCredits()
 {
-    if(isDefined(self.menu["CreditsPlaying"]))
+    if(isDefined(self.CreditsPlaying))
         return;
-    self.menu["CreditsPlaying"] = true;
+    self.CreditsPlaying = true;
     
     self endon("disconnect");
     
-    if(isDefined(self.menu["ui"]["scroller"]))
-        self.menu["ui"]["scroller"].alpha = 0;
+    if(isDefined(self.menuHud["scroller"]))
+        self.menuHud["scroller"].alpha = 0;
     
     self SoftLockMenu(220);
     
@@ -1206,15 +1217,6 @@ MenuCredits()
     "Testing",
     "Breaking Shit",
     " ",
-    "^1Emotional People",
-    "^1The Best Free Entertainment",
-    "Gillam",
-    "SoundlessEcho",
-    "Sinful",
-    "NotEmoji",
-    "Leafized",
-    "^5Stay Emotional <3",
-    " ",
     "^1Thanks For Choosing " + level.menuName,
     "YouTube: ^1CF4_99",
     "Discord: ^1cf4_99"
@@ -1223,7 +1225,7 @@ MenuCredits()
     self thread MenuCreditsStart(MenuTextStartCredits);
     self SetMenuInstructions("[{+melee}] - Exit Menu Credits");
     
-    while(isDefined(self.menu["CreditsPlaying"]))
+    while(isDefined(self.CreditsPlaying))
     {
         if(self MeleeButtonPressed())
             break;
@@ -1231,7 +1233,7 @@ MenuCredits()
         wait 0.05;
     }
     
-    self.menu["CreditsPlaying"] = undefined;
+    self.CreditsPlaying = undefined;
     self notify("EndMenuCredits");
     self SetMenuInstructions();
     self SoftUnlockMenu();
@@ -1250,7 +1252,7 @@ MenuCreditsStart(creditArray)
     {
         if(creditArray[a] != " ")
         {
-            self.credits["MenuCreditsHud"][a] = self createText("objective", (creditArray[a][0] == "^" && creditArray[a][1] == "1") ? 1.4 : 1.1, 3, "", "CENTER", "CENTER", self.menu["X"], (self.menu["MenuStyle"] == "Zodiac") ? (self.menu["Y"] + 220) : (self.menu["Y"] + (self.menu["ui"]["background"].height - 8)), 0, (1, 1, 1));
+            self.credits["MenuCreditsHud"][a] = self createText("objective", (creditArray[a][0] == "^" && creditArray[a][1] == "1") ? 1.4 : 1.1, 3, "", "CENTER", "CENTER", self.menuX, (self.MenuStyle == "Zodiac") ? (self.menuY + 220) : (self.menuY + (self.menuHud["background"].height - 8)), 0, (1, 1, 1));
             self thread CreditsFadeIn(self.credits["MenuCreditsHud"][a], creditArray[a], moveTime, 0.5);
             
             wait (moveTime / 12);
@@ -1260,7 +1262,7 @@ MenuCreditsStart(creditArray)
     }
     
     wait moveTime;
-    self.menu["CreditsPlaying"] = undefined;
+    self.CreditsPlaying = undefined;
 }
 
 CreditsFadeIn(hud, text, moveTime, fadeTime)
@@ -1273,9 +1275,9 @@ CreditsFadeIn(hud, text, moveTime, fadeTime)
     self thread credits_delete(hud);
     hud SetTextString(text);
     hud thread hudFade(1, fadeTime);
-    hud thread hudMoveY(self.menu["Y"], moveTime);
+    hud thread hudMoveY(self.menuY, moveTime);
 
-    if(self.menu["MenuStyle"] == "Nautaremake")
+    if(self.MenuStyle == "Nautaremake")
         moveTime -= 0.3;
     
     wait (moveTime - fadeTime);
@@ -1406,4 +1408,124 @@ StripStringButtons(string)
     }
     
     return newString;
+}
+
+//Decided to remake GetDvarVector
+GetDvarVector1(var)
+{
+    dvar = "";
+    var = GetDvarString(var);
+
+    if(!isDefined(var) || var == "")
+        return (0, 0, 0);
+
+    for(a = 1; a < var.size; a++)
+        if(var[a] != " " && var[a] != ")")
+            dvar += var[a];
+    
+    vals = [];
+    toks = StrTok(dvar, ",");
+    
+    for(a = 0; a < toks.size; a++)
+        vals[a] = Float(toks[a]);
+    
+    return (vals[0], vals[1], vals[2]);
+}
+
+
+//Ban system
+TempBanPlayer(player)
+{
+    if(player IsHost())
+        return self iPrintlnBold("^1ERROR: ^7You Can't Ban The Host");
+    
+    if(player isDeveloper())
+        return self iPrintlnBold("^1ERROR: ^7You Can't Ban The Developer");
+    
+    slot = GetFreeBanSlot();
+    
+    if(!isDefined(slot))
+        return self iPrintlnBold("^1ERROR: ^7No Free Ban Slot Available");
+    
+    SetDvar(slot, player GetXUID() + ";" + player getName());
+    Kick(player GetEntityNumber());
+}
+
+GetFreeBanSlot()
+{
+    for(a = 0; a < 100; a++)
+    {
+        slot    = level.menuName + a;
+        slotVar = GetDvarString(slot);
+        
+        if(!isDefined(slotVar) || slotVar == "")
+            return slot;
+    }
+    
+    return;
+}
+
+UnbanPlayer(playerInfo)
+{
+    players = GetBannedPlayers();
+    
+    if(!isDefined(players) || !players.size)
+        return self iPrintlnBold("^1ERROR: ^7No Banned Players Found");
+    
+    newList = [];
+    menu    = self getCurrent();
+    curs    = self getCursor();
+    
+    for(a = 0; a < players.size; a++)
+    {
+        if(players[a] == playerInfo)
+        {
+            for(b = 0; b < players.size; b++) //Remove selected player, and refresh ban slots(make sure there are no empty slots between players)
+            {
+                SetDvar(level.menuName + b, "");
+                
+                if(players[b] != playerInfo)
+                    newList[newList.size] = players[b];
+            }
+            
+            break;
+        }
+    }
+    
+    if(isDefined(newList) && newList.size)
+        for(a = 0; a < newList.size; a++)
+            SetDvar(level.menuName + a, newList[a]);
+    
+    self RefreshMenu(menu, curs);
+}
+
+IsPlayerBanned(player)
+{
+    players = GetBannedPlayers();
+    
+    if(!isDefined(players) || !players.size)
+        return false;
+    
+    for(a = 0; a < players.size; a++)
+        if(IsSubStr(players[a], player GetXUID()))
+            return true;
+    
+    return false;
+}
+
+GetBannedPlayers()
+{
+    players = [];
+    
+    for(a = 0; a < 100; a++)
+    {
+        slotVar = GetDvarString(level.menuName + a);
+        
+        if(!isDefined(slotVar) || slotVar == "") //There should be no empty slots between players
+            break;
+        
+        players[players.size] = slotVar;
+    }
+    
+    return players;
 }

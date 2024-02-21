@@ -1,6 +1,53 @@
+PopulateZetsubouNoShimaScripts(menu)
+{
+    switch(menu)
+    {
+        case "Zetsubou No Shima Scripts":
+            self addMenu("Zetsubou No Shima Scripts");
+                self addOpt("KT-4 Parts", ::newMenu, "Zetsubou No Shima KT-4 Parts");
+                self addOpt("Skulltar Teleports", ::newMenu, "Skulltar Teleports");
+                self addOpt("Challenges", ::newMenu, "Map Challenges");
+                self addOptBool(self clientfield::get_to_player("bucket_held"), "Collect Bucket", ::ZNSGrabWaterBucket);
+                self addOpt("Bucket Water Type", ::newMenu, "ZNS Bucket Water");
+            break;
+        
+        case "Zetsubou No Shima KT-4 Parts":
+            self addMenu("KT-4 Parts");
+                self addOptBool(level flag::get("ww1_found"), "Vial", ::CollectKT4Parts, "ww1_found");
+                self addOptBool(level flag::get("ww2_found"), "Plant", ::CollectKT4Parts, "ww2_found");
+                self addOptBool(level flag::get("ww3_found"), "Venom", ::CollectKT4Parts, "ww3_found");
+            break;
+        
+        case "Map Challenges":
+            self addMenu("Challenges");
+                
+                foreach(player in level.players)
+                    self addOpt(CleanName(player getName()), ::newMenu, "Map Challenges Player");
+            break;
+        
+        case "Skulltar Teleports":
+            skulltars = GetEntArray("mdl_skulltar", "targetname");
+
+            self addMenu("Skulltar Teleports");
+
+                for(a = 0; a < skulltars.size; a++)
+                    self addOpt("Skulltar " + (a + 1), ::TeleportPlayer, skulltars[a].origin, self);
+            break;
+        
+        case "ZNS Bucket Water":
+            self addMenu("Bucket Water Type");
+
+                foreach(source in GetEntArray("water_source", "targetname"))
+                    self addOptBool(self.var_c6cad973 == source.script_int, ZNSReturnWaterType(source.script_int), ::ZNSFillBucket, source);
+                
+                self addOptBool(self.var_c6cad973 == GetEnt("water_source_ee", "targetname").script_int, "Rainbow", ::ZNSFillBucket, GetEnt("water_source_ee", "targetname"));
+            break;
+    }
+}
+
 CollectKT4Parts(part)
 {
-    if(level flag::get(part) || isDefined(self.menu[part]))
+    if(level flag::get(part))
         return;
     
     self endon("disconnect");
@@ -14,7 +61,9 @@ CollectKT4Parts(part)
     switch(part)
     {
         case "ww1_found":
-            self.menu[part] = true;
+            if(isDefined(level.find_ww1))
+                return self iPrintlnBold("^1ERROR: ^7Part Is Currently Being Collected");
+            level.find_ww1 = true;
 
             //Part that is usually collected from a zombie
             if(!level flag::get("ww1_found"))
@@ -32,11 +81,13 @@ CollectKT4Parts(part)
                 wait 0.1;
             }
 
-            self.menu[part] = undefined;
+            level.find_ww1 = undefined;
             break;
         
         case "ww2_found":
-            self.menu[part] = true;
+            if(isDefined(level.find_ww2))
+                return self iPrintlnBold("^1ERROR: ^7Part Is Currently Being Collected");
+            level.find_ww2 = true;
 
             //Part that is found in the underwater cave
             if(!level flag::get("ww2_found"))
@@ -58,11 +109,13 @@ CollectKT4Parts(part)
                 wait 0.1;
             }
 
-            self.menu[part] = undefined;
+            level.find_ww2 = undefined;
             break;
 
         case "ww3_found":
-            self.menu[part] = true;
+            if(isDefined(level.find_ww3))
+                return self iPrintlnBold("^1ERROR: ^7Part Is Currently Being Collected");
+            level.find_ww3 = true;
 
             //Part that is extracted from a spider
             if(!level flag::get("ww3_found"))
@@ -83,7 +136,7 @@ CollectKT4Parts(part)
                 }
             }
 
-            self.menu[part] = undefined;
+            level.find_ww3 = undefined;
             break;
         
         default:

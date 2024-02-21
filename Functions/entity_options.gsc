@@ -1,3 +1,60 @@
+PopulateEntityOptions(menu)
+{
+    switch(menu)
+    {
+        case "Entity Options":
+            self addMenu("Entity Options");
+                
+                if(isDefined(level.SavedMapEntities) && level.SavedMapEntities.size)
+                {
+                    self addOpt("Entity Editing List", ::newMenu, "Entity Editing List");
+                    self addOptBool(AllEntitiesInvisible(), "Invisibility", ::EntitiesInvisibility);
+                    self addOpt("Delete", ::DeleteEntities);
+                    self addOpt("Rotation", ::newMenu, "Entities Rotation");
+                    self addOptIncSlider("Scale", ::EntitiesScale, 0.5, 1, 10, 0.5);
+                    self addOptSlider("Teleport", ::TeleportEntities, "Self;Crosshairs");
+                    self addOpt("Reset Origin", ::EntitiesResetOrigins);
+                }
+            break;
+
+        case "Entity Editing List":
+            self addMenu("Entity Editing List");
+
+                if(isDefined(level.SavedMapEntities) && level.SavedMapEntities.size)
+                {
+                    for(a = 0; a < level.SavedMapEntities.size; a++)
+                        if(isDefined(level.SavedMapEntities[a]) && level.SavedMapEntities[a].model != "")
+                            self addOpt(CleanString(level.SavedMapEntities[a].model), ::newMenu, "Entity Editor", false, a);
+                }
+            break;
+
+        case "Entity Editor":
+            self addMenu(CleanString(level.SavedMapEntities[self.EntityEditorNumber].model));
+                self addOpt("Delete", ::DeleteEntity, level.SavedMapEntities[self.EntityEditorNumber]);
+                self addOptBool(level.SavedMapEntities[self.EntityEditorNumber].Invisibility, "Invisibility", ::EntityInvisibility, level.SavedMapEntities[self.EntityEditorNumber]);
+                self addOpt("Rotation", ::newMenu, "Entity Rotation", false, self.EntityEditorNumber);
+                self addOptIncSlider("Scale", ::EntityScale, 0.5, 1, 10, 0.5, level.SavedMapEntities[self.EntityEditorNumber]);
+                self addOptSlider("Teleport", ::TeleportEntity, "Self;Self To Entity;Crosshairs", level.SavedMapEntities[self.EntityEditorNumber]);
+                self addOpt("Reset Origin", ::EntityResetOrigin, level.SavedMapEntities[self.EntityEditorNumber]);
+            break;
+
+        case "Entity Rotation":
+            self addMenu("Rotation");
+                self addOpt("Reset", ::EntityResetAngles, level.SavedMapEntities[self.EntityEditorNumber]);
+                self addOptIncSlider("Pitch", ::EntityRotation, -10, 0, 10, 1, "Pitch", level.SavedMapEntities[self.EntityEditorNumber]);
+                self addOptIncSlider("Yaw", ::EntityRotation, -10, 0, 10, 1, "Yaw", level.SavedMapEntities[self.EntityEditorNumber]);
+                self addOptIncSlider("Roll", ::EntityRotation, -10, 0, 10, 1, "Roll", level.SavedMapEntities[self.EntityEditorNumber]);
+            break;
+
+        case "Entities Rotation":
+            self addMenu("Rotation");
+                self addOpt("Reset", ::EntitiesResetAngles);
+                self addOptIncSlider("Pitch", ::EntitiesRotation, -10, 0, 10, 1, "Pitch");
+                self addOptIncSlider("Yaw", ::EntitiesRotation, -10, 0, 10, 1, "Yaw");
+                self addOptIncSlider("Roll", ::EntitiesRotation, -10, 0, 10, 1, "Roll");
+            break;
+    }
+}
 DeleteEntity(ent)
 {
     if(!isDefined(ent) || !isDefined(level.SavedMapEntities) || isDefined(level.SavedMapEntities) && !level.SavedMapEntities.size)

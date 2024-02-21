@@ -1,3 +1,16 @@
+PopulateVerrucktScripts(menu)
+{
+    switch(menu)
+    {
+        case "Verruckt Scripts":
+            self addMenu("Verruckt Scripts");
+                self addOptBool(level flag::get("power_on"), "Turn On Power", ::ActivatePower);
+                self addOptBool(level flag::get("snd_zhdegg_completed"), "Samantha's Hide & Seek", ::VerrucktHideAndSeekSong);
+                self addOptBool(level.VerrucktLullaby, "Lullaby For A Dead Man Song", ::VerrucktLullabyForADeadMan);
+            break;
+    }
+}
+
 VerrucktHideAndSeekSong()
 {
     if(level flag::get("snd_zhdegg_completed"))

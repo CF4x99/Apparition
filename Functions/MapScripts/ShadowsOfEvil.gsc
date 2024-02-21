@@ -1,3 +1,64 @@
+PopulateSOEScripts(menu)
+{
+	switch(menu)
+	{
+		case "Shadows Of Evil Scripts":
+            self addMenu("Shadows Of Evil Scripts");
+                self addOpt("Beast Mode", ::newMenu, "Beast Mode");
+                self addOpt("Fumigator", ::newMenu, "SOE Fumigator");
+                self addOpt("Smashables", ::newMenu, "SOE Smashables");
+                self addOpt("Power Switches", ::newMenu, "SOE Power Switches");
+                self addOpt("Show Symbol Code", ::SOEShowCode);
+            break;
+        
+        case "Beast Mode":
+            self addMenu("Beast Mode");
+                
+                foreach(player in level.players)
+                    self addOptBool((isDefined(player.beastmode) && player.beastmode), CleanName(player getName()), ::PlayerBeastMode, player);
+			break;
+		
+		case "SOE Fumigator":
+			self addMenu("Fumigator");
+				
+				foreach(player in level.players)
+					self addOptBool(player clientfield::get_to_player("pod_sprayer_held"), CleanName(player getName()), ::SOEGrabFumigator, player);
+			break;
+        
+        case "SOE Smashables":
+            self addMenu("Smashables");
+
+                if(SOESmashablesRemaining())
+                {
+                    foreach(smashable in GetEntArray("beast_melee_only", "script_noteworthy"))
+                    {
+                        target = GetEnt(smashable.target, "targetname");
+
+                        if(!isDefined(target))
+                            continue;
+                        
+                        self addOpt(ReturnSOESmashableName(CleanString(smashable.targetname)), ::TriggerSOESmashable, smashable);
+                    }
+                }
+            break;
+        
+        case "SOE Power Switches":
+            self addMenu("Power Switches");
+
+                if(SOEPowerSwitchesRemaining())
+                {
+                    foreach(ooze in GetEntArray("ooze_only", "script_noteworthy"))
+                    {
+                        if(IsSubStr(ooze.targetname, "keeper_sword") || IsSubStr(ooze.targetname, "ee_district_rail"))
+                            continue;
+                        
+                        self addOpt(ReturnSOEPowerName(ooze.script_int), ::TriggerSOEESwitch, ooze);
+                    }
+                }
+            break;
+	}
+}
+
 PlayerBeastMode(player)
 {
     curs = self getCursor();
@@ -335,9 +396,9 @@ SOEShowCode()
 	self iPrintlnBold((level.o_canal_beastcode.m_a_codes[0][0] + 1) + " " + (level.o_canal_beastcode.m_a_codes[0][1] + 1) + " " + (level.o_canal_beastcode.m_a_codes[0][2] + 1));
 }
 
-SOEGrabFumigator()
+SOEGrabFumigator(player)
 {
-	if(self clientfield::get_to_player("pod_sprayer_held"))
+	if(player clientfield::get_to_player("pod_sprayer_held"))
 		return;
 	
 	a_sprayers = struct::get_array("pod_sprayer_location", "targetname");
@@ -346,7 +407,7 @@ SOEGrabFumigator()
 	foreach(spray in a_sprayers)
 		if(isDefined(spray) && isDefined(spray.trigger))
 		{
-			spray.trigger notify("trigger", self);
+			spray.trigger notify("trigger", player);
 			break;
 		}
 }
