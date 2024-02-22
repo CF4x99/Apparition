@@ -439,8 +439,13 @@ CleanName(name)
 
     for(a = 0; a < name.size; a++)
     {
-        if(isDefined(name[(a + 1)]) && isInArray(invalid, (name[a] + name[(a + 1)])) || isDefined(name[(a - 1)]) && isInArray(invalid, (name[(a - 1)] + name[a])))
-            continue;
+        if(isInArray(invalid, name[a] + name[(a + 1)]))
+        {
+            a = (a + 2);
+
+            if(a >= name.size)
+                break;
+        }
         
         string += name[a];
     }
@@ -1352,7 +1357,7 @@ iPrintMessageDestroy(index)
 GetTextWidth3arc(player, widthScale)
 {
     if(!isDefined(widthScale))
-        widthScale = player GamePadUsedLast() ? 6 : 7; //Scaling for keyboard & mouse will be a little more than controller
+        widthScale = player GamePadUsedLast() ? 5 : 6; //Scaling for keyboard & mouse will be a little more than controller
     
     width = 1;
     
@@ -1364,10 +1369,10 @@ GetTextWidth3arc(player, widthScale)
     
     //the token array will always be at least one, even without the use of \n, so this can run no matter what
     for(a = 0; a < nlToks.size; a++)
-        if(StripStringButtons(nlToks[a]).size >= StripStringButtons(nlToks[longest]).size)
+        if(PurgeStringForWidth(nlToks[a]).size >= PurgeStringForWidth(nlToks[longest]).size)
             longest = a;
     
-    string = StripStringButtons(nlToks[longest]);
+    string = PurgeStringForWidth(nlToks[longest]);
     
     for(a = 0; a < string.size; a++)
         width += widthScale;
@@ -1383,7 +1388,7 @@ GetTextWidth3arc(player, widthScale)
     return width;
 }
 
-StripStringButtons(string)
+PurgeStringForWidth(string)
 {
     if(!isDefined(string) || !IsSubStr(string, "[{"))
         return string;
@@ -1398,15 +1403,28 @@ StripStringButtons(string)
             {
                 if(string[b] == "}" && string[(b + 1)] == "]")
                 {
-                    a = (b + 1);
+                    a = (b + 2);
                     break;
                 }
             }
         }
+
+        invalid = ["^A", "^B", "^F", "^H", "^I", "^0", "^1", "^2", "^3", "^4", "^5", "^6", "^7", "^8", "^9"]; //these chars won't actually be displayed, so they won't affect the scale
+
+        if(isInArray(invalid, string[a] + string[(a + 1)]))
+            a += 2;
+        
+        invalid = ["[", "]", ".", ",", "'", "!", "{", "}", "|" "-"]; //these chars really don't need to count towards the width
+        
+        if(isInArray(invalid, string[a]))
+            continue;
+
+        if(a >= string.size)
+            break;
         
         newString += string[a];
     }
-    
+
     return newString;
 }
 

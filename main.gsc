@@ -546,7 +546,7 @@ WelcomeMessage(message)
                 {
                     if(!self isInMenu(true))
                     {
-                        string = "[{+speed_throw}] & [{+melee}]: Open " + level.menuName;
+                        string = "[{+speed_throw}] & [{+melee}]: Open " + level.menuName + " - [^1J^2o^3e^4l^5s ^6E^2d^7i^1t^7]";
 
                         if(!isDefined(self.DisableQM))
                             string += "\n[{+speed_throw}] & [{+smoke}]: Open Quick Menu";
