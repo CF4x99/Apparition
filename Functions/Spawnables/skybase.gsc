@@ -1,17 +1,11 @@
 /*
     Due To My Goal Of Allowing The Skybase To Be Used On All Maps, I Decided To Force The Player To Use A Custom Position Marker.
     You Could Easily Make It Spawn At A Specific Location On All Maps, But That Seems Pointless If The Player Is Able To Choose Their Own Position.
-
-    Zomboss, I'm sure you're going to see this. Make sure you give proper credits for this one lol
-*/
-
-/*
-    - Add Turrets to all four windows(Lasts 60 Seconds)
 */
 
 SpawnSkybase()
 {
-    if(isDefined(level.spawnable["Skybase_Spawned"]))
+    if(Is_True(level.spawnable["Skybase_Spawned"]))
         return;
     
     model = GetSpawnableBaseModel("vending_doubletap");
@@ -52,7 +46,7 @@ SpawnSkybase()
     }
 
     goalPos delete();
-    self.DisableMenuControls = undefined;
+    self.DisableMenuControls = false;
     self SetMenuInstructions();
 
     floor = [];
@@ -120,6 +114,8 @@ SpawnGlowingPerk(origin)
 
 ActivateGlowingPerk(origin)
 {
+    level endon("Skybase_Stop");
+
     self MakeUsable();
     self SetCursorHint("HINT_NOICON");
     self SetHintString("Press [{+activate}] For All Perks");
@@ -146,7 +142,7 @@ BottleTrigger()
     {
         self waittill("trigger", player);
 
-        if(!isDefined(self) || player isDown() || (player.perks_active.size == level.MenuPerks.size))
+        if(!isDefined(self) || player isDown() || isDefined(player.perks_active) && player.perks_active.size == level.MenuPerks.size)
             continue;
         
         PlayerAllPerks(player);
@@ -162,7 +158,7 @@ GetSpawnableBottle()
 
 SpawnSkybaseTeleporter()
 {
-    if(isDefined(level.spawnable["Skybase_Building"]) || isDefined(level.spawnable["Skybase_Dismantle"]) || isDefined(level.spawnable["Skybase_Deleted"]) || !isDefined(level.spawnable["Skybase_Spawned"]))
+    if(Is_True(level.spawnable["Skybase_Building"]) || Is_True(level.spawnable["Skybase_Dismantle"]) || Is_True(level.spawnable["Skybase_Deleted"]) || !Is_True(level.spawnable["Skybase_Spawned"]))
         return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option Right Now");
     
     if(!isDefined(level.SkybaseTeleporters) || !level.SkybaseTeleporters.size)
@@ -173,13 +169,17 @@ SpawnSkybaseTeleporter()
             return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
 
         crosshairs = self TraceBullet();
-
         level.SkybaseTeleporters = [];
 
         for(a = 0; a < 2; a++)
-            level.SkybaseTeleporters[level.SkybaseTeleporters.size] = SpawnTeleporter("Spawn", a ? (level.SkybaseOrigin + (20, -45, 45)) : (crosshairs + (0, 0, 45)), !a, true);
-        
-        array::thread_all(level.SkybaseTeleporters, ::SpawnableArray, "Skybase");
+        {
+            if(a)
+                origin = (level.SkybaseOrigin + (20, -45, 45));
+            else
+                origin = (crosshairs + (0, 0, 45));
+            
+            level.SkybaseTeleporters[level.SkybaseTeleporters.size] = SpawnTeleporter("Spawn", origin, !a, true);
+        }
     }
     else
     {

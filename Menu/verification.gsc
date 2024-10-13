@@ -34,8 +34,8 @@ setVerification(a, player, msg)
     player.menuCurs["Main"] = 0;
     
     player notify("endMenuMonitor");
-    player.menuMonitor    = undefined;
-    player.WelcomeDisplay = undefined;
+    player.menuMonitor    = false;
+    player.WelcomeDisplay = false;
 
     if(player hasMenu())
     {
@@ -56,7 +56,7 @@ SetVerificationAllPlayers(a, msg)
 getVerification()
 {
     if(!isDefined(self.verification))
-        return 0;
+        return 1;
 
     for(a = 0; a < level.MenuStatus.size; a++)
         if(self.verification == level.MenuStatus[a])
@@ -65,13 +65,13 @@ getVerification()
 
 hasMenu()
 {
-    return (self getVerification() > 0);
+    return self getVerification() > 1;
 }
 
 SavePlayerVerification(player)
 {
     if(player IsHost() || player isDeveloper() || player util::is_bot())
-        return("^1ERROR: ^7Couldn't Save Players Verification");
+        return self iPrintlnBold("^1ERROR: ^7Couldn't Save Players Verification");
     
     SetDvar("ApparitionV_" + player GetXUID(), player getVerification());
     self iPrintlnBold(CleanName(player getName()) + "'s Status Has Been ^2Saved");

@@ -9,7 +9,13 @@ createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
 
     textElem.sort = sort;
     textElem.alpha = alpha;
-    textElem.color = (color == "Rainbow") ? level.RGBFadeColor : color;
+
+    if(isDefined(color) && IsVec(color))
+        textElem.color = color;
+    else if(IsString(color))
+        textElem.color = level.RGBFadeColor;
+    else
+        textElem.color = (0, 0, 0);
 
     textElem hud::SetPoint(align, relative, x, y);
 
@@ -62,7 +68,8 @@ createServerText(font, fontSize, sort, text, align, relative, x, y, alpha, color
 createRectangle(align, relative, x, y, width, height, color, sort, alpha, shader)
 {
     uiElement = NewClientHudElem(self);
-    uiElement.elemType = "bar";
+    
+    uiElement.elemType = "icon";
     uiElement.children = [];
     
     uiElement.hidewheninmenu = true;
@@ -76,7 +83,14 @@ createRectangle(align, relative, x, y, width, height, color, sort, alpha, shader
     uiElement.xOffset = 0;
     uiElement.yOffset = 0;
     uiElement.sort = sort;
-    uiElement.color = (color == "Rainbow") ? level.RGBFadeColor : color;
+
+    if(isDefined(color) && IsVec(color))
+        uiElement.color = color;
+    else if(IsString(color))
+        uiElement.color = level.RGBFadeColor;
+    else
+        uiElement.color = (0, 0, 0);
+
     uiElement.alpha = alpha;
     
     uiElement SetShaderValues(shader, width, height);
@@ -91,7 +105,8 @@ createRectangle(align, relative, x, y, width, height, color, sort, alpha, shader
 createServerRectangle(align, relative, x, y, width, height, color, sort, alpha, shader)
 {
     uiElement = NewHudElem();
-    uiElement.elemType = "bar";
+    
+    uiElement.elemType = "icon";
     uiElement.children = [];
     
     uiElement.hidewheninmenu = true;
@@ -155,21 +170,25 @@ AddToStringCache(text)
 
         if(!isDefined(level.uniqueStringLimitNotify))
         {
-            bot::get_host_player() iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7Unique String Limit Has Been Reached. To Prevent Crashing, No More Unique Strings Will Be Created.");
+            bot::get_host_player() DebugiPrint("^1" + ToUpper(level.menuName) + ": ^7Unique String Limit Has Been Reached. To Prevent Crashing, No More Unique Strings Will Be Created.");
             level.uniqueStringLimitNotify = true;
         }
     }
 
     if(!isInArray(level.uniqueStrings, text))
         level.uniqueStrings[level.uniqueStrings.size] = text;
-
-    text = IsSubStr(text, "[{") ? text : MakeLocalizedString(text);
+    
+    if(!IsSubStr(text, "[{"))
+        text = MakeLocalizedString(text);
 
     return text;
 }
 
 SetShaderValues(shader, width, height)
 {
+    if(!isDefined(self))
+        return;
+    
     if(!isDefined(shader))
     {
         if(!isDefined(self.shader))
@@ -203,80 +222,119 @@ SetShaderValues(shader, width, height)
 
 hudMoveY(y, time)
 {
-    self MoveOverTime(time);
+    if(!isDefined(self))
+        return;
+    
+    if(time > 0)
+        self MoveOverTime(time);
+    
     self.y = y;
 
-    wait time;
+    if(time > 0)
+        wait time;
 }
 
 hudMoveX(x, time)
 {
-    self MoveOverTime(time);
+    if(!isDefined(self))
+        return;
+    
+    if(time > 0)
+        self MoveOverTime(time);
+    
     self.x = x;
 
-    wait time;
+    if(time > 0)
+        wait time;
 }
 
 hudMoveXY(x, y, time)
 {
-    self MoveOverTime(time);
+    if(!isDefined(self))
+        return;
+    
+    if(time > 0)
+        self MoveOverTime(time);
+    
     self.x = x;
     self.y = y;
 
-    wait time;
+    if(time > 0)
+        wait time;
 }
 
 hudFade(alpha, time)
 {
-    self FadeOverTime(time);
+    if(!isDefined(self))
+        return;
+    
+    if(time > 0)
+        self FadeOverTime(time);
+    
     self.alpha = alpha;
 
-    wait time;
+    if(time > 0)
+        wait time;
 }
 
 hudFadenDestroy(alpha, time)
 {
-    self hudFade(alpha, time);
+    if(!isDefined(self))
+        return;
+    
+    if(time > 0)
+        self hudFade(alpha, time);
+    
     self DestroyHud();
 }
 
 hudFadeColor(color, time)
 {
-    self FadeOverTime(time);
+    if(!isDefined(self))
+        return;
+    
+    if(time > 0)
+        self FadeOverTime(time);
+    
     self.color = color;
 }
 
 hudScaleOverTime(time, width, height)
 {
-    self ScaleOverTime(time, width, height);
+    if(!isDefined(self))
+        return;
+    
+    if(time > 0)
+        self ScaleOverTime(time, width, height);
 
     self.width = width;
     self.height = height;
 
-    wait time;
+    if(time > 0)
+        wait time;
 }
 
 HudRGBFade()
 {
-    if(!isDefined(self) || isDefined(self.RGBFade))
+    if(!isDefined(self) || Is_True(self.RGBFade))
         return;
     self.RGBFade = true;
 
     self endon("death");
-
     level endon("stop_intermission"); //For custom end game hud
 
-    while(isDefined(self) && isDefined(self.RGBFade))
+    while(isDefined(self) && Is_True(self.RGBFade))
     {
         self.color = level.RGBFadeColor;
-        
         wait 0.01;
     }
 }
 
 ChangeFontscaleOverTime1(scale, time)
 {
-    self ChangeFontscaleOverTime(time);
+    if(time > 0)
+        self ChangeFontscaleOverTime(time);
+    
     self.fontScale = scale;
 }
 
@@ -293,6 +351,7 @@ destroyAll(arry)
     keys = GetArrayKeys(arry);
 
     for(a = 0; a < keys.size; a++)
+    {
         if(IsArray(arry[keys[a]]))
         {
             foreach(value in arry[keys[a]])
@@ -300,8 +359,11 @@ destroyAll(arry)
                     value DestroyHud();
         }
         else
+        {
             if(isDefined(arry[keys[a]]))
                 arry[keys[a]] DestroyHud();
+        }
+    }
 }
 
 getName()
@@ -320,6 +382,9 @@ getName()
 
 isInArray(arry, text)
 {
+    if(!isDefined(arry) || !IsArray(arry) || !isDefined(text))
+        return false;
+    
     for(a = 0; a < arry.size; a++)
         if(arry[a] == text)
             return true;
@@ -351,33 +416,52 @@ ArrayReverse(arry)
     return newArray;
 }
 
-ArrayGetClosest(array, point)
+ArrayGetClosest(arry, point)
 {
-    if(!isDefined(array) || !IsArray(array) || !array.size)
+    if(!isDefined(arry) || !IsArray(arry) || !arry.size)
         return;
     
-    for(a = 0; a < array.size; a++)
+    closest = arry[0];
+
+    for(a = 0; a < arry.size; a++)
     {
-        if(!isDefined(array[a]))
+        if(!isDefined(arry[a]))
             continue;
         
-        if(!isDefined(closest) || isDefined(closest) && Closer(point, array[a].origin, closest.origin))
-            closest = array[a];
+        if(!isDefined(closest) || isDefined(closest) && Closer(point, arry[a].origin, closest.origin))
+            closest = arry[a];
     }
 
     return closest;
 }
 
-CorrectNL_BGHeight(string) //Auto-Size Player Info Background Height Based On How Many Strings Are Listed
+RemoveDuplicateEntArray(name)
 {
-    if(!isDefined(string))
+	newarray = [];
+	savearray = [];
+
+	foreach(item in GetEntArray(name, "targetname"))
+	{
+		if(!isInArray(newarray, item.script_noteworthy))
+		{
+			newarray[newarray.size] = item.script_noteworthy;
+			savearray[savearray.size] = item;
+		}
+	}
+
+	return savearray;
+}
+
+CorrectNL_BGHeight(str) //Auto-Size Player Info Background Height Based On How Many Strings Are Listed
+{
+    if(!isDefined(str))
         return;
     
-    if(!IsSubStr(string, "\n"))
+    if(!IsSubStr(str, "\n"))
         return 12;
 
     multiplier = 0;
-    toks = StrTok(string, "\n");
+    toks = StrTok(str, "\n");
 
     if(isDefined(toks) && toks.size)
         for(a = 0; a < toks.size; a++)
@@ -391,37 +475,32 @@ isConsole()
     return level.console;
 }
 
-disconnect()
+CleanString(strn, onlyReplace)
 {
-    ExitLevel(false);
-}
-
-CleanString(string)
-{
-    if(string[0] == ToUpper(string[0]))
-        if(IsSubStr(string, " ") && !IsSubStr(string, "_"))
-            return string;
+    if(strn[0] == ToUpper(strn[0]))
+        if(IsSubStr(strn, " ") && !IsSubStr(strn, "_"))
+            return strn;
     
-    string = StrTok(ToLower(string), "_");
+    strn = StrTok(ToLower(strn), "_");
     str = "";
     
-    for(a = 0; a < string.size; a++)
+    for(a = 0; a < strn.size; a++)
     {
         //List of strings what will be removed from the final string output
-        strings = ["specialty", "zombie", "zm", "t7", "t6", "p7", "zmb", "zod", "ai", "g", "bg", "perk", "player", "weapon", "wpn", "aat", "bgb", "visionset", "equip", "craft", "der", "viewmodel", "mod", "fxanim", "moo", "moon", "zmhd", "fb", "bc", "asc", "vending", "part", "camo", "placeholder"];
+        strings = Array("specialty", "zombie", "zm", "t7", "t6", "p7", "zmb", "zod", "ai", "g", "bg", "perk", "player", "weapon", "wpn", "aat", "bgb", "visionset", "equip", "craft", "der", "viewmodel", "mod", "fxanim", "moo", "moon", "zmhd", "fb", "bc", "asc", "vending", "part", "camo", "placeholder", "zmu", "hat");
         
         //This will replace any '_' found in the string
         replacement = " ";
 
-        if(!isInArray(strings, string[a]))
+        if(!isInArray(strings, strn[a]) || isInArray(strings, strn[a]) && Is_True(onlyReplace))
         {
-            for(b = 0; b < string[a].size; b++)
+            for(b = 0; b < strn[a].size; b++)
                 if(b != 0)
-                    str += string[a][b];
+                    str += strn[a][b];
                 else
-                    str += ToUpper(string[a][b]);
+                    str += ToUpper(strn[a][b]);
             
-            if(a != (string.size - 1))
+            if(a != (strn.size - 1))
                 str += replacement;
         }
     }
@@ -434,23 +513,27 @@ CleanName(name)
     if(!isDefined(name) || name == "")
         return "";
     
-    string = "";
-    invalid = ["^A", "^B", "^F", "^H", "^I", "^0", "^1", "^2", "^3", "^4", "^5", "^6", "^7", "^8", "^9"];
+    str = "";
+    invalid = Array("^A", "^B", "^F", "^H", "^I", "^0", "^1", "^2", "^3", "^4", "^5", "^6", "^7", "^8", "^9");
 
     for(a = 0; a < name.size; a++)
     {
-        if(isInArray(invalid, name[a] + name[(a + 1)]))
+        if(a < (name.size - 1))
         {
-            a = (a + 2);
+            if(isInArray(invalid, name[a] + name[(a + 1)]))
+            {
+                a += 2;
 
-            if(a >= name.size)
-                break;
+                if(a >= name.size)
+                    break;
+            }
         }
         
-        string += name[a];
+        if(isDefined(name[a]) && a < name.size)
+            str += name[a];
     }
     
-    return string;
+    return str;
 }
 
 CalcDistance(speed, origin, moveto)
@@ -468,7 +551,10 @@ AngleNormalize360(angle)
     v3 = Floor((angle * 0.0027777778));
     result = (((angle * 0.0027777778) - v3) * 360.0);
 
-    v2 = ((result - 360.0) < 0.0) ? (((angle * 0.0027777778) - v3) * 360.0) : (result - 360.0);
+    v2 = (result - 360.0);
+
+    if((result - 360.0) < 0.0)
+    	v2 = (((angle * 0.0027777778) - v3) * 360.0);
 
     return v2;
 }
@@ -619,10 +705,12 @@ FadingTextEffect(text, hud)
     while(isDefined(hud))
     {
         if(isDefined(hud))
-        {
             hud hudFade(0, 1);
+        
+        //There is a wait when hudFade is used. So we need to check to make sure the hud is still defined before trying to change the color
+        
+        if(isDefined(hud))
             hud.color = divideColor(RandomInt(255), RandomInt(255), RandomInt(255));
-        }
         
         wait 0.25;
 
@@ -649,7 +737,7 @@ Keyboard(func, player)
     
     letters = [];
     self.keyboard = [];
-    lettersTok = ["0ANan=", "1BObo.", "2CPcp<", "3DQdq$", "4ERer#", "5FSfs-", "6GTgt{", "7HUhu}", "8IViv@", "9JWjw/", "^KXkx_", "!LYly[", "?MZmz]"];
+    lettersTok = Array("0ANan=", "1BObo.", "2CPcp<", "3DQdq$", "4ERer#", "5FSfs-", "6GTgt{", "7HUhu}", "8IViv@", "9JWjw/", "^KXkx_", "!LYly[", "?MZmz]");
     
     for(a = 0; a < lettersTok.size; a++)
     {
@@ -667,40 +755,72 @@ Keyboard(func, player)
     if(isDefined(self.menuHud["scroller"]))
         self.menuHud["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), 0.1);
     
+    if(self.MenuStyle == "Nautaremake")
+        self.keyboard["scroller"] = self createRectangle("TOP", "CENTER", self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 9), 17, 18, self.MainColor, 3, 1, "white");
+    
     cursY = 0;
     cursX = 0;
     stringLimit = 32;
-    string = "";
     multiplier = 14.5;
+    string = "";
 
     self SetMenuInstructions("[{+actionslot 1}]/[{+actionslot 2}]/[{+actionslot 3}]/[{+actionslot 4}] - Scroll\n[{+activate}] - Select\n[{+frag}] - Add Space\n[{+gostand}] - Confirm\n[{+melee}] - Backspace/Cancel");
-
     wait 0.5;
     
     while(1)
     {
         if(self ActionSlotOneButtonPressed() || self ActionSlotTwoButtonPressed())
         {
-            cursY += self ActionSlotTwoButtonPressed() ? 1 : -1;
+        	if(self ActionSlotOneButtonPressed())
+        		cursY += -1;
+            else
+                cursY += 1;
 
             if(cursY < 0 || cursY > 5)
-                cursY = (cursY < 0) ? 5 : 0;
+            {
+            	if(cursY < 0)
+            		cursY = 5;
+        		else
+        			cursY = 0;
+            }
             
             if(isDefined(self.menuHud["scroller"]))
-                self.menuHud["scroller"] hudMoveY((self.keyboard["keys0"].y - 8) + (multiplier * cursY), 0.05);
+                self.menuHud["scroller"] thread hudMoveY((self.keyboard["keys0"].y - 8) + (multiplier * cursY), 0.05);
+            
+            if(isDefined(self.keyboard["scroller"]))
+                self.keyboard["scroller"] hudMoveY((self.keyboard["keys0"].y - 9) + (multiplier * cursY), 0.05);
+            else
+                wait 0.05;
 
             wait 0.025;
         }
         else if(self ActionSlotThreeButtonPressed() || self ActionSlotFourButtonPressed())
         {
-            fixDir = self GamepadUsedLast() ? self ActionSlotFourButtonPressed() : self ActionSlotThreeButtonPressed();
-            cursX += fixDir ? 1 : -1;
+        	if(self GamepadUsedLast())
+        		fixDir = self ActionSlotFourButtonPressed();
+			else
+				fixDir = self ActionSlotThreeButtonPressed();
+
+			if(fixDir)
+				cursX += 1;
+			else
+				cursX += -1;
 
             if(cursX < 0 || cursX > 12)
-                cursX = (cursX < 0) ? 12 : 0;
+            {
+            	if(cursX < 0)
+            		cursX = 12;
+        		else
+        			cursX = 0;
+            }
             
             if(isDefined(self.menuHud["scroller"]))
-                self.menuHud["scroller"] hudMoveX(self.keyboard["keys0"].x + (15 * cursX), 0.05);
+                self.menuHud["scroller"] thread hudMoveX(self.keyboard["keys0"].x + (15 * cursX), 0.05);
+            
+            if(isDefined(self.keyboard["scroller"]))
+                self.keyboard["scroller"] hudMoveX(self.keyboard["keys0"].x + (15 * cursX), 0.05);
+            else
+                wait 0.05;
 
             wait 0.025;
         }
@@ -784,7 +904,7 @@ NumberPad(func, player, param)
     self.inKeyboard = true;
 
     if(isDefined(self.menuHud["scroller"]))
-        self.menuHud["scroller"] hudScaleOverTime(0.1, 15, 15);
+        self.menuHud["scroller"] hudScaleOverTime(0.1, 14, 14);
 
     self SoftLockMenu(50);
     
@@ -800,28 +920,47 @@ NumberPad(func, player, param)
         self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menuX - (self.MenuWidth / 2)) + ((self.MenuWidth / 2) / 3) + 10 + (a * 15), (self.menuY + 35), 1, (1, 1, 1));
     
     if(isDefined(self.menuHud["scroller"]))
-        self.menuHud["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), 0.1);
+        self.menuHud["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 7), 0.1);
+    
+    if(self.MenuStyle == "Nautaremake")
+        self.keyboard["scroller"] = self createRectangle("TOP", "CENTER", self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), 15, 16, self.MainColor, 3, 1, "white");
     
     cursX = 0;
     stringLimit = 10;
     string = "";
 
     self SetMenuInstructions("[{+actionslot 3}]/[{+actionslot 4}] - Scroll\n[{+activate}] - Select\n[{+gostand}] - Confirm\n[{+melee}] - Backspace/Cancel");
-
     wait 0.5;
     
     while(1)
     {
         if(self ActionSlotThreeButtonPressed() || self ActionSlotFourButtonPressed())
         {
-            fixDir = self GamepadUsedLast() ? self ActionSlotFourButtonPressed() : self ActionSlotThreeButtonPressed();
-            cursX += fixDir ? 1 : -1;
+        	if(self GamepadUsedLast())
+        		fixDir = self ActionSlotFourButtonPressed();
+    		else
+    			fixDir = self ActionSlotThreeButtonPressed();
+            
+            if(fixDir)
+            	cursX += 1;
+        	else
+        		cursX += -1;
             
             if(cursX < 0 || cursX > 9)
-                cursX = (cursX < 0) ? 9 : 0;
+            {
+            	if(cursX < 0)
+            		cursX = 9;
+        		else
+        			cursX = 0;
+            }
 
             if(isDefined(self.menuHud["scroller"]))
-                self.menuHud["scroller"] hudMoveX(self.keyboard["keys0"].x + (15 * cursX), 0.05);
+                self.menuHud["scroller"] thread hudMoveX(self.keyboard["keys0"].x + (15 * cursX), 0.05);
+            
+            if(isDefined(self.keyboard["scroller"]))
+                self.keyboard["scroller"] hudMoveX(self.keyboard["keys0"].x + (15 * cursX), 0.05);
+            else
+                wait 0.05;
 
             wait 0.025;
         }
@@ -897,11 +1036,16 @@ RGBFade()
         {
             while((level.RGBFadeColor[a] * 255) < 255)
             {
-                RGBValues[a] = ((level.RGBFadeColor[a] * 255) + 3);
+                RGBValues[a] = ((level.RGBFadeColor[a] * 255) + 1);
 
                 for(b = 0; b < 3; b++)
                     if(b != a)
-                        RGBValues[b] = (level.RGBFadeColor[b] > 0) ? ((level.RGBFadeColor[b] * 255) - 3) : 0;
+                    {
+                    	if(level.RGBFadeColor[b] > 0)
+                    		RGBValues[b] = ((level.RGBFadeColor[b] * 255) - 1);
+                		else
+                			RGBValues[b] = 0;
+                    }
                 
                 level.RGBFadeColor = divideColor(RGBValues[0], RGBValues[1], RGBValues[2]);
 
@@ -1043,10 +1187,19 @@ ReturnMapName(map)
 
 TriggerUniTrigger(struct, trigger_notify, time) //For Basic Uni Triggers
 {
+    if(!isDefined(struct) || !isDefined(trigger_notify))
+        return;
+
+    if(!isDefined(time))
+        time = 0.01;
+
     if(IsArray(struct))
     {
         foreach(index, entity in struct)
         {
+            if(!isDefined(entity))
+                continue;
+            
             entity notify(trigger_notify);
             wait time;
         }
@@ -1055,6 +1208,89 @@ TriggerUniTrigger(struct, trigger_notify, time) //For Basic Uni Triggers
     {
         trigger = struct;
         trigger notify(trigger_notify);
+    }
+}
+
+disconnect()
+{
+    ExitLevel(false);
+}
+
+DisablePlayerInfo()
+{
+    level.DisablePlayerInfo = !Is_True(level.DisablePlayerInfo);
+}
+
+IncludeIPInfo()
+{
+    level.IncludeIPInfo = !Is_True(level.IncludeIPInfo);
+}
+
+SetMapSpawn(plyer, type)
+{
+    SetDvar(level.script + "Spawn" + (Int(StrTok(plyer, "Player ")[0]) - 1), (type == "Set") ? self.origin : "");
+}
+
+AntiEndGame()
+{
+    if(!Is_True(level.AntiEndGame))
+    {
+        level.AntiEndGame = true;
+
+        foreach(player in level.players)
+        {
+            if(Is_True(player.AntiEndGameHandler))
+                continue;
+            
+            player.AntiEndGameHandler = true;
+            player thread WatchForEndRound();
+        }
+    }
+    else
+    {
+        level notify("EndAntiEndGame");
+
+        level.hostforcedend = false;
+        level.forcedend = false;
+        level.gameended = false;
+
+        foreach(player in level.players)
+            player.AntiEndGameHandler = false;
+    }
+}
+
+WatchForEndRound()
+{
+    self endon("disconnect");
+    level endon("EndAntiEndGame");
+
+    while(Is_True(level.AntiEndGame))
+    {
+        if(Is_True(level.hostforcedend))
+            level.hostforcedend = false;
+        
+        if(Is_True(level.forcedend))
+            level.forcedend = false;
+        
+        if(Is_True(level.gameended))
+            level.gameended = false;
+
+        self waittill("menuresponse", menu, response);
+
+        if(response != "endround")
+            continue;
+        
+        if(self IsHost())
+            break;
+
+        level.hostforcedend = true;
+        level.forcedend = true;
+        level.gameended = true;
+
+        self iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7Blocked End Game Response");
+        bot::get_host_player() DebugiPrint("^1" + ToUpper(level.menuName) + ": ^2" + CleanName(self getName()) + " ^7Tried To End The Game");
+
+        wait 0.5; //buffer
     }
 }
 
@@ -1105,19 +1341,22 @@ ForceHost()
 
 GSpawnProtection()
 {
-    level.GSpawnProtection = isDefined(level.GSpawnProtection) ? undefined : true;
-    
-    if(isDefined(level.GSpawnProtection))
+    if(!Is_True(level.GSpawnProtection))
     {
-        while(isDefined(level.GSpawnProtection))
+    	level.GSpawnProtection = true;
+
+        while(Is_True(level.GSpawnProtection))
         {
             entityCount = GetEntArray().size;
-            ents = ArrayReverse(ArrayCombine(GetEntArray("script_brushmodel", "classname"), GetEntArray("script_model", "classname"), 0, 1));
+            ents = ArrayReverse(GetEntArray("script_model", "classname"));
             GSpawnMax = ReturnMapGSpawnLimit();
 
             if(entityCount > (GSpawnMax - 20))
             {
-                amount = (entityCount >= GSpawnMax) ? 30 : 5;
+            	if(entityCount >= GSpawnMax)
+            		amount = 30;
+        		else
+        			amount = 5;
 
                 for(a = 0; a < amount; a++)
                     if(isDefined(ents[a]))
@@ -1129,6 +1368,8 @@ GSpawnProtection()
             wait 0.01;
         }
     }
+    else
+    	level.GSpawnProtection = false;
 }
 
 ReturnMapGSpawnLimit()
@@ -1161,22 +1402,56 @@ ReturnMapGSpawnLimit()
 
 TrisLines()
 {
-    SetDvar("r_showTris", (GetDvarString("r_showTris") == "1") ? "0" : "1");
+	value = GetDvarString("r_showTris");
+
+	if(isDefined(value) && value == "1")
+		newValue = "0";
+	else
+		newValue = "1";
+
+    SetDvar("r_showTris", newValue);
 }
 
 DevGUIInfo()
 {
-    SetDvar("ui_lobbyDebugVis", (GetDvarString("ui_lobbyDebugVis") == "1") ? "0" : "1");
+	value = GetDvarString("ui_lobbyDebugVis");
+
+	if(isDefined(value) && value == "1")
+		newValue = "0";
+	else
+		newValue = "1";
+
+    SetDvar("ui_lobbyDebugVis", newValue);
 }
 
 DisableFog()
 {
-    SetDvar("r_fog", (GetDvarString("r_fog") == "0") ? "1" : "0");
+	value = GetDvarString("r_fog");
+
+	if(isDefined(value) && value == "1")
+		newValue = "0";
+	else
+		newValue = "1";
+
+    SetDvar("r_fog", newValue);
 }
 
 ServerCheats()
 {
-    SetDvar("sv_cheats", (GetDvarString("sv_cheats") == "0") ? "1" : "0");
+	value = GetDvarString("sv_cheats");
+
+	if(isDefined(value) && value == "1")
+		newValue = "0";
+	else
+		newValue = "1";
+
+    SetDvar("sv_cheats", newValue);
+}
+
+SetDeveloperMode()
+{
+    SetDvar("developer", (GetDvarInt("developer") == 2) ? 0 : 2);
+    self iPrintlnBold("^1NOTE: ^7You Must Restart The Match For This To Take Effect");
 }
 
 GetGroundPos(position)
@@ -1186,7 +1461,7 @@ GetGroundPos(position)
 
 MenuCredits()
 {
-    if(isDefined(self.CreditsPlaying))
+    if(Is_True(self.CreditsPlaying))
         return;
     self.CreditsPlaying = true;
     
@@ -1197,40 +1472,12 @@ MenuCredits()
     
     self SoftLockMenu(220);
     
-    MenuTextStartCredits = [
-    "^1" + level.menuName,
-    "The Biggest & Best Menu For ^1Black Ops 3 Zombies",
-    "Developed By: ^1CF4_99",
-    "Start Date: ^16/10/21",
-    "Version: ^1" + level.menuVersion,
-    " ",
-    "^1Extinct",
-    "Ideas",
-    "Suggestions",
-    "Constructive Criticism",
-    "His Spec-Nade",
-    " ",
-    "^1ItsFebiven",
-    "Some Ideas And Suggestions",
-    "Nautaremake Style",
-    " ",
-    "^1CraftyCritter",
-    "BO3 GSC Compiler",
-    " ",
-    "^1Joel",
-    "Bug Reporting",
-    "Testing",
-    "Breaking Shit",
-    " ",
-    "^1Thanks For Choosing " + level.menuName,
-    "YouTube: ^1CF4_99",
-    "Discord: ^1cf4_99"
-    ];
+    MenuTextStartCredits = Array("^1" + level.menuName, "The Biggest & Best Menu For ^1Black Ops 3 Zombies", "Developed By: ^1CF4_99", "Start Date: ^16/10/21", "Version: ^1" + level.menuVersion, " ", "^1Extinct", "Ideas", "Suggestions", "Constructive Criticism", "His Spec-Nade", " ", "^1ItsFebiven", "Some Ideas And Suggestions", "Nautaremake Style", " ", "^1CraftyCritter", "BO3 GSC Compiler", " ", "^1Joel", "Bug Reporting", "Testing", "Breaking Shit", " ", "^1Thanks For Choosing " + level.menuName, "YouTube: ^1CF4_99", "Discord: ^1cf4_99");
     
     self thread MenuCreditsStart(MenuTextStartCredits);
     self SetMenuInstructions("[{+melee}] - Exit Menu Credits");
     
-    while(isDefined(self.CreditsPlaying))
+    while(Is_True(self.CreditsPlaying))
     {
         if(self MeleeButtonPressed())
             break;
@@ -1238,7 +1485,7 @@ MenuCredits()
         wait 0.05;
     }
     
-    self.CreditsPlaying = undefined;
+    self.CreditsPlaying = false;
     self notify("EndMenuCredits");
     self SetMenuInstructions();
     self SoftUnlockMenu();
@@ -1257,7 +1504,17 @@ MenuCreditsStart(creditArray)
     {
         if(creditArray[a] != " ")
         {
-            self.credits["MenuCreditsHud"][a] = self createText("objective", (creditArray[a][0] == "^" && creditArray[a][1] == "1") ? 1.4 : 1.1, 3, "", "CENTER", "CENTER", self.menuX, (self.MenuStyle == "Zodiac") ? (self.menuY + 220) : (self.menuY + (self.menuHud["background"].height - 8)), 0, (1, 1, 1));
+        	fontScale = 1.1;
+
+        	if(creditArray[a][0] == "^" && creditArray[a][1] == "1")
+        		fontScale = 1.4;
+
+    		hudY = (self.menuY + (self.menuHud["background"].height - 8));
+
+    		if(self.MenuStyle == "Zodiac")
+    			hudY = (self.menuY + 220);
+
+            self.credits["MenuCreditsHud"][a] = self createText("objective", fontScale, 3, "", "CENTER", "CENTER", self.menuX, hudY, 0, (1, 1, 1));
             self thread CreditsFadeIn(self.credits["MenuCreditsHud"][a], creditArray[a], moveTime, 0.5);
             
             wait (moveTime / 12);
@@ -1267,7 +1524,7 @@ MenuCreditsStart(creditArray)
     }
     
     wait moveTime;
-    self.CreditsPlaying = undefined;
+    self.CreditsPlaying = false;
 }
 
 CreditsFadeIn(hud, text, moveTime, fadeTime)
@@ -1350,34 +1607,47 @@ iPrintMessageDestroy(index)
 /*
     Built To Auto-Size The Width Of A Shader Based On The String Length
     Supports The Use Of \n and button codes(when \n is used, it will scale based on the longest string line)
-    Does Not Support Auto-Adjustment Based On Fontscale
     Pass The Extra Scaling As A Parameter To Adjust To The Hud Fontscale(Default is 7 if no parameter is passed)
+
+    This will auto-adjust to changes in fontscale
+    It will only auto-adjust to the fontscale change if the fontscale is greater than 1.1
+    If it is less than, or equal to 1.1, then it will just base it off of 1.1 by default
 */
 
 GetTextWidth3arc(player, widthScale)
 {
     if(!isDefined(widthScale))
-        widthScale = player GamePadUsedLast() ? 5 : 6; //Scaling for keyboard & mouse will be a little more than controller
+    {
+        widthScale = 7;
+
+        if(isDefined(player) && IsPlayer(player) && player GamePadUsedLast())
+            widthScale = 5;
+    }
     
     width = 1;
     
     if(!isDefined(self.text) || self.text == "")
         return width;
     
+    if(!IsSubStr(self.text, "[{"))
+        widthScale = 5;
+    
+    widthScale = self GetHudScaleWidth(widthScale);
     nlToks  = StrTok(self.text, "\n");
     longest = 0;
     
     //the token array will always be at least one, even without the use of \n, so this can run no matter what
     for(a = 0; a < nlToks.size; a++)
-        if(PurgeStringForWidth(nlToks[a]).size >= PurgeStringForWidth(nlToks[longest]).size)
+        if(StripStringButtons(nlToks[a]).size >= StripStringButtons(nlToks[longest]).size)
             longest = a;
     
-    string = PurgeStringForWidth(nlToks[longest]);
+    string = StripStringButtons(nlToks[longest]);
     
     for(a = 0; a < string.size; a++)
         width += widthScale;
     
     buttonToks = StrTok(nlToks[longest], "[{");
+    compilerfix = "}"; //NOT USED -- The mod tools compiler is fucked, and when a curly brace is used in a string('{') it needs to have an open and close brace
     
     if(buttonToks.size > 1)
         width += (widthScale * buttonToks.size);
@@ -1388,58 +1658,75 @@ GetTextWidth3arc(player, widthScale)
     return width;
 }
 
-PurgeStringForWidth(string)
+GetHudScaleWidth(scale)
 {
-    if(!isDefined(string) || !IsSubStr(string, "[{"))
-        return string;
+    if(self.fontscale <= 1.1)
+        return scale;
+    
+    diff = self.fontscale - 1.1;
+    diffString = "" + diff;
+
+    toks = StrTok(diffString, ".");
+    inc = Int(Int(toks[1]) / 2);
+
+    return scale + inc;
+}
+
+StripStringButtons(str)
+{
+    if(!isDefined(str) || !IsSubStr(str, "[{") && !IsSubStr(str, "}]"))
+        return str;
     
     newString = "";
     
-    for(a = 0; a < string.size; a++)
+    for(a = 0; a < str.size; a++)
     {
-        if(string[a] == "[" && string[(a + 1)] == "{")
+        if(str[a] == "[" && str[(a + 1)] == "{")
         {
-            for(b = a; b < string.size; b++)
+            for(b = a; b < str.size; b++)
             {
-                if(string[b] == "}" && string[(b + 1)] == "]")
+                if(str[b] == "}" && str[(b + 1)] == "]")
                 {
-                    a = (b + 2);
+                    a = (b + 1);
                     break;
                 }
             }
         }
 
-        invalid = ["^A", "^B", "^F", "^H", "^I", "^0", "^1", "^2", "^3", "^4", "^5", "^6", "^7", "^8", "^9"]; //these chars won't actually be displayed, so they won't affect the scale
-
-        if(isInArray(invalid, string[a] + string[(a + 1)]))
-            a += 2;
-        
-        invalid = ["[", "]", ".", ",", "'", "!", "{", "}", "|" "-"]; //these chars really don't need to count towards the width
-        
-        if(isInArray(invalid, string[a]))
-            continue;
-
-        if(a >= string.size)
+        if(a >= str.size)
             break;
         
-        newString += string[a];
-    }
+        invalid = Array("^A", "^B", "^F", "^H", "^I", "^0", "^1", "^2", "^3", "^4", "^5", "^6", "^7", "^8", "^9"); //these chars won't actually be displayed, so they don't need to count towards the scale
 
+        if((a + 1) < str.size && isInArray(invalid, str[a] + str[(a + 1)]))
+            a += 2;
+        
+        if(a >= str.size)
+            break;
+        
+        invalid = Array("[", "]", ".", ",", "'", "!", "{", "}", "|"); //these chars really don't need to count towards the width due to them not taking up as much space
+        
+        if(isInArray(invalid, str[a]))
+            continue;
+        
+        newString += str[a];
+    }
+    
     return newString;
 }
 
 //Decided to remake GetDvarVector
-GetDvarVector1(var)
+GetDvarVector1(vecVar)
 {
     dvar = "";
-    var = GetDvarString(var);
+    vecVar = GetDvarString(vecVar);
 
-    if(!isDefined(var) || var == "")
+    if(!isDefined(vecVar) || vecVar == "")
         return (0, 0, 0);
 
-    for(a = 1; a < var.size; a++)
-        if(var[a] != " " && var[a] != ")")
-            dvar += var[a];
+    for(a = 1; a < vecVar.size; a++)
+        if(vecVar[a] != " " && vecVar[a] != ")")
+            dvar += vecVar[a];
     
     vals = [];
     toks = StrTok(dvar, ",");
@@ -1546,4 +1833,12 @@ GetBannedPlayers()
     }
     
     return players;
+}
+
+Is_True(boolVar)
+{
+    if(!isDefined(boolVar) || !boolVar)
+        return false;
+    
+    return true;
 }

@@ -14,15 +14,15 @@ ShangHideAndSeekSong()
 {
     if(level flag::get("snd_zhdegg_completed"))
         return self iPrintlnBold("^1ERROR: ^7Samantha's Hide & Seek Has Already Been Completed");
-    
-    if(isDefined(level.StartedSamanthaSong))
+
+    if(Is_True(level.StartedSamanthaSong))
         return self iPrintlnBold("^1ERROR: ^7Samantha's Hide & Seek Has Already Been Started");
 
     level.StartedSamanthaSong = true;
-    
+
     curs = self getCursor();
     menu = self getCurrent();
-    
+
     gongs = GetEntArray("sq_gong", "targetname");
 
     for(a = 0; a < gongs.size; a++)
@@ -30,7 +30,6 @@ ShangHideAndSeekSong()
             gongs[a] notify("triggered", self);
 
     wait 0.1;
-    
     pans = GetEntArray("zhdsnd_pans", "targetname");
 
     for(a = 0; a < pans.size; a++) //Magic Bullet Has To Be The Starting Pistol

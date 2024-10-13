@@ -1,12 +1,3 @@
-/*
-	Most of the scripts in here came straight from the BO3 gsc lib.
-	I left mostly everything the same, aside from some minor tweaks to the spawn animations/locations.
-	The reason for the tweaks was to speed up the spawn rate, along with removing some the spawn limitations that come with some of the AI.
-
-	Also, for any of you that are wondering why I had to add all of the spawning functions for each and every AI instead of just doing far calls(ex. zm_ai_dogs::get_favorite_enemy())
-	it is because not all of the AI functions needed are able to be used on all maps, hence why some menus are only able to be played on certain maps.
-*/
-
 AISpawnLocation(location)
 {
     self.AISpawnLocation = location;
@@ -29,10 +20,12 @@ GetAISpawnLocation()
 
 ServerSpawnAI(amount, spawner)
 {
+    if(!isDefined(spawner) || !IsFunctionPtr((spawner)))
+        return;
+    
 	for(a = 0; a < amount; a++)
 	{
 		self thread [[ spawner ]]();
-		
 		wait 0.1;
 	}
 }
@@ -138,7 +131,10 @@ dog_spawn_fx(ai, ent)
 {
 	ai endon("death");
 
-    target = (self.AISpawnLocation == "Crosshairs" || self.AISpawnLocation == "Self") ? self GetAISpawnLocation() : ent.origin;
+    if(self.AISpawnLocation == "Crosshairs" || self.AISpawnLocation == "Self")
+        target = self GetAISpawnLocation();
+    else
+        target = ent.origin;
     
 	ai SetFreeCameraLockOnAllowed(0);
 	PlayFX(level._effect["lightning_dog_spawn"], target);
@@ -253,11 +249,21 @@ ServerSpawnMargwa()
 
 	if(surface == "none" || surface == "default")
 		return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
-	
-	s_location = (self.AISpawnLocation == "Crosshairs") ? self TraceBullet() : self.origin;
+    
+    if(self.AISpawnLocation == "Crosshairs")
+        s_location = self TraceBullet();
+    else
+        s_location = self.origin;
+
+    if(!isDefined(level.var_b398aafa) || !IsArray(level.var_b398aafa))
+        return;
 
 	level.var_b398aafa[0].script_forcespawn = 1;
 	ai = zombie_utility::spawn_zombie(level.var_b398aafa[0], "margwa", s_location);
+
+    if(!isDefined(ai))
+        return;
+    
 	ai DisableAimAssist();
 	ai.actor_damage_func = ai.overrideactordamage;
 	ai.canDamage = 0;
@@ -287,13 +293,16 @@ function_551e32b4()
 
 function_8d578a58()
 {
+    if(!isDefined(self))
+        return;
+    
 	self waittill("death", attacker, mod, weapon);
 
 	foreach(player in level.players)
-		if(player.am_i_valid && (!isDefined(level.var_1f6ca9c8) && level.var_1f6ca9c8) && (!isDefined(self.var_2d5d7413) && self.var_2d5d7413))
+		if(isDefined(player.am_i_valid) && player.am_i_valid && (!(isDefined(level.var_1f6ca9c8) && level.var_1f6ca9c8)) && (!(isDefined(self.var_2d5d7413) && self.var_2d5d7413)))
 			scoreevents::processScoreEvent("kill_margwa", player, undefined, undefined);
 	
-	level notify("hash_1a2d33d7");
+	level notify(#"hash_1a2d33d7");
 	[[ level.var_7cef68dc ]]();
 }
 
@@ -342,7 +351,11 @@ ServerSpawnWasp()
 	}
 
 	//SOE and Revelations have different wasp spawner variables
-	spawner = isDefined(level.var_c200ab6) ? level.var_c200ab6[0] : level.wasp_spawners[0];
+    if(isDefined(level.var_c200ab6))
+        spawner = level.var_c200ab6[0];
+    else
+        spawner = level.wasp_spawners[0];
+	
 	ai = zombie_utility::spawn_zombie(spawner);
 	v_spawn_origin = spawn_point.origin;
 
@@ -511,7 +524,7 @@ wasp_spawn_init(ai, origin, should_spawn_fx)
 	ai thread zombie_setup_attack_properties_wasp();
 
 	if(isDefined(level._wasp_death_cb))
-		ai callback::add_callback("hash_acb66515", level._wasp_death_cb);
+		ai callback::add_callback(#"hash_acb66515", level._wasp_death_cb);
 	
 	ai SetVisibleToAll();
 	ai.ignoreme = 0;
@@ -584,8 +597,11 @@ ServerSpawnCivilProtector()
 
 	if(surface == "none" || surface == "default")
 		return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
-	
-	v_ground_position = (self.AISpawnLocation == "Crosshairs") ? self TraceBullet() : self.origin;
+    
+    if(self.AISpawnLocation == "Crosshairs")
+        v_ground_position = self TraceBullet();
+    else
+        v_ground_position = self.origin;
 
 	var_36e9b69a = v_ground_position + VectorScale((0, 0, 1), 650);
 	level thread function_70541dc1(v_ground_position);
@@ -612,7 +628,7 @@ ServerSpawnCivilProtector()
 		level.ai_robot ForceTeleport(var_36e9b69a);
 		level.ai_robot thread function_ab4d9ece(v_ground_position);
 		level.ai_robot scene::play("cin_zod_robot_companion_entrance");
-		level notify("hash_10a36fa2");
+		level notify(#"hash_10a36fa2");
 		level.ai_robot.companion_anchor_point = v_ground_position;
 	}
 
@@ -657,7 +673,7 @@ function_70541dc1(v_ground_position)
 	var_b47822ca = Spawn("script_model", v_ground_position);
 	var_b47822ca SetModel("tag_origin");
 	PlayFXOnTag(level._effect["robot_ground_spawn"], var_b47822ca, "tag_origin");
-	level waittill("hash_10a36fa2");
+	level waittill(#"hash_10a36fa2");
 	var_b47822ca delete();
 }
 
@@ -686,7 +702,7 @@ robot_sky_trail()
 	var_8d888091 SetModel("tag_origin");
 	PlayFXOnTag(level._effect["robot_sky_trail"], var_8d888091, "tag_origin");
 	var_8d888091 LinkTo(self);
-	level waittill("hash_10a36fa2");
+	level waittill(#"hash_10a36fa2");
 	var_8d888091 delete();
 }
 
@@ -773,7 +789,7 @@ function_677061ac()
 
 function_490cbdf5()
 {
-	level endon("hash_223edfde");
+	level endon(#"hash_223edfde");
 	wait 120;
 }
 
@@ -845,6 +861,7 @@ ServerSpawnRaps()
 		ai.favoriteenemy = favorite_enemy;
 		ai.favoriteenemy.hunted_by++;
 		s_spawn_loc thread raps_spawn_fx(ai, s_spawn_loc);
+        level.zombie_total--;
 	}
 }
 
@@ -885,9 +902,29 @@ raps_calculate_spawn_position(favorite_enemy)
 
 	if(!isDefined(position))
 		position = favorite_enemy.origin;
-	
-	n_raps_spawn_dist_min = 800;
-	n_raps_spawn_dist_max = 1200;
+    
+    switch(level.players.size)
+    {
+        case 1:
+            n_raps_spawn_dist_min = 450;
+            n_raps_spawn_dist_max = 900;
+            break;
+        
+        case 2:
+            n_raps_spawn_dist_min = 450;
+            n_raps_spawn_dist_max = 850;
+            break;
+        
+        case 3:
+            n_raps_spawn_dist_min = 700;
+            n_raps_spawn_dist_max = 1000;
+            break;
+        
+        case 4:
+            n_raps_spawn_dist_min = 800;
+            n_raps_spawn_dist_max = 1200;
+            break;
+    }
 
 	query_result = PositionQuery_Source_Navigation(position, n_raps_spawn_dist_min, n_raps_spawn_dist_max, 200, 32, 16);
 
@@ -936,19 +973,32 @@ raps_spawn_fx(ai, ent)
 
 	portal_fx_location = Spawn("script_model", pos);
 	portal_fx_location SetModel("tag_origin");
+
+    if(!isDefined(level._effect["raps_portal"]))
+        level._effect["raps_portal"] = "zombie/fx_meatball_portal_sky_zod_zmb";
+    
 	PlayFXOnTag(level._effect["raps_portal"], portal_fx_location, "tag_origin");
 	ground_tell_location = Spawn("script_model", raps_impact_location);
 	ground_tell_location SetModel("tag_origin");
+
+    if(!isDefined(level._effect["raps_ground_spawn"]))
+        level._effect["raps_ground_spawn"] = "zombie/fx_meatball_impact_ground_tell_zod_zmb";
+    
 	PlayFXOnTag(level._effect["raps_ground_spawn"], ground_tell_location, "tag_origin");
 	ground_tell_location PlaySound("zmb_meatball_spawn_tell");
 	PlaySoundAtPosition("zmb_meatball_spawn_rise", pos);
 	ai thread cleanup_meteor_fx(portal_fx_location, ground_tell_location);
 	wait 0.5;
+    
 	raps_meteor = Spawn("script_model", pos);
 	model = ai.model;
 	raps_meteor SetModel(model);
 	raps_meteor.angles = angles;
 	raps_meteor PlayLoopSound("zmb_meatball_spawn_loop", 0.25);
+
+    if(!isDefined(level._effect["raps_meteor_fire"]))
+        level._effect["raps_meteor_fire"] = "zombie/fx_meatball_trail_sky_zod_zmb";
+    
 	PlayFXOnTag(level._effect["raps_meteor_fire"], raps_meteor, "tag_origin");
 	fall_dist = Sqrt(DistanceSquared(pos, raps_impact_location));
 	fall_time = fall_dist / 720;
@@ -969,6 +1019,10 @@ raps_spawn_fx(ai, ent)
 	ai.origin = raps_impact_location;
 	ai.angles = angles;
 	ai Show();
+
+    if(!isDefined(level._effect["raps_impact"]))
+        level._effect["raps_impact"] = "zombie/fx_meatball_impact_ground_zod_zmb";
+    
 	PlayFX(level._effect["raps_impact"], raps_impact_location);
 	PlaySoundAtPosition("zmb_meatball_spawn_impact", raps_impact_location);
 	Earthquake(0.3, 0.75, raps_impact_location, 512);
@@ -1021,7 +1075,11 @@ ServerSpawnMechz()
 		return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
 	
 	flyin = 0;
-	s_location = (self.AISpawnLocation == "Crosshairs") ? self TraceBullet() : self.origin;
+
+    if(self.AISpawnLocation == "Crosshairs")
+        s_location = self TraceBullet();
+    else
+        s_location = self.origin;
 
 	if(isDefined(level.var_7f2a926d))
 		[[ level.var_7f2a926d ]]();
@@ -1052,8 +1110,6 @@ ServerSpawnMechz()
 		v_dir = VectorNormalize(v_dir);
 		v_angles = VectorToAngles(v_dir);
 		var_89f898ad = zm_utility::flat_angle(v_angles);
-		var_6ea4ef96 = s_location;
-		queryresult = PositionQuery_Source_Navigation(var_6ea4ef96.origin, 0, 32, 20, 4);
 
 		v_ground_position = s_location;
 		var_1750e965 = v_ground_position;
@@ -1095,7 +1151,7 @@ function_ef1ba7e5()
 
 function_949a3fdf()
 {
-	self waittill("hash_46c1e51d");
+	self waittill(#"hash_46c1e51d");
 
 	v_origin = self.origin;
 	a_ai = GetAISpeciesArray(level.zombie_team);
@@ -1119,7 +1175,10 @@ function_b03abc02(inflictor, attacker, damage, dflags, mod, weapon, point, dir, 
 {
 	if(isDefined(attacker) && IsPlayer(attacker))
 	{
-		damage_type = zm_spawner::player_using_hi_score_weapon(attacker) ? "damage" : "damage_light";
+        if(zm_spawner::player_using_hi_score_weapon(attacker))
+            damage_type = "damage";
+        else
+            damage_type = "damage_light";
 
 		if(!(isDefined(self.no_damage_points) && self.no_damage_points))
 			attacker zm_score::player_add_points(damage_type, mod, hitloc, self.isdog, self.team, weapon);
@@ -1132,6 +1191,9 @@ function_55483494()
 
 	foreach(var_a3a3ed4c, zombie in a_zombies)
 	{
+        if(!isDefined(zombie) || !IsAlive(zombie))
+            continue;
+        
 		dist_sq = DistanceSquared(self.origin, zombie.origin);
 
 		if(zombie function_10d36217(self) && dist_sq <= 12544)
@@ -1222,7 +1284,8 @@ function_c441eaba(var_678a2319)
 	var_b54110bd = 2304;
 	var_f0dad551 = 9216;
 	var_44615973 = 2250000;
-	self waittill("hash_f93797a6");
+
+	self waittill(#"hash_f93797a6");
 	a_zombies = GetAIArchetypeArray("zombie");
 
 	foreach(var_be251cee, e_zombie in a_zombies)
@@ -1272,10 +1335,10 @@ function_c441eaba(var_678a2319)
 function_bbdc1f34(var_678a2319)
 {
 	self endon("death");
-	self endon("hash_f93797a6");
+	self endon(#"hash_f93797a6");
 
-	self waittill("hash_3d18ed4f");
-	var_f0dad551 = 9216;
+	self waittill(#"hash_3d18ed4f");
+	distance = 9216;
 
 	while(1)
 	{
@@ -1285,7 +1348,7 @@ function_bbdc1f34(var_678a2319)
 		{
 			dist_sq = DistanceSquared(player.origin, var_678a2319);
 
-			if(dist_sq <= var_f0dad551)
+			if(dist_sq <= distance)
 				if(!(isDefined(player.is_burning) && player.is_burning) && zombie_utility::is_player_valid(player, 0))
 					player function_3389e2f3(self);
 		}
@@ -1296,7 +1359,7 @@ function_bbdc1f34(var_678a2319)
 		{
 			dist_sq = DistanceSquared(e_zombie.origin, var_678a2319);
 
-			if(dist_sq <= var_f0dad551 && self.var_e05d0be2 != 1)
+			if(dist_sq <= distance && self.var_e05d0be2 != 1)
 			{
 				self function_3efae612(e_zombie);
 				e_zombie function_f4defbc2();
@@ -1368,7 +1431,6 @@ function_f4defbc2()
 function_4aeed0a5(type)
 {
 	a_zombies = function_c50e890f(type);
-
 	return a_zombies.size;
 }
 
@@ -1448,8 +1510,12 @@ ServerSpawnSentinelDrone()
 
 	if(surface == "none" || surface == "default")
 		return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
+    
+    if(self.AISpawnLocation == "Crosshairs")
+        s_location = self TraceBullet();
+    else
+        s_location = self.origin;
 	
-	s_location = (self.AISpawnLocation == "Crosshairs") ? self TraceBullet() : self.origin;
 	s_location += (0, 0, 25);
 	ai = function_fded8158(level.var_fda4b3f3[0]);
 
@@ -1850,7 +1916,11 @@ sentinel_getnextmovepositiontactical(b_do_not_chase_enemy)
 	self endon("change_state");
 	self endon("death");
 
-	selfdisttotarget = isDefined(self.sentinel_droneenemy) ? Distance2D(self.origin, self.sentinel_droneenemy.origin) : 0;
+    if(isDefined(self.sentinel_droneenemy))
+        selfdisttotarget = Distance2D(self.origin, self.sentinel_droneenemy.origin);
+    else
+        selfdisttotarget = 0;
+
 	gooddist = 0.5 * sentinel_getengagementdistmin() + sentinel_getengagementdistmax();
 	closedist = 1.2 * gooddist;
 	fardist = 3 * gooddist;
@@ -1984,7 +2054,12 @@ sentinel_getnextmovepositiontactical(b_do_not_chase_enemy)
 			best_point = undefined;
 
 	returndata = [];
-	returndata["origin"] = (isDefined(best_point) ? best_point.origin : undefined);
+
+    if(isDefined(best_point))
+        returndata["origin"] = best_point.origin;
+    else
+        returndata["origin"] = undefined;
+	
 	returndata["centerOnNav"] = queryresult.centeronnav;
 
 	return returndata;
@@ -2214,7 +2289,11 @@ ServerSpawnMangler()
 	if(surface == "none" || surface == "default")
 		return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
 	
-	s_location = (self.AISpawnLocation == "Crosshairs") ? self TraceBullet() : self.origin;
+    if(self.AISpawnLocation == "Crosshairs")
+        s_location = self TraceBullet();
+    else
+        s_location = self.origin;
+	
 	ai = function_665a13cd(level.var_6bca5baa[0]);
 
 	if(isDefined(ai))
@@ -2411,7 +2490,7 @@ function_49e57a3b(var_c79d3f71)
 	var_c79d3f71 ai::set_ignoreall(1);
 	spawn_location = self GetAISpawnLocation();
 	var_c79d3f71 Ghost();
-	var_c79d3f71 util::delay(0.2, "death", ::show);
+	var_c79d3f71 util::delay(0.2, "death", ::Show);
 	var_c79d3f71 util::delay_notify(0.2, "visible", "death");
 	var_c79d3f71.origin = spawn_location;
 	var_c79d3f71 vehicle_ai::set_state("scripted");
@@ -2457,7 +2536,6 @@ function_49e57a3b(var_c79d3f71)
 
 
 //Fury
-
 ServerSpawnFury()
 {
 	s_loc = self GetAISpawnLocation();
@@ -2484,7 +2562,6 @@ ServerSpawnFury()
 		var_33504256 PlaySound("zmb_vocals_fury_spawn");
 
 		wait 1;
-
 		var_33504256.zombie_think_done = 1;
 		
 		return var_33504256;
@@ -2561,10 +2638,13 @@ function_1be68e3f()
 
 
 //Quad Zombie(Nova Gas Zombie)
-
 ServerSpawnNovaZombie()
 {
-	spawn_array = isDefined(level.quad_spawners) ? level.quad_spawners : GetEntArray("quad_zombie_spawner", "script_noteworthy");
+    if(isDefined(level.quad_spawners))
+        spawn_array = level.quad_spawners;
+    else
+        spawn_array = GetEntArray("quad_zombie_spawner", "script_noteworthy");
+    
 	spawn_point = spawn_array[RandomInt(spawn_array.size)];
 	ai = zombie_utility::spawn_zombie(spawn_point);
 	s_loc = self GetAISpawnLocation();
@@ -2643,7 +2723,6 @@ QuadSetup()
 quad_post_death(einflictor, attacker, idamage, smeansofdeath, weapon, vdir, shitloc, psoffsettime)
 {
 	self zm_spawner::zombie_death_animscript();
-
 	return 0;
 }
 

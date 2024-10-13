@@ -1,3 +1,93 @@
+PopulatePlayerOptions(menu, player)
+{
+    switch(menu)
+    {
+        case "Options":
+            submenus = Array("Verification", "Basic Scripts", "Teleport Menu", "Profile Management", "Weaponry", "Bullet Menu", "Fun Scripts", "Model Manipulation", "Aimbot Menu", "Model Attachment", "Malicious Options");
+            
+            self addMenu("[^2" + player.verification + "^7]" + CleanName(player getName()));
+
+                for(a = 0; a < submenus.size; a++)
+                {
+                    if(submenus[a] == "Model Manipulation" && level.isUEM)
+                        self addOpt("Hat Manipulation", ::newMenu, "Hat Manipulation");
+                    
+                    self addOpt(submenus[a], ::newMenu, submenus[a]);
+                }
+
+                self addOpt("Send Message", ::Keyboard, ::MessagePlayer, player);
+                self addOptBool(player.FreezePlayer, "Freeze", ::FreezePlayer, player);
+                self addOpt("Kick", ::KickPlayer, player);
+                self addOpt("Temp Ban", ::BanPlayer, player);
+            break;
+        
+        case "Verification":
+            self addMenu("Verification");
+                self addOpt("Save Verification", ::SavePlayerVerification, player);
+
+                for(a = 1; a < (level.MenuStatus.size - 2); a++)
+                    self addOptBool((player getVerification() == a), level.MenuStatus[a], ::setVerification, a, player, true);
+            break;
+        
+        case "Model Attachment":
+            if(!isDefined(self.playerAttachBone))
+                self.playerAttachBone = "j_head";
+            
+            tags = Array("j_ankle_ri", "j_ankle_le", "pelvis", "j_mainroot", "j_spinelower", "j_spine4", "j_neck", "j_head", "tag_body");
+            
+            self addMenu("Model Attachment");
+                
+                if(isDefined(level.MenuModels) && level.MenuModels.size)
+                {
+                    self addOptSlider("Location", ::PlayerAttachmentBone, tags);
+                    self addOpt("Detach All", ::PlayerDetachModels, player);
+                    self addOpt("");
+
+                    for(a = 0; a < level.MenuModels.size; a++)
+                        if(level.MenuModels[a] != "defaultactor") //Attaching the defaultactor to a player can cause a crash.
+                            self addOpt(CleanString(level.MenuModels[a]), ::PlayerModelAttachment, level.menuModels[a], player);
+                }
+            break;
+        
+        case "Malicious Options":
+            if(!isDefined(player.ShellShockTime))
+                player.ShellShockTime = 1;
+            
+            self addMenu("Malicious Options");
+                self addOpt("Open Pause Menu", ::PlayerOpenPauseMenu, player);
+                self addOpt("Disable Actions", ::newMenu, "Disable Actions");
+                self addOptSlider("Set Stance", ::SetPlayerStance, "Prone;Crouch;Stand", player);
+                self addOpt("Launch", ::LaunchPlayer, player);
+                self addOpt("Mortar Strike", ::MortarStrikePlayer, player);
+
+                if(ReturnMapName(level.script) == "Shadows Of Evil" || ReturnMapName(level.script) == "Origins")
+                    self addOptSlider("Jump Scare", ::JumpScarePlayer, "Sound & Picture;Sound Only", player);
+                
+                self addOptBool(player.AutoDown, "Auto-Down", ::AutoDownPlayer, player);
+                self addOptBool(player.FlashLoop, "Flash Loop", ::FlashLoop, player);
+                self addOptBool(player.SpinPlayer, "Spin Player", ::SpinPlayer, player);
+                self addOptBool(player.BlackScreen, "Black Screen", ::BlackScreenPlayer, player);
+                self addOptBool(player.FakeLag, "Fake Lag", ::FakeLag, player);
+                self addOptBool(self.AttachToPlayer, "Attach Self To Player", ::AttachSelfToPlayer, player);
+                self addOptSlider("Shellshock", ::ApplyShellShock, "Concussion Grenade;Zombie Death;Explosion", player);
+                self addOptIncSlider("Shellshock Time", ::SetShellShockTime, 1, 1, 30, 1, player);
+                self addOptSlider("Show IP", ::ShowPlayerIP, "Self;Player", player);
+                self addOpt("Fake Derank", ::FakeDerank, player);
+                self addOpt("Fake Damage", ::FakeDamagePlayer, player);
+                self addOpt("Crash Game", ::CrashPlayer, player);
+            break;
+        
+        case "Disable Actions":
+            self addMenu("Disable Actions");
+                self addOptBool(player.DisableAiming, "Aiming", ::DisableAiming, player);
+                self addOptBool(player.DisableJumping, "Jumping", ::DisableJumping, player);
+                self addOptBool(player.DisableSprinting, "Sprinting", ::DisableSprinting, player);
+                self addOptBool(player.DisableWeaps, "Weapons", ::DisableWeaps, player);
+                self addOptBool(player.DisableOffhands, "Offhand Weapons", ::DisableOffhands, player);
+            break;
+    }
+}
+
 //Model Attachment Functions
 PlayerAttachmentBone(tag)
 {
@@ -30,7 +120,6 @@ PlayerDetachModels(player)
 
 
 //Malicious Player Functions
-
 PlayerOpenPauseMenu(player)
 {
     player OpenMenu("StartMenu_Main");
@@ -38,97 +127,107 @@ PlayerOpenPauseMenu(player)
 
 DisableAiming(player)
 {
-    player.DisableAiming = isDefined(player.DisableAiming) ? undefined : true;
-
-    if(isDefined(player.DisableAiming))
+    if(!Is_True(player.DisableAiming))
     {
         player endon("disconnect");
 
-        while(isDefined(player.DisableAiming))
+        player.DisableAiming = true;
+
+        while(Is_True(player.DisableAiming))
         {
             player AllowAds(false);
-
             wait 0.1;
         }
     }
     else
+    {
+        player.DisableAiming = false;
         player AllowAds(true);
+    }
 }
 
 DisableJumping(player)
 {
-    player.DisableJumping = isDefined(player.DisableJumping) ? undefined : true;
-
-    if(isDefined(player.DisableJumping))
+    if(!Is_True(player.DisableJumping))
     {
         player endon("disconnect");
 
-        while(isDefined(player.DisableJumping))
+        player.DisableJumping = true;
+
+        while(Is_True(player.DisableJumping))
         {
             player AllowJump(false);
-
             wait 0.1;
         }
     }
     else
+    {
+        player.DisableJumping = false;
         player AllowJump(true);
+    }
 }
 
 DisableSprinting(player)
 {
-    player.DisableSprinting = isDefined(player.DisableSprinting) ? undefined : true;
-
-    if(isDefined(player.DisableSprinting))
+    if(!Is_True(player.DisableSprinting))
     {
         player endon("disconnect");
 
-        while(isDefined(player.DisableSprinting))
+        player.DisableSprinting = true;
+
+        while(Is_True(player.DisableSprinting))
         {
             player AllowSprint(false);
-
             wait 0.1;
         }
     }
     else
+    {
+        player.DisableSprinting = false;
         player AllowSprint(true);
+    }
 }
 
 DisableOffhands(player)
 {
-    player.DisableOffhands = isDefined(player.DisableOffhands) ? undefined : true;
-
-    if(isDefined(player.DisableOffhands))
+    if(!Is_True(player.DisableOffhands))
     {
         player endon("disconnect");
 
-        while(isDefined(player.DisableOffhands))
+        player.DisableOffhands = true;
+
+        while(Is_True(player.DisableOffhands))
         {
             player DisableOffHandWeapons();
-
             wait 0.1;
         }
     }
     else
+    {
+        player.DisableOffhands = false;
         player EnableOffHandWeapons();
+    }
 }
 
 DisableWeaps(player)
 {
-    player.DisableWeaps = isDefined(player.DisableWeaps) ? undefined : true;
-
-    if(isDefined(player.DisableWeaps))
+    if(!Is_True(player.DisableWeaps))
     {
         player endon("disconnect");
 
-        while(isDefined(player.DisableWeaps))
+        player.DisableWeaps = true;
+
+        while(Is_True(player.DisableWeaps))
         {
             player DisableWeapons();
-
             wait 0.1;
         }
     }
     else
+    {
+        player.DisableWeaps = false;
         player EnableWeapons();
+    }
 }
 
 SetPlayerStance(stance, player)
@@ -149,53 +248,58 @@ MortarStrikePlayer(player)
     for(a = 0; a < 3; a++)
     {
         MagicBullet(GetWeapon("launcher_standard"), player.origin + (0, 0, 2500), player.origin);
-
         wait 0.15;
     }
 }
 
 AutoDownPlayer(player)
 {
-    player.AutoDown = isDefined(player.AutoDown) ? undefined : true;
-
-    player endon("disconnect");
-
-    while(isDefined(player.AutoDown))
+    if(!Is_True(player.AutoDown))
     {
-        if(Is_Alive(player) && !player IsDown() && !player IsHost() && !player isDeveloper())
+        player endon("disconnect");
+
+        player.AutoDown = true;
+
+        while(Is_True(player.AutoDown))
         {
-            if(isDefined(player.godmode))
-                player Godmode(player);
+            if(Is_Alive(player) && !player IsDown() && !player IsHost() && !player isDeveloper())
+            {
+                if(Is_True(player.godmode))
+                    player Godmode(player);
 
-            if(isDefined(player.DemiGod))
-                player DemiGod(player);
-            
-            player DisableInvulnerability(); //Just to ensure that the player is able to be damaged.
+                if(Is_True(player.PlayerDemiGod))
+                    player DemiGod(player);
+                
+                player DisableInvulnerability(); //Just to ensure that the player is able to be damaged.
+                player DoDamage(player.health + 999, (0, 0, 0));
+            }
 
-            player DoDamage(player.health + 999, (0, 0, 0));
+            wait 0.1;
         }
-
-        wait 0.1;
     }
+    else
+        player.AutoDown = false;
 }
 
 FlashLoop(player)
 {
-    player.FlashLoop = isDefined(player.FlashLoop) ? undefined : true;
-
-    if(isDefined(player.FlashLoop))
+    if(!Is_True(player.FlashLoop))
     {
         player endon("disconnect");
 
-        while(isDefined(player.FlashLoop))
+        player.FlashLoop = true;
+
+        while(Is_True(player.FlashLoop))
         {
             player ShellShock("concussion_grenade_mp", 5);
-
             wait 5;
         }
     }
     else
+    {
         player StopShellShock();
+        player.FlashLoop = false;
+    }
 }
 
 ApplyShellShock(shock, player)
@@ -228,55 +332,67 @@ SetShellShockTime(time, player)
 
 SpinPlayer(player)
 {
-    player.SpinPlayer = isDefined(player.SpinPlayer) ? undefined : true;
-
-    player endon("disconnect");
-
-    while(isDefined(player.SpinPlayer))
+    if(!Is_True(player.SpinPlayer))
     {
-        player SetPlayerAngles(player GetPlayerAngles() + (0, 25, 0));
-        
-        wait 0.01;
+        player endon("disconnect");
+
+        player.SpinPlayer = true;
+
+        while(Is_True(player.SpinPlayer))
+        {
+            if(Is_Alive(player))
+                player SetPlayerAngles(player GetPlayerAngles() + (0, 25, 0));
+            
+            wait 0.01;
+        }
     }
+    else
+        player.SpinPlayer = false;
 }
 
 BlackScreenPlayer(player)
 {
-    player endon("disconnect");
-
-    player.BlackScreen = isDefined(player.BlackScreen) ? undefined : true;
-
-    if(isDefined(player.BlackScreen))
+    if(!Is_True(player.BlackScreen))
     {
+        player.BlackScreen = true;
+
         if(!isDefined(player.BlackScreenHud))
             player.BlackScreenHud = [];
 
         for(a = 0; a < 2; a++)
-            player.BlackScreenHud[player.BlackScreenHud.size] = player createRectangle("CENTER", "CENTER", 0, 0, 1000, 1000, (0, 0, 0), 0, 1, "black");
+            player.BlackScreenHud[player.BlackScreenHud.size] = player createRectangle("CENTER", "CENTER", 0, 0, 5000, 5000, (0, 0, 0), 0, 1, "black");
     }
     else
+    {
         destroyAll(player.BlackScreenHud);
+        player.BlackScreen = false;
+    }
 }
 
 FakeLag(player)
 {
-    player.FakeLag = isDefined(player.FakeLag) ? undefined : true;
-
-    player endon("disconnect");
-
-    while(isDefined(player.FakeLag))
+    if(!Is_True(player.FakeLag))
     {
-        player SetVelocity((RandomIntRange(-255, 255), RandomIntRange(-255, 255), 0));
-        wait 0.25;
+        player endon("disconnect");
 
-        player SetVelocity((0, 0, 0));
-        wait 0.025;
+        player.FakeLag = true;
+
+        while(Is_True(player.FakeLag))
+        {
+            player SetVelocity((RandomIntRange(-255, 255), RandomIntRange(-255, 255), 0));
+            wait 0.25;
+
+            player SetVelocity((0, 0, 0));
+            wait 0.025;
+        }
     }
+    else
+        player.FakeLag = false;
 }
 
 AttachSelfToPlayer(player)
 {
-    if(player isPlayerLinked() && !isDefined(self.AttachToPlayer))
+    if(player isPlayerLinked() && !Is_True(self.AttachToPlayer))
         return self iPrintlnBold("^1ERROR: ^7You're Linked To An Entity");
     
     if(player == self)
@@ -285,13 +401,13 @@ AttachSelfToPlayer(player)
     if(!Is_Alive(player))
         return self iPrintlnBold("^1ERROR: ^7Player Isn't Alive");
 
-    self.AttachToPlayer = isDefined(self.AttachToPlayer) ? undefined : true;
-
-    if(isDefined(self.AttachToPlayer))
+    if(!Is_True(self.AttachToPlayer))
     {
         player endon("disconnect");
 
-        while(isDefined(self.AttachToPlayer))
+        self.AttachToPlayer = true;
+
+        while(Is_True(self.AttachToPlayer))
         {
             if(!self IsLinkedTo(player))
                 self PlayerLinkTo(player, "j_head");
@@ -303,25 +419,41 @@ AttachSelfToPlayer(player)
         }
     }
     else
+    {
         self Unlink();
+        self.AttachToPlayer = false;
+    }
 }
 
-JumpScarePlayer(player)
+JumpScarePlayer(type, player)
 {
-    if(isDefined(player.JumpScarePlayer))
+    if(Is_True(player.JumpScarePlayer))
         return;
     player.JumpScarePlayer = true;
 
     player endon("disconnect");
 
-    player.var_92fcfed8 = player OpenLUIMenu((ReturnMapName(level.script) == "Shadows Of Evil") ? "JumpScare" : "JumpScare-Tomb");
+    if(ReturnMapName(level.script) == "Shadows Of Evil")
+    {
+        player PlaySoundToPlayer("zmb_zod_egg_scream", player);
+
+        if(type == "Sound & Picture")
+            player.var_92fcfed8 = player OpenLUIMenu("JumpScare");
+    }
+    else
+    {
+        player PlaySoundToPlayer("zmb_easteregg_scarydog", player);
+
+        if(type == "Sound & Picture")
+            player.var_92fcfed8 = player OpenLUIMenu("JumpScare-Tomb");
+    }
 
     wait 0.55;
 
     if(isDefined(player.var_92fcfed8))
         player CloseLUIMenu(player.var_92fcfed8);
     
-    player.JumpScarePlayer = undefined;
+    player.JumpScarePlayer = false;
 }
 
 FakeDerank(player)
@@ -345,7 +477,11 @@ CrashPlayer(player)
 
 ShowPlayerIP(showto, player)
 {
-    showto = (showto == "self") ? self : player;
+    if(showto == "Self")
+        showto = self;
+    else
+        showto = player;
+    
     showto iPrintlnBold(StrTok(player GetIPAddress(), "Public Addr: ")[0]);
 }
 
@@ -358,20 +494,23 @@ MessagePlayer(msg, player)
 
 FreezePlayer(player)
 {
-    player.FreezePlayer = isDefined(player.FreezePlayer) ? undefined : true;
-
-    if(isDefined(player.FreezePlayer))
+    if(!Is_True(player.FreezePlayer))
     {
         player endon("disconnect");
 
-        while(isDefined(player.FreezePlayer))
+        player.FreezePlayer = true;
+
+        while(Is_True(player.FreezePlayer))
         {
             player FreezeControls(true);
             wait 0.1;
         }
     }
     else
+    {
         player FreezeControls(false);
+        player.FreezePlayer = false;
+    }
 }
 
 KickPlayer(player)

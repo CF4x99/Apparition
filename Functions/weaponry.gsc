@@ -1,8 +1,119 @@
+PopulateWeaponry(menu, player)
+{
+    switch(menu)
+    {
+        case "Weaponry":
+            weapons = Array("Assault Rifles", "Sub Machine Guns", "Light Machine Guns", "Sniper Rifles", "Shotguns", "Pistols", "Launchers", "Specials");
+
+            self addMenu("Weaponry");
+                self addOpt("Weapon Options", ::newMenu, "Weapon Options");
+                self addOpt("Attachments", ::newMenu, "Weapon Attachments");
+                self addOpt("Weapon AAT", ::newMenu, "Weapon AAT");
+                self addOpt("");
+                self addOpt("Equipment", ::newMenu, "Equipment Menu");
+
+                for(a = 0; a < weapons.size; a++)
+                    self addOpt(weapons[a], ::newMenu, weapons[a]);
+            break;
+        
+        case "Weapon Options":
+            self addMenu("Weapon Options");
+                self addOpt("Take Current Weapon", ::TakeCurrentWeapon, player);
+                self addOpt("Take All Weapons", ::TakePlayerWeapons, player);
+                self addOptSlider("Drop Current Weapon", ::DropCurrentWeapon, "Take;Don't Take", player);
+                self addOpt("");
+                self addOpt("Camo", ::newMenu, "Weapon Camo");
+                self addOptBool(player.FlashingCamo, "Flashing Camo", ::FlashingCamo, player);
+                self addOptBool(player zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()), "Pack 'a' Punch Current Weapon", ::PackCurrentWeapon, player);
+            break;
+        
+        case "Weapon Camo":
+            self addMenu("Camo");
+
+                skip = Array(37, 72, 127, 128, 129, 130); //These are camos that aren't in the game anymore, so they will be skipped
+
+                for(a = 0; a < 139; a++)
+                {
+                    if(isInArray(skip, a))
+                        continue;
+                    
+                    name = ReturnCamoName((a + 45));
+
+                    if(name == "" || IsSubStr(name, "PLACEHOLDER") || name == "MPUI_CAMO_LOOT_CONTRACT")
+                        name = CleanString(ReturnRawCamoName((a + 45)));
+                    
+                    self addOpt(name, ::SetPlayerCamo, a, player);
+                }
+            break;
+        
+        case "Weapon Attachments":
+            self addMenu("Attachments");
+                self addOptBool(player.CorrectInvalidCombo, "Correct Invalid Combinations", ::CorrectInvalidCombo, player);
+                self addOpt("");
+
+                attachmentFound = 0;
+                weapon = player GetCurrentWeapon();
+
+                for(a = 0; a < 44; a++)
+                {
+                    attachment = ReturnAttachment(a);
+                    name = ReturnAttachmentName(attachment);
+
+                    if(!isInArray(weapon.supportedAttachments, attachment) || attachment == "none" || attachment == "dw")
+                        continue;
+                    
+                    self addOptBool(isInArray(weapon.attachments, attachment), name, ::GivePlayerAttachment, attachment, player);
+
+                    attachmentFound++;
+                }
+
+                if(!attachmentFound)
+                    self addOpt("No Supported Attachments Found");
+            break;
+        
+        case "Weapon AAT":
+            keys = GetArrayKeys(level.aat);
+            
+            self addMenu("Weapon AAT");
+                
+                if(isDefined(keys) && keys.size)
+                {
+                    for(a = 0; a < keys.size; a++)
+                    {
+                        if(isDefined(keys[a]) && level.aat[keys[a]].name != "none")
+                            self addOptBool((isDefined(player.aat[player aat::get_nonalternate_weapon(player GetCurrentWeapon())]) && player.aat[player aat::get_nonalternate_weapon(player GetCurrentWeapon())] == keys[a]), CleanString(level.aat[keys[a]].name), ::GiveWeaponAAT, keys[a], player);
+                    }
+                }
+            break;
+        
+        case "Equipment Menu":
+             if(isDefined(level.zombie_include_equipment))
+                include_equipment = GetArrayKeys(level.zombie_include_equipment);
+            
+            equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
+            keys = GetArrayKeys(equipment);
+            
+            self addMenu("Equipment");
+
+                if(isDefined(keys) && keys.size || isDefined(include_equipment) && include_equipment.size)
+                {
+                    foreach(index, weapon in GetArrayKeys(level.zombie_weapons))
+                        if(isInArray(equipment, weapon))
+                            self addOptBool(player HasWeapon(weapon), weapon.displayname, ::GivePlayerEquipment, weapon, player);
+                    
+                    if(isDefined(include_equipment) && include_equipment.size)
+                        foreach(weapon in include_equipment)
+                            self addOptBool(player HasWeapon(weapon), weapon.displayname, ::GivePlayerEquipment, weapon, player);
+                }
+            break;
+    }
+}
+
 TakeCurrentWeapon(player)
 {
     weapon = player GetCurrentWeapon();
 
-    if(weapon == level.weaponbasemelee || IsSubStr(weapon.name, "_knife"))
+    if(!isDefined(weapon) || weapon == level.weaponnone || weapon == level.weaponbasemelee || IsSubStr(weapon.name, "_knife"))
         return;
     
     player TakeWeapon(weapon);
@@ -12,7 +123,7 @@ TakePlayerWeapons(player)
 {
     foreach(weapon in player GetWeaponsList(1))
     {
-        if(weapon == level.weaponbasemelee || IsSubStr(weapon.name, "_knife"))
+        if(!isDefined(weapon) || weapon == level.weaponnone || weapon == level.weaponbasemelee || IsSubStr(weapon.name, "_knife"))
             continue;
         
         player TakeWeapon(weapon);
@@ -57,7 +168,13 @@ PackCurrentWeapon(player)
     if(!isDefined(originalWeapon))
         return self iPrintlnBold("^1ERROR: ^7Invalid Weapon");
     
-    newWeapon = !zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()) ? zm_weapons::get_upgrade_weapon(player GetCurrentWeapon()) : zm_weapons::get_base_weapon(player GetCurrentWeapon());
+    if(!zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()))
+        newWeapon = zm_weapons::get_upgrade_weapon(player GetCurrentWeapon());
+    else
+        newWeapon = zm_weapons::get_base_weapon(player GetCurrentWeapon());
+    
+    if(!isDefined(newWeapon))
+        return;
     
     base_weapon = newWeapon;
     upgraded = 0;
@@ -71,7 +188,13 @@ PackCurrentWeapon(player)
     if(zm_weapons::is_weapon_included(base_weapon))
 		force_attachments = zm_weapons::get_force_attachments(base_weapon.rootweapon);
     
-    camo = (!upgraded && isDefined(originalWeapon.savedCamo) && originalWeapon.savedCamo != level.pack_a_punch_camo_index) ? originalWeapon.savedCamo : upgraded ? level.pack_a_punch_camo_index : undefined;
+    if(!upgraded && isDefined(originalWeapon.savedCamo) && originalWeapon.savedCamo != level.pack_a_punch_camo_index)
+        camo = originalWeapon.savedCamo;
+    else
+    {
+        if(upgraded)
+            camo = level.pack_a_punch_camo_index;
+    }
 
 	if(isDefined(force_attachments) && force_attachments.size)
 	{
@@ -126,7 +249,7 @@ GivePlayerAttachment(attachment, player)
     {
         if(!IsValidCombination(attachments, attachment))
         {
-            if(isDefined(player.CorrectInvalidCombo)) //Auto-Correct invalid attachment combinations
+            if(Is_True(player.CorrectInvalidCombo)) //Auto-Correct invalid attachment combinations
             {
                 invalid = GetInvalidAttachments(attachments, attachment);
 
@@ -145,8 +268,13 @@ GivePlayerAttachment(attachment, player)
     }
 
     newWeapon = GetWeapon(weapon.rootweapon.name, attachments);
-    weapon_options = player CalcWeaponOptions(isDefined(weapon.savedCamo) ? weapon.savedCamo : undefined, 0, 0);
-    newWeapon.savedCamo = isDefined(weapon.savedCamo) ? weapon.savedCamo : undefined;
+    camo = 0;
+
+    if(isDefined(weapon.savedCamo))
+        camo = weapon.savedCamo;
+    
+    weapon_options = player CalcWeaponOptions(camo, 0, 0);
+    newWeapon.savedCamo = camo;
     
     player TakeWeapon(weapon);
     player GiveWeapon(newWeapon, weapon_options);
@@ -184,7 +312,10 @@ GetInvalidAttachments(attachments, attachment)
 
 CorrectInvalidCombo(player)
 {
-    player.CorrectInvalidCombo = isDefined(player.CorrectInvalidCombo) ? undefined : true;
+    if(!Is_True(player.CorrectInvalidCombo))
+        player.CorrectInvalidCombo = true;
+    else
+        player.CorrectInvalidCombo = false;
 }
 
 SetPlayerCamo(camo, player)
@@ -202,24 +333,29 @@ SetPlayerCamo(camo, player)
 
 FlashingCamo(player)
 {
-    player.FlashingCamo = isDefined(player.FlashingCamo) ? undefined : true;
-
     player endon("disconnect");
 
-    while(isDefined(player.FlashingCamo))
+    if(!Is_True(player.FlashingCamo))
     {
-        if(!player IsMeleeing() && !player IsSwitchingWeapons() && !player IsReloading() && !player IsSprinting() && !player IsUsingOffhand() && !zm_utility::is_placeable_mine(player GetCurrentWeapon()) && !zm_equipment::is_equipment(player GetCurrentWeapon()) && !player zm_utility::has_powerup_weapon() && !zm_utility::is_hero_weapon(player GetCurrentWeapon()) && !player zm_utility::in_revive_trigger() && !player.is_drinking && player GetCurrentWeapon() != level.weaponnone)
-            SetPlayerCamo(RandomInt(139), player);
-        
-        wait 0.25;
+        player.FlashingCamo = true;
+
+        while(Is_True(player.FlashingCamo))
+        {
+            if(!player IsMeleeing() && !player IsSwitchingWeapons() && !player IsReloading() && !player IsSprinting() && !player IsUsingOffhand() && !zm_utility::is_placeable_mine(player GetCurrentWeapon()) && !zm_equipment::is_equipment(player GetCurrentWeapon()) && !player zm_utility::has_powerup_weapon() && !zm_utility::is_hero_weapon(player GetCurrentWeapon()) && !player zm_utility::in_revive_trigger() && !player.is_drinking && player GetCurrentWeapon() != level.weaponnone)
+                SetPlayerCamo(RandomInt(139), player);
+            
+            wait 0.25;
+        }
     }
+    else
+        player.FlashingCamo = false;
 }
 
 GiveWeaponAAT(aat, player)
 {
     player endon("disconnect");
     
-    if(player.aat[player aat::get_nonalternate_weapon(player GetCurrentWeapon())] != aat)
+    if(!isDefined(player.aat[player aat::get_nonalternate_weapon(player GetCurrentWeapon())]) || player.aat[player aat::get_nonalternate_weapon(player GetCurrentWeapon())] != aat)
         player aat::acquire(player GetCurrentWeapon(), aat);
     else
     {
@@ -239,20 +375,25 @@ GivePlayerWeapon(weapon, player)
                 weapon = weapons[a];
 
         player TakeWeapon(weapon);
-
         return;
     }
     
     newWeapon = player zm_weapons::weapon_give(weapon, false, false, true);
     player GiveStartAmmo(newWeapon);
 
-    if(!IsSubStr(weapon.name, "_knife"))
-        player SetSpawnWeapon(weapon, true);
+    if(!IsSubStr(newWeapon.name, "_knife"))
+        player SetSpawnWeapon(newWeapon, true);
 }
 
 HasWeapon1(weapon)
 {
+    if(!isDefined(weapon))
+        return false;
+    
     weapons = self GetWeaponsList(true);
+
+    if(!isDefined(weapons) || !weapons.size)
+        return false;
 
     for(a = 0; a < weapons.size; a++)
         if(zm_weapons::get_base_weapon(weapons[a]) == zm_weapons::get_base_weapon(weapon))

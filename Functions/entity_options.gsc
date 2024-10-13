@@ -55,6 +55,7 @@ PopulateEntityOptions(menu)
             break;
     }
 }
+
 DeleteEntity(ent)
 {
     if(!isDefined(ent) || !isDefined(level.SavedMapEntities) || isDefined(level.SavedMapEntities) && !level.SavedMapEntities.size)
@@ -83,12 +84,16 @@ EntityInvisibility(ent)
     if(!isDefined(ent) || !isDefined(level.SavedMapEntities) || isDefined(level.SavedMapEntities) && !level.SavedMapEntities.size)
         return;
     
-    ent.Invisibility = isDefined(ent.Invisibility) ? undefined : true;
-    
-    if(isDefined(ent.Invisibility))
+    if(!Is_True(ent.Invisibility))
+    {
         ent Hide();
+        ent.Invisibility = true;
+    }
     else
+    {
         ent Show();
+        ent.Invisibility = false;
+    }
 }
 
 EntityScale(scale, ent)
@@ -168,21 +173,24 @@ EntitiesInvisibility()
     if(!isDefined(level.SavedMapEntities) || isDefined(level.SavedMapEntities) && !level.SavedMapEntities.size)
         return;
     
-    level.EntitiesInvisibility = AllEntitiesInvisible() ? undefined : true;
+    if(!Is_True(level.EntitiesInvisibility))
+        level.EntitiesInvisibility = true;
+    else
+        level.EntitiesInvisibility = false;
     
     for(a = 0; a < level.SavedMapEntities.size; a++)
     {
         if(!isDefined(level.SavedMapEntities[a]))
             continue;
         
-        if(isDefined(level.EntitiesInvisibility))
+        if(Is_True(level.EntitiesInvisibility))
         {
-            if(!isDefined(level.SavedMapEntities[a].Invisibility))
+            if(!Is_True(level.SavedMapEntities[a].Invisibility))
                 EntityInvisibility(level.SavedMapEntities[a]);
         }
         else
         {
-            if(isDefined(level.SavedMapEntities[a].Invisibility))
+            if(Is_True(level.SavedMapEntities[a].Invisibility))
                 EntityInvisibility(level.SavedMapEntities[a]);
         }
     }
@@ -194,7 +202,7 @@ AllEntitiesInvisible()
         return;
     
     for(a = 0; a < level.SavedMapEntities.size; a++)
-        if(isDefined(level.SavedMapEntities[a]) && !isDefined(level.SavedMapEntities[a].Invisibility))
+        if(isDefined(level.SavedMapEntities[a]) && !Is_True(level.SavedMapEntities[a].Invisibility))
             return false;
     
     return true;
@@ -270,7 +278,10 @@ TeleportEntities(location)
     if(!isDefined(level.SavedMapEntities) || isDefined(level.SavedMapEntities) && !level.SavedMapEntities.size)
         return;
     
-    origin = (location == "Self") ? self.origin : self TraceBullet();
+    if(isDefined(location) && location == "Self")
+        origin = self.origin;
+    else
+        origin = self TraceBullet();
 
     for(a = 0; a < level.SavedMapEntities.size; a++)
         if(isDefined(level.SavedMapEntities[a]))

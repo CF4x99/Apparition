@@ -1,10 +1,15 @@
 SpawnDropTower()
 {
-    if(isDefined(level.spawnable["Drop Tower_Spawned"]))
+    if(Is_True(level.spawnable["Drop Tower_Spawned"]))
         return;
 
     model = GetSpawnableBaseModel();
-    seatModel = isInArray(level.MenuModels, "test_sphere_silver") ? "test_sphere_silver" : "defaultactor";
+
+    if(isInArray(level.MenuModels, "test_sphere_silver"))
+        seatModel = "test_sphere_silver";
+    else
+        seatModel = "defaultactor";
+    
     origin = self TraceBullet();
     
     base = [];
@@ -43,19 +48,16 @@ startDropMovement()
     while(1)
     {
         wait 5;
-        
         self MoveTo(self.origin + (0, 0, 2385), 20);
         self RotateYaw(360, 20);
 
         self waittill("movedone");
         Earthquake(0.4, 1, self.origin, 500);
-        
         wait 2;
 
         for(a = 0; a < 5; a++)
         {
             Earthquake(0.3, 1, self.origin, 500);
-
             wait 1;
         }
         
@@ -64,7 +66,6 @@ startDropMovement()
 
         self waittill("movedone");
         Earthquake(0.6, 1, self.origin, 500);
-        
         wait 5;
     }
 }

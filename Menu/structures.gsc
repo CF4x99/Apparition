@@ -20,7 +20,7 @@ addOpt(name, fnc, input1, input2, input3, input4)
     self.menuStructure[self.menuStructure.size] = option;
 }
 
-addOptBool(var, name, fnc, input1, input2, input3, input4)
+addOptBool(boolVar, name, fnc, input1, input2, input3, input4)
 {
     option = SpawnStruct();
     
@@ -30,14 +30,18 @@ addOptBool(var, name, fnc, input1, input2, input3, input4)
     option.input2 = input2;
     option.input3 = input3;
     option.input4 = input4;
-    option.bool   = (isDefined(var) && var);
+    option.bool   = Is_True(boolVar);
     
     self.menuStructure[self.menuStructure.size] = option;
 }
 
 addOptIncSlider(name, fnc, min = 0, start = 0, max = 1, increment = 1, input1, input2, input3, input4)
 {
-    menu  = self isInQuickMenu() ? self.currentMenuQM : self.currentMenu;
+    menu = self.currentMenu;
+
+    if(self isInQuickMenu())
+        menu = self.currentMenuQM;
+    
     index = self.menuStructure.size;
     
     option = SpawnStruct();
@@ -51,7 +55,17 @@ addOptIncSlider(name, fnc, min = 0, start = 0, max = 1, increment = 1, input1, i
     option.incslider = true;
     option.min       = min;
     option.max       = max;
-    option.start     = (start > max || start < min) ? (start > max) ? max : min : start;
+
+    if(start > max || start < min)
+    {
+        if(start > max)
+            option.start = max;
+        else
+            option.start = min;
+    }
+    else
+        option.start = start;
+    
     option.increment = increment;
     
     if(!isDefined(self.menuSS[menu + "_" + index]))
@@ -59,7 +73,14 @@ addOptIncSlider(name, fnc, min = 0, start = 0, max = 1, increment = 1, input1, i
     else
     {
         if(self.menuSS[menu + "_" + index] > max || self.menuSS[menu + "_" + index] < min)
-            self.menuSS[menu + "_" + index] = (self.menuSS[menu + "_" + index] > max) ? max : min;
+        {
+            sliderCurs = min;
+
+            if(self.menuSS[menu + "_" + index] > max)
+                sliderCurs = max;
+            
+            self.menuSS[menu + "_" + index] = sliderCurs;
+        }
     }
     
     self.menuStructure[self.menuStructure.size] = option;
@@ -67,7 +88,11 @@ addOptIncSlider(name, fnc, min = 0, start = 0, max = 1, increment = 1, input1, i
 
 addOptSlider(name, fnc, values, input1, input2, input3, input4)
 {
-    menu  = self isInQuickMenu() ? self.currentMenuQM : self.currentMenu;
+    menu = self.currentMenu;
+
+    if(self isInQuickMenu())
+        menu = self.currentMenuQM;
+    
     index = self.menuStructure.size;
     
     option = SpawnStruct();
@@ -79,7 +104,11 @@ addOptSlider(name, fnc, values, input1, input2, input3, input4)
     option.input3       = input3;
     option.input4       = input4;
     option.slider       = true;
-    option.sliderValues = IsString(values) ? StrTok(values, ";") : values;
+
+    if(IsString(values))
+        option.sliderValues = StrTok(values, ";");
+    else
+        option.sliderValues = values;
     
     if(!isDefined(self.menuSS[menu + "_" + index]))
         self.menuSS[menu + "_" + index] = 0;

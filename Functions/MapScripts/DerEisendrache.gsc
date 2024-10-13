@@ -11,15 +11,15 @@ PopulateDerEisendracheScripts(menu)
                 if(level flag::get("soul_catchers_charged"))
                     self addOpt("Bow Quests", ::newMenu, "Bow Quests");
             break;
-        
+
         case "Bow Quests":
             self addMenu("Bow Quests");
                 self addOpt("Fire", ::newMenu, "Fire Bow");
                 self addOpt("Lightning", ::newMenu, "Lightning Bow");
                 self addOpt("Void", ::newMenu, "Void Bow");
-                //self addOpt("Wolf", ::newMenu, "Wolf Bow");
+                self addOpt("Wolf", ::newMenu, "Wolf Bow");
             break;
-        
+
         case "Fire Bow":
             //level.var_c62829c7 <- player bound to fire quest
 
@@ -42,10 +42,9 @@ PopulateDerEisendracheScripts(menu)
                     }
                 }
             break;
-        
+
         case "Lightning Bow":
             //level.var_f8d1dc16 <- player bound to lightning quest
-
             trig = GetEnt("aq_es_weather_vane_trig", "targetname");
 
             self addMenu("Lightning");
@@ -67,7 +66,7 @@ PopulateDerEisendracheScripts(menu)
                     }
                 }
             break;
-        
+
         case "Void Bow":
             //level.var_6e68c0d8 <- player bound to void quest
             symbol = GetEnt("aq_dg_gatehouse_symbol_trig", "targetname");
@@ -91,6 +90,11 @@ PopulateDerEisendracheScripts(menu)
                         self addOpt("Quest Hasn't Been Bound Yet");
                     }
                 }
+                break;
+
+                case "Wolf Bow":
+                self addMenu("Wolf");
+                //removed for now
             break;
     }
 }
@@ -100,7 +104,7 @@ FeedDragons()
     if(level flag::get("soul_catchers_charged"))
         return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
     
-    if(isDefined(level.FeedingDragons))
+    if(Is_True(level.FeedingDragons))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
     
     level.FeedingDragons = true;
@@ -115,17 +119,18 @@ FeedDragons()
         wait 0.1;
 
     self RefreshMenu(menu, curs);
+    level.FeedingDragons = false;
 }
 
 FeedDragon(player)
 {
     self notify("first_zombie_killed_in_zone", player);
-    
     wait GetAnimLength("rtrg_o_zm_dlc1_dragonhead_intro");
     
     for(b = 0; b < 8; b++)
     {
-        self.var_98730ffa++;
+        if(isDefined(self.var_98730ffa))
+            self.var_98730ffa++;
         
         wait 0.01;
     }
@@ -181,13 +186,12 @@ GrabPadUniTriggers()
 
 
 //Fire Bow Quest
-
 InitFireBow()
 {
     if(isDefined(level.var_714fae39))
         return;
     
-    if(isDefined(level.InitFireBow))
+    if(Is_True(level.InitFireBow))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
     
     level.InitFireBow = true;
@@ -208,7 +212,7 @@ InitFireBow()
 
 MagmaRock()
 {
-    if(isDefined(level.MagmaRock))
+    if(Is_True(level.MagmaRock))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
     
     if(level flag::get("rune_prison_obelisk"))
@@ -220,7 +224,6 @@ MagmaRock()
     curs = self getCursor();
 
     level flag::set("rune_prison_obelisk_magma_enabled");
-
     wait 0.1;
 
     rock = GetEnt("aq_rp_obelisk_magma_trig", "targetname");
@@ -232,9 +235,7 @@ MagmaRock()
         wait 0.1;
     
     wait 9;
-
-    level.MagmaRock = undefined;
-
+    level.MagmaRock = false;
     self RefreshMenu(menu, curs);
 }
 
@@ -243,13 +244,13 @@ RunicCircles()
     if(!level flag::get("rune_prison_obelisk"))
         return self iPrintlnBold("^1ERROR: ^7Magma Rock Step Must Be Completed First");
     
-    if(isDefined(level.MagmaRock))
+    if(Is_True(level.MagmaRock))
         return self iPrintlnBold("^1ERROR: ^7Magma Rock Is Still Being Completed");
     
     if(AllRunicCirclesCharged())
         return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
     
-    if(isDefined(level.ChargingCircles))
+    if(Is_True(level.ChargingCircles))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
     
     level.ChargingCircles = true;
@@ -258,7 +259,6 @@ RunicCircles()
     curs = self getCursor();
 
     level.var_c62829c7.var_122a2dda = true;
-
     wait 1;
 
     circles = GetEntArray("aq_rp_runic_circle_volume", "script_noteworthy");
@@ -280,19 +280,15 @@ RunicCircles()
     }
 
     wait 1;
-
     level.var_c62829c7.var_122a2dda = false;
-
     array::thread_all(circles, ::ChargeRunicCircle);
 
     while(!AllRunicCirclesCharged())
         wait 0.1;
     
     self RefreshMenu(menu, curs);
-
     wait 5; //Allows buffer time between this, and the next step to help ensure we don't run into any issues
-
-    level.ChargingCircles = undefined;
+    level.ChargingCircles = false;
 }
 
 ChargeRunicCircle()
@@ -306,7 +302,6 @@ ChargeRunicCircle()
     while(!self flag::get("runic_circle_charged"))
     {
         self notify("killed");
-
         wait 0.1;
     }
 }
@@ -315,7 +310,7 @@ AllRunicCirclesCharged()
 {
     circles = GetEntArray("aq_rp_runic_circle_volume", "script_noteworthy");
 
-    if(isDefined(circles))
+    if(isDefined(circles) && circles.size)
     {
         for(a = 0; a < circles.size; a++)
         {
@@ -332,13 +327,13 @@ AllRunicCirclesCharged()
 
 ClockFireplaceStep()
 {
-    if(!AllRunicCirclesCharged() || isDefined(level.ChargingCircles))
+    if(!AllRunicCirclesCharged() || Is_True(level.ChargingCircles))
         return self iPrintlnBold("^1ERROR: ^7Runic Circles Must Be Activated & Charged First");
     
     if(IsClockFireplaceComplete())
         return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
     
-    if(isDefined(level.ClockFireplaceStep))
+    if(Is_True(level.ClockFireplaceStep))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
 
     level.ClockFireplaceStep = true;
@@ -355,7 +350,6 @@ ClockFireplaceStep()
     level.var_c62829c7 FreezeControls(1);
     level.var_2e55cb98.origin = level.var_c62829c7.origin;
     level.var_2e55cb98 LinkTo(level.var_c62829c7);
-
     wait 1;
 
     target = GetEnt(level.var_2e55cb98.var_336f1366.target, "targetname");
@@ -405,6 +399,9 @@ IsClockFireplaceComplete()
 {
     magmaBall = GetEnt("aq_rp_magma_ball_tag", "targetname");
 
+    if(!isDefined(magmaBall))
+        return false;
+
     if(level flag::get("rune_prison_golf") && magmaBall flag::get("magma_ball_move_done"))
         return true;
     
@@ -419,7 +416,7 @@ CollectRepairedFireArrows()
     if(!IsClockFireplaceComplete())
         return self iPrintlnBold("^1ERROR: ^7The Fireplace Step Must Be Completed First");
     
-    if(isDefined(level.CollectRepairedFireArrows))
+    if(Is_True(level.CollectRepairedFireArrows))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
 
     level.CollectRepairedFireArrows = true;
@@ -433,7 +430,6 @@ CollectRepairedFireArrows()
         MagmaBall.var_67b5dd94 notify("trigger", level.var_c62829c7);
 
     level waittill(#"hash_79d94608");
-
     wait 3;
 
     if(isDefined(MagmaBall))
@@ -463,7 +459,6 @@ CollectRepairedFireArrows()
 
 
 //Lightning Bow Quest
-
 InitLightningBow()
 {
     trig = GetEnt("aq_es_weather_vane_trig", "targetname");
@@ -471,7 +466,7 @@ InitLightningBow()
     if(!isDefined(trig))
         return;
 
-    if(isDefined(level.InitLightningBow))
+    if(Is_True(level.InitLightningBow))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
     
     level.InitLightningBow = true;
@@ -493,7 +488,7 @@ LightningBeacons()
     if(AreBeaconsLit())
         return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
     
-    if(isDefined(level.LightningBeacons))
+    if(Is_True(level.LightningBeacons))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
     
     level.LightningBeacons = true;
@@ -509,7 +504,6 @@ LightningBeacons()
             continue;
         
         MagicBullet(GetWeapon("elemental_bow"), beacons[a].origin + (0, 0, 5), beacons[a].origin, level.var_f8d1dc16);
-
         wait 0.1;
     }
 
@@ -522,6 +516,9 @@ LightningBeacons()
 AreBeaconsLit()
 {
     beacons = GetEntArray("aq_es_beacon_trig", "script_noteworthy");
+
+    if(!isDefined(beacons))
+        return false;
 
     for(a = 0; a < beacons.size; a++)
     {
@@ -542,7 +539,7 @@ LightningWallrun()
     if(level flag::get("elemental_storm_wallrun"))
         return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
     
-    if(isDefined(level.LightningWallrun))
+    if(Is_True(level.LightningWallrun))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
     
     if(!AreBeaconsLit())
@@ -574,7 +571,7 @@ LightningChargeBeacons()
     if(LightningBeaconsCharged())
         return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
     
-    if(isDefined(level.LightningChargeBeacons))
+    if(Is_True(level.LightningChargeBeacons))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
     
     if(!level flag::get("elemental_storm_wallrun"))
@@ -594,10 +591,9 @@ LightningChargeBeacons()
             if(!isDefined(beacons[a]))
                 continue;
             
-            while(!isDefined(beacons[a].b_activated) || !beacons[a].b_activated)
+            while(!Is_True(beacons[a].b_activated))
             {
                 beacons[a] notify("killed");
-
                 wait 0.1;
             }
 
@@ -616,7 +612,6 @@ LightningChargeBeacons()
             continue;
         
         MagicBullet(GetWeapon("elemental_bow"), bTrigs[a].origin + (0, 0, 500), bTrigs[a].origin, level.var_f8d1dc16);
-
         wait 0.1;
     }
 
@@ -634,12 +629,12 @@ LightningMissileCharger()
     {
         self waittill("missile_fire", projectile, weapon);
 
-        chosen = undefined;
+        chosen = false;
         charged = GetEntArray("aq_es_battery_volume_charged", "script_noteworthy");
 
         for(a = 0; a < charged.size; a++)
         {
-            if(!isDefined(charged[a]) || isInArray(used, a) || isDefined(chosen))
+            if(!isDefined(charged[a]) || isInArray(used, a) || Is_True(chosen))
                 continue;
             
             chosen = true;
@@ -662,7 +657,7 @@ ChargeLightningArrows()
     if(level flag::get("elemental_storm_repaired"))
         return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
     
-    if(isDefined(level.ChargeLightningArrows))
+    if(Is_True(level.ChargeLightningArrows))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
     
     if(!LightningBeaconsCharged())
@@ -710,13 +705,12 @@ ChargeLightningArrows()
 
 
 //Void Bow Quest
-
 InitVoidBow()
 {
     if(IsDemonSymbolDestroyed())
         return;
     
-    if(isDefined(level.InitVoidBow))
+    if(Is_True(level.InitVoidBow))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
     
     level.InitVoidBow = true;
@@ -737,7 +731,7 @@ InitVoidBow()
 
 IsDemonSymbolDestroyed()
 {
-    return (level clientfield::get("quest_state_demon") > 0 || isDefined(level.InitVoidBow));
+    return (level clientfield::get("quest_state_demon") > 0 || Is_True(level.InitVoidBow));
 }
 
 ReleaseDemonUrn()
@@ -745,7 +739,7 @@ ReleaseDemonUrn()
     if(level flag::get("demon_gate_seal"))
         return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
     
-    if(isDefined(level.ReleaseDemonUrn))
+    if(Is_True(level.ReleaseDemonUrn))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
     
     level.ReleaseDemonUrn = true;
@@ -754,7 +748,6 @@ ReleaseDemonUrn()
     curs = self getCursor();
 
     level flag::set("demon_gate_seal"); //Hate doing it this way. But, nothing will get skipped over by doing it like this.
-
     wait 5;
 
     urn = struct::get("aq_dg_urn_struct", "targetname");
@@ -766,7 +759,7 @@ ReleaseDemonUrn()
     self RefreshMenu(menu, curs);
     wait 5;
 
-    level.ReleaseDemonUrn = undefined;
+    level.ReleaseDemonUrn = false;
 }
 
 TriggerDemonFossils()
@@ -779,10 +772,10 @@ TriggerDemonFossils()
     if(!isDefined(fossils) || !fossils.size)
         return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
     
-    if(isDefined(level.TriggerDemonFossils))
+    if(Is_True(level.TriggerDemonFossils))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
     
-    if(isDefined(level.ReleaseDemonUrn))
+    if(Is_True(level.ReleaseDemonUrn))
         return self iPrintlnBold("^1ERROR: ^7Release Demon Urn Is Still Being Completed");
     
     level.TriggerDemonFossils = true;
@@ -796,7 +789,6 @@ TriggerDemonFossils()
             continue;
         
         fossils[a].var_67b5dd94 notify("trigger", level.var_6e68c0d8);
-
         wait 0.1;
     }
 
@@ -808,7 +800,6 @@ TriggerDemonFossils()
         wait 0.1;
     }
     
-    iPrintlnBold("fossils complete");
     self RefreshMenu(menu, curs);
 }
 
@@ -822,7 +813,7 @@ FeedDemonUrn()
     if(level flag::get("demon_gate_crawlers"))
         return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
     
-    if(isDefined(level.FeedDemonUrn))
+    if(Is_True(level.FeedDemonUrn))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
     
     level.FeedDemonUrn = true;

@@ -1,6 +1,6 @@
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.3.0.0
+    Version:              1.4.0.0
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
@@ -80,12 +80,95 @@
 
 
     If you find any bugs, or come across something that you feel isn't working as it should, please message me on discord.
-
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
     Discord: cf4_99
 
 ## Changelog
+<details>
+    <summary>
+        Version 1.5.0.0
+    </summary>
+    There Were Countless Backend Changes That Won't Be Listed. Apparition Recieved A Much Needed Overhaul In Every Way.
+    I Can Without A Doubt Say Apparition Will Be Unmatched In Every Possible Way.
+    It Will Be The Most Stable, In-Depth, Detail Oriented, Organized, and Largest Mod Menu You Will Ever See.
+
+    You Won't Find Anything That Will Be Comparable To Apparition, Not Even The Menus With "Devs" That Constantly Have To Rip Scripts From Apparition For Their Projects.
+    Apparition Will Remain On Top, Regardless Of Who Tries To Compete With It.
+
+
+    - NOTE: Update 1.4.0.0 was built only for the workshop. So 1.5.0.0 includes the 1.4.0.0 changes as well.
+
+    - Everything should now fit the mod tool syntax requirements(aside from a few things custom compilers don't support)
+    - You can now run Apparition while in developer mode without getting debug errors(aside from a few that aren't from Apparition)
+
+    - Apparition Is Now 100% Undetected By The Ultimate Experience Mod
+
+    UEM Options(These Options Only Show When UEM Is Loaded):
+        - Added: Hat Manipulation
+        - Added: Complete Current Weapon Camo
+        - Added: Unlock Hats(Halloween & Christmas)
+        - Added: Leaderboard Killer(Will Most Likely Get You Blacklisted From The Leaderboards)
+        - Added: Force Save Stats
+
+    - Improved: Shader auto-scaling for strings -- Shaders(i.e. instructions, quick menu, entity count) will now fit to the text length alot better
+    - Improved: Body Guard Targeting Logic
+    - Improved: Zombie head gib
+    - Improved: Pause World
+
+    - Changed: Removed The Menu Auto-Adapting Hud Based On Resolution -- The Menu Is Now Positioned Closer To The Center To Combat The Menu Being Offscreen For Some People
+    - Changed: Every Submenu Is Now Populated In Its Respected File(Basic Scripts Options Will Be In basic.gsc)
+    - Changed: Menu instructions display will now adapt to the menu location(If it's too far to the right, the info will display on the left side. If it's too far to the left, the info will display on the right side)
+    - Changed: Switched to a callback to handle players disconnecting mid-game
+    - Changed: Bots will now have their own verification(They will be displayed as [Bot]<bot name> in the player menu)
+    - Changed: Origins Generators Are Now Listed In Correct Numerical Order
+    - Changed: Added keyboard/numberpad scroller outline for the Nautaremake design
+    - Changed: Nautaremake Color Scheme Will Now Match Nautilus 1:1
+    - Changed: Added outlines for menu instructions background, entity count background, and player info background
+    - Changed: If Players Go Near Exploding Zombies, They Will Now Burn
+    - Changed: Custom Sentry & Custom Sentry Weapon Are Now Together In Its Own Submenu -- Advanced Scripts
+    - Changed: Host/Developer Player Info Will No Longer Show For Anyone(Including The Host and Developer)
+    - Changed: Player IP Will No Longer Be Included With Player Info -- To Include It -> Host Menu -> Player Info -> Include IP(Applies To All Players)
+
+    - Fixed: Several Undefined Variables, Arrays, and Incorrect Data Type Conflictions
+    - Fixed: Custom Zombie Health Bugs
+    - Fixed: Nuke Nades Bug
+    - Fixed: Several Issues In Weaponry Scripts
+    - Fixed: Several Issues In Teleport Scripts
+    - Fixed: Several Issues In Fun Scripts
+    - Fixed: Several Issues In Basic Scripts
+    - Fixed: Several Issues In AI Spawners
+    - Fixed: Several Issues In Advanced Scripts
+    - Fixed: Several Issues In Aimbot Scripts
+    - Fixed: Auto-Respawn Not Working Unless Auto-Revive Is Enabled
+    - Fixed: Typo That Caused A Bug With Completing The Hide & Seek EE On The Giant
+    - Fixed: Bugs With Beast Mode Option On SOE(It will now function as it should)
+    - Fixed: Player getting stuck/frozen when the grappling gun is disabled while using it
+    
+    - Added: When The Game Ends, You Will Now See A Message That Says "Press & Hold [melee] To Restart The Match" -- Only Shows For The Host -- Replaces "You Survived <> Rounds"
+    - Added: Host Menu - Disable Player Info From Showing In Player Menu(Applies To All Players)
+    - Added: Controllable Spider To Zetsubou No Shima Scripts
+    - Added: Upgraded Weapon Wallbuys(Server Tweakables)
+    - Added: Teleport To A Random Player
+    - Added: Moon Gravity
+    - Added: Explosive Bullet Effect(Optional)
+    - Added: Zombie Teleport Grenades
+    - Added: Perk Jingles/Quote Sounds
+    - Added: Audio Dialog Sounds
+    - Added: Aimbot - Menu Open Check(Disables Aimbot If Menu Is Open)
+    - Added: Server Tweakable - Revive Trigger Radius
+    - Added: Server Tweakable - Last Stand Bleedout Time
+    - Added: Enable Full SOE EE For 3 Players Or Less(Rails will also stay electrified when shocked to make it easier without 4 players)
+    - Added: Revelations Scripts(Collect Keeper Companion Parts, Corrupt All Generators, Trap Apothicon, Free Pack 'a' Punch, and Damage Tombstones)
+    - Added: Sound effect when teleporting
+    - Added: Sound To The SOE & Origins Jump Scare
+    - Added: Choice Between "Sound & Picture" and "Sound Only" To Player Jump Scare
+    - Added: Developer mode to host menu(for debugging purposes)
+    - Added: Max Weapon Ranks To All Players Menu
+    - Added: Unlock All Challenges To All Players Menu
+    - Added: Clan Tag Options To All Players Menu
+    - Added: Liquid Divinium Loop To All Players Menu
+</details>
 
 <details>
     <summary>
@@ -93,8 +176,8 @@
     </summary>
 
     - Whole Apparition menu structure has been remade
-    - Due to hitting the function size bytecode limit for runMenuIndex, I chose to populate most sub menus by jumping to separate functions(to reduce the size of runMenuIndex)
-    - Apparition can now be compiled on Infinity Loader(IL doesn't support '===' and '!==' which has been removed from AI spawners)
+    - Due to hitting the function size bytecode limit, I chose to populate most sub menus by jumping to separate functions
+    - Apparition can now be compiled on Infinity Loader(Infinity Loader doesn't support '===' and '!==' which has been removed from AI spawners)
 
     - Added: Entity count display at the bottom left of the screen
     - Added: Menu customization option to disable the entity count display
@@ -128,7 +211,7 @@
     - Changed: Increased the RGB Fade speed
     - Changed: Anti-End Game is now located in host menu
     - Changed: Force Field now has it's own submenu(still in fun scripts)
-    - Changed: SOE Fumigator is now a submenu that will allow you to give Fumigators to selective players
+    - Changed: SOE Fumigator is now a submenu that will allow you to give Fumigators to selected players
 
 </details>
 

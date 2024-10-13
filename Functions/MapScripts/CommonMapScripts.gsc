@@ -1,7 +1,19 @@
+PopulateMapChallenges(player)
+{
+    self addMenu("Challenges");
+
+    if(isDefined(player._challenges))
+    {
+        self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_4687355c.n_index), ReturnMapChallengeIString(player._challenges.var_4687355c.str_notify), ::MapCompleteChallenge, player._challenges.var_4687355c, player);
+        self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_b88ea497.n_index), ReturnMapChallengeIString(player._challenges.var_b88ea497.str_notify), ::MapCompleteChallenge, player._challenges.var_b88ea497, player);
+        self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_928c2a2e.n_index), ReturnMapChallengeIString(player._challenges.var_928c2a2e.str_notify), ::MapCompleteChallenge, player._challenges.var_928c2a2e, player);
+    }
+}
+
 ActivateZombieTrap(index)
 {
     traps = level.MenuZombieTraps;
-    
+
     if(!level flag::get(traps[index].script_flag_wait))
         level flag::set(traps[index].script_flag_wait);
 
@@ -17,7 +29,6 @@ ActivateZombieTrap(index)
         traps[index] notify("trigger", self);
 
     wait 0.1;
-
     traps[index].zombie_cost = savedCost;
 }
 
@@ -26,10 +37,8 @@ ActivateAllZombieTraps()
     traps = GetEntArray("zombie_trap", "targetname");
 
     if(isDefined(level.MenuZombieTraps) && level.MenuZombieTraps.size)
-    {
         for(a = 0; a < level.MenuZombieTraps.size; a++)
             self thread ActivateZombieTrap(a);
-    }
 }
 
 ActivatePower()
@@ -39,19 +48,18 @@ ActivatePower()
 
     curs = self getCursor();
     menu = self getCurrent();
-    
-    switches = ["use_power_switch", "use_master_switch", "use_elec_switch", "power_trigger_left", "power_trigger_right"];
+
+    switches = Array("use_power_switch", "use_master_switch", "use_elec_switch", "power_trigger_left", "power_trigger_right");
 
     for(a = 0; a < switches.size; a++)
     {
         rightSwitch = GetEnt(switches[a], "targetname");
-        
+
         if(isDefined(rightSwitch))
             rightSwitch notify("trigger", self);
     }
 
     level flag::wait_till("power_on");
-
     self RefreshMenu(menu, curs);
 }
 
@@ -59,15 +67,15 @@ SamanthasHideAndSeekSong()
 {
     if(level flag::get("snd_zhdegg_completed"))
         return self iPrintlnBold("^1ERROR: ^7Samantha's Hide & Seek Has Already Been Completed");
-    
+
     if(ReturnMapName(level.script) == "Kino Der Toten" && !level flag::get("snd_zhdegg_activate"))
         return self iPrintlnBold("^1ERROR: ^7Samantha's Hide & Seek Can't Be Completed Until The Door Knocking Combination Has Been Completed");
-    
+
     self endon("disconnect");
-    
+
     curs = self getCursor();
     menu = self getCurrent();
-    
+
     if(!level flag::get("snd_zhdegg_activate"))
     {
         TriggerUniTrigger(struct::get_array("zhdaudio_button", "targetname"), "trigger_activated");
@@ -92,9 +100,9 @@ SamanthasHideAndSeekSong()
     wait 0.5;
     trigger = struct::get("s_ballerina_end", "targetname");
     trigger notify("trigger_activated");
-    
+
     level flag::wait_till("snd_zhdegg_completed");
-    level.StartedSamanthaSong = undefined;
+    level.StartedSamanthaSong = false;
     self RefreshMenu(menu, curs);
 }
 
@@ -102,12 +110,12 @@ MapCompleteChallenge(challenge, player)
 {
     if(!isDefined(challenge) || player flag::get("flag_player_completed_challenge_" + challenge.n_index))
         return;
-    
+
     player endon("disconnect");
-    
+
     curs = self getCursor();
     menu = self getCurrent();
-    
+
     for(a = 0; a < challenge.n_count; a++)
     {
         player notify(challenge.str_notify);

@@ -15,6 +15,8 @@ PopulateMessageMenu(menu)
                 self addOpt("Want Menu?", ::DisplayMessage, "Want Menu?");
                 self addOpt("Who's Modding?", ::DisplayMessage, "Who's Modding?");
                 self addOpt(CleanName(self getName()), ::DisplayMessage, CleanName(self getName()) + " <3");
+                self addOpt("Deranked", ::DisplayMessage, "You've Been ^1Deranked");
+                self addOpt("^BBUTTON_ZM_VIAL_ICON^", ::DisplayMessage, "^BBUTTON_ZM_VIAL_ICON^ ^BBUTTON_ZM_VIAL_ICON^ ^BBUTTON_ZM_VIAL_ICON^");
                 self addOpt("Host", ::DisplayMessage, "Your Host Today Is " + CleanName(bot::get_host_player() getName()));
             break;
         

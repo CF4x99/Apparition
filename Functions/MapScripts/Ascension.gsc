@@ -9,38 +9,37 @@ PopulateAscensionScripts(menu)
                 self addOpt("");
 
                 if(!level flag::get("target_teleported"))
-                    self addOpt("Throw Gersch At Generator", ::TeleportGenerator);
-                
+                self addOpt("Throw Gersch At Generator", ::TeleportGenerator);
+
                 if(!level flag::get("rerouted_power"))
-                    self addOpt("Activate Computer", ::ActivateComputer);
-                
+                self addOpt("Activate Computer", ::ActivateComputer);
+
                 if(!level flag::get("switches_synced"))
-                    self addOpt("Activate Switches", ::ActivateSwitches);
-                
+                self addOpt("Activate Switches", ::ActivateSwitches);
+
                 if(!(level flag::get("lander_a_used") && level flag::get("lander_b_used") && level flag::get("lander_c_used") && level flag::get("launch_activated")))
-                    self addOpt("Refuel The Rocket", ::RefuelRocket);
-                
+                self addOpt("Refuel The Rocket", ::RefuelRocket);
+
                 if(!level flag::get("launch_complete"))
-                    self addOpt("Launch The Rocket", ::LaunchRocket);
-                
+                self addOpt("Launch The Rocket", ::LaunchRocket);
+
                 if(!level flag::get("pressure_sustained"))
-                    self addOpt("Complete Time Clock", ::CompleteTimeClock);
+                self addOpt("Complete Time Clock", ::CompleteTimeClock);
             break;
     }
 }
 
 ControlLunarLander()
 {
-    if((level.lander_in_use || level flag::get("lander_inuse")) && !isDefined(self.ControlLunarLander))
+    if((level.lander_in_use || level flag::get("lander_inuse")) && !Is_True(self.ControlLunarLander))
         return self iPrintlnBold("^1ERROR: ^7Lunar Lander Is In Use");
-    
-    if(level.lander_in_use && isDefined(self.ControlLunarLander))
-        return self iPrintlnBold("^1ERROR: ^7You're Already Controling The Lunar Lander");
-    
-    self endon("disconnect");
-    
-    self closeMenu1();
 
+    if(level.lander_in_use && Is_True(self.ControlLunarLander))
+        return self iPrintlnBold("^1ERROR: ^7You're Already Controling The Lunar Lander");
+
+    self endon("disconnect");
+
+    self closeMenu1();
     self.ControlLunarLander = true;
     level.lander_in_use = true;
     level flag::set("lander_inuse");
@@ -52,7 +51,7 @@ ControlLunarLander()
     zipline_door2 = GetEnt("zipline_door_s", "script_noteworthy");
     lander_trig = GetEnt("zip_buy", "script_noteworthy");
     rider_trigger = GetEnt(lander.station + "_riders", "targetname");
-    
+
     level.LanderSavedPosition = lander.anchor.origin;
     level.LanderSavedAngles = lander.anchor.angles;
 
@@ -60,12 +59,11 @@ ControlLunarLander()
     {
         player = level.players[a];
 
-        if(!isDefined(player) || !IsAlive(player) || isDefined(player.lander) && player.lander || !player IsTouching(zipline_door1) && !player IsTouching(zipline_door2) && !player IsTouching(lander_trig) && !player IsTouching(rider_trigger) && !player IsTouching(base) && player != self)
+        if(!isDefined(player) || !IsAlive(player) || Is_True(player.lander) || !player IsTouching(zipline_door1) && !player IsTouching(zipline_door2) && !player IsTouching(lander_trig) && !player IsTouching(rider_trigger) && !player IsTouching(base) && player != self)
             continue;
-        
+
         player SetOrigin(spots[a].origin);
         player PlayerLinkTo(spots[a]);
-        player EnableInvulnerability();
 
         player.lander = true;
         player.DisableMenuControls = true;
@@ -85,7 +83,6 @@ ControlLunarLander()
     lander.anchor notify("KillWobble");
 
     wait 1;
-
     self thread ControlLander(lander);
 }
 
@@ -96,7 +93,7 @@ ControlLander(lander)
 
     base = GetEnt("lander_base", "script_noteworthy");
     self SetMenuInstructions("[{+attack}] - Move Forward\n[{+melee}] - Exit");
-    
+
     while(1)
     {
         if(self AttackButtonPressed())
@@ -107,13 +104,11 @@ ControlLander(lander)
             SetLanderFX(lander, base, 1);
         }
         else if(self MeleeButtonPressed())
-        {
             break;
-        }
         else
         {
             SetLanderFX(lander, base, 0);
-            lander.anchor.wobble = undefined;
+            lander.anchor.wobble = false;
         }
 
         wait 0.1;
@@ -129,7 +124,7 @@ ControlLander(lander)
     lander.anchor waittill("movedone");
 
     SetLanderFX(lander, base, 0);
-    lander.anchor.wobble = undefined;
+    lander.anchor.wobble = false;
     lander.anchor waittill("rotatedone");
 
     lander.anchor thread lander_takeoff_wobble();
@@ -137,56 +132,55 @@ ControlLander(lander)
     player_blocking_lander();
     lander.anchor waittill("movedone");
 
-    lander.anchor.wobble = undefined;
+    lander.anchor.wobble = false;
 
     PlayFX(level._effect["lunar_lander_dust"], base.origin);
     base clientfield::set("COSMO_LANDER_ENGINE_FX", 0);
     SetLanderFX(lander, base, 0);
 
     wait 0.5;
-    
     open_lander_gate();
 
     for(a = 0; a < level.players.size; a++)
     {
         player = level.players[a];
 
-        if(!isDefined(player) || !IsAlive(player) || !isDefined(player.lander) || !player.lander)
+        if(!isDefined(player) || !IsAlive(player) || !Is_True(player.lander))
             continue;
-        
+
         player Unlink();
-        player DisableInvulnerability();
-        player.DisableMenuControls = undefined;
+        player.DisableMenuControls = false;
         player.lander = false;
     }
 
     self SetMenuInstructions();
-
     lander.riders = 0;
     lander clientfield::set("COSMO_LANDER_MOVE_FX", 0);
 
-    self.ControlLunarLander = undefined;
+    self.ControlLunarLander = false;
     level.lander_in_use = false;
     level flag::clear("lander_inuse");
 }
 
 SetLanderFX(lander, base, state)
 {
-    lander clientfield::set("COSMO_LANDER_MOVE_FX", state);
-    base clientfield::set("COSMO_LANDER_RUMBLE_AND_QUAKE", state);
+    if(isDefined(lander) && lander clientfield::get("COSMO_LANDER_MOVE_FX") != state)
+        lander clientfield::set("COSMO_LANDER_MOVE_FX", state);
+
+    if(isDefined(base) && base clientfield::get("COSMO_LANDER_RUMBLE_AND_QUAKE") != state)
+        base clientfield::set("COSMO_LANDER_RUMBLE_AND_QUAKE", state);
 }
 
 lander_takeoff_wobble()
 {
-    if(isDefined(self.wobble))
+    if(Is_True(self.wobble))
         return;
 
     self.wobble = true;
 
-    while(isDefined(self.wobble))
+    while(Is_True(self.wobble))
     {
         self RotateTo((RandomFloatRange(-5, 5), 0, RandomFloatRange(-5, 5)), 0.5);
-
         wait 0.5;
     }
 
@@ -215,157 +209,158 @@ close_lander_gate(time)
 
 move_gate(pos, lower, time = 1)
 {
-	lander = GetEnt("lander", "targetname");
-	self Unlink();
+    lander = GetEnt("lander", "targetname");
+    self Unlink();
 
-	if(lower)
-	{
-		self NotSolid();
+    if(lower)
+    {
+        self NotSolid();
 
-		if(self.classname == "script_brushmodel")
-			self MoveTo(pos.origin + (VectorScale((0, 0, -1), 132)), time);
-		else
-		{
-			self PlaySound("zmb_lander_gate");
-			self MoveTo(pos.origin + (VectorScale((0, 0, -1), 44)), time);
-		}
+        if(self.classname == "script_brushmodel")
+            self MoveTo(pos.origin + (VectorScale((0, 0, -1), 132)), time);
+        else
+        {
+            self PlaySound("zmb_lander_gate");
+            self MoveTo(pos.origin + (VectorScale((0, 0, -1), 44)), time);
+        }
 
-		self waittill("movedone");
+        self waittill("movedone");
 
-		if(self.classname == "script_brushmodel")
-			self NotSolid();
-	}
-	else
-	{
-		if(self.classname != "script_brushmodel")
-			self PlaySound("zmb_lander_gate");
+        if(self.classname == "script_brushmodel")
+            self NotSolid();
+    }
+    else
+    {
+        if(self.classname != "script_brushmodel")
+            self PlaySound("zmb_lander_gate");
 
-		self NotSolid();
-		self MoveTo(pos.origin, time);
-		self waittill("movedone");
+        self NotSolid();
+        self MoveTo(pos.origin, time);
+        self waittill("movedone");
 
-		if(self.classname == "script_brushmodel")
-			self Solid();
-	}
+        if(self.classname == "script_brushmodel")
+            self Solid();
+    }
 
-	self LinkTo(lander.anchor);
+    self LinkTo(lander.anchor);
 }
 
 takeoff_nuke(max_zombies, range, delay, trig)
 {
-	if(isDefined(delay))
-		wait delay;
-    
-	zombies = GetAISpeciesArray("axis");
-	spot = self.origin;
-	zombies = util::get_array_of_closest(self.origin, zombies, undefined, max_zombies, range);
+    if(isDefined(delay))
+        wait delay;
 
-	for(i = 0; i < zombies.size; i++)
-	{
-		if(!zombies[i] IsTouching(trig))
-			continue;
-        
-		zombies[i] thread zombie_burst();
-	}
+    zombies = GetAISpeciesArray("axis");
+    spot = self.origin;
+    zombies = util::get_array_of_closest(self.origin, zombies, undefined, max_zombies, range);
 
-	wait 0.5;
-	lander_clean_up_corpses(spot, 250);
+    for(i = 0; i < zombies.size; i++)
+    {
+        if(!zombies[i] IsTouching(trig))
+            continue;
+
+        zombies[i] thread zombie_burst();
+    }
+
+    wait 0.5;
+    lander_clean_up_corpses(spot, 250);
 }
 
 zombie_burst()
 {
-	self endon("death");
+    self endon("death");
 
-	wait RandomFloatRange(0.2, 0.3);
-	level.zombie_total++;
+    wait RandomFloatRange(0.2, 0.3);
+    level.zombie_total++;
 
-	PlaySoundAtPosition("nuked", self.origin);
-	PlayFX(level._effect["zomb_gib"], self.origin);
+    PlaySoundAtPosition("nuked", self.origin);
+    PlayFX(level._effect["zomb_gib"], self.origin);
 
-	if(isDefined(self.lander_death))
-		self [[ self.lander_death ]]();
-    
-	self delete();
+    if(isDefined(self.lander_death))
+        self [[ self.lander_death ]]();
+
+    self delete();
 }
 
 lander_clean_up_corpses(spot, range)
 {
-	corpses = GetCorpseArray();
+    corpses = GetCorpseArray();
 
-	if(isDefined(corpses))
-		for(i = 0; i < corpses.size; i++)
-			if(DistanceSquared(spot, corpses[i].origin) <= (range * range))
-				corpses[i] thread lander_remove_corpses();
+    if(isDefined(corpses) && corpses.size)
+        for(i = 0; i < corpses.size; i++)
+            if(DistanceSquared(spot, corpses[i].origin) <= (range * range))
+                corpses[i] thread lander_remove_corpses();
 }
 
 lander_remove_corpses()
 {
-	wait RandomFloatRange(0.05, 0.25);
+    wait RandomFloatRange(0.05, 0.25);
 
-	if(!isDefined(self))
-		return;
-    
-	PlayFX(level._effect["zomb_gib"], self.origin);
-	self delete();
+    if(!isDefined(self))
+        return;
+
+    PlayFX(level._effect["zomb_gib"], self.origin);
+    self delete();
 }
 
 player_blocking_lander()
 {
-	players = GetPlayers();
-	lander = GetEnt("lander", "targetname");
-	rider_trigger = GetEnt(lander.station + "_riders", "targetname");
-	crumb = struct::get(rider_trigger.target, "targetname");
+    players = GetPlayers();
+    lander = GetEnt("lander", "targetname");
+    rider_trigger = GetEnt(lander.station + "_riders", "targetname");
+    crumb = struct::get(rider_trigger.target, "targetname");
 
-	for(i = 0; i < players.size; i++)
-	{
-		if(rider_trigger IsTouching(players[i]))
-		{
-			players[i] SetOrigin(crumb.origin + (RandomIntRange(-20, 20), RandomIntRange(-20, 20), 0));
-			players[i] DoDamage(players[i].health + 10000, players[i].origin);
-		}
-	}
+    for(i = 0; i < players.size; i++)
+    {
+        if(rider_trigger IsTouching(players[i]))
+        {
+            players[i] SetOrigin(crumb.origin + (RandomIntRange(-20, 20), RandomIntRange(-20, 20), 0));
+            players[i] DoDamage(players[i].health + 10000, players[i].origin);
+        }
+    }
 
-	zombies = GetAISpeciesArray("axis");
+    zombies = GetAISpeciesArray("axis");
 
-	for(i = 0; i < zombies.size; i++)
-	{
-		if(isDefined(zombies[i]))
-		{
-			if(rider_trigger IsTouching(zombies[i]))
-			{
-				level.zombie_total++;
-                
-				PlaySoundAtPosition("nuked", zombies[i].origin);
-				PlayFX(level._effect["zomb_gib"], zombies[i].origin);
+    for(i = 0; i < zombies.size; i++)
+    {
+        if(isDefined(zombies[i]))
+        {
+            if(rider_trigger IsTouching(zombies[i]))
+            {
+                level.zombie_total++;
 
-				if(isDefined(zombies[i].lander_death))
-					zombies[i] [[zombies[i].lander_death]]();
-                
-				zombies[i] delete();
-			}
-		}
-	}
+                PlaySoundAtPosition("nuked", zombies[i].origin);
+                PlayFX(level._effect["zomb_gib"], zombies[i].origin);
 
-	wait 0.5;
+                if(isDefined(zombies[i].lander_death))
+                zombies[i] [[ zombies[i].lander_death ]]();
+
+                zombies[i] delete();
+            }
+        }
+    }
+
+    wait 0.5;
 }
 
 TeleportGenerator()
 {
     if(level flag::get("target_teleported"))
         return self iPrintlnBold("^1ERROR: ^7Generator Has Already Been Teleported");
-    
+
     self endon("disconnect");
-    
+
     curs = self getCursor();
     menu = self getCurrent();
-    
+
     self GivePlayerEquipment(GetWeapon("black_hole_bomb"), self);
     wait 0.01;
+
     self MagicGrenadeType(GetWeapon("black_hole_bomb"), (-1610, 2770, -203), (0, 0, 0), 1);
 
     while(!level flag::get("target_teleported"))
         wait 0.1;
-    
+
     self RefreshMenu(menu, curs);
 }
 
@@ -373,12 +368,12 @@ ActivateComputer()
 {
     if(!level flag::get("target_teleported"))
         return self iPrintlnBold("^1ERROR: ^7Generator Must Be Teleported First");
-    
+
     if(level flag::get("rerouted_power"))
         return self iPrintlnBold("^1ERROR: ^7Computer Has Already Been Activated");
-    
+
     self endon("disconnect");
-    
+
     curs = self getCursor();
     menu = self getCurrent();
     location = struct::get("casimir_monitor_struct", "targetname");
@@ -395,14 +390,14 @@ ActivateComputer()
 
             if(isDefined(trigger))
                 trigger.origin = location.origin;
-            
+
             break;
         }
     }
 
     while(!level flag::get("rerouted_power"))
         wait 0.1;
-    
+
     self RefreshMenu(menu, curs);
     level thread activate_casimir_light(1);
 }
@@ -411,10 +406,10 @@ ActivateSwitches()
 {
     if(!level flag::get("rerouted_power"))
         return self iPrintlnBold("^1ERROR: ^7Computer Must Be Activated First");
-    
+
     if(level flag::get("switches_synced"))
         return self iPrintlnBold("^1ERROR: ^7Switched Already Activated");
-    
+
     curs = self getCursor();
     menu = self getCurrent();
 
@@ -434,7 +429,7 @@ ActivateSwitches()
 
     while(!level flag::get("switches_synced"))
         wait 0.1;
-    
+
     self RefreshMenu(menu, curs);
     level thread activate_casimir_light(2);
 }
@@ -443,19 +438,19 @@ RefuelRocket()
 {
     if(!level flag::get("switches_synced"))
         return self iPrintlnBold("^1ERROR: ^7Switches Must Be Activated First");
-    
+
     if(level flag::get("lander_a_used") && level flag::get("lander_b_used") && level flag::get("lander_c_used") && level flag::get("launch_activated"))
         return self iPrintlnBold("^1ERROR: ^7Rocket Already Refueled");
 
     curs = self getCursor();
     menu = self getCurrent();
     lander = GetEnt("lander", "targetname");
-    
+
     if(!level flag::get("lander_a_used"))
     {
         level flag::set("lander_a_used");
         lander clientfield::set("COSMO_LAUNCH_PANEL_BASEENTRY_STATUS", 1);
-        
+
         wait 0.1;
     }
 
@@ -476,17 +471,16 @@ RefuelRocket()
     }
 
     level flag::set("launch_activated");
-
     wait 0.1;
 
     panel = GetEnt("rocket_launch_panel", "targetname");
 
     if(isDefined(panel))
         panel SetModel("p7_zm_asc_console_launch_key_full_green");
-    
+
     while(!(level flag::get("lander_a_used") && level flag::get("lander_b_used") && level flag::get("lander_c_used") && level flag::get("launch_activated")))
         wait 0.1;
-    
+
     self RefreshMenu(menu, curs);
 }
 
@@ -494,17 +488,17 @@ LaunchRocket()
 {
     if(!level flag::get("lander_a_used") || !level flag::get("lander_b_used") || !level flag::get("lander_c_used") || !level flag::get("launch_activated"))
         return self iPrintlnBold("^1ERROR: ^7Rocket Must Be Refueled First");
-    
+
     curs = self getCursor();
     menu = self getCurrent();
     trig = GetEnt("trig_launch_rocket", "targetname");
-    
+
     if(level flag::get("launch_complete") || !isDefined(trig))
         return self iPrintlnBold("^1ERROR: ^7Rocket Has Already Been Launched");
 
     if(isDefined(trig))
         trig notify("trigger", self);
-    
+
     while(!level flag::get("launch_complete"))
         wait 0.1;
 
@@ -523,32 +517,32 @@ CompleteTimeClock()
     menu = self getCurrent();
 
     level flag::set("pressure_sustained");
-    
+
     foreach(model in GetEntArray("script_model", "classname"))
     {
         if(model.model == "p7_zm_kin_clock_second_hand")
             timer_hand = model;
-        
+
         if(model.model == "p7_zm_tra_wall_clock")
             clock = model;
     }
 
     if(isDefined(clock))
         clock delete();
-    
+
     if(isDefined(timer_hand))
         timer_hand delete();
-    
+
     while(!level flag::get("pressure_sustained"))
         wait 0.1;
-    
+
     self RefreshMenu(menu, curs);
     level thread activate_casimir_light(3);
 }
 
 activate_casimir_light(num)
 {
-	spot = struct::get("casimir_light_" + num, "targetname");
+    spot = struct::get("casimir_light_" + num, "targetname");
 
     alreadySpawned = false;
 
@@ -556,13 +550,13 @@ activate_casimir_light(num)
         if(ent.model == "tag_origin" && ent.origin == spot.origin)
             alreadySpawned = true;
 
-	if(isDefined(spot) && !alreadySpawned)
-	{
-		light = Spawn("script_model", spot.origin);
-		light SetModel("tag_origin");
+    if(isDefined(spot) && !alreadySpawned)
+    {
+        light = Spawn("script_model", spot.origin);
+        light SetModel("tag_origin");
 
-		light.angles = spot.angles;
-		fx = PlayFXOnTag(level._effect["fx_light_ee_progress"], light, "tag_origin");
-		level.casimir_lights[level.casimir_lights.size] = light;
-	}
+        light.angles = spot.angles;
+        fx = PlayFXOnTag(level._effect["fx_light_ee_progress"], light, "tag_origin");
+        level.casimir_lights[level.casimir_lights.size] = light;
+    }
 }

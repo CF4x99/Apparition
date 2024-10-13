@@ -1,6 +1,63 @@
+PopulateTeleportMenu(menu, player)
+{
+    switch(menu)
+    {
+        case "Teleport Menu":
+            mapStr = ReturnMapName(level.script);
+            
+            self addMenu("Teleport Menu");
+                self addOptBool(player.DisableTeleportEffect, "Disable Teleport Effect", ::DisableTeleportEffect, player);
+                
+                if(isDefined(level.MenuSpawnPoints) && level.MenuSpawnPoints.size)
+                    self addOptIncSlider("Official Spawn Points", ::OfficialSpawnPoint, 0, 0, (level.MenuSpawnPoints.size - 1), 1, player);
+                
+                if(isDefined(level.menuTeleports) && level.menuTeleports.size)
+                    self addOpt(mapStr + " Teleports", ::newMenu, mapStr + " Teleports");
+                
+                self addOpt("Entity Teleports", ::newMenu, "Entity Teleports");
+                self addOptSlider("Teleport", ::TeleportPlayer, "Crosshairs;Sky;Random Player", player);
+                self addOptBool(player.TeleportGun, "Teleport Gun", ::TeleportGun, player);
+                self addOptBool(player.SaveAndLoad, "Save & Load Position", ::SaveAndLoad, player);
+                self addOpt("Save Current Location", ::SaveCurrentLocation, player);
+                self addOpt("Load Saved Location", ::LoadSavedLocation, player);
+
+                if(player != self)
+                {
+                    self addOpt("Teleport To Self", ::TeleportPlayer, self, player);
+                    self addOpt("Teleport To Player", ::TeleportPlayer, player, self);
+                }
+            break;
+        
+        case "Entity Teleports":            
+            self addMenu("Entity Teleports");
+
+                if(isDefined(level.chests[level.chest_index]))
+                    self addOpt("Mystery Box", ::EntityTeleport, "Mystery Box", player);
+                
+                if(isDefined(level.bgb_machines) && level.bgb_machines.size)
+                    self addOptIncSlider("BGB Machine", ::EntityTeleport, 0, 0, (level.bgb_machines.size - 1), 1, player, "BGB Machine");
+
+                perks = GetEntArray("zombie_vending", "targetname");
+
+                if(isDefined(perks) && perks.size)
+                {
+                    foreach(perk in perks)
+                    {
+                        perkname = ReturnPerkName(CleanString(perk.script_noteworthy));
+
+                        if(perkname == "Unknown Perk")
+                            perkname = CleanString(perk.script_noteworthy);
+                        
+                        self addOpt(perkname, ::EntityTeleport, perk.script_noteworthy, player);
+                    }
+                }
+            break;
+    }
+}
+
 DisableTeleportEffect(player)
 {
-    player.DisableTeleportEffect = isDefined(player.DisableTeleportEffect) ? undefined : true;
+    player.DisableTeleportEffect = !Is_True(player.DisableTeleportEffect);
 }
 
 TeleportPlayer(origin, player, angles, name)
@@ -11,11 +68,31 @@ TeleportPlayer(origin, player, angles, name)
     if(IsPlayer(origin))
         newOrigin = origin.origin;
     
-    if(origin == "Crosshairs")
-        newOrigin = self TraceBullet();
-    
-    if(origin == "Sky")
-        newOrigin = player.origin + (0, 0, 35000);
+    if(IsString(origin))
+    {
+        switch(origin)
+        {
+            case "Crosshairs":
+                newOrigin = self TraceBullet();
+                break;
+            
+            case "Sky":
+                newOrigin = player.origin + (0, 0, 35000);
+                break;
+            
+            case "Random Player":
+                if(level.players.size < 2)
+                    return self iPrintlnBold("^1ERROR: ^7Not Enough Players To Use This Option");
+                
+                index = RandomInt(level.players.size);
+
+                while(index == player GetEntityNumber() || !isDefined(level.players[index]) || !IsPlayer(level.players[index]))
+                    index = RandomInt(level.players.size);
+                
+                newOrigin = level.players[index].origin;
+                break;
+        }
+    }
     
     if(!isDefined(newOrigin))
         newOrigin = origin;
@@ -41,29 +118,31 @@ OfficialSpawnPoint(point, player)
 
 EntityTeleport(entity, player, eEntity)
 {
-    if(entity == "Mystery Box")
+    if(IsString(entity))
     {
-        ent = level.chests[level.chest_index];
-        entAngleDir = (AnglesToRight(ent.angles) * -1);
-    }
-    
-    perks = GetEntArray("zombie_vending", "targetname");
-                
-    if(isDefined(perks) && perks.size)
-    {
-        foreach(perk in perks)
+        if(entity == "Mystery Box")
         {
-            if(entity == perk.script_noteworthy)
+            ent = level.chests[level.chest_index];
+            entAngleDir = (AnglesToRight(ent.angles) * -1);
+        }
+        
+        perks = GetEntArray("zombie_vending", "targetname");
+                    
+        if(isDefined(perks) && perks.size)
+        {
+            foreach(perk in perks)
             {
-                ent = perk.machine;
-                entAngleDir = AnglesToRight(ent.angles);
+                if(IsString(entity) && entity == perk.script_noteworthy)
+                {
+                    ent = perk.machine;
+                    entAngleDir = AnglesToRight(ent.angles);
 
-                break;
+                    break;
+                }
             }
         }
     }
-
-    if(isDefined(eEntity) && eEntity == "BGB Machine")
+    else if(IsInt(entity) && isDefined(eEntity) && eEntity == "BGB Machine")
     {
         ent = level.bgb_machines[entity];
         entAngleDir = AnglesToRight(ent.angles);
@@ -71,6 +150,8 @@ EntityTeleport(entity, player, eEntity)
 
     if(!isDefined(ent) || !isDefined(entAngleDir))
         return;
+    
+    distance = undefined;
     
     if(!isDefined(distance))
         distance = 70; //Optional to pre-define the distance for specific entities. Defaults to this value.
@@ -83,14 +164,14 @@ EntityTeleport(entity, player, eEntity)
 
 TeleportGun(player)
 {
-    player.TeleportGun = isDefined(player.TeleportGun) ? undefined : true;
-
-    if(isDefined(player.TeleportGun))
+    if(!Is_True(player.TeleportGun))
     {
         player endon("disconnect");
         player endon("EndTeleportGun");
+        
+        player.TeleportGun = true;
 
-        while(isDefined(player.TeleportGun))
+        while(Is_True(player.TeleportGun))
         {
             player waittill("weapon_fired");
             
@@ -99,21 +180,24 @@ TeleportGun(player)
         }
     }
     else
+    {
         player notify("EndTeleportGun");
+        player.TeleportGun = false;
+    }
 }
 
 SaveAndLoad(player)
 {
     player endon("disconnect");
 
-    player.SaveAndLoad = isDefined(player.SaveAndLoad) ? undefined : true;
-
-    if(isDefined(player.SaveAndLoad))
+    if(!Is_True(player.SaveAndLoad))
     {
+        player.SaveAndLoad = true;
+
         player iPrintlnBold("Press [{+actionslot 3}] To ^2Save Current Location");
         player iPrintlnBold("Press [{+actionslot 2}] To ^2Load Saved Location");
 
-        while(isDefined(player.SaveAndLoad))
+        while(Is_True(player.SaveAndLoad))
         {
             if(!player isInMenu(true))
             {
@@ -133,6 +217,8 @@ SaveAndLoad(player)
             wait 0.05;
         }
     }
+    else
+        player.SaveAndLoad = false;
 }
 
 SaveCurrentLocation(player)
@@ -161,9 +247,11 @@ LoadSavedLocation(player)
 
 PlayTeleportEffect()
 {
-    if(!isDefined(self.DisableTeleportEffect))
+    if(!Is_True(self.DisableTeleportEffect))
     {
         PlayFX(level._effect["teleport_splash"], self.origin);
         PlayFX(level._effect["teleport_aoe_kill"], self GetTagOrigin("j_spineupper"));
+        
+        self PlaySound("zmb_bgb_abh_teleport_in");
     }
 }

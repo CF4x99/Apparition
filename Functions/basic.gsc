@@ -1,44 +1,147 @@
+PopulateBasicScripts(menu, player)
+{
+    switch(menu)
+    {
+        case "Basic Scripts":
+            playerVisions = Array("Default", "zombie_last_stand", "zombie_death");
+
+            self addMenu("Basic Scripts");
+
+                if(!level.isUEM)
+                    self addOptBool(player.godmode, "God Mode", ::Godmode, player);
+                
+                self addOptBool(player.PlayerDemiGod, level.isUEM ? "God Mode" : "Demi-God", ::DemiGod, player);
+                self addOptBool(player.Noclip, "Noclip", ::Noclip1, player);
+                self addOptBool(player.NoclipBind1, "Bind Noclip To [{+frag}]", ::BindNoclip, player);
+                self addOptBool(player.UFOMode, "UFO Mode", ::UFOMode, player);
+                self addOptSlider("Unlimited Ammo", ::UnlimitedAmmo, "Continuous;Reload;Disable", player);
+                self addOptBool(player.UnlimitedEquipment, "Unlimited Equipment", ::UnlimitedEquipment, player);
+                self addOptSlider("Modify Score", ::ModifyScore, "1000000;100000;10000;1000;100;10;0;-10;-100;-1000;-10000;-100000;-1000000", player);
+                self addOpt("Perk Menu", ::newMenu, "Perk Menu");
+                self addOpt("Gobblegum Menu", ::newMenu, "Gobblegum Menu");
+                self addOptBool(player.ThirdPerson, "Third Person", ::ThirdPerson, player);
+                self addOptIncSlider("Movement Speed", ::SetMovementSpeed, 0, 1, level.isUEM ? 2 : 3, 0.5, player);
+                self addOptSlider("Clone", ::PlayerClone, "Clone;Dead", player);
+                self addOptBool(player.Invisibility, "Invisibility", ::Invisibility, player);
+                self addOptBool(player.playerIgnoreMe, "No Target", ::NoTarget, player);
+                self addOptBool(player.ReducedSpread, "Reduced Spread", ::ReducedSpread, player);
+                self addOptBool(player.MultiJump, "Multi-Jump", ::MultiJump, player);
+                self addOptSlider("Set Vision", ::PlayerSetVision, playerVisions, player);
+                self addOpt("Visual Effects", ::newMenu, "Visual Effects");
+                self addOptSlider("Zombie Charms", ::ZombieCharms, "None;Orange;Green;Purple;Blue", player);
+                self addOptBool(player.DisablePlayerHUD, "Disable HUD", ::DisablePlayerHUD, player);
+                self addOptBool(player.NoExplosiveDamage, "No Explosive Damage", ::NoExplosiveDamage, player);
+                self addOptIncSlider("Character Model Index", ::SetCharacterModelIndex, 0, player.characterIndex, 8, 1, player);
+                self addOptBool(player.LoopCharacterModelIndex, "Random Character Model Index", ::LoopCharacterModelIndex, player);
+                self addOptBool(player.ShootWhileSprinting, "Shoot While Sprinting", ::ShootWhileSprinting, player);
+                self addOptBool(player.UnlimitedSprint, "Unlimited Sprint", ::UnlimitedSprint, player);
+                self addOpt("Respawn", ::ServerRespawnPlayer, player);
+                self addOpt("Revive", ::PlayerRevive, player);
+                self addOptSlider("Death", ::PlayerDeath, "Down;Kill", player);
+            break;
+        
+        case "Perk Menu":
+            self addMenu("Perk Menu");
+            
+                if(isDefined(level.MenuPerks) && level.MenuPerks.size)
+                {
+                    self addOptBool((isDefined(player.perks_active) && player.perks_active.size == level.MenuPerks.size), "All Perks", ::PlayerAllPerks, player);
+                    self addOptBool(player._retain_perks, "Retain Perks", ::PlayerRetainPerks, player);
+
+                    for(a = 0; a < level.MenuPerks.size; a++)
+                    {
+                        perkname = ReturnPerkName(CleanString(level.MenuPerks[a]));
+
+                        if(perkname == "Unknown Perk")
+                            perkname = CleanString(level.MenuPerks[a]);
+                        
+                        self addOptBool((player HasPerk(level.MenuPerks[a]) || player zm_perks::has_perk_paused(level.MenuPerks[a])), perkname, ::GivePlayerPerk, level.MenuPerks[a], player);
+                    }
+                }
+            break;
+        
+        case "Gobblegum Menu":
+            self addMenu("Gobblegum Menu");
+
+                if(isDefined(level.MenuBGB) && level.MenuBGB.size)
+                    for(a = 0; a < level.MenuBGB.size; a++)
+                        self addOptBool((player.bgb == level.MenuBGB[a]), GobblegumName(level.MenuBGB[a]), ::GivePlayerGobblegum, level.MenuBGB[a], player);
+            break;
+        
+        case "Visual Effects":
+
+            if(!isDefined(player.ClientVisualEffect))
+                player.ClientVisualEffect = "None";
+
+            types = Array("visionset", "overlay");
+            visuals = [];
+
+            self addMenu("Visual Effects");
+
+                for(a = 0; a < types.size; a++)
+                {
+                    Keys = GetArrayKeys(level.vsmgr[types[a]].info);
+
+                    for(b = 0; b < Keys.size; b++)
+                    {
+                        if(isInArray(visuals, Keys[b]) || Keys[b] == "none" || Keys[b] == "__none" || IsSubStr(Keys[b], "last_stand") || IsSubStr(Keys[b], "_death") || IsSubStr(Keys[b], "thrasher"))
+                            continue;
+                        
+                        visuals[visuals.size] = Keys[b];
+
+                        self addOptBool(player GetVisualEffectState(Keys[b]), CleanString(Keys[b]), ::SetClientVisualEffects, Keys[b], player);
+                    }
+                }
+            break;
+    }
+}
+
 Godmode(player)
 {
     player endon("disconnect");
 
-    if(isDefined(player.DemiGod))
+    if(Is_True(player.PlayerDemiGod))
         player DemiGod(player);
     
-    player.godmode = isDefined(player.godmode) ? undefined : true;
-
-    if(isDefined(player.godmode))
+    if(!Is_True(player.godmode))
     {
-        while(isDefined(player.godmode))
+        player.godmode = true;
+
+        while(Is_True(player.godmode))
         {
             player EnableInvulnerability();
-
             wait 0.05;
         }
     }
     else
+    {
+        player.godmode = false;
         player DisableInvulnerability();
+    }
 }
 
 DemiGod(player)
 {
-    if(isDefined(player.godmode))
+    if(Is_True(player.godmode))
         player Godmode(player);
 
-    player.DemiGod = isDefined(player.DemiGod) ? undefined : true;
+    if(!Is_True(player.PlayerDemiGod))
+        player.PlayerDemiGod = true;
+    else
+        player.PlayerDemiGod = false;
 }
 
 Noclip1(player)
 {
     player endon("disconnect");
 
-    if(!isDefined(player.Noclip) && player isPlayerLinked())
+    if(!Is_True(player.Noclip) && player isPlayerLinked())
         return self iPrintlnBold("^1ERROR: ^7Player Is Linked To An Entity");
     
-    player.Noclip = isDefined(player.Noclip) ? undefined : true;
-    
-    if(isDefined(player.Noclip))
+    if(!Is_True(player.Noclip))
     {
+        player.Noclip = true;
+
         if(player hasMenu() && player isInMenu(true))
             player closeMenu1();
 
@@ -51,7 +154,7 @@ Noclip1(player)
 
         player SetMenuInstructions("[{+attack}] - Move Forward\n[{+speed_throw}] - Move Backwards\n[{+melee}] - Exit");
         
-        while(isDefined(player.Noclip) && Is_Alive(player) && !player isPlayerLinked(player.nocliplinker))
+        while(Is_True(player.Noclip) && Is_Alive(player) && !player isPlayerLinked(player.nocliplinker))
         {
             if(player AttackButtonPressed())
                 player.nocliplinker.origin = player.nocliplinker.origin + AnglesToForward(player GetPlayerAngles()) * 60;
@@ -64,7 +167,7 @@ Noclip1(player)
             wait 0.01;
         }
 
-        if(isDefined(player.Noclip))
+        if(Is_True(player.Noclip))
             player Noclip1(player);
     }
     else
@@ -75,7 +178,8 @@ Noclip1(player)
         player EnableWeapons();
         player EnableOffHandWeapons();
 
-        player.DisableMenuControls = undefined;
+        player.DisableMenuControls = false;
+        player.Noclip = false;
 
         player SetMenuInstructions();
     }
@@ -85,37 +189,42 @@ BindNoclip(player)
 {
     player endon("disconnect");
 
-    if(isDefined(player.Jetpack) && !isDefined(player.NoclipBind))
+    if(Is_True(player.Jetpack) && !Is_True(player.NoclipBind1))
         return self iPrintlnBold("^1ERROR: ^7Player Has Jetpack Enabled");
     
-    if(isDefined(player.SpecNade) && !isDefined(player.NoclipBind))
+    if(Is_True(player.SpecNade) && !Is_True(player.NoclipBind1))
         return self iPrintlnBold("^1ERROR: ^7Player Has Spec-Nade Enabled");
     
-    player.NoclipBind = isDefined(player.NoclipBind) ? undefined : true;
-    
-    while(isDefined(player.NoclipBind))
+    if(!Is_True(player.NoclipBind1))
     {
-        if(player FragButtonPressed() && !isDefined(player.DisableMenuControls))
-        {
-            player thread Noclip1(player);
-            wait 0.2;
-        }
+        player.NoclipBind1 = true;
 
-        wait 0.025;
+        while(Is_True(player.NoclipBind1))
+        {
+            if(player FragButtonPressed() && !Is_True(player.DisableMenuControls))
+            {
+                player thread Noclip1(player);
+                wait 0.2;
+            }
+
+            wait 0.025;
+        }
     }
+    else
+        player.NoclipBind1 = false;
 }
 
 UFOMode(player)
 {
     player endon("disconnect");
 
-    if(!isDefined(player.UFOMode) && player isPlayerLinked())
+    if(!Is_True(player.UFOMode) && player isPlayerLinked())
         return self iPrintlnBold("^1ERROR: ^7Player Is Linked To An Entity");
     
-    player.UFOMode = isDefined(player.UFOMode) ? undefined : true;
-     
-    if(isDefined(player.UFOMode))
+    if(!Is_True(player.UFOMode))
     {
+        player.UFOMode = true;
+
         if(player hasMenu() && player isInMenu(true))
             player closeMenu1();
 
@@ -128,7 +237,7 @@ UFOMode(player)
 
         player SetMenuInstructions("[{+attack}] - Move Up\n[{+speed_throw}] - Move Down\n[{+frag}] - Move Forward\n[{+melee}] - Exit");
         
-        while(isDefined(player.UFOMode) && Is_Alive(player) && !player isPlayerLinked(player.ufolinker))
+        while(Is_True(player.UFOMode) && Is_Alive(player) && !player isPlayerLinked(player.ufolinker))
         {
             player.ufolinker.angles = (player.ufolinker.angles[0], player GetPlayerAngles()[1], player.ufolinker.angles[2]);
 
@@ -146,7 +255,7 @@ UFOMode(player)
             wait 0.01;
         }
 
-        if(isDefined(player.UFOMode))
+        if(Is_True(player.UFOMode))
             player thread UFOMode(player);
     }
     else
@@ -157,7 +266,8 @@ UFOMode(player)
         player EnableWeapons();
         player EnableOffHandWeapons();
 
-        player.DisableMenuControls = undefined;
+        player.DisableMenuControls = false;
+        player.UFOMode = false;
 
         player SetMenuInstructions();
     }
@@ -175,7 +285,7 @@ UnlimitedAmmo(type, player)
         {
             weapon = player GetCurrentWeapon();
 
-            if(isDefined(weapon))
+            if(isDefined(weapon) && weapon != level.weaponnone)
             {
                 player GiveMaxAmmo(weapon);
 
@@ -183,26 +293,31 @@ UnlimitedAmmo(type, player)
                     player SetWeaponAmmoClip(weapon, weapon.clipsize);
             }
 
-            wait 0.05;
+            player util::waittill_any("weapon_fired", "weapon_change");
         }
     }
 }
 
 UnlimitedEquipment(player)
 {
-    player.UnlimitedEquipment = isDefined(player.UnlimitedEquipment) ? undefined : true;
-
     player endon("disconnect");
 
-    while(isDefined(player.UnlimitedEquipment))
+    if(!Is_True(player.UnlimitedEquipment))
     {
-        offhand = player GetCurrentOffhand();
+        player.UnlimitedEquipment = true;
 
-        if(isDefined(offhand))
-            player GiveMaxAmmo(offhand);
+        while(Is_True(player.UnlimitedEquipment))
+        {
+            player waittill("grenade_fire");
 
-        wait 0.05;
+            offhand = player GetCurrentOffhand();
+
+            if(isDefined(offhand) && offhand != level.weaponnone)
+                player GiveMaxAmmo(offhand);
+        }
     }
+    else
+        player.UnlimitedEquipment = false;
 }
 
 ModifyScore(score, player)
@@ -226,11 +341,11 @@ PlayerAllPerks(player)
 {
     player endon("disconnect");
 
-    if(player.perks_active.size != level.MenuPerks.size)
+    if(!isDefined(player.perks_active) || player.perks_active.size != level.MenuPerks.size)
     {
         for(a = 0; a < level.MenuPerks.size; a++)
             if(!player HasPerk(level.MenuPerks[a]) && !player zm_perks::has_perk_paused(level.MenuPerks[a]))
-                player thread zm_perks::give_perk(level.MenuPerks[a]);
+                player thread zm_perks::give_perk(level.MenuPerks[a], true);
     }
     else
     {
@@ -242,12 +357,14 @@ PlayerAllPerks(player)
 
 PlayerRetainPerks(player)
 {
-    player._retain_perks = isDefined(player._retain_perks) ? undefined : true;
-
     player endon("disconnect");
 
-    if(!isDefined(player._retain_perks))
+    if(!Is_True(player._retain_perks))
+        player._retain_perks = true;
+    else
     {
+        player._retain_perks = false;
+
         if(isDefined(player._retain_perks_array))
             player._retain_perks_array = undefined;
         
@@ -264,7 +381,7 @@ GivePlayerPerk(perk, player)
     if(player HasPerk(perk) || player zm_perks::has_perk_paused(perk))
         player notify(perk + "_stop");
     else
-        player zm_perks::give_perk(perk);
+        player zm_perks::give_perk(perk, true);
 }
 
 GivePlayerGobblegum(name, player)
@@ -289,7 +406,7 @@ GivePlayerGobblegum(name, player)
             player zm_utility::increment_is_drinking();
             player zm_utility::disable_player_move_states(1);
 
-            weapon = level.var_adfa48c4;
+            weapon = GetWeapon("zombie_bgb_grab");
             curWeapon = player GetCurrentWeapon();
 
             player GiveWeapon(weapon, player CalcWeaponOptions(level.bgb[name].camo_index, 0, 0));
@@ -352,8 +469,8 @@ GivePlayerGobblegum(name, player)
 
 ThirdPerson(player)
 {
-    player.ThirdPerson = isDefined(player.ThirdPerson) ? undefined : true;
-    player SetClientThirdPerson(isDefined(player.ThirdPerson));
+    player.ThirdPerson = !Is_True(player.ThirdPerson);
+    player SetClientThirdPerson(player.ThirdPerson);
 }
 
 SetMovementSpeed(scale, player)
@@ -368,7 +485,6 @@ SetMovementSpeed(scale, player)
     while(player.MovementSpeed != 1)
     {
         player SetMoveSpeedScale(scale);
-
         wait 0.01;
     }
 }
@@ -395,85 +511,88 @@ PlayerClone(type, player)
 
 Invisibility(player)
 {
-    player.Invisibility = isDefined(player.Invisibility) ? undefined : true;
-
-    if(isDefined(player.Invisibility))
+    if(!Is_True(player.Invisibility))
+    {
         player Hide();
+        player.Invisibility = true;
+    }
     else
+    {
         player Show();
+        player.Invisibility = false;
+    }
 }
 
 NoTarget(player)
 {
-    player endon("disconnect");
+    if(Is_True(player.AIPrioritizePlayer))
+        AIPrioritizePlayer(player);
+    
+    player.playerIgnoreMe = !Is_True(player.playerIgnoreMe);
 
-    player.NoTarget = isDefined(player.NoTarget) ? undefined : true;
-
-    if(isDefined(player.NoTarget))
-    {
-        while(isDefined(player.NoTarget))
-        {
-            player.ignoreme = true;
-
-            wait 0.1;
-        }
-    }
-    else
-        player.ignoreme = false;
+    if(Is_True(player.playerIgnoreMe))
+        player.playerIgnoreMeReset = false;
 }
 
 ReducedSpread(player)
 {
     player endon("disconnect");
 
-    player.ReducedSpread = isDefined(player.ReducedSpread) ? undefined : true;
-
-    if(isDefined(player.ReducedSpread))
+    if(!Is_True(player.ReducedSpread))
     {
-        while(isDefined(player.ReducedSpread))
+        player.ReducedSpread = true;
+
+        while(Is_True(player.ReducedSpread))
         {
             player SetSpreadOverride(1);
             wait 0.1;
         }
     }
     else
+    {
         player ResetSpreadOverride();
+        player.ReducedSpread = false;
+    }
 }
 
 MultiJump(player)
 {    
-    player.MultiJump = isDefined(player.MultiJump) ? undefined : true;
-
     player endon("disconnect");
 
-    while(isDefined(player.MultiJump))
+    if(!Is_True(player.MultiJump))
     {
-        if(player IsOnGround())
-            firstJump = true;
-        
-        if(player JumpButtonPressed() && !player IsOnGround() && isDefined(firstJump))
+        player.MultiJump = true;
+
+        while(Is_True(player.MultiJump))
         {
-            while(player JumpButtonPressed())
-                wait 0.01;
+            if(player IsOnGround())
+                firstJump = true;
             
-            firstJump = undefined;
-        }
-        
-        if(Is_Alive(player) && !player IsOnGround() && !isDefined(firstJump))
-        {
-            if(player JumpButtonPressed())
+            if(player JumpButtonPressed() && !player IsOnGround() && Is_True(firstJump))
             {
                 while(player JumpButtonPressed())
                     wait 0.01;
                 
-                player SetVelocity(player GetVelocity() + (0, 0, 250));
-
-                wait 0.05;
+                firstJump = false;
             }
+            
+            if(Is_Alive(player) && !player IsOnGround() && !Is_True(firstJump))
+            {
+                if(player JumpButtonPressed())
+                {
+                    while(player JumpButtonPressed())
+                        wait 0.01;
+                    
+                    player SetVelocity(player GetVelocity() + (0, 0, 250));
+                    wait 0.05;
+                }
+            }
+            
+            wait 0.05;
         }
-        
-        wait 0.05;
     }
+    else
+        player.MultiJump = false;
 }
 
 PlayerSetVision(vision, player)
@@ -491,15 +610,21 @@ PlayerSetVision(vision, player)
 
 GetVisualType(effect)
 {
-    types = ["visionset", "overlay"];
+    types = Array("visionset", "overlay");
+    type = undefined;
 
     for(a = 0; a < types.size; a++)
     {
         Keys = GetArrayKeys(level.vsmgr[types[a]].info);
 
         for(b = 0; b < Keys.size; b++)
-            if(Keys[b] == effect)
-                type = isDefined(type) ? "Both" : types[a];
+            if(isDefined(Keys[b]) && Keys[b] == effect)
+            {
+                if(isDefined(type))
+                    type = "Both";
+                else
+                    type = types[a];
+            }
     }
 
     return type;
@@ -511,13 +636,13 @@ GetVisualEffectState(effect)
 
     if(type == "Both")
     {
-        types = ["visionset", "overlay"];
+        types = Array("visionset", "overlay");
 
         for(a = 0; a < types.size; a++)
         {
             state = level.vsmgr[types[a]].info[effect].state;
 
-            if(state.players[self GetEntityNumber()].active == 1)
+            if(isDefined(state.players[self GetEntityNumber()].active) && state.players[self GetEntityNumber()].active == 1)
                 return true;
         }
 
@@ -529,7 +654,7 @@ GetVisualEffectState(effect)
 	if(!isDefined(state.players[self GetEntityNumber()]))
 		return false;
     
-	return state.players[self GetEntityNumber()].active == 1;
+	return isDefined(state.players[self GetEntityNumber()].active) && state.players[self GetEntityNumber()].active == 1;
 }
 
 SetClientVisualEffects(effect, player)
@@ -538,28 +663,41 @@ SetClientVisualEffects(effect, player)
 
     type = GetVisualType(effect);
 
-    if(effect == player.ClientVisualEffect)
+    if(!isDefined(type))
+        return;
+
+    if(isDefined(player.ClientVisualEffect) && effect == player.ClientVisualEffect)
         effect = "None";
-    else if(effect != player.ClientVisualEffect && player GetVisualEffectState(effect))
+    else if(isDefined(player.ClientVisualEffect) && effect != player.ClientVisualEffect && player GetVisualEffectState(effect))
         dEffect = effect;
 
-    if(player.ClientVisualEffect != "None" || isDefined(dEffect))
+    if(isDefined(player.ClientVisualEffect) && player.ClientVisualEffect != "None" || isDefined(dEffect))
     {
-        disable = isDefined(dEffect) ? dEffect : player.ClientVisualEffect;
-        removeType = GetVisualType(disable);
-
-        if(removeType == "visionset" || removeType == "Both")
-            visionset_mgr::deactivate("visionset", disable, player);
+        if(isDefined(dEffect))
+            disable = dEffect;
+        else
+        {
+            if(isDefined(player.ClientVisualEffect))
+                disable = player.ClientVisualEffect;
+        }
         
-        if(removeType == "overlay" || removeType == "Both")
-            visionset_mgr::deactivate("overlay", disable, player);
+        if(isDefined(disable))
+        {
+            removeType = GetVisualType(disable);
+
+            if(removeType == "visionset" || removeType == "Both")
+                visionset_mgr::deactivate("visionset", disable, player);
+            
+            if(removeType == "overlay" || removeType == "Both")
+                visionset_mgr::deactivate("overlay", disable, player);
+        }
     }
 
     if(!isDefined(dEffect))
     {
         player.ClientVisualEffect = effect;
 
-        if(effect != "None")
+        if(isDefined(effect) && effect != "None")
         {
             if(type == "visionset" || type == "Both")
                 visionset_mgr::activate("visionset", effect, player);
@@ -606,25 +744,28 @@ ZombieCharms(color, player)
 
 NoExplosiveDamage(player)
 {
-    player.NoExplosiveDamage = isDefined(player.NoExplosiveDamage) ? undefined : true;
+    player.NoExplosiveDamage = !Is_True(player.NoExplosiveDamage);
 }
 
 DisablePlayerHUD(player)
 {
-    player.DisablePlayerHUD = isDefined(player.DisablePlayerHUD) ? undefined : true;
-
     player endon("disconnect");
 
-    if(isDefined(player.DisablePlayerHUD))
+    if(!Is_True(player.DisablePlayerHUD))
     {
-        while(isDefined(player.DisablePlayerHUD))
+        player.DisablePlayerHUD = true;
+
+        while(Is_True(player.DisablePlayerHUD))
         {
             player SetClientUIVisibilityFlag("hud_visible", 0);
             wait 0.1;
         }
     }
     else
+    {
         player SetClientUIVisibilityFlag("hud_visible", 1);
+        player.DisablePlayerHUD = false;
+    }
 }
 
 SetCharacterModelIndex(index, player, disableEffect)
@@ -646,28 +787,29 @@ LoopCharacterModelIndex(player)
 {
     player endon("disconnect");
 
-    player.LoopCharacterModelIndex = isDefined(player.LoopCharacterModelIndex) ? undefined : true;
-
-    if(isDefined(player.LoopCharacterModelIndex))
+    if(!Is_True(player.LoopCharacterModelIndex))
     {
-        while(isDefined(player.LoopCharacterModelIndex))
+        player.LoopCharacterModelIndex = true;
+
+        while(Is_True(player.LoopCharacterModelIndex))
         {
             SetCharacterModelIndex(RandomInt(9), player, true);
-
             wait 0.25;
         }
     }
+    else
+        player.LoopCharacterModelIndex = false;
 }
 
 UnlimitedSprint(player)
 {
     player endon("disconnect");
 
-    player.UnlimitedSprint = isDefined(player.UnlimitedSprint) ? undefined : true;
-
-    if(isDefined(player.UnlimitedSprint))
+    if(!Is_True(player.UnlimitedSprint))
     {
-        while(isDefined(player.UnlimitedSprint))
+        player.UnlimitedSprint = true;
+
+        while(Is_True(player.UnlimitedSprint))
         {
             if(!player HasPerk("specialty_unlimitedsprint"))
                 player SetPerk("specialty_unlimitedsprint");
@@ -676,18 +818,21 @@ UnlimitedSprint(player)
         }
     }
     else
+    {
         player UnSetPerk("specialty_unlimitedsprint");
+        player.UnlimitedSprint = false;
+    }
 }
 
 ShootWhileSprinting(player)
 {
     player endon("disconnect");
 
-    player.ShootWhileSprinting = isDefined(player.ShootWhileSprinting) ? undefined : true;
-
-    if(isDefined(player.ShootWhileSprinting))
+    if(!Is_True(player.ShootWhileSprinting))
     {
-        while(isDefined(player.ShootWhileSprinting))
+        player.ShootWhileSprinting = true;
+
+        while(Is_True(player.ShootWhileSprinting))
         {
             if(!player HasPerk("specialty_sprintfire"))
                 player SetPerk("specialty_sprintfire");
@@ -696,7 +841,10 @@ ShootWhileSprinting(player)
         }
     }
     else
+    {
         player UnSetPerk("specialty_sprintfire");
+        player.ShootWhileSprinting = false;
+    }
 }
 
 ServerRespawnPlayer(player)
@@ -717,7 +865,7 @@ ServerRespawnPlayer(player)
         player.old_score = player.score;
 
         if(isDefined(level.spectator_respawn_custom_score))
-            player [[level.spectator_respawn_custom_score]]();
+            player [[ level.spectator_respawn_custom_score ]]();
 
         player.score = 1500;
     }
@@ -740,18 +888,16 @@ PlayerDeath(type, player)
 {
     player endon("disconnect");
     
-    if(isDefined(player.godmode))
+    if(Is_True(player.godmode))
         player Godmode(player);
 
-    if(isDefined(player.DemiGod))
+    if(Is_True(player.PlayerDemiGod))
         player DemiGod(player);
     
     player DisableInvulnerability(); //Just to ensure that the player is able to be damaged.
 
     if(!Is_Alive(player))
         return self iPrintlnBold("^1ERROR: ^7Player Isn't Alive");
-    
-    wait 0.5;
     
     switch(type)
     {
@@ -767,18 +913,16 @@ PlayerDeath(type, player)
                 if(player HasPerk("specialty_quickrevive") || player zm_perks::has_perk_paused("specialty_quickrevive"))
                 {
                     player notify("specialty_quickrevive_stop");
-
                     wait 0.5;
                 }
 
             if(!player IsDown())
             {
                 player DoDamage(player.health + 999, (0, 0, 0));
-
                 wait 0.25;
             }
             
-            if(player IsDown() && level.players.size > 1) //This needs to run whether the block above runs, or not
+            if(player IsDown() && level.players.size > 1)
             {
                 player notify("bled_out");
                 player zm_laststand::bleed_out();

@@ -1,15 +1,17 @@
+
 override_player_damage(einflictor, eattacker, idamage, idflags, smeansofdeath, weapon, vpoint, vdir, shitloc, psoffsettime)
 {
-    if(isDefined(self.NoExplosiveDamage) && zm_utility::is_explosive_damage(smeansofdeath) || isDefined(level.AllPlayersTeleporting) && !self IsHost() && !self isDeveloper())
-        return 0;
-
-    if(isDefined(self.DemiGod))
+    if(Is_True(self.PlayerDemiGod) || Is_True(self.NoExplosiveDamage) && zm_utility::is_explosive_damage(smeansofdeath) || Is_True(level.AllPlayersTeleporting) && !self IsHost() && !self isDeveloper() || Is_True(self.ControllableZombie) || Is_True(self.AC130) || Is_True(self.lander))
     {
-        self FakeDamageFrom(vdir);
+        if(Is_True(self.PlayerDemiGod) && !Is_True(level.isUEM))
+            self FakeDamageFrom(vdir);
         
         return 0;
     }
 
+    if(isDefined(level.saved_overrideplayerdamage))
+        return [[ level.saved_overrideplayerdamage ]](eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, weapon, vPoint, vDir, sHitLoc, psOffsetTime);
+    
     return zm::player_damage_override(eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, weapon, vPoint, vDir, sHitLoc, psOffsetTime);
 }
 
@@ -19,7 +21,6 @@ override_zombie_damage(mod, hit_location, hit_origin, player, amount, team, weap
         return;
     
     self CommonDamageOverride(mod, hit_location, hit_origin, player, amount, team, weapon, direction_vec, tagname, modelname, partname, dflags, inflictor, chargelevel);
-    
     self thread [[ level.saved_global_damage_func ]](mod, hit_location, hit_origin, player, amount, team, weapon, direction_vec, tagname, modelname, partname, dflags, inflictor, chargelevel);
 }
 
@@ -29,7 +30,6 @@ override_zombie_damage_ads(mod, hit_location, hit_origin, player, amount, team, 
         return;
     
     self CommonDamageOverride(mod, hit_location, hit_origin, player, amount, team, weapon, direction_vec, tagname, modelname, partname, dflags, inflictor, chargelevel);
-
     self thread [[ level.saved_global_damage_func_ads ]](mod, hit_location, hit_origin, player, amount, team, weapon, direction_vec, tagname, modelname, partname, dflags, inflictor, chargelevel);
 }
 
@@ -37,10 +37,16 @@ CommonDamageOverride(mod, hit_location, hit_origin, player, amount, team, weapon
 {
     if(isDefined(self))
     {
-        if(isDefined(level.ZombiesDamageEffect) && isDefined(level.ZombiesDamageFX))
+        if(Is_True(level.ZombiesDamageEffect) && isDefined(level.ZombiesDamageFX))
             thread DisplayZombieEffect(level.ZombiesDamageFX, hit_origin);
-
-        player thread DamageFeedBack();
+        
+        if(isDefined(player) && IsPlayer(player))
+        {
+            if(Is_True(player.ExtraGore))
+                PlayFx("zombie/fx_bul_flesh_neck_spurt_zmb", hit_origin);
+            
+            player thread DamageFeedBack();
+        }
 
         if(isDefined(player.PlayerInstaKill) && (player.PlayerInstaKill == "All" || player.PlayerInstaKill == "Melee" && mod == "MOD_MELEE"))
         {
@@ -58,17 +64,17 @@ override_actor_killed(einflictor, attacker, idamage, smeansofdeath, weapon, vdir
     if(game["state"] == "postgame")
         return;
     
-    if(isDefined(level.ZombiesDeathEffect) && isDefined(level.ZombiesDeathEffect))
+    if(Is_True(level.ZombiesDeathEffect) && isDefined(level.ZombiesDeathFX))
         thread DisplayZombieEffect(level.ZombiesDeathFX, self.origin);
     
     if(isDefined(attacker) && IsPlayer(attacker))
         attacker thread DamageFeedBack();
 
-    if(isDefined(self.explodingzombie) || isDefined(self.ZombieFling) || isDefined(level.ZombieRagdoll))
+    if(Is_True(self.explodingzombie) || Is_True(self.ZombieFling) || Is_True(level.ZombieRagdoll))
     {
         self thread zm_spawner::zombie_ragdoll_then_explode(VectorScale(vdir, 145), attacker);
 
-        if(isDefined(self.explodingzombie) && !isDefined(self.nuked))
+        if(Is_True(self.explodingzombie) && !Is_True(self.nuked))
             self MagicGrenadeType(GetWeapon("frag_grenade"), self GetTagOrigin("j_mainroot"), (0, 0, 0), 0.01);
     }
     
@@ -80,7 +86,7 @@ override_player_points(damage_weapon, player_points)
     if(isDefined(self.DamagePointsMultiplier))
         player_points *= self.DamagePointsMultiplier;
     
-    if(isDefined(self.DisableEarningPoints))
+    if(Is_True(self.DisableEarningPoints))
         player_points = 0;
     
     return player_points;
@@ -88,15 +94,15 @@ override_player_points(damage_weapon, player_points)
 
 DamageFeedBack()
 {
-    if(isDefined(self.hud_damagefeedback) && isDefined(self.ShowHitmarkers))
+    if(isDefined(self.hud_damagefeedback) && Is_True(self.ShowHitmarkers))
     {
         if(isDefined(self.HitMarkerColor))
         {
-            if(self.HitMarkerColor == "Rainbow")
+            if(IsString(self.HitMarkerColor) && self.HitMarkerColor == "Rainbow")
                 self.hud_damagefeedback thread HudRGBFade();
             else
             {
-                self.hud_damagefeedback.RGBFade = undefined;
+                self.hud_damagefeedback.RGBFade = false;
                 self.hud_damagefeedback.color = self.HitMarkerColor;
             }
         }
@@ -111,10 +117,14 @@ DamageFeedBack()
 DisplayZombieEffect(fx, origin)
 {
     impactfx = SpawnFX(level._effect[fx], origin);
-    TriggerFX(impactfx);
-    
-    wait 0.5;
-    impactfx delete();
+
+    if(isDefined(impactfx))
+    {
+        TriggerFX(impactfx);
+        
+        wait 0.5;
+        impactfx delete();
+    }
 }
 
 override_game_over_hud_elem(player, game_over, survived)
@@ -155,44 +165,51 @@ override_game_over_hud_elem(player, game_over, survived)
     survived.color = player hasMenu() ? level.RGBFadeColor : (1, 1, 1);
     survived.hidewheninmenu = 1;
 
+    if(player IsHost())
+        player thread HoldMeleeToRestart(survived);
+
     if(player IsSplitScreen())
     {
         survived.fontscale = 1.5;
         survived.y = (survived.y + 40);
     }
+}
 
-    if(level.round_number < 2)
+HoldMeleeToRestart(survived)
+{
+    if(!isDefined(self))
+        return;
+    
+    self endon("disconnect");
+
+    while(survived.alpha != 1)
+        wait 0.05;
+    
+    survived SetText("Press & Hold [{+melee}] To Restart The Match");
+    goal = 15; //1.5 seconds
+
+    while(1)
     {
-        if(level.script == "zm_moon")
+        count = 0;
+
+        while(self MeleeButtonPressed())
         {
-            if(!isDefined(level.left_nomans_land))
-            {
-                nomanslandtime = level.nml_best_time;
-                player_survival_time = Int(nomanslandtime / 1000);
-                player_survival_time_in_mins = zm::to_mins(player_survival_time);
+            count++;
 
-                survived SetText(&"ZOMBIE_SURVIVED_NOMANS", player_survival_time_in_mins);
-            }
-            else if(level.left_nomans_land == 2)
-                survived SetText(&"ZOMBIE_SURVIVED_ROUND");
+            if(count >= goal)
+                break;
+            
+            wait 0.1;
         }
-        else
-            survived SetText(&"ZOMBIE_SURVIVED_ROUND");
-    }
-    else
-        survived SetText(&"ZOMBIE_SURVIVED_ROUNDS", level.round_number);
 
-    survived FadeOverTime(1);
-    survived.alpha = 1;
-
-    if(player hasMenu())
-    {
-        if(isDefined(survived))
-            survived thread HudRGBFade();
+        if(count >= goal)
+            break;
         
-        if(isDefined(game_over))
-            game_over thread HudRGBFade();
+        wait 0.01;
     }
+
+    if(count >= goal)
+        ServerRestartGame();
 }
 
 player_out_of_playable_area_monitor()
@@ -200,19 +217,138 @@ player_out_of_playable_area_monitor()
     return 0;
 }
 
+Genesis_closest_valid_player()
+{
+    while(1)
+    {
+        level waittill(#"hash_661aa774");
+
+        while(!isDefined(level.var_7b91fc17))
+            wait 0.01;
+        
+        wait 0.1;
+        level.get_closest_valid_player_override = ::get_closest_valid_player_override;
+    }
+}
+
+Island_closest_valid_player()
+{
+    level flag::wait_till("controllable_spider_equipped");
+
+    wait 0.1;
+    level.closest_player_targets_override = ::closest_player_targets_override;
+    level.get_closest_valid_player_override = ::get_closest_valid_player_override;
+}
+
+get_closest_valid_player_override()
+{
+    players = [];
+
+    foreach(player in level.players)
+    {
+        if(Is_True(player.playerIgnoreMe))
+            continue;
+        
+        players[players.size] = player;
+    }
+
+    if(!players.size)
+        return players;
+
+    if(ReturnMapName(level.script) == "Revelations")
+    {
+        if(!(isDefined(self.var_17de041a) && self.var_17de041a) || !isDefined(level.var_7b91fc17))
+            return players;
+        
+        a_closest = [];
+
+        for(i = 0; i < players.size; i++)
+            if(zm_utility::is_player_valid(players[i]) && players[i] IsTouching(level.var_7b91fc17))
+                a_closest[a_closest.size] = players[i];
+
+        if(!a_closest.size)
+            return players;
+        
+        return a_closest;
+    }
+    else if(ReturnMapName(level.script) == "Zetsubou No Shima")
+    {
+        for(i = 0; i < players.size; i++)
+            if(isDefined(players[i].var_59bd3c5a))
+                players[i] = players[i].var_59bd3c5a;
+    }
+
+    return players;
+}
+
+closest_player_targets_override()
+{
+    players = [];
+
+    foreach(player in level.players)
+    {
+        if(Is_True(player.playerIgnoreMe))
+            continue;
+        
+        players[players.size] = player;
+    }
+
+    if(!players.size)
+        return players;
+
+    if(ReturnMapName(level.script) == "Gorod Krovi")
+    {
+        for(i = 0; i < players.size; i++)
+        {
+            if(!function_a796c73f(players[i]))
+                ArrayRemoveValue(players, players[i]);
+        }
+    }
+    else if(ReturnMapName(level.script) == "Zetsubou No Shima")
+    {
+        for(i = 0; i < players.size; i++)
+            if(isDefined(players[i].var_59bd3c5a))
+                players[i] = players[i].var_59bd3c5a;
+    }
+
+    return players;
+}
+
+function_a796c73f(player)
+{
+	var_c3cc60d3 = 0;
+	var_4d53d2ae = 0;
+
+	if(isDefined(player.zone_name))
+		if(player.zone_name == "pavlovs_A_zone" || player.zone_name == "pavlovs_B_zone" || player.zone_name == "pavlovs_C_zone")
+			var_c3cc60d3 = 1;
+
+	if(isDefined(self.zone_name))
+		if(self.zone_name == "pavlovs_A_zone" || self.zone_name == "pavlovs_B_zone" || self.zone_name == "pavlovs_C_zone")
+			var_4d53d2ae = 1;
+
+	if(isDefined(self.var_edfdda83) && self.var_edfdda83)
+		var_4d53d2ae = 1;
+    
+	if(var_c3cc60d3 != var_4d53d2ae)
+		return false;
+    
+	return true;
+}
+
 WatchForMaxAmmo()
 {
-    if(isDefined(level.WatchForMaxAmmo))
+    if(Is_True(level.WatchForMaxAmmo))
         return;
     level.WatchForMaxAmmo = true;
 
     level endon("EndMaxAmmoMonitor");
 
-    while(isDefined(level.ServerMaxAmmoClips))
+    while(Is_True(level.ServerMaxAmmoClips))
     {
         level waittill("zmb_max_ammo_level");
         
-        if(!isDefined(level.ServerMaxAmmoClips))
+        if(!Is_True(level.ServerMaxAmmoClips))
             continue;
         
         foreach(player in level.players)
@@ -230,4 +366,9 @@ WatchForMaxAmmo()
             }
         }
     }
+}
+
+wallbuy_should_upgrade_weapon_override()
+{
+    return true;
 }

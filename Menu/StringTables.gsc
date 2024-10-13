@@ -1,6 +1,6 @@
 GobblegumName(name)
 {
-    return TableLookupIString("gamedata/stats/zm/zm_statstable.csv", 4, name, 3);
+    return TableLookup("gamedata/stats/zm/zm_statstable.csv", 4, name, 3);
 }
 
 ReturnCamoName(index)
@@ -25,7 +25,7 @@ ReturnAttachment(index)
 
 ReturnAttachmentName(attachment)
 {
-    return TableLookupIString("gamedata/weapons/common/attachmenttable.csv", 4, attachment, 3);
+    return TableLookup("gamedata/weapons/common/attachmenttable.csv", 4, attachment, 3);
 }
 
 ReturnAttachmentCombinations(attachment)

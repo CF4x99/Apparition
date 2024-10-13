@@ -3,110 +3,126 @@ PopulateOriginsScripts(menu)
 	switch(menu)
 	{
 		case "Origins Scripts":
-            self addMenu("Origins Scripts");
-                self addOptSlider("Weather", ::OriginsSetWeather, "None;Rain;Snow");
-                self addOpt("Generators", ::newMenu, "Origins Generators");
-                self addOpt("Gateways", ::newMenu, "Origins Gateways");
-                self addOpt("Give Shovel", ::newMenu, "Give Shovel Origins");
-                self addOptBool(isDefined(level.a_e_slow_areas), "Mud Slowdown", ::MudSlowdown);
-                self addOpt("Soul Boxes", ::newMenu, "Soul Boxes");
-                self addOpt("Challenges", ::newMenu, "Origins Challenges");
-                self addOpt("Staff Puzzles", ::newMenu, "Origins Puzzles");
-            break;
-        
-        case "Origins Generators":
-            generators = struct::get_array("s_generator", "targetname");
+			self addMenu("Origins Scripts");
+				self addOptSlider("Weather", ::OriginsSetWeather, "None;Rain;Snow");
+				self addOpt("Generators", ::newMenu, "Origins Generators");
+				self addOpt("Gateways", ::newMenu, "Origins Gateways");
+				self addOpt("Give Shovel", ::newMenu, "Give Shovel Origins");
+				self addOptBool(isDefined(level.a_e_slow_areas), "Mud Slowdown", ::MudSlowdown);
+				self addOpt("Soul Boxes", ::newMenu, "Soul Boxes");
+				self addOpt("Challenges", ::newMenu, "Origins Challenges");
+				self addOpt("Staff Puzzles", ::newMenu, "Origins Puzzles");
+			break;
 
-            self addMenu("Generators");
+		case "Origins Generators":
+			generators = struct::get_array("s_generator", "targetname");
 
-                for(a = 0; a < generators.size; a++)
-                    self addOptBool(generators[a] flag::get("player_controlled"), "Generator " + generators[a].script_int, ::SetGeneratorState, a);
-            break;
-        
-        case "Origins Gateways":
-            gateways = struct::get_array("trigger_teleport_pad", "targetname");
+			self addMenu("Generators");
 
-            self addMenu("Gateways");
+				for(a = 0; a < generators.size; a++)
+				{
+					foreach(index, generator in struct::get_array("s_generator", "targetname"))
+					{
+						if(generator.script_int != (a + 1)) //The goal is to put the generators in the correct order 1 - 6
+							continue;
 
-                for(a = 0; a < gateways.size; a++)
-                    self addOptBool(GetGatewayState(gateways[a]), ReturnGatewayName(gateways[a].target), ::SetGatewayState, gateways[a]);
-            break;
-        
-        case "Give Shovel Origins":
-            self addMenu("Give Shovel");
-            
-                foreach(player in level.players)
-                    self addOptBool(player.dig_vars["has_shovel"], CleanName(player getName()), ::GivePlayerShovel, player);
-            break;
-        
-        case "Soul Boxes":
-            boxes = GetEntArray("foot_box", "script_noteworthy");
+						self addOptBool(generator flag::get("player_controlled"), "Generator " + generator.script_int, ::SetGeneratorState, index);
+					}
+				}
+			break;
 
-            self addMenu("Soul Boxes");
+		case "Origins Gateways":
+			gateways = struct::get_array("trigger_teleport_pad", "targetname");
 
-                if(boxes.size)
-                {
-                    for(a = 0; a < boxes.size; a++)
-                        self addOpt("Soul Box " + (a + 1), ::CompleteSoulbox, boxes[a]);
-                }
-            break;
-        
-        case "Origins Challenges":
-            self addMenu("Challenges");
+			self addMenu("Gateways");
 
-                foreach(player in level.players)
-                    self addOpt(CleanName(player getName()), ::newMenu, "Origins Challenges Player");
-            break;
-        
-        case "Origins Puzzles":
-            self addMenu("Puzzles");
-                self addOpt("Ice", ::newMenu, "Ice Puzzles");
-                self addOpt("Wind", ::newMenu, "Wind Puzzles");
-                self addOpt("Fire", ::newMenu, "Fire Puzzles");
-                self addOpt("Lightning", ::newMenu, "Lightning Puzzles");
-                self addOpt("");
-                self addOptSlider("115 Rings", ::Align115Rings, "Ice;Lightning;Fire;Wind");
-            break;
-        
-        case "Ice Puzzles":
-            self addMenu("Ice");
-                self addOptBool(level flag::get("ice_puzzle_1_complete"), "Tiles", ::CompleteIceTiles);
-                self addOptBool(level flag::get("ice_puzzle_2_complete"), "Tombstones", ::CompleteIceTombstones);
-            break;
-        
-        case "Wind Puzzles":
-            self addMenu("Wind");
-                self addOptBool(level flag::get("air_puzzle_1_complete"), "Rings", ::CompleteWindRings);
-                self addOptBool(level flag::get("air_puzzle_2_complete"), "Smoke", ::CompleteWindSmoke);
-            break;
-        
-        case "Fire Puzzles":
-            self addMenu("Fire");
-                self addOptBool(level flag::get("fire_puzzle_1_complete"), "Fill Cauldrons", ::ComepleteFireCauldrons);
-                self addOptBool(level flag::get("fire_puzzle_2_complete"), "Light Torches", ::CompleteFireTorches);
-            break;
-        
-        case "Lightning Puzzles":
-            self addMenu("Lightning");
-                self addOptBool(level flag::get("electric_puzzle_1_complete"), "Song", ::CompleteLightningSong);
-                self addOptBool(level flag::get("electric_puzzle_2_complete"), "Turn Dials", ::CompleteLightningDials);
-            break;
+				for(a = 0; a < gateways.size; a++)
+					self addOptBool(GetGatewayState(gateways[a]), ReturnGatewayName(gateways[a].target), ::SetGatewayState, gateways[a]);
+			break;
+
+		case "Give Shovel Origins":
+			self addMenu("Give Shovel");
+
+				foreach(player in level.players)
+					self addOptBool(player.dig_vars["has_shovel"], CleanName(player getName()), ::GivePlayerShovel, player);
+			break;
+
+		case "Soul Boxes":
+			boxes = GetEntArray("foot_box", "script_noteworthy");
+
+			self addMenu("Soul Boxes");
+
+				if(isDefined(boxes) && boxes.size)
+				{
+					for(a = 0; a < boxes.size; a++)
+						self addOpt("Soul Box " + (a + 1), ::CompleteSoulbox, boxes[a]);
+				}
+			break;
+
+		case "Origins Challenges":
+			self addMenu("Challenges");
+
+				foreach(player in level.players)
+					self addOpt(CleanName(player getName()), ::newMenu, "Origins Challenges Player");
+			break;
+
+		case "Origins Puzzles":
+			self addMenu("Puzzles");
+				self addOpt("Ice", ::newMenu, "Ice Puzzles");
+				self addOpt("Wind", ::newMenu, "Wind Puzzles");
+				self addOpt("Fire", ::newMenu, "Fire Puzzles");
+				self addOpt("Lightning", ::newMenu, "Lightning Puzzles");
+				self addOpt("");
+				self addOptSlider("115 Rings", ::Align115Rings, "Ice;Lightning;Fire;Wind");
+			break;
+
+		case "Ice Puzzles":
+			self addMenu("Ice");
+				self addOptBool(level flag::get("ice_puzzle_1_complete"), "Tiles", ::CompleteIceTiles);
+				self addOptBool(level flag::get("ice_puzzle_2_complete"), "Tombstones", ::CompleteIceTombstones);
+			break;
+
+		case "Wind Puzzles":
+			self addMenu("Wind");
+				self addOptBool(level flag::get("air_puzzle_1_complete"), "Rings", ::CompleteWindRings);
+				self addOptBool(level flag::get("air_puzzle_2_complete"), "Smoke", ::CompleteWindSmoke);
+			break;
+
+		case "Fire Puzzles":
+			self addMenu("Fire");
+				self addOptBool(level flag::get("fire_puzzle_1_complete"), "Fill Cauldrons", ::ComepleteFireCauldrons);
+				self addOptBool(level flag::get("fire_puzzle_2_complete"), "Light Torches", ::CompleteFireTorches);
+			break;
+
+		case "Lightning Puzzles":
+			self addMenu("Lightning");
+				self addOptBool(level flag::get("electric_puzzle_1_complete"), "Song", ::CompleteLightningSong);
+				self addOptBool(level flag::get("electric_puzzle_2_complete"), "Turn Dials", ::CompleteLightningDials);
+			break;
 	}
+}
+
+PopulateOriginsChallenges(player)
+{
+	self addMenu("Challenges");
+
+		foreach(challenge in level._challenges.a_stats)
+			self addOptBool(get_stat(challenge.str_name, player).b_medal_awarded, ReturnOriginsIString(challenge.str_name), ::CompleteOriginChallenge, challenge.str_name, player);
 }
 
 CompleteSoulbox(box)
 {
 	if(!isDefined(box) || box.n_souls_absorbed >= 30)
 		return;
-	
+
 	curs = self getCursor();
-    menu = self getCurrent();
-	
+	menu = self getCurrent();
+
 	while(isDefined(box))
 	{
-		if(box.n_souls_absorbed < 30)
+		if(isDefined(box) && box.n_souls_absorbed < 30)
 			box notify("soul_absorbed", self);
-		
+
 		wait 0.01;
 	}
 
@@ -115,105 +131,115 @@ CompleteSoulbox(box)
 
 OriginsSetWeather(weather)
 {
-    level.last_snow_round = 0;
-    level.last_rain_round = 0;
-    int = RandomIntRange(1, 5);
-    
-    switch(weather)
-    {
-        case "Rain":
-            level.weather_snow = 0;
-            level.weather_rain = int;
-            level.weather_vision = 1;
+	level.last_snow_round = 0;
+	level.last_rain_round = 0;
+	int = RandomIntRange(1, 5);
 
-            level util::set_lighting_state(1);
-            break;
-		
-        case "Snow":
-            level.weather_snow = int;
-            level.weather_rain = 0;
-            level.weather_vision = 2;
+	switch(weather)
+	{
+		case "Rain":
+			level.weather_snow = 0;
+			level.weather_rain = int;
+			level.weather_vision = 1;
 
-            level util::set_lighting_state(0);
-            break;
-		
-        case "None":
-            level.weather_snow = 0;
-            level.weather_rain = 0;
-            level.weather_vision = 3;
+			level util::set_lighting_state(1);
+			break;
 
-            level util::set_lighting_state(0);
-            break;
-		
-        default:
-            break;
-    }
-    
-    level clientfield::set("rain_level", level.weather_rain);
-    level clientfield::set("snow_level", level.weather_snow);
-    
-    foreach(player in level.players)
-        if(zombie_utility::is_player_valid(player, 0, 1))
-            player clientfield::set_to_player("player_weather_visionset", level.weather_vision);
+		case "Snow":
+			level.weather_snow = int;
+			level.weather_rain = 0;
+			level.weather_vision = 2;
+
+			level util::set_lighting_state(0);
+			break;
+
+		case "None":
+			level.weather_snow = 0;
+			level.weather_rain = 0;
+			level.weather_vision = 3;
+
+			level util::set_lighting_state(0);
+			break;
+
+		default:
+			break;
+	}
+
+	level clientfield::set("rain_level", level.weather_rain);
+	level clientfield::set("snow_level", level.weather_snow);
+
+	foreach(player in level.players)
+		if(zombie_utility::is_player_valid(player, 0, 1))
+			player clientfield::set_to_player("player_weather_visionset", level.weather_vision);
 }
 
 SetGeneratorState(generator)
 {
-    generators = struct::get_array("s_generator", "targetname");
+	generators = struct::get_array("s_generator", "targetname");
+	struct = generators[generator];
 
-    struct = generators[generator];
+	if(struct flag::get("zone_contested"))
+		struct kill_all_capture_zombies();
 
-    if(struct flag::get("zone_contested"))
-        struct kill_all_capture_zombies();
-    
-    struct flag::clear("zone_contested");
+	struct flag::clear("zone_contested");
 
-    foreach(e_player in level.players)
-        e_player thread zm_craftables::player_show_craftable_parts_ui(undefined, "zmInventory.capture_generator_wheel_widget", 0);
-    
-    if(!struct flag::get("player_controlled"))
-    {
-        level.zone_capture.last_zone_captured = struct;
+	foreach(e_player in level.players)
+		e_player thread zm_craftables::player_show_craftable_parts_ui(undefined, "zmInventory.capture_generator_wheel_widget", 0);
 
-        struct flag::set("player_controlled");
-        struct flag::clear("attacked_by_recapture_zombies");
-        level clientfield::set("zone_capture_hud_generator_" + struct.script_int, 1);
-        level clientfield::set("zone_capture_monolith_crystal_" + struct.script_int, 0);
+	if(!struct flag::get("player_controlled"))
+	{
+		level.zone_capture.last_zone_captured = struct;
 
-        if(!isDefined(struct.perk_fx_func) || [[ struct.perk_fx_func ]]())
-            level clientfield::set("zone_capture_perk_machine_smoke_fx_" + struct.script_int, 1);
+		struct flag::set("player_controlled");
+		struct flag::clear("attacked_by_recapture_zombies");
 
-        struct flag::set("player_controlled");
+		level clientfield::set("zone_capture_hud_generator_" + struct.script_int, 1);
+		level clientfield::set("zone_capture_monolith_crystal_" + struct.script_int, 0);
 
-        struct enable_perk_machines_in_zone();
-        struct enable_random_perk_machines_in_zone();
-        struct enable_mystery_boxes_in_zone();
-        struct function_c3b54f6d();
+		if(!isDefined(struct.perk_fx_func) || [[ struct.perk_fx_func ]]())
+			level clientfield::set("zone_capture_perk_machine_smoke_fx_" + struct.script_int, 1);
 
-        level notify("zone_captured_by_player", struct.str_zone);
-        PlayFX(level._effect["capture_complete"], struct.origin);
+		struct flag::set("player_controlled");
+
+		struct enable_perk_machines_in_zone();
+		struct enable_random_perk_machines_in_zone();
+		struct enable_mystery_boxes_in_zone();
+		struct function_c3b54f6d();
+
+		level notify("zone_captured_by_player", struct.str_zone);
+		PlayFX(level._effect["capture_complete"], struct.origin);
 
 		struct reward_players_in_capture_zone();
-    }
-    else
-    {
-        struct flag::clear("player_controlled");
-        level clientfield::set("zone_capture_hud_generator_" + struct.script_int, 2);
-        level clientfield::set("zone_capture_monolith_crystal_" + struct.script_int, 1);
-        level clientfield::set("zone_capture_perk_machine_smoke_fx_" + struct.script_int, 0);
+	}
+	else
+	{
+		struct flag::clear("player_controlled");
+		level clientfield::set("zone_capture_hud_generator_" + struct.script_int, 2);
+		level clientfield::set("zone_capture_monolith_crystal_" + struct.script_int, 1);
+		level clientfield::set("zone_capture_perk_machine_smoke_fx_" + struct.script_int, 0);
 
-        struct disable_perk_machines_in_zone();
-        struct disable_random_perk_machines_in_zone();
-        struct disable_mystery_boxes_in_zone();
-        struct function_1138b343();
-    }
+		struct disable_perk_machines_in_zone();
+		struct disable_random_perk_machines_in_zone();
+		struct disable_mystery_boxes_in_zone();
+		struct function_1138b343();
+	}
 
-    update_captured_zone_count();
-    struct.n_current_progress = struct flag::get("player_controlled") ? 100 : 0;
-    struct.n_last_progress = struct.n_current_progress;
-    level clientfield::set("state_" + struct.script_noteworthy, struct flag::get("player_controlled") ? 2 : 4);
-    level clientfield::set(struct.script_noteworthy, struct.n_current_progress / 100);
-    play_pap_anim(struct flag::get("player_controlled"));
+	update_captured_zone_count();
+
+	if(struct flag::get("player_controlled"))
+		struct.n_current_progress = 100;
+	else
+		struct.n_current_progress = 0;
+
+	struct.n_last_progress = struct.n_current_progress;
+
+	if(struct flag::get("player_controlled"))
+		level clientfield::set("state_" + struct.script_noteworthy, 2);
+	else
+		level clientfield::set("state_" + struct.script_noteworthy, 4);
+
+	level clientfield::set(struct.script_noteworthy, struct.n_current_progress / 100);
+	play_pap_anim(struct flag::get("player_controlled"));
 }
 
 kill_all_capture_zombies()
@@ -381,62 +407,194 @@ play_pap_anim(b_assemble)
 
 GivePlayerShovel(player)
 {
-    player.dig_vars["has_shovel"] = !player.dig_vars["has_shovel"];
-    player.dig_vars["has_upgraded_shovel"] = player.dig_vars["has_shovel"];
-    player.dig_vars["has_helmet"] = player.dig_vars["has_shovel"];
+	player.dig_vars["has_shovel"] = !player.dig_vars["has_shovel"];
+	player.dig_vars["has_upgraded_shovel"] = player.dig_vars["has_shovel"];
+	player.dig_vars["has_helmet"] = player.dig_vars["has_shovel"];
 
-    level clientfield::set("player" + player GetEntityNumber() + "hasItem", player.dig_vars["has_shovel"]);
+	level clientfield::set("player" + player GetEntityNumber() + "hasItem", player.dig_vars["has_shovel"]);
 }
 
 GetGatewayState(gateway)
 {
-    return level flag::get("enable_teleporter_" + gateway.script_int);
+	return level flag::get("enable_teleporter_" + gateway.script_int);
 }
 
 SetGatewayState(gateway)
 {
-    target = struct::get_array("stargate_gramophone_pos", "targetname")[gateway.script_int];
+	target = struct::get_array("stargate_gramophone_pos", "targetname")[gateway.script_int];
 
-    if(!GetGatewayState(gateway))
-    {
-        level flag::set("enable_teleporter_" + gateway.script_int);
+	if(!GetGatewayState(gateway))
+	{
+		level flag::set("enable_teleporter_" + gateway.script_int);
 
-        if(isDefined(target.script_flag))
-            level flag::set(target.script_flag);
-    }
-    else
-    {
-        level flag::clear("enable_teleporter_" + gateway.script_int);
+		if(isDefined(target) && isDefined(target.script_flag))
+			level flag::set(target.script_flag);
+	}
+	else
+	{
+		level flag::clear("enable_teleporter_" + gateway.script_int);
 
-        if(isDefined(target.script_flag))
-            level flag::clear(target.script_flag);
-    }
+		if(isDefined(target) && isDefined(target.script_flag))
+			level flag::clear(target.script_flag);
+	}
 }
 
 ReturnGatewayName(targetname)
 {
-    switch(targetname)
-    {
-        case "fire_teleport_player":
-            return "Fire";
-		
-        case "air_teleport_player":
-            return "Wind";
-		
-        case "water_teleport_player":
-            return "Ice";
-		
-        case "electric_teleport_player":
-            return "Lightning";
-		
-        default:
-            return "Unknown";
-    }
+	switch(targetname)
+	{
+		case "fire_teleport_player":
+			return "Fire";
+
+		case "air_teleport_player":
+			return "Wind";
+
+		case "water_teleport_player":
+			return "Ice";
+
+		case "electric_teleport_player":
+			return "Lightning";
+
+		default:
+			return "Unknown";
+	}
 }
 
 MudSlowdown()
 {
-    level.a_e_slow_areas = isDefined(level.a_e_slow_areas) ? undefined : GetEntArray("player_slow_area", "targetname");
+	if(isDefined(level.a_e_slow_areas))
+		level.a_e_slow_areas = undefined;
+	else
+		level.a_e_slow_areas = GetEntArray("player_slow_area", "targetname");
+}
+
+ReturnOriginsIString(stat)
+{
+	switch(stat)
+	{
+		case "zc_headshots":
+			return "ZM_TOMB_CH1";
+
+		case "zc_zone_captures":
+			return "ZM_TOMB_CH2";
+
+		case "zc_points_spent":
+			return "ZM_TOMB_CH3";
+
+		case "zc_boxes_filled":
+			return "ZM_TOMB_CHT";
+
+		default:
+			return "Unknown";
+	}
+}
+
+ReturnMapChallengeIString(challenge)
+{
+	switch(challenge)
+	{
+		case "update_challenge_1_1":
+			if(level.script == "zm_island")
+				return "ZM_ISLAND_CHALLENGE_1_1";
+			else
+				return "ZM_STALINGRAD_CHALLENGE_1_1";
+
+		case "update_challenge_1_2":
+			if(level.script == "zm_island")
+				return "ZM_ISLAND_CHALLENGE_1_2";
+			else
+				return "ZM_STALINGRAD_CHALLENGE_1_2";
+
+		case "update_challenge_1_3":
+			if(level.script == "zm_island")
+				return "ZM_ISLAND_CHALLENGE_1_3";
+			else
+				return "ZM_STALINGRAD_CHALLENGE_1_3";
+
+		case "update_challenge_1_4":
+			if(level.script == "zm_island")
+				return "ZM_ISLAND_CHALLENGE_1_4";
+			else
+				return "ZM_STALINGRAD_CHALLENGE_1_4";
+
+		case "update_challenge_1_5":
+			if(level.script == "zm_island")
+				return "ZM_ISLAND_CHALLENGE_1_5";
+			else
+				return "ZM_STALINGRAD_CHALLENGE_1_5";
+
+		case "update_challenge_1_6":
+			return "ZM_STALINGRAD_CHALLENGE_1_6";
+
+		case "update_challenge_2_1":
+			if(level.script == "zm_island")
+				return "ZM_ISLAND_CHALLENGE_2_1";
+			else
+				return "ZM_STALINGRAD_CHALLENGE_2_1";
+
+		case "update_challenge_2_2":
+			if(level.script == "zm_island")
+				return "ZM_ISLAND_CHALLENGE_2_2";
+			else
+				return "ZM_STALINGRAD_CHALLENGE_2_2";
+
+		case "update_challenge_2_3":
+			if(level.script == "zm_island")
+				return "ZM_ISLAND_CHALLENGE_2_3";
+			else
+				return "ZM_STALINGRAD_CHALLENGE_2_3";
+
+		case "update_challenge_2_4":
+			if(level.script == "zm_island")
+				return "ZM_ISLAND_CHALLENGE_2_4";
+			else
+				return "ZM_STALINGRAD_CHALLENGE_2_4";
+
+		case "update_challenge_2_5":
+			if(level.script == "zm_island")
+				return "ZM_ISLAND_CHALLENGE_2_5";
+			else
+				return "ZM_STALINGRAD_CHALLENGE_2_5";
+
+		case "update_challenge_2_6":
+			if(level.script == "zm_island")
+				return "ZM_ISLAND_CHALLENGE_2_6";
+			else
+				return "ZM_STALINGRAD_CHALLENGE_2_6";
+
+		case "update_challenge_3_1":
+			if(level.script == "zm_island")
+				return "ZM_ISLAND_CHALLENGE_3_1";
+			else
+				return "ZM_STALINGRAD_CHALLENGE_3_1";
+
+		case "update_challenge_3_2":
+			if(level.script == "zm_island")
+				return "ZM_ISLAND_CHALLENGE_3_2";
+			else
+				return "ZM_STALINGRAD_CHALLENGE_3_2";
+
+		case "update_challenge_3_3":
+			if(level.script == "zm_island")
+				return "ZM_ISLAND_CHALLENGE_3_3";
+			else
+				return "ZM_STALINGRAD_CHALLENGE_3_3";
+
+		case "update_challenge_3_4":
+			if(level.script == "zm_island")
+				return "ZM_ISLAND_CHALLENGE_3_4";
+			else
+				return "ZM_STALINGRAD_CHALLENGE_3_4";
+
+		case "update_challenge_3_5":
+			if(level.script == "zm_island")
+				return "ZM_ISLAND_CHALLENGE_3_5";
+			else
+				return "ZM_STALINGRAD_CHALLENGE_3_5";
+
+		case "update_challenge_3_6":
+			return "ZM_STALINGRAD_CHALLENGE_3_6";
+	}
 }
 
 CompleteOriginChallenge(challenge, player)
@@ -445,7 +603,7 @@ CompleteOriginChallenge(challenge, player)
 
 	if(stat.b_medal_awarded)
 		return;
-	
+
 	if(stat.n_value < stat.s_parent.n_goal)
 	{
 		diff = (stat.s_parent.n_goal - stat.n_value);
@@ -477,7 +635,7 @@ challenge_exists(str_name)
 increment_stat(str_stat, n_increment = 1)
 {
 	s_stat = get_stat(str_stat, self);
-    
+
 	if(!s_stat.b_medal_awarded)
 	{
 		s_stat.n_value = s_stat.n_value + n_increment;
@@ -487,7 +645,10 @@ increment_stat(str_stat, n_increment = 1)
 
 get_stat(str_stat, player)
 {
-	return level._challenges.a_stats[str_stat].b_team ? level._challenges.s_team.a_stats[str_stat] : level._challenges.a_players[player.characterindex].a_stats[str_stat];
+	if(level._challenges.a_stats[str_stat].b_team)
+		return level._challenges.s_team.a_stats[str_stat];
+
+	return level._challenges.a_players[player.characterindex].a_stats[str_stat];
 }
 
 check_stat_complete(s_stat)
@@ -562,19 +723,18 @@ function_fbbc8608(str_hint, var_7ca2c2ae)
 
 
 //Ice Staff
-
 CompleteIceTiles()
 {
 	if(level flag::get("ice_puzzle_1_complete"))
 		return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
-	
-	if(isDefined(level.IceTilesInit))
+
+	if(Is_True(level.IceTilesInit))
 		return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
-	
+
 	level.IceTilesInit = true;
-	
+
 	curs = self getCursor();
-    menu = self getCurrent();
+	menu = self getCurrent();
 	ice_gem = GetEnt("ice_chamber_gem", "targetname");
 
 	while(!level flag::get("ice_puzzle_1_complete"))
@@ -583,12 +743,12 @@ CompleteIceTiles()
 		{
 			if(!isDefined(ice_gem))
 				break;
-			
+
 			foreach(tile in level.unsolved_tiles)
 			{
 				if(!isDefined(tile) || ice_gem.value != tile.value || !tile.showing_tile_side)
 					continue;
-				
+
 				tile notify("damage", 1, self, (0, 0, 0), tile.origin, undefined, undefined, undefined, undefined, GetWeapon("staff_water"));
 			}
 		}
@@ -597,7 +757,6 @@ CompleteIceTiles()
 	}
 
 	wait 0.1;
-
 	self RefreshMenu(menu, curs);
 }
 
@@ -605,17 +764,17 @@ CompleteIceTombstones()
 {
 	if(!level flag::get("ice_puzzle_1_complete"))
 		return self iPrintlnBold("^1ERROR: ^7Tiles Must Be Completed Before Using This Option");
-	
+
 	if(level flag::get("ice_puzzle_2_complete"))
 		return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
-	
-	if(isDefined(level.IceTombstones))
+
+	if(Is_True(level.IceTombstones))
 		return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
-	
+
 	level.IceTombstones = true;
-	
+
 	curs = self getCursor();
-    menu = self getCurrent();
+	menu = self getCurrent();
 	tombstones = struct::get_array("puzzle_stone_water", "targetname");
 
 	while(!level flag::get("ice_puzzle_2_complete"))
@@ -626,7 +785,7 @@ CompleteIceTombstones()
 			{
 				if(!isDefined(tombstone) || !isDefined(tombstone.e_model))
 					continue;
-				
+
 				if(tombstone.e_model.model != "p7_zm_ori_note_rock_01_anim")
 				{
 					tombstone.e_model notify("damage", 1, self, (0, 0, 0), tombstone.e_model.origin, undefined, undefined, undefined, undefined, GetWeapon("staff_water"));
@@ -641,7 +800,6 @@ CompleteIceTombstones()
 	}
 
 	wait 0.1;
-
 	self RefreshMenu(menu, curs);
 }
 
@@ -653,22 +811,21 @@ CompleteIceTombstones()
 
 
 //Wind Staff
-
 CompleteWindRings()
 {
 	if(level flag::get("air_puzzle_1_complete"))
 		return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
-	
-	if(isDefined(level.WindRings))
+
+	if(Is_True(level.WindRings))
 		return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
-	
+
 	curs = self getCursor();
-    menu = self getCurrent();
+	menu = self getCurrent();
 	level.WindRings = true;
 
 	if(!isDefined(level.a_ceiling_rings))
 		level.a_ceiling_rings = GetEntArray("ceiling_ring", "script_noteworthy");
-	
+
 	while(!level flag::get("air_puzzle_1_complete"))
 	{
 		if(isDefined(level.a_ceiling_rings) && level.a_ceiling_rings.size)
@@ -687,7 +844,6 @@ CompleteWindRings()
 						point = ring.origin + (300, 0, 0);
 
 					ring notify("damage", 1, self, (0, 0, 0), point, undefined, undefined, undefined, undefined, GetWeapon("staff_air"));
-
 					wait 1;
 				}
 
@@ -699,7 +855,6 @@ CompleteWindRings()
 	}
 
 	wait 0.1;
-
 	self RefreshMenu(menu, curs);
 }
 
@@ -707,17 +862,17 @@ CompleteWindSmoke()
 {
 	if(!level flag::get("air_puzzle_1_complete"))
 		return self iPrintlnBold("^1ERROR: ^7Rings Must Be Completed Before Using This Option");
-	
+
 	if(level flag::get("air_puzzle_2_complete"))
 		return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
-	
-	if(isDefined(level.WindSmoke))
+
+	if(Is_True(level.WindSmoke))
 		return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
-	
+
 	level.WindSmoke = true;
 
 	curs = self getCursor();
-    menu = self getCurrent();
+	menu = self getCurrent();
 
 	smokes = struct::get_array("puzzle_smoke_origin", "targetname");
 	s_dest = struct::get("puzzle_smoke_dest", "targetname");
@@ -726,14 +881,14 @@ CompleteWindSmoke()
 	{
 		if(!isDefined(smoke) || !isDefined(smoke.detector_brush))
 			continue;
-		
+
 		v_to_dest = VectorNormalize(s_dest.origin - smoke.origin);
 		smoke.detector_brush notify("damage", 1, self, v_to_dest, undefined, undefined, undefined, undefined, undefined, GetWeapon("staff_air"));
 	}
 
 	while(!level flag::get("air_puzzle_2_complete"))
 		wait 0.1;
-	
+
 	self RefreshMenu(menu, curs);
 }
 
@@ -746,7 +901,6 @@ CompleteWindSmoke()
 
 
 //Fire Staff
-
 ComepleteFireCauldrons()
 {
 	if(level flag::get("fire_puzzle_1_complete"))
@@ -754,14 +908,14 @@ ComepleteFireCauldrons()
 
 	if(!is_chamber_occupied())
 		return self iPrintlnBold("^1ERROR: ^7A Player Must Be In The Crazy Place To Complete This Step");
-	
-	if(isDefined(level.FireCauldrons))
+
+	if(Is_True(level.FireCauldrons))
 		return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
-	
+
 	level.FireCauldrons = true;
 	curs = self getCursor();
-    menu = self getCurrent();
-	
+	menu = self getCurrent();
+
 	if(!isDefined(level.sacrifice_volumes))
 		level.sacrifice_volumes = GetEntArray("fire_sacrifice_volume", "targetname");
 
@@ -771,7 +925,7 @@ ComepleteFireCauldrons()
 		{
 			if(vols.b_gods_pleased || vols.num_sacrifices_received >= 32)
 				continue;
-			
+
 			self notify("projectile_impact", GetWeapon("staff_fire"), vols.origin, 100, GetWeapon("staff_fire"));
 
 			for(a = 0; a < 33; a++)
@@ -784,7 +938,6 @@ ComepleteFireCauldrons()
 			}
 
 			self notify("projectile_impact", GetWeapon("staff_fire"), vols.origin, 100, GetWeapon("staff_fire"));
-
 			vols.b_gods_pleased = 1;
 
 			wait 2;
@@ -793,7 +946,7 @@ ComepleteFireCauldrons()
 
 	while(!level flag::get("fire_puzzle_1_complete"))
 		wait 0.1;
-	
+
 	self RefreshMenu(menu, curs);
 }
 
@@ -804,7 +957,7 @@ is_chamber_occupied()
 	foreach(var_e3bb182, e_player in a_players)
 		if(is_point_in_chamber(e_player.origin))
 			return 1;
-	
+
 	return 0;
 }
 
@@ -823,17 +976,17 @@ CompleteFireTorches()
 {
 	if(!level flag::get("fire_puzzle_1_complete"))
 		return self iPrintlnBold("^1ERROR: ^7The Cauldrons Must Be Filled Before Using This Option");
-	
+
 	if(level flag::get("fire_puzzle_2_complete"))
 		return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
-	
-	if(isDefined(level.FireTorches))
+
+	if(Is_True(level.FireTorches))
 		return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
-	
+
 	level.FireTorches = true;
 	curs = self getCursor();
-    menu = self getCurrent();
-	
+	menu = self getCurrent();
+
 	torches = GetEntArray("fire_torch_ternary", "script_noteworthy");
 
 	if(isDefined(torches) && torches.size)
@@ -844,16 +997,15 @@ CompleteFireTorches()
 
 			if(!isDefined(target) || !target.b_correct_torch)
 				continue;
-			
-			self notify("projectile_impact", GetWeapon("staff_fire"), target.origin, 100, GetWeapon("staff_fire"));
 
+			self notify("projectile_impact", GetWeapon("staff_fire"), target.origin, 100, GetWeapon("staff_fire"));
 			wait 0.5;
 		}
 	}
 
 	while(!level flag::get("fire_puzzle_2_complete"))
 		wait 0.1;
-	
+
 	self RefreshMenu(menu, curs);
 }
 
@@ -869,7 +1021,6 @@ CompleteFireTorches()
 
 
 //Lightning Staff
-
 CompleteLightningSong()
 {
 	if(level flag::get("electric_puzzle_1_complete"))
@@ -877,16 +1028,16 @@ CompleteLightningSong()
 
 	if(!is_chamber_occupied())
 		return self iPrintlnBold("^1ERROR: ^7A Player Must Be In The Crazy Place To Complete This Step");
-	
-	if(isDefined(level.LightningSong))
+
+	if(Is_True(level.LightningSong))
 		return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
-	
+
 	level.LightningSong = true;
 	curs = self getCursor();
-    menu = self getCurrent();
+	menu = self getCurrent();
 
 	a_piano_keys = struct::get_array("piano_key", "script_noteworthy");
-	order = [11, 7, 3, 7, 4, 2, 9, 5, 3]; //The order is always the same
+	order = Array(11, 7, 3, 7, 4, 2, 9, 5, 3); //The order is always the same
 
 	for(a = 0; a < 3; a++)
 	{
@@ -901,7 +1052,7 @@ CompleteLightningSong()
 
 	while(!level flag::get("electric_puzzle_1_complete"))
 		wait 0.1;
-	
+
 	self RefreshMenu(menu, curs);
 }
 
@@ -909,16 +1060,16 @@ CompleteLightningDials()
 {
 	if(!level flag::get("electric_puzzle_1_complete"))
 		return self iPrintlnBold("^1ERROR: ^7The Song Must Be Completed Before Using This Option");
-	
+
 	if(level flag::get("electric_puzzle_2_complete"))
 		return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
-	
-	if(isDefined(level.turndials))
+
+	if(Is_True(level.turndials))
 		return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
-	
+
 	level.turndials = true;
 	curs = self getCursor();
-    menu = self getCurrent();
+	menu = self getCurrent();
 
 	foreach(relay in level.electric_relays)
 	{
@@ -928,7 +1079,6 @@ CompleteLightningDials()
 		while(!isDefined(relay.connections[relay.position]) || relay.connections[relay.position] == "")
 		{
 			relay.trigger_stub notify("trigger", self);
-
 			wait 0.1;
 		}
 
@@ -937,7 +1087,7 @@ CompleteLightningDials()
 
 	while(!level flag::get("electric_puzzle_2_complete"))
 		wait 0.1;
-	
+
 	self RefreshMenu(menu, curs);
 }
 
@@ -950,63 +1100,59 @@ CompleteLightningDials()
 Align115Rings(type)
 {
 	if(level flag::get("disc_rotation_active"))
-		return self iPrintlnBold("^1ERROR: ^7Rings Are Currently Rotating");
-	
+	return self iPrintlnBold("^1ERROR: ^7Rings Are Currently Rotating");
+
 	switch(type)
 	{
 		case "Ice":
 			num = 0;
 			break;
-		
+
 		case "Lightning":
 			num = 1;
 			break;
-		
+
 		case "Fire":
 			num = 2;
 			break;
-		
+
 		case "Wind":
 			num = 3;
 			break;
-		
+
 		default:
 			num = 0;
 			break;
 	}
-	
+
 	rings = GetEntArray("crypt_puzzle_disc", "script_noteworthy");
 	level flag::set("disc_rotation_active");
-	
+
 	foreach(ring in rings)
 	{
 		if(ring.position == num || !isDefined(ring.target))
 			continue;
-		
-		ring.position = num;
 
+		ring.position = num;
 		ring RotateTo((ring.angles[0], (ring.position * 90), ring.angles[2]), 1, 0, 0);
 		ring PlaySound("zmb_crypt_disc_turn");
 
 		wait 0.75;
-
 		ring.n_bryce_cake = ((ring.n_bryce_cake + 1) % 2);
 
 		if(isDefined(ring.var_b1c02d8a))
 			ring.var_b1c02d8a clientfield::set("bryce_cake", ring.n_bryce_cake);
-		
+
 		wait 0.25;
-
 		ring.n_bryce_cake = ((ring.n_bryce_cake + 1) % 2);
 
 		if(isDefined(ring.var_b1c02d8a))
 			ring.var_b1c02d8a clientfield::set("bryce_cake", ring.n_bryce_cake);
-		
+
 		ring PlaySound("zmb_crypt_disc_stop");
 		rumble_nearby_players(ring.origin, 1000, 2);
 
 		wait 1;
-
 		level notify("crypt_disc_rotation");
 	}
 

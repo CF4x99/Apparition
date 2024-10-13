@@ -15,12 +15,12 @@ VerrucktHideAndSeekSong()
 {
     if(level flag::get("snd_zhdegg_completed"))
         return self iPrintlnBold("^1ERROR: ^7Samantha's Hide & Seek Has Already Been Completed");
-    
-    if(isDefined(level.StartedSamanthaSong))
+
+    if(Is_True(level.StartedSamanthaSong))
         return self iPrintlnBold("^1ERROR: ^7Samantha's Hide & Seek Has Already Been Started");
 
     level.StartedSamanthaSong = true;
-    
+
     curs = self getCursor();
     menu = self getCurrent();
 
@@ -43,13 +43,12 @@ VerrucktHideAndSeekSong()
 
 VerrucktLullabyForADeadMan()
 {
-    if(isDefined(level.VerrucktLullaby))
+    if(Is_True(level.VerrucktLullaby))
         return iPrintlnBold("^1ERROR: ^7Lullaby For A Dead Man Already Activated");
 
     level.VerrucktLullaby = true;
-    
     trigger = struct::get("snd_flusher", "targetname");
-    
+
     for(a = 0; a < 3; a++)
     {
         trigger notify("trigger_activated");

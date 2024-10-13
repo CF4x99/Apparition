@@ -14,16 +14,18 @@ PopulatePowerupMenu(menu)
                 {
                     self addOptSlider("Spawn Location", ::PowerUpSpawnLocation, "Crosshairs;Self");
                     self addOpt("Reign Drops", zm_bgb_reign_drops::activation);
+                    self addOpt("");
 
                     for(a = 0; a < powerups.size; a++)
-                        if(powerups[a] != "free_perk")
+                        if(isDefined(powerups[a]) && powerups[a] != "free_perk")
                             self addOpt(CleanString(powerups[a]), ::SpawnPowerUp, powerups[a]);
-                        else
+                        else if(isDefined(powerups[a]) && powerups[a] == "free_perk")
                             self addOpt("Free Perk", ::SpawnPowerUp, powerups[a]);
                 }
             break;
     }
 }
+
 PowerUpSpawnLocation(location)
 {
     self.PowerUpSpawnLocation = location;
@@ -33,7 +35,7 @@ SpawnPowerUp(powerup, origin)
 {
     if(!isDefined(origin))
     {
-        if(self.PowerUpSpawnLocation == "Self")
+        if(IsString(self.PowerUpSpawnLocation) && self.PowerUpSpawnLocation == "Self")
             origin = self.origin;
         else
         {
@@ -42,7 +44,7 @@ SpawnPowerUp(powerup, origin)
             origin = trace["position"];
             surface = trace["surfacetype"];
 
-            if(surface == "none" || surface == "default")
+            if(isDefined(surface) && (surface == "none" || surface == "default"))
                 return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
         }
     }

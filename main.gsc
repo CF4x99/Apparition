@@ -1,7 +1,7 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.2.1.0
+    Version:              1.5.0.0
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
@@ -11,6 +11,19 @@
     
     Menu Source & Current Update: https://github.com/CF4x99/Apparition
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
+
+
+    NOTE:
+        I Can Without A Doubt Say Apparition Will Be Unmatched In Every Possible Way.
+        It Will Be The Most Stable, In-Depth, Detail Oriented, Organized, and Largest Mod Menu You Will Ever See.
+
+        You Won't Find Anything That Will Be Comparable To Apparition, Not Even The Menus With "Devs" That Constantly Have To Rip Scripts From Apparition For Their Projects.
+        Apparition Will Remain On Top, Regardless Of Who Tries To Compete With It.
+
+        Since There Has Been Confusion and Accusations, In The Past, Apparition Belongs To Me(CF4_99) and Me Only.
+        I Am The Sole Developer Of Apparition, No One Else Helps With it, Or Provides Scripts.
+        The Credits Below Says Exactly What These People Offered Apparition, Nothing More, Nothing Less.
+    
     
     Credits:
         - CF4_99 ~ Project Developer
@@ -32,27 +45,24 @@
     Map EE Options:
         I have created scripts to complete the EE's for the classic maps that have smaller EE's.
         As for the bigger maps that have bigger and more complex EE's, I have made scripts to make completing the EE's, a lot easier.
-        The reason for me not adding an option to complete the whole EE for bigger maps, isn't because I can't do it.
+        The EE scripts will complete steps properly, not just set flags/variables tricking the game into thinking the step is completed, when it actually hasn't(unlike other "developers")
+        This will prevent any issues with crashes/conflictions later on while continuing regular gameplay/playing through other parts of the EE.
 
         Where to find options that help completing EE's:
             Main Menu -> [map name] Scripts
             Server Modifications -> Craftables
+        
+    Craftables:
+        Not all craftables will be found in the Craftables menu
+        Some craftables have to be added and collected manually
+        So if you can't find a craftable in the Craftables menu, check the map scripts menu
+        If it's not found in Craftables, or the map scripts menu, then it's a craftable that would have to be added manually, and I haven't made a script to collect the parts yet
 
 
 
     If you find any bugs, or come across something that you feel isn't working as it should, please message me on discord.
 
     Discord: cf4_99
-*/
-
-/*
-                            TO DO
-    ______________________________________________________________
-    - Revelations Easter Egg Options
-    - Der Eisendrache Easter Egg Options
-    - Gorod Krovi Easter Egg Options
-    - Moon Easter Egg Options
-    ______________________________________________________________
 */
 
 #include scripts\codescripts\struct;
@@ -62,7 +72,6 @@
 #include scripts\shared\system_shared;
 #include scripts\shared\util_shared;
 #include scripts\shared\hud_util_shared;
-#include scripts\shared\hud_message_shared;
 #include scripts\shared\hud_shared;
 #include scripts\shared\array_shared;
 #include scripts\shared\aat_shared;
@@ -81,7 +90,6 @@
 #include scripts\shared\vehicle_shared;
 #include scripts\shared\exploder_shared;
 #include scripts\shared\ai_shared;
-#include scripts\shared\doors_shared;
 #include scripts\shared\gameskill_shared;
 #include scripts\shared\laststand_shared;
 #include scripts\shared\spawner_shared;
@@ -89,7 +97,6 @@
 #include scripts\shared\damagefeedback_shared;
 #include scripts\shared\bots\_bot;
 #include scripts\shared\_burnplayer;
-#include scripts\shared\killstreaks_shared;
 #include scripts\shared\abilities\_ability_power;
 
 #include scripts\zm\gametypes\_globallogic;
@@ -103,8 +110,10 @@
 #include scripts\zm\_zm_weapons;
 #include scripts\zm\_zm_perks;
 #include scripts\zm\_zm_equipment;
+#include scripts\zm\_zm_placeable_mine;
 #include scripts\zm\_zm_utility;
 #include scripts\zm\_zm_blockers;
+#include scripts\zm\_zm_zonemgr;
 #include scripts\zm\craftables\_zm_craftables;
 #include scripts\zm\_zm_powerups;
 #include scripts\zm\_zm_audio;
@@ -131,21 +140,43 @@ __init__()
 
 init()
 {
-    level thread DefineOnce();
+    level DefineOnce();
+
+    if(isDefined(level.overrideplayerdamage))
+        level.saved_overrideplayerdamage = level.overrideplayerdamage;
 
     level.overrideplayerdamage = ::override_player_damage;
 
-    level.saved_global_damage_func = level.global_damage_func;
+    if(isDefined(level.global_damage_func))
+        level.saved_global_damage_func = level.global_damage_func;
+    
     level.global_damage_func = ::override_zombie_damage;
 
-    level.saved_global_damage_func_ads = level.global_damage_func_ads;
+    if(isDefined(level.global_damage_func_ads))
+        level.saved_global_damage_func_ads = level.global_damage_func_ads;
+    
     level.global_damage_func_ads = ::override_zombie_damage_ads;
 
-    level.saved_callbackactorkilled = level.callbackactorkilled;
+    if(isDefined(level.callbackactorkilled))
+        level.saved_callbackactorkilled = level.callbackactorkilled;
+    
     level.callbackactorkilled = ::override_actor_killed;
+
+    if(isDefined(level.callbackplayerdisconnect))
+        level.saved_callbackplayerdisconnect = level.callbackplayerdisconnect;
+    
+    level.callbackplayerdisconnect = ::override_player_disconnect;
     
     level.custom_game_over_hud_elem = ::override_game_over_hud_elem;
     level.player_score_override = ::override_player_points;
+
+    level.closest_player_targets_override = ::closest_player_targets_override;
+    level.get_closest_valid_player_override = ::get_closest_valid_player_override;
+
+    if(ReturnMapName(level.script) == "Revelations")
+        level thread Genesis_closest_valid_player();
+    else if(ReturnMapName(level.script) == "Zetsubou No Shima")
+        level thread Island_closest_valid_player();
 }
 
 OnPlayerConnect()
@@ -160,18 +191,17 @@ onPlayerSpawned()
 
     if(self IsHost() && !isDefined(self.OnPlayerSpawned))
     {
-        if(!isDefined(level.AntiEndGame))
+        if(!Is_True(level.AntiEndGame))
             self thread AntiEndGame();
         
-        if(!isDefined(level.GSpawnProtection))
+        if(!Is_True(level.GSpawnProtection))
             self thread GSpawnProtection();
         
         level.player_out_of_playable_area_monitor = 0;
         level.player_out_of_playable_area_monitor_callback = ::player_out_of_playable_area_monitor;
-    }
 
-    if(!self IsHost())
-        self thread WatchForDisconnect();
+        level.isUEM = isDefined(level.var_7f38ec2c);
+    }
 
     level flag::wait_till("initial_blackscreen_passed");
 
@@ -181,12 +211,8 @@ onPlayerSpawned()
     self.StartOrigin = self.origin;
     self notify("stop_player_out_of_playable_area_monitor");
 
-    for(a = 0; a < level.players.size; a++)
-        if(level.players[a] == self)
-            myIndex = a;
-
-    if(GetDvarString(level.script + "Spawn" + myIndex) != "")
-        self SetOrigin(GetDvarVector1(level.script + "Spawn" + myIndex));
+    if(GetDvarString(level.script + "Spawn" + self GetEntityNumber()) != "")
+        self SetOrigin(GetDvarVector1(level.script + "Spawn" + self GetEntityNumber()));
 
     //Anthing Above This Is Ran Every Time The Player Spawns
     if(isDefined(self.OnPlayerSpawned))
@@ -211,13 +237,13 @@ DefineOnce()
         return;
     level.DefineOnce = true;
     
-    level.menuName = "Apparition";
-    level.menuVersion = "1.3.0.0";
+    level.menuName    = "Apparition";
+    level.menuVersion = "1.5.0.0";
 
-    level.MenuStatus = ["None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer"];
+    level.MenuStatus = Array("Bot", "None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer");
 
-    level.colorNames = ["Ciper Purple", "xbOnline Blue", "Skyblue", "Pink", "Green", "Brown", "Blue", "Red", "Orange", "Purple", "Cyan", "Yellow", "Black", "White"];
-    level.colors     = [100, 0, 100, 57, 152, 254, 135, 206, 250, 255, 110, 255, 0, 255, 0, 101, 67, 33, 0, 0, 255, 255, 0, 0, 255, 128, 0, 100, 0, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255];
+    level.colorNames = Array("Ciper Purple", "xbOnline Blue", "Skyblue", "Pink", "Green", "Brown", "Blue", "Red", "Orange", "Purple", "Cyan", "Yellow", "Black", "White");
+    level.colors     = Array(100, 0, 100, 57, 152, 254, 135, 206, 250, 255, 110, 255, 0, 255, 0, 101, 67, 33, 0, 0, 255, 255, 0, 0, 255, 128, 0, 100, 0, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255);
     
     level thread RGBFade();
 }
@@ -243,6 +269,11 @@ DefineMenuArrays()
     for(a = 0; a < bgb.size; a++)
         array::add(level.MenuBGB, bgb[a], 0);
     
+    level.MenuVOXCategory = [];
+
+    foreach(category, sound in level.sndplayervox)
+        array::add(level.MenuVOXCategory, CleanString(category, true), 0);
+    
     map = ReturnMapName(level.script);
 
     if(map != "Unknown") //Feel free to add your own custom teleport locations
@@ -253,59 +284,59 @@ DefineMenuArrays()
         switch(map)
         {
             case "Shadows Of Evil":
-                locations = ["Spawn", (1077.87, -5364.46, 124.719), "Pack 'a' Punch", (2614.68, -2348.33, -351.875), "Prison", (3007, -6542, 296.125)];
+                locations = Array("Spawn", (1077.87, -5364.46, 124.719), "Pack 'a' Punch", (2614.68, -2348.33, -351.875), "Prison", (3007, -6542, 296.125));
                 break;
             
             case "The Giant":
-                locations = ["Spawn", (-56.6293, 286.99, 98.125), "Power", (529.258, -1835.94, 61.6158), "Pack 'a' Punch", (-53.7356, 499.323, 101.125), "Prison", (-93.9053, -3268.56, -104.875)];
+                locations = Array("Spawn", (-56.6293, 286.99, 98.125), "Power", (529.258, -1835.94, 61.6158), "Pack 'a' Punch", (-53.7356, 499.323, 101.125), "Prison", (-93.9053, -3268.56, -104.875));
                 break;
             
             case "Der Eisendrache":
-                locations = ["Spawn", (421.786, 559.05, -47.875), "Power", (-27.8228, 2784.15, 848.125), "Boss Fight Room", (-3182.63, 6962.58, -252.375), "Time Travel Room", (-278.407, 5001.93, 152.125), "Prison", (917.821, 912.26, 144.125)];
+                locations = Array("Spawn", (421.786, 559.05, -47.875), "Power", (-27.8228, 2784.15, 848.125), "Boss Fight Room", (-3182.63, 6962.58, -252.375), "Time Travel Room", (-278.407, 5001.93, 152.125), "Prison", (917.821, 912.26, 144.125));
                 break;
             
             case "Zetsubou No Shima":
-                locations = ["Spawn", (393.455, -3181.32, -501.117), "Power", (-1475.2, 3456.67, -426.877), "Pack 'a' Punch", (246.815, 3818.53, -503.875), "Prison", (2608, 1135, -175.875)];
+                locations = Array("Spawn", (393.455, -3181.32, -501.117), "Power", (-1475.2, 3456.67, -426.877), "Pack 'a' Punch", (246.815, 3818.53, -503.875), "Prison", (2608, 1135, -175.875));
                 break;
             
             case "Gorod Krovi":
-                locations = ["Spawn", (-144, -184, 0.125), "Power", (102, 4969, 144.125), "Pack 'a' Punch", (-2967, 21660, 0.125), "Prison", (-2152, 3644, 160.125)];
+                locations = Array("Spawn", (-144, -184, 0.125), "Power", (102, 4969, 144.125), "Pack 'a' Punch", (-2967, 21660, 0.125), "Prison", (-2152, 3644, 160.125));
                 break;
             
             case "Revelations":
-                locations = ["Spawn", (-4812, 72, -451.2), "Pack 'a' Punch", (819, 145, -3301.9), "Origins", (-3006, 3470, 1066), "Nacht Der Untoten", (109, 448, -379.6), "Verruckt", (5027, -2366, 230), "Kino Der Toten", (-1393, -9218, -1663.5), "Shangri-La", (-2023, -4151, -1699.5), "Mob Of The Dead", (478, 3301, 1264.125), "Prison", (154, 474, -740.125)];
+                locations = Array("Spawn", (-4812, 72, -451.2), "Pack 'a' Punch", (819, 145, -3301.9), "Origins", (-3006, 3470, 1066), "Nacht Der Untoten", (109, 448, -379.6), "Verruckt", (5027, -2366, 230), "Kino Der Toten", (-1393, -9218, -1663.5), "Shangri-La", (-2023, -4151, -1699.5), "Mob Of The Dead", (478, 3301, 1264.125), "Prison", (154, 474, -740.125));
                 break;
             
             case "Nacht Der Untoten":
-                locations = ["Spawn", (53, 415, 5.25), "Prison", (-162, -396, 1.125)];
+                locations = Array("Spawn", (53, 415, 5.25), "Prison", (-162, -396, 1.125));
                 break;
             
             case "Verruckt":
-                locations = ["Spawn", (1097, 302, 64.125), "Power", (-357, -219, 226.125), "Prison", (1154, 791, 64.125)];
+                locations = Array("Spawn", (1097, 302, 64.125), "Power", (-357, -219, 226.125), "Prison", (1154, 791, 64.125));
                 break;
             
             case "Shi No Numa":
-                locations = ["Spawn", (10267, 514, -528.875), "Out Of The Map", (12374, 4523, -664.875), "Under The Map", (11838, -1614, -1217.94), "Prison", (12500, -939, -644.875)];
+                locations = Array("Spawn", (10267, 514, -528.875), "Out Of The Map", (12374, 4523, -664.875), "Under The Map", (11838, -1614, -1217.94), "Prison", (12500, -939, -644.875));
                 break;
             
             case "Kino Der Toten":
-                locations = ["Spawn", (13.2366, -1262.8, 90.125), "Power", (-619.298, 1391.23, -15.875), "Pack 'a' Punch", (5.74551, -376.756, 320.125), "Air Force Room", (1154.75, 2650.46, -367.875), "Surgical Room", (1948.13, -2204.91, 136.125), "Samantha's Room", (-2636.31, 189.825, 52.125), "Samantha's Red Room", (-2620.55, -1106.91, 53.3851), "Prison", (-1590.36, -4760.5, -167.875)];
+                locations = Array("Spawn", (13.2366, -1262.8, 90.125), "Power", (-619.298, 1391.23, -15.875), "Pack 'a' Punch", (5.74551, -376.756, 320.125), "Air Force Room", (1154.75, 2650.46, -367.875), "Surgical Room", (1948.13, -2204.91, 136.125), "Samantha's Room", (-2636.31, 189.825, 52.125), "Samantha's Red Room", (-2620.55, -1106.91, 53.3851), "Prison", (-1590.36, -4760.5, -167.875));
                 break;
             
             case "Ascension":
-                locations = ["Spawn", (-512, 3, -484.875), "Power", (-464, 1028, 220.125), "Pack 'a' Punch", (487, 389, -303.875), "Prison", (-228, 1306, -485.875)];
+                locations = Array("Spawn", (-512, 3, -484.875), "Power", (-464, 1028, 220.125), "Pack 'a' Punch", (487, 389, -303.875), "Prison", (-228, 1306, -485.875));
                 break;
             
             case "Shangri-La":
-                locations = ["Spawn", (-10, -740, 20.125), "Pack 'a' Punch", (-2, 381, 289.125), "Prison", (1052, 1275, -547.875)];
+                locations = Array("Spawn", (-10, -740, 20.125), "Pack 'a' Punch", (-2, 381, 289.125), "Prison", (1052, 1275, -547.875));
                 break;
             
             case "Moon":
-                locations = ["Earth Spawn", (22250, -38663, -679.875), "Moon Spawn", (-4, 32, -1.875), "Power", (42, 3100, -587.875), "Dome", (-162, 6893, 0.45), "Prison", (743, 966, -220.875)];
+                locations = Array("Earth Spawn", (22250, -38663, -679.875), "Moon Spawn", (-4, 32, -1.875), "Power", (42, 3100, -587.875), "Dome", (-162, 6893, 0.45), "Prison", (743, 966, -220.875));
                 break;
             
             case "Origins":
-                locations = ["Spawn", (2698.43, 5290.48, -346.219), "Staff Chamber", (-2.4956, -2.693, -751.875), "The Crazy Place", (10334.5, -7891.93, -411.875), "Robot Head: Odin", (-6759.17, -6541.72, 159.375), "Robot Head: Thor", (-6223.59, -6547.65, 159.375), "Robot Head: Freya", (-5699.83, -6540.03, 159.375), "Prison", (-3142.11, 1125.09, -63.875)];
+                locations = Array("Spawn", (2698.43, 5290.48, -346.219), "Staff Chamber", (-2.4956, -2.693, -751.875), "The Crazy Place", (10334.5, -7891.93, -411.875), "Robot Head: Odin", (-6759.17, -6541.72, 159.375), "Robot Head: Thor", (-6223.59, -6547.65, 159.375), "Robot Head: Freya", (-5699.83, -6540.03, 159.375), "Prison", (-3142.11, 1125.09, -63.875));
                 break;
             
             default:
@@ -316,7 +347,7 @@ DefineMenuArrays()
             level.menuTeleports = locations;
     }
     
-    level.MenuModels = ["defaultactor", "defaultvehicle"];
+    level.MenuModels = Array("defaultactor", "defaultvehicle");
     ents = GetEntArray("script_model", "classname");
 
     for(a = 0; a < ents.size; a++)
@@ -334,13 +365,13 @@ DefineMenuArrays()
         if(IsSubStr(fxs[a], "step_") || IsSubStr(fxs[a], "fall_") || IsSubStr(fxs[a], "tesla_viewmodel"))
             continue;
         
-        if(isInArray(level.MenuEffects, fxs[a]))
-            continue;
-        
         effect = SpawnStruct();
         effect.name = fxs[a];
         effect.displayName = CleanString(fxs[a]);
 
+        if(isInArray(level.MenuEffects, effect))
+            continue;
+        
         level.MenuEffects[level.MenuEffects.size] = effect;
     }
     
@@ -353,7 +384,7 @@ DefineMenuArrays()
     
     level.MenuSpawnPoints = ArrayCombine(struct::get_array("player_respawn_point_arena", "targetname"), struct::get_array("player_respawn_point", "targetname"), 0, 1);
     
-    trapTypes = ["zombie_trap", "gas_access", "trap_electric", "trap_fire", "use_trap_chain"];
+    trapTypes = Array("zombie_trap", "gas_access", "trap_electric", "trap_fire", "use_trap_chain");
     level.MenuZombieTraps = [];
 
     for(a = 0; a < trapTypes.size; a++)
@@ -390,9 +421,7 @@ DefineMenuArrays()
     }
 
     level.savedJokerModel = level.chest_joker_model;
-
-    level.boneTags = "j_head;j_neck;tag_eye;j_spine4;j_spinelower;j_mainroot;j_ankle_le;j_ankle_ri";
-    level.mapNames = ["zm_zod", "zm_factory", "zm_castle", "zm_island", "zm_stalingrad", "zm_genesis", "zm_prototype", "zm_asylum", "zm_sumpf", "zm_theater", "zm_cosmodrome", "zm_temple", "zm_moon", "zm_tomb"];
+    level.mapNames = Array("zm_zod", "zm_factory", "zm_castle", "zm_island", "zm_stalingrad", "zm_genesis", "zm_prototype", "zm_asylum", "zm_sumpf", "zm_theater", "zm_cosmodrome", "zm_temple", "zm_moon", "zm_tomb");
     
     SetDvar("wallRun_maxTimeMs_zm", 10000);
     SetDvar("playerEnergy_maxReserve_zm", 200);
@@ -406,20 +435,34 @@ playerSetup()
     if(isDefined(self.menuThreaded))
         return;
     self.menuThreaded = true;
-    self.hud_count = 0;
     
     self endon("disconnect");
     
     self defineVariables();
+    self.hud_count = 0;
 
     if(self util::is_bot())
     {
-        self.verification = "Bot";
+        self.verification = level.MenuStatus[0];
         return;
     }
 
-    dvar = GetDvarInt("ApparitionV_" + self GetXUID());
-    self.verification = (self isDeveloper() || self IsHost()) ? self isDeveloper() ? level.MenuStatus[(level.MenuStatus.size - 1)] : level.MenuStatus[(level.MenuStatus.size - 2)] : level.MenuStatus[(isDefined(dvar) && dvar != "") ? Int(dvar) : 0];
+    if(self isDeveloper() || self IsHost())
+    {
+        if(self isDeveloper())
+            self.verification = level.MenuStatus[(level.MenuStatus.size - 1)];
+        else
+            self.verification = level.MenuStatus[(level.MenuStatus.size - 2)];
+    }
+    else
+    {
+        dvar = GetDvarInt("ApparitionV_" + self GetXUID());
+
+        if(isDefined(dvar) && dvar != "" && Int(dvar) != 0)
+            self.verification = level.MenuStatus[Int(dvar)];
+        else
+            self.verification = level.MenuStatus[1];
+    }
     
     if(self hasMenu())
     {
@@ -435,7 +478,7 @@ defineVariables()
     self.DefinedVariables = true;
     
     self.menuHud      = [];
-    self.menuParent   = []; 
+    self.menuParent   = [];
     self.menuParentQM = [];
     self.menuCurs     = [];
     self.menuCursQM   = [];
@@ -462,64 +505,77 @@ NotifyWelcomeMessage(message = "", time = 5)
 
 WelcomeMessage(message)
 {
-    if(isDefined(self.WelcomeDisplay))
+    self endon("disconnect");
+    
+    if(Is_True(self.WelcomeDisplay))
         return;
     self.WelcomeDisplay = true;
-
-    self endon("disconnect");
 
     self thread NotifyWelcomeMessage(message);
     
     //Menu Instructions only display when the player is verified
     //Menu Instructions Can Be Disabled In Menu Customization
-    //If you want to disable by default: menu_customization.gsc -> LoadMenuVars() -> self.DisableMenuInstructions = undefined; <- Change to true
+    //If you want to disable by default: menu_customization.gsc -> LoadMenuVars() -> self.DisableMenuInstructions = false; <- Change to true
     inY = 230;
     
     while(1)
     {
-        if(self hasMenu() && (!isDefined(self.DisableMenuInstructions) && (!isDefined(self.MenuInstructionsBG) || !isDefined(self.MenuInstructions)) || !isDefined(self.DisableEntityCount) && !self isInMenu(true) && (!isDefined(self.EntCountBG) || !isDefined(self.EntityCount) || !isDefined(self.EntArrayCount))))
+        if(self hasMenu() && (!Is_True(self.DisableMenuInstructions) && (!isDefined(self.MenuInstructionsBG) || !isDefined(self.MenuInstructionsBGOuter) || !isDefined(self.MenuInstructions)) || !Is_True(self.DisableEntityCount) && !self isInMenu(true) && (!isDefined(self.EntCountBG) || !isDefined(self.EntCountBGOuter) || !isDefined(self.EntityCount) || !isDefined(self.EntArrayCount))))
         {
-            if(!isDefined(self.DisableMenuInstructions))
+            if(!Is_True(self.DisableMenuInstructions))
             {
                 if(!isDefined(self.MenuInstructionsBG))
-                    self.MenuInstructionsBG = self createRectangle("TOP_LEFT", "CENTER", -100, inY, 0, 15, (0, 0, 0), 1, 0.8, "white");
+                    self.MenuInstructionsBG = self createRectangle("TOP_LEFT", "CENTER", -100, inY, 0, 15, (0, 0, 0), 2, 1, "white");
+                
+                if(!isDefined(self.MenuInstructionsBGOuter))
+                    self.MenuInstructionsBGOuter = self createRectangle("TOP_LEFT", "CENTER", -101, (inY - 1), 0, 17, self.MainColor, 1, 1, "white");
                 
                 if(!isDefined(self.MenuInstructions))
-                    self.MenuInstructions = self createText("default", 1.1, 2, "", "LEFT", "CENTER", (self.MenuInstructionsBG.x + 1), (self.MenuInstructionsBG.y + 7), 1, (1, 1, 1));
+                    self.MenuInstructions = self createText("default", 1.1, 3, "", "LEFT", "CENTER", (self.MenuInstructionsBG.x + 1), (self.MenuInstructionsBG.y + 7), 1, (1, 1, 1));
             }
 
-            if(!isDefined(self.DisableEntityCount))
+            if(!Is_True(self.DisableEntityCount))
             {
                 if(!isDefined(self.EntCountBG))
-                    self.EntCountBG = self createRectangle("LEFT", "CENTER", -410, 230, 0, 15, (0, 0, 0), 1, 0.8, "white");
+                    self.EntCountBG = self createRectangle("LEFT", "CENTER", -410, 230, 0, 15, (0, 0, 0), 2, 1, "white");
+                
+                if(!isDefined(self.EntCountBGOuter))
+                    self.EntCountBGOuter = self createRectangle("LEFT", "CENTER", -411, 230, 0, 17, self.MainColor, 1, 1, "white");
                 
                 max = ReturnMapGSpawnLimit();
                 
                 if(!isDefined(self.EntityCount))
-                    self.EntityCount = self createText("default", 1.1, 2, "Entity Count(Max: " + max + "):", "LEFT", "CENTER", (self.EntCountBG.x + 1), self.EntCountBG.y, 1, (1, 1, 1));
+                    self.EntityCount = self createText("default", 1.1, 3, "Entity Count(Max: " + max + "):", "LEFT", "CENTER", (self.EntCountBG.x + 1), self.EntCountBG.y, 1, (1, 1, 1));
                 
                 if(!isDefined(self.EntArrayCount)) //This will be using SetValue, rather than SetText(won't contribute to string overflow)
-                    self.EntArrayCount = self createText("default", 1.1, 2, GetEntArray().size, "RIGHT", "CENTER", self.EntityCount.x + self.EntityCount GetTextWidth3arc() - 35, self.EntCountBG.y, 1, (1, 1, 1));
+                    self.EntArrayCount = self createText("default", 1.1, 3, GetEntArray().size, "RIGHT", "CENTER", self.EntityCount.x + self.EntityCount GetTextWidth3arc(self), self.EntCountBG.y, 1, (1, 1, 1));
                 
-                self.EntCountBG SetShaderValues(undefined, (self.EntityCount GetTextWidth3arc() + self.EntArrayCount GetTextWidth3arc()) - 34);
+                self.EntCountBG SetShaderValues(undefined, (self.EntityCount GetTextWidth3arc(self) + self.EntArrayCount GetTextWidth3arc(self)) + 1);
+                self.EntCountBGOuter SetShaderValues(undefined, self.EntCountBG.width + 2);
             }
         }
 
-        if(isDefined(self.MenuInstructions) && isDefined(self.DisableMenuInstructions) || isDefined(self.EntityCount) && (isDefined(self.DisableEntityCount) || self isInMenu(true)) || !self hasMenu() || !Is_Alive(self) && !isDefined(self.refreshInstructions))
+        if(isDefined(self.MenuInstructions) && Is_True(self.DisableMenuInstructions) || isDefined(self.EntityCount) && (Is_True(self.DisableEntityCount) || self isInMenu(true)) || !self hasMenu() || !Is_Alive(self) && !Is_True(self.refreshInstructions))
         {
-            if(isDefined(self.DisableMenuInstructions) || !self hasMenu() || !Is_Alive(self) && !isDefined(self.refreshInstructions))
+            if(Is_True(self.DisableMenuInstructions) || !self hasMenu() || !Is_Alive(self) && !Is_True(self.refreshInstructions))
             {
                 if(isDefined(self.MenuInstructions))
                     self.MenuInstructions DestroyHud();
 
                 if(isDefined(self.MenuInstructionsBG))
                     self.MenuInstructionsBG DestroyHud();
+                
+                if(isDefined(self.MenuInstructionsBGOuter))
+                    self.MenuInstructionsBGOuter DestroyHud();
             }
 
-            if(isDefined(self.DisableEntityCount) || !self hasMenu() || self isInMenu(true) || !Is_Alive(self) && !isDefined(self.refreshInstructions))
+            if(Is_True(self.DisableEntityCount) || !self hasMenu() || self isInMenu(true) || !Is_Alive(self) && !Is_True(self.refreshInstructions))
             {
                 if(isDefined(self.EntCountBG))
                     self.EntCountBG DestroyHud();
+                
+                if(isDefined(self.EntCountBGOuter))
+                    self.EntCountBGOuter DestroyHud();
                 
                 if(isDefined(self.EntityCount))
                     self.EntityCount DestroyHud();
@@ -531,12 +587,12 @@ WelcomeMessage(message)
             if(!self hasMenu())
                 break;
             
-            if(!Is_Alive(self) && !isDefined(self.refreshInstructions))
+            if(!Is_Alive(self) && !Is_True(self.refreshInstructions))
                 self.refreshInstructions = true; //Instructions Need To Be Refreshed To Make Sure They Are Archived Correctly To Be Shown While Dead
         }
 
-        if(Is_Alive(self) && isDefined(self.refreshInstructions))
-            self.refreshInstructions = undefined;
+        if(Is_Alive(self) && Is_True(self.refreshInstructions))
+            self.refreshInstructions = false;
         
         if(isDefined(self.MenuInstructions))
         {
@@ -546,32 +602,45 @@ WelcomeMessage(message)
                 {
                     if(!self isInMenu(true))
                     {
-                        string = "[{+speed_throw}] & [{+melee}]: Open " + level.menuName + " - [^1J^2o^3e^4l^5s ^6E^2d^7i^1t^7]";
+                        str = "[{+speed_throw}] & [{+melee}]: Open " + level.menuName;
 
-                        if(!isDefined(self.DisableQM))
-                            string += "\n[{+speed_throw}] & [{+smoke}]: Open Quick Menu";
+                        if(!Is_True(self.DisableQM))
+                            str += "\n[{+speed_throw}] & [{+smoke}]: Open Quick Menu";
                     }
                     else
-                        string = "[{+attack}]/[{+speed_throw}]: Scroll\n[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right\n[{+activate}]: Select\n[{+melee}]: Go Back/Exit";
+                        str = "[{+attack}]/[{+speed_throw}]: Scroll\n[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right\n[{+activate}]: Select\n[{+melee}]: Go Back/Exit";
                 }
                 else
-                    string = self.MenuInstructionsString;
+                    str = self.MenuInstructionsString;
             }
             else
-                string = !self isInMenu(true) ? "[{+speed_throw}] & [{+gostand}]: Open Quick Menu" : "[{+attack}]/[{+speed_throw}]: Scroll\n[{+activate}]: Select\n[{+gostand}]: Exit";
+            {
+            	str = "[{+speed_throw}] & [{+gostand}]: Open Quick Menu";
+
+            	if(self isInMenu(true))
+            		str = "[{+attack}]/[{+speed_throw}]: Scroll\n[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right\n[{+activate}]: Select\n[{+gostand}]: Exit";
+            }
             
-            if(self.MenuInstructions.text != string)
-                self.MenuInstructions SetTextString(string);
+            if(self.MenuInstructions.text != str)
+                self.MenuInstructions SetTextString(str);
+
+            if(IsSubStr(str, "\n"))
+            	height = (CorrectNL_BGHeight(str) - 5);
+        	else
+        		height = CorrectNL_BGHeight(str);
             
-            height = IsSubStr(string, "\n") ? (CorrectNL_BGHeight(string) - 5) : CorrectNL_BGHeight(string);
             width = self.MenuInstructions GetTextWidth3arc(self);
             
             if(self.MenuInstructionsBG.width != width || self.MenuInstructionsBG.height != height)
+            {
                 self.MenuInstructionsBG SetShaderValues(undefined, width, height);
-            
+                self.MenuInstructionsBGOuter SetShaderValues(undefined, (width + 2), (height + 2));
+            }
+
             if(self.MenuInstructionsBG.y != (inY - height))
             {
                 self.MenuInstructionsBG.y = (inY - height);
+                self.MenuInstructionsBGOuter.y = ((inY - height) - 1);
                 self.MenuInstructions.y = (self.MenuInstructionsBG.y + 6);
             }
         }
@@ -588,13 +657,11 @@ SetMenuInstructions(text)
     self.MenuInstructionsString = (!isDefined(text) || text == "") ? undefined : text;
 }
 
-WatchForDisconnect()
+override_player_disconnect()
 {
-    self waittill("disconnect");
-
     foreach(player in level.players)
     {
-        if(!player hasMenu())
+        if(!player hasMenu() || !isDefined(player) || player == self)
             continue;
         
         //If a player is navigating another players options, and that player disconnects, it will kick them back to the player menu
@@ -621,4 +688,7 @@ WatchForDisconnect()
         else if(player isInMenu() && player getCurrent() == "Players") //If a player is viewing the player menu when a player disconnects, it will refresh the options
             player RefreshMenu();
     }
+
+    if(isDefined(level.saved_callbackplayerdisconnect))
+        self [[ level.saved_callbackplayerdisconnect ]]();
 }

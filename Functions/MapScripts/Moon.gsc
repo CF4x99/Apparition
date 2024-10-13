@@ -3,105 +3,111 @@ PopulateMoonScripts(menu)
 	switch(menu)
 	{
 		case "Moon Scripts":
-            self addMenu("Moon Scripts");
-                self addOptBool(level flag::get("power_on"), "Turn On Power", ::ActivatePower);
-                self addOptSlider("Activate Excavator", ::ActivateDigger, "Teleporter;Hangar;Biodome");
-                self addOptBool(level.FastExcavators, "Fast Excavators", ::FastExcavators);
+			self addMenu("Moon Scripts");
+				self addOptBool(level flag::get("power_on"), "Turn On Power", ::ActivatePower);
+				self addOptSlider("Activate Excavator", ::ActivateDigger, "Teleporter;Hangar;Biodome");
+				self addOptBool(level.FastExcavators, "Fast Excavators", ::FastExcavators);
 
-                if(level flag::get("power_on"))
-                {
-                    self addOptBool(level flag::get("ss1"), "Samantha Says Part 1", ::CompleteSamanthaSays, "ss1");
+				if(level flag::get("power_on"))
+				{
+					self addOptBool(level flag::get("ss1"), "Samantha Says Part 1", ::CompleteSamanthaSays, "ss1");
 
-                    if(level flag::get("ss1"))
-                        self addOptBool(level flag::get("be2"), "Samantha Says Part 2", ::CompleteSamanthaSays, "be2");
-                }
-            break;
+					if(level flag::get("ss1"))
+						self addOptBool(level flag::get("be2"), "Samantha Says Part 2", ::CompleteSamanthaSays, "be2");
+				}
+			break;
 	}
 }
 
 CompleteSamanthaSays(part)
 {
-    if(!level flag::get("power_on"))
-        return self iPrintlnBold("^1ERROR: ^7The Power Needs To Be Turned On Before Using This Option");
-	
+	if(!level flag::get("power_on"))
+		return self iPrintlnBold("^1ERROR: ^7The Power Needs To Be Turned On Before Using This Option");
+
 	if(part == "be2" && !level flag::get("vg_charged"))
 		return self iPrintlnBold("^1ERROR: ^7This Step Can't Be Completed Yet");
-    
-    if(level flag::get(part))
-        return self iPrintlnBold("^1ERROR: ^7Samantha Says Has Already Been Completed");
-    
-    if(isDefined(level.SamanthaSays))
-        return self iPrintlnBold("^1ERROR: ^7Samantha Says Is Currently Being Completed");
-    
-    level.SamanthaSays = true;
 
-    curs = self getCursor();
-    menu = self getCurrent();
+	if(level flag::get(part))
+		return self iPrintlnBold("^1ERROR: ^7Samantha Says Has Already Been Completed");
 
-    while(!level flag::get(part))
-    {
-        level notify("ss_won");
-        level._ss_sequence_matched = true;
+	if(Is_True(level.SamanthaSays))
+		return self iPrintlnBold("^1ERROR: ^7Samantha Says Is Currently Being Completed");
 
-        wait 0.025;
-    }
+	level.SamanthaSays = true;
 
-    self RefreshMenu(menu, curs);
-    level.SamanthaSays = undefined;
+	curs = self getCursor();
+	menu = self getCurrent();
+
+	while(!level flag::get(part))
+	{
+		level notify("ss_won");
+		level._ss_sequence_matched = true;
+
+		wait 0.025;
+	}
+
+	self RefreshMenu(menu, curs);
+	level.SamanthaSays = false;
 }
 
 ActivateDigger(force_digger)
 {
-    force_digger = ToLower(force_digger);
+	force_digger = ToLower(force_digger);
 
-    if(level flag::get("start_" + force_digger + "_digger"))
-        return self iPrintlnBold("^1ERROR: ^7Excavator Is Already Activated");
-    
-    level flag::set("start_" + force_digger + "_digger");
-    level thread send_clientnotify(force_digger, 0);
-    level thread play_digger_start_vox(force_digger);
-	
-    wait 1;
+	if(level flag::get("start_" + force_digger + "_digger"))
+		return self iPrintlnBold("^1ERROR: ^7Excavator Is Already Activated");
 
-    level notify(force_digger + "_vox_timer_stop");
-    level thread play_timer_vox(force_digger);
+	level flag::set("start_" + force_digger + "_digger");
+	level thread send_clientnotify(force_digger, 0);
+	level thread play_digger_start_vox(force_digger);
+	wait 1;
+
+	level notify(force_digger + "_vox_timer_stop");
+	level thread play_timer_vox(force_digger);
 }
 
 SetDiggerSpeed(speed)
 {
-    level.DiggerSpeed = speed;
+	level.DiggerSpeed = speed;
 }
 
 FastExcavators()
 {
-    level.FastExcavators = isDefined(level.FastExcavators) ? undefined : true;
+	if(!Is_True(level.FastExcavators))
+	{
+		level endon("EndFastExcavators");
 
-    if(isDefined(level.FastExcavators))
-    {
-        level endon("EndFastExcavators");
-        
-        while(isDefined(level.FastExcavators))
-        {
-            level flag::wait_till("digger_moving");
+		level.FastExcavators = true;
 
-            while(level flag::get("digger_moving")) //This needs to be looped. The speed is recalculated the whole time the excavators are moving.
-            {
-                diggers = GetEntArray("digger_body", "targetname");
+		while(Is_True(level.FastExcavators))
+		{
+			level flag::wait_till("digger_moving");
 
-                foreach(digger in diggers)
-                {
-                    targets = GetEntArray(digger.target, "targetname");
-                    tracks = (digger.script_string == "teleporter_digger_stopped") ? targets[0] : targets[1];
+			while(level flag::get("digger_moving")) //This needs to be looped. The speed is recalculated the whole time the excavators are moving.
+			{
+				diggers = GetEntArray("digger_body", "targetname");
 
-                    tracks.digger_speed = 2000; //Set This To Whatever. Default is around 30 - 50. You don't need to reset it since it gets recalculated everytime they move.
-                }
+				foreach(digger in diggers)
+				{
+					targets = GetEntArray(digger.target, "targetname");
 
-                wait 0.1;
-            }
-        }
-    }
-    else
-        level notify("EndFastExcavators");
+					if(digger.script_string == "teleporter_digger_stopped")
+						tracks = targets[0];
+					else
+						tracks = targets[1];
+
+					tracks.digger_speed = 2000; //Set This To Whatever. Default is around 30 - 50. You don't need to reset it since it gets recalculated everytime they move.
+				}
+
+				wait 0.1;
+			}
+		}
+	}
+	else
+	{
+		level notify("EndFastExcavators");
+		level.FastExcavators = false;
+	}
 }
 
 send_clientnotify(digger_name, pause)
@@ -114,21 +120,21 @@ send_clientnotify(digger_name, pause)
 			else
 				util::clientnotify("Dz3e");
 			break;
-		
+
 		case "teleporter":
 			if(!pause)
 				util::clientnotify("Dz2");
 			else
 				util::clientnotify("Dz2e");
 			break;
-		
+
 		case "biodome":
 			if(!pause)
 				util::clientnotify("Dz5");
 			else
 				util::clientnotify("Dz5e");
 			break;
-		
+
 		default:
 			break;
 	}
@@ -139,7 +145,7 @@ play_digger_start_vox(digger_name)
 	level thread play_mooncomp_vox("vox_mcomp_digger_start_", digger_name);
 	wait 7;
 
-	if(!(isDefined(level.on_the_moon) && level.on_the_moon))
+	if(!Is_True(level.on_the_moon))
 		return;
 
 	players = GetPlayers();
@@ -156,7 +162,7 @@ do_mooncomp_vox(alias)
 
 	if(!isDefined(level.var_2ff0efb3))
 		return;
-    
+
 	foreach(var_5ede318f, speaker in level.var_2ff0efb3)
 	{
 		PlaySoundAtPosition(alias, speaker.origin);
@@ -167,6 +173,7 @@ do_mooncomp_vox(alias)
 play_timer_vox(digger_name)
 {
 	level endon(digger_name + "_vox_timer_stop");
+
 	time_left = level.diggers_global_time;
 	played180sec = 0;
 	played120sec = 0;
@@ -210,9 +217,9 @@ play_timer_vox(digger_name)
 
 play_mooncomp_vox(alias, digger)
 {
-	if(!isDefined(alias) || !level.on_the_moon)
+	if(!isDefined(alias) || !Is_True(level.on_the_moon))
 		return;
-    
+
 	num = 0;
 
 	if(isDefined(digger))
@@ -222,15 +229,15 @@ play_mooncomp_vox(alias, digger)
 			case "hangar":
 				num = 1;
 				break;
-			
+
 			case "teleporter":
 				num = 0;
 				break;
-			
+
 			case "biodome":
 				num = 2;
 				break;
-			
+
 			default:
 				num = 0;
 				break;

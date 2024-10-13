@@ -12,7 +12,7 @@ PopulateServerModifications(menu)
                 self addOptBool(level.AntiQuit, "Anti-Quit", ::AntiQuit);
                 self addOptBool(level.AutoRevive, "Auto-Revive", ::AutoRevive);
                 self addOptBool(level.AutoRespawn, "Auto-Respawn", ::AutoRespawn);
-                self addOptBool(level.ServerPauseWorld, "Pause World", ::ServerPauseWorld);
+                self addOptBool(level.bzm_worldPaused, "Pause World", ::ServerPauseWorld);
                 self addOptBool(level.Newsbar, "Newsbar", ::Newsbar);
                 self addOpt("Doheart Options", ::newMenu, "Doheart Options");
                 self addOpt("Lobby Timer Options", ::newMenu, "Lobby Timer Options");
@@ -84,7 +84,14 @@ PopulateServerModifications(menu)
 
                     for(a = 0; a < level.MenuZombieTraps.size; a++)
                         if(isDefined(level.MenuZombieTraps[a]))
-                            self addOpt(isDefined(level.MenuZombieTraps[a].prefabname) ? CleanString(level.MenuZombieTraps[a].prefabname) : "Trap " + (a + 1), ::ActivateZombieTrap, a);
+                        {
+                            if(isDefined(level.MenuZombieTraps[a].prefabname))
+                                optString = CleanString(level.MenuZombieTraps[a].prefabname);
+                            else
+                                optString = "Trap " + (a + 1);
+                            
+                            self addOpt(optString, ::ActivateZombieTrap, a);
+                        }
                 }
             break;
         
@@ -118,6 +125,9 @@ PopulateServerModifications(menu)
                 self addOptIncSlider("Player Weapon Limit", ::SetPlayerWeaponLimit, 0, 0, 15, 1);
                 self addOptIncSlider("Player Perk Limit", ::SetPlayerPerkLimit, 0, 0, level.MenuPerks.size, 1);
                 self addOptIncSlider("Clip Size Multiplier", ::ServerSetClipSizeMultiplier, 1, 1, 10, 1);
+                self addOptIncSlider("Revive Trigger Radius", ::ServerSetReviveRadius, 0, GetDvarInt("revive_trigger_radius"), 1000, 25);
+                self addOptIncSlider("Last Stand Bleedout Time", ::ServerSetLastandTime, 0, GetDvarInt("player_lastStandBleedoutTime"), 1000, 1);
+                self addOptBool(level.UpgradeWeaponWallbuys, "Upgrade Weapon Wallbuys", ::ServerUpgradeWeaponWallbuys);
                 self addOptBool(level.ServerMaxAmmoClips, "Max Ammo Powerups Fill Clips", ::ServerMaxAmmoClips);
                 self addOptBool(level.IncreasedDropRate, "Increased Power-Up Drop Rate", ::IncreasedDropRate);
                 self addOptBool(level.PowerupsNeverLeave, "Power-Ups Never Leave", ::PowerupsNeverLeave);
@@ -139,18 +149,36 @@ PopulateServerModifications(menu)
 
 SuperJump()
 {
-    level.SuperJump = isDefined(level.SuperJump) ? undefined : true;
-    SetJumpHeight(isDefined(level.SuperJump) ? 1023 : 39);
+    if(!Is_True(level.SuperJump))
+    {
+        level.SuperJump = true;
+        SetJumpHeight(1023);
+    }
+    else
+    {
+        level.SuperJump = false;
+        SetJumpHeight(39);
+    }
 }
 
 LowGravity()
 {
-    SetDvar("bg_gravity", (GetDvarInt("bg_gravity") == level.BgGravity) ? 200 : level.BgGravity);
+    if(GetDvarInt("bg_gravity") == level.BgGravity)
+        value = 200;
+    else
+        value = level.BgGravity;
+    
+    SetDvar("bg_gravity", value);
 }
 
 SuperSpeed()
 {
-    SetDvar("g_speed", (GetDvarString("g_speed") == level.GSpeed) ? "500" : level.GSpeed);
+    if(GetDvarString("g_speed") == level.GSpeed)
+        value = "500";
+    else
+        value = level.GSpeed;
+    
+    SetDvar("g_speed", value);
 }
 
 ServerSetTimeScale(timescale)
@@ -176,13 +204,11 @@ SetRound(round)
     SetRoundsPlayed(round);
 
     level notify("kill_round");
-
     wait 1;
 
     for(a = 0; a < 3; a++)
     {
 	    KillZombies("Head Gib");
-
         wait 0.15;
     }
 
@@ -193,135 +219,88 @@ SetRound(round)
 
 AntiQuit()
 {
-    level.AntiQuit = isDefined(level.AntiQuit) ? undefined : true;
-    SetMatchFlag("disableIngameMenu", isDefined(level.AntiQuit));
-}
-
-AntiEndGame()
-{
-    level.AntiEndGame = isDefined(level.AntiEndGame) ? undefined : true;
-
-    if(isDefined(level.AntiEndGame))
-    {
-        foreach(player in level.players)
-        {
-            if(isDefined(player.AntiEndGameHandler))
-                continue;
-            
-            player.AntiEndGameHandler = true;
-
-            player thread WatchForEndRound();
-        }
-    }
+    if(!Is_True(level.AntiQuit))
+        level.AntiQuit = true;
     else
-    {
-        level notify("EndAntiEndGame");
+        level.AntiQuit = false;
 
-        level.hostforcedend = false;
-        level.forcedend = false;
-        level.gameended = false;
-
-        foreach(player in level.players)
-            player.AntiEndGameHandler = undefined;
-    }
-}
-
-WatchForEndRound()
-{
-    self endon("disconnect");
-    level endon("EndAntiEndGame");
-
-    while(isDefined(level.AntiEndGame))
-    {
-        if(level.hostforcedend)
-            level.hostforcedend = false;
-        
-        if(level.forcedend)
-            level.forcedend = false;
-        
-        if(level.gameended)
-            level.gameended = false;
-
-        self waittill("menuresponse", menu, response);
-
-        if(response != "endround")
-            continue;
-        
-        if(self IsHost())
-            break;
-
-        level.hostforcedend = true;
-        level.forcedend = true;
-        level.gameended = true;
-
-        self iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7Blocked End Game Response");
-        bot::get_host_player() DebugiPrint("^1" + ToUpper(level.menuName) + ": ^2" + CleanName(self getName()) + " ^7Tried To End The Game");
-
-        wait 0.5; //buffer
-    }
+    SetMatchFlag("disableIngameMenu", level.AntiQuit);
 }
 
 AutoRevive()
 {
-    level.AutoRevive = isDefined(level.AutoRevive) ? undefined : true;
-
-    while(isDefined(level.AutoRevive))
+    if(!Is_True(level.AutoRevive))
     {
-        foreach(player in level.players)
-            if(player isDown())
-                player thread PlayerRevive(player);
+        level.AutoRevive = true;
 
-        wait 0.1;
+        while(Is_True(level.AutoRevive))
+        {
+            foreach(player in level.players)
+                if(player isDown())
+                    player thread PlayerRevive(player);
+
+            wait 0.1;
+        }
     }
+    else
+        level.AutoRevive = false;
 }
 
 AutoRespawn()
 {
-    level.AutoRespawn = isDefined(level.AutoRespawn) ? undefined : true;
-
-    while(isDefined(level.AutoRevive))
+    if(!Is_True(level.AutoRespawn))
     {
-        foreach(player in level.players)
-            if(player.sessionstate == "spectator")
-                player thread ServerRespawnPlayer(player);
+        level.AutoRespawn = true;
 
-        wait 0.1;
+        while(Is_True(level.AutoRespawn))
+        {
+            foreach(player in level.players)
+                if(player.sessionstate == "spectator")
+                    player thread ServerRespawnPlayer(player);
+
+            wait 0.1;
+        }
     }
+    else
+        level.AutoRespawn = false;
 }
 
 ServerPauseWorld()
 {
-    level.ServerPauseWorld = isDefined(level.ServerPauseWorld) ? undefined : true;
-    SetPauseWorld(isDefined(level.ServerPauseWorld));
+    if(!Is_True(level.bzm_worldPaused))
+    {
+        level.bzm_worldPaused = true;
+        level flag::set("world_is_paused");
+    }
+    else
+    {
+        level.bzm_worldPaused = false;
+        level flag::clear("world_is_paused");
+    }
+
+    SetPauseWorld(level.bzm_worldPaused);
 }
 
 Newsbar()
 {
-    level.Newsbar = isDefined(level.Newsbar) ? undefined : true;
-    
-    if(isDefined(level.Newsbar))
+    if(!Is_True(level.Newsbar))
     {
-        level.NewsbarBG   = level createServerRectangle("CENTER", "CENTER", 0, -232, 1000, 18, (0, 0, 0), 1, 0.6, "white");
+        level.Newsbar = true;
+
+        level.NewsbarBG   = level createServerRectangle("CENTER", "CENTER", 0, -232, 5000, 18, (0, 0, 0), 1, 0.6, "white");
         level.NewsbarText = level createServerText("default", 1, 3, "", "CENTER", "CENTER", 0, -255, 1, (1, 1, 1));
         
-        strings = [
-        "Welcome To ^1" + level.menuName + " ^7Developed By ^1CF4_99",
-        "Your Host Today Is ^1" + CleanName(bot::get_host_player() getName()),
-        "[{+speed_throw}] & [{+melee}] To Open ^1" + level.menuName,
-        "YouTube.Com/^1CF4_99",
-        "^5Enjoy Your Stay!"
-        ];
+        strings = Array("Welcome To ^1" + level.menuName + " ^7Developed By ^1CF4_99", "Your Host Today Is ^1" + CleanName(bot::get_host_player() getName()), "[{+speed_throw}] & [{+melee}] To Open ^1" + level.menuName, "YouTube.Com/^1CF4_99", "^5Enjoy Your Stay!");
         
         level endon("EndNewsBar");
         
-        while(isDefined(level.Newsbar))
+        while(Is_True(level.Newsbar))
         {
             for(a = 0; a < strings.size; a++)
             {
                 level.NewsbarText SetTextString(strings[a]);
                 level.NewsbarText hudMoveY(-232, 0.55);
                 level.NewsbarText ChangeFontscaleOverTime1(1.2, 0.75);
-                
                 wait 5;
                 
                 level.NewsbarText ChangeFontscaleOverTime1(1, 0.3);
@@ -341,17 +320,22 @@ Newsbar()
             level.NewsbarText destroy();
         
         level notify("EndNewsBar");
+
+        level.Newsbar = false;
     }
 }
 
 Doheart()
 {
-    level.Doheart = isDefined(level.Doheart) ? undefined : true;
-
-    if(isDefined(level.Doheart))
+    if(!Is_True(level.Doheart))
+    {
+        level.Doheart = true;
         level thread SetDoheartText(level.DoheartSavedText, true);
+    }
     else
     {
+        level.Doheart = false;
+
         if(isDefined(level.DoheartText))
             level.DoheartText destroy();
     }
@@ -364,7 +348,7 @@ SetDoheartText(text, refresh)
     
     level.DoheartSavedText = text;
 
-    if(!isDefined(level.Doheart) || !isDefined(text))
+    if(!Is_True(level.Doheart) || !isDefined(text))
         return;
     
     if(isDefined(level.DoheartText))
@@ -414,17 +398,17 @@ SetDoheartStyle(style)
     
     level.DoheartStyle = style;
 
-    if(isDefined(level.Doheart) && isDefined(level.DoheartSavedText))
+    if(Is_True(level.Doheart) && isDefined(level.DoheartSavedText))
         level thread SetDoheartText(level.DoheartSavedText, true);
 }
 
 LobbyTimer()
 {
-    level.LobbyTimer = isDefined(level.LobbyTimer) ? undefined : true;
-
-    if(isDefined(level.LobbyTimer))
+    if(!Is_True(level.LobbyTimer))
     {
         level endon("EndLobbyTimer");
+
+        level.LobbyTimer = true;
 
         n_time = (level.LobbyTime * 60);
 
@@ -444,9 +428,9 @@ LobbyTimer()
             if(isDefined(player) && isDefined(player.LobbyTimer))
                 player CloseLUIMenu(player.LobbyTimer);
         
-        if(isDefined(level.AntiEndGame))
+        if(Is_True(level.AntiEndGame))
             level AntiEndGame();
-
+        
         level thread globallogic::forceend();
     }
     else
@@ -456,6 +440,7 @@ LobbyTimer()
                 player CloseLUIMenu(player.LobbyTimer);
 
         level notify("EndLobbyTimer");
+        level.LobbyTimer = false;
     }
 }
 
@@ -466,7 +451,7 @@ SetLobbyTimer(time)
 
     level.LobbyTime = time;
 
-    if(isDefined(level.LobbyTimer))
+    if(Is_True(level.LobbyTimer))
         for(a = 0; a < 2; a++)
             LobbyTimer();
 }
@@ -480,7 +465,7 @@ OpenAllDoors()
     menu = self getCurrent();
     
     SetDvar("zombie_unlock_all", 1);
-    types = ["zombie_door", "zombie_airlock_buy", "zombie_debris"];
+    types = Array("zombie_door", "zombie_airlock_buy", "zombie_debris");
 
     for(i = 0; i < 2; i++) //Runs twice to ensure all doors open
     {
@@ -531,7 +516,6 @@ OpenAllDoors()
 
     level.local_doors_stay_open = 1;
 	level.power_local_doors_globally = 1;
-
     wait 0.5;
 
     level notify("open_sesame");
@@ -543,10 +527,10 @@ OpenAllDoors()
 
 IsAllDoorsOpen()
 {
-    if(isDefined(level.MoonDoors))
+    if(Is_True(level.MoonDoors))
         return true;
     
-    types = ["zombie_door", "zombie_airlock_buy", "zombie_debris"];
+    types = Array("zombie_door", "zombie_airlock_buy", "zombie_debris");
 
     for(a = 0; a < types.size; a++)
     {
@@ -566,7 +550,7 @@ IsDoorOpen(type)
 {
     if(type == "zombie_door")
     {
-        if(!isDefined(self.has_been_opened) || isDefined(self.has_been_opened) && !self.has_been_opened)
+        if(!Is_True(self.has_been_opened))
             return false;
     }
     else
@@ -633,7 +617,7 @@ SpawnBot()
         return self iPrintlnBold("^1ERROR: ^7Couldn't Spawn Bot");
 
     bot.pers["isBot"] = 1;
-
+    bot.equipment_enabled = 0;
     wait 0.5;
     
     if(bot.sessionstate == "spectator")
@@ -658,7 +642,6 @@ CollectAllCraftables()
     }
     
     wait 0.05;
-
     self RefreshMenu(menu, curs);
 }
 
@@ -672,7 +655,6 @@ CollectCraftableParts(craftable)
 			self zm_craftables::player_take_piece(part.pieceSpawn);
     
     wait 0.05;
-
     self RefreshMenu(menu, curs);
 }
 
@@ -685,7 +667,6 @@ CollectCraftablePart(part)
         self zm_craftables::player_take_piece(part.pieceSpawn);
     
     wait 0.05;
-
     self RefreshMenu(menu, curs);
 }
 
@@ -726,14 +707,14 @@ SetBoxPrice(price)
     {
         chest.old_cost = price;
         
-        if(!isDefined(level.zombie_vars["zombie_powerup_fire_sale_on"]) || isDefined(level.zombie_vars["zombie_powerup_fire_sale_on"]) && !level.zombie_vars["zombie_powerup_fire_sale_on"])
+        if(!Is_True(level.zombie_vars["zombie_powerup_fire_sale_on"]))
             chest.zombie_cost = price;
     }
 }
 
 ShowAllChests()
 {
-    if(isDefined(level.ShowAllChestsWaiting))
+    if(Is_True(level.ShowAllChestsWaiting))
         return;
     level.ShowAllChestsWaiting = true;
 
@@ -757,7 +738,7 @@ ShowAllChests()
             wait 0.1;
         
         self RefreshMenu(menu, curs);
-        level.ShowAllChestsWaiting = undefined;
+        level.ShowAllChestsWaiting = false;
     }
     else
     {
@@ -778,7 +759,7 @@ ShowAllChests()
             wait 0.1;
         
         self RefreshMenu(menu, curs);
-        level.ShowAllChestsWaiting = undefined;
+        level.ShowAllChestsWaiting = false;
     }
 }
 
@@ -789,7 +770,6 @@ TriggerFix()
     while(isDefined(self))
     {
         self.zbarrier waittill("closed");
-
         thread zm_unitrigger::register_static_unitrigger(self.unitrigger_stub, zm_magicbox::magicbox_unitrigger_think);
     }
 }
@@ -801,7 +781,6 @@ FirsaleFix()
     while(isDefined(self))
     {
         level waittill("fire_sale_off");
-
         self.was_temp = undefined;
     }
 }
@@ -809,7 +788,7 @@ FirsaleFix()
 AllBoxesActive()
 {
     foreach(chest in level.chests)
-        if(chest.hidden)
+        if(Is_True(chest.hidden))
             return false;
     
     return true;
@@ -832,16 +811,27 @@ BoxNeverMoves()
     if(AllBoxesActive())
         return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While All Mystery Boxes Are Active");
     
-    SetDvar("magic_chest_movable", (GetDvarString("magic_chest_movable") == "1") ? "0" : "1");
+    if(GetDvarString("magic_chest_movable") == "1")
+        value = "0";
+    else
+        value = "1";
+    
+    SetDvar("magic_chest_movable", value);
 }
 
 IsWeaponInBox(weapon)
 {
+    if(!isDefined(level.customBoxWeapons))
+        return false;
+    
     return isInArray(level.customBoxWeapons, weapon);
 }
 
 SetBoxWeaponState(weapon, upgraded)
 {
+    if(!isDefined(level.customBoxWeapons))
+        return;
+    
     if(isInArray(level.customBoxWeapons, weapon))
         level.customBoxWeapons = ArrayRemove(level.customBoxWeapons, weapon);
     else
@@ -853,18 +843,22 @@ SetBoxWeaponState(weapon, upgraded)
 IsAllWeaponsInBox(type)
 {
     weaps = GetArrayKeys(type);
-    weaponsVar = ["assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special"];
+    weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
+    typeArry = GetArrayKeys(level.zombie_weapons_upgraded);
     
     for(a = 0; a < weaps.size; a++)
     {
-        class = (type == level.zombie_weapons_upgraded) ? zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a])) : zm_utility::GetWeaponClassZM(weaps[a]);
+        if(weaps[0] == typeArry[0])
+            classWeapons = zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a]));
+        else
+            classWeapons = zm_utility::GetWeaponClassZM(weaps[a]);
 
-        if(IsInArray(weaponsVar, ToLower(CleanString(class))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
+        if(IsInArray(weaponsVar, ToLower(CleanString(classWeapons))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
             if(!IsWeaponInBox(weaps[a]))
                 return false;
     }
     
-    if(type != level.zombie_weapons_upgraded)
+    if(weaps[0] != typeArry[0])
     {
         equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
         equipmentCombined = GetArrayKeys(equipment);
@@ -887,23 +881,27 @@ IsAllWeaponsInBox(type)
 
 EnableAllWeaponsInBox(type)
 {
-    if(IsAllWeaponsInBox())
+    if(IsAllWeaponsInBox(type))
         level.customBoxWeapons = [];
     else
     {
         weaps = GetArrayKeys(type);
-        weaponsVar = ["assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special"];
+        weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
+        typeArry = GetArrayKeys(level.zombie_weapons_upgraded);
         
         for(a = 0; a < weaps.size; a++)
         {
-            class = (type == level.zombie_weapons_upgraded) ? zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a])) : zm_utility::GetWeaponClassZM(weaps[a]);
+            if(weaps[0] == typeArry[0])
+                classWeapons = zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a]));
+            else
+                classWeapons = zm_utility::GetWeaponClassZM(weaps[a]);
 
-            if(IsInArray(weaponsVar, ToLower(CleanString(class))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
+            if(IsInArray(weaponsVar, ToLower(CleanString(classWeapons))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
                 if(!IsWeaponInBox(weaps[a]))
                     level.customBoxWeapons[level.customBoxWeapons.size] = weaps[a];
         }
         
-        if(type != level.zombie_weapons_upgraded)
+        if(weaps[0] != typeArry[0])
         {
             equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
             keys = GetArrayKeys(equipment);
@@ -932,40 +930,65 @@ SetBoxJokerModel(model)
     level.chest_joker_model = model;
 }
 
-SetMapSpawn(plyer, type)
+ServerUpgradeWeaponWallbuys()
 {
-    SetDvar(level.script + "Spawn" + (Int(StrTok(plyer, "Player ")[0]) - 1), (type == "Set") ? self.origin : "");
+    if(!Is_True(level.UpgradeWeaponWallbuys))
+    {
+        level.UpgradeWeaponWallbuys = true;
+
+        if(isDefined(level.wallbuy_should_upgrade_weapon_override))
+            level.saved_wallbuy_should_upgrade_weapon_override = level.wallbuy_should_upgrade_weapon_override;
+        
+        level.wallbuy_should_upgrade_weapon_override = ::wallbuy_should_upgrade_weapon_override;
+    }
+    else
+    {
+        level.UpgradeWeaponWallbuys = false;
+
+        if(isDefined(level.saved_wallbuy_should_upgrade_weapon_override))
+            level.wallbuy_should_upgrade_weapon_override = level.saved_wallbuy_should_upgrade_weapon_override;
+        else
+            level.wallbuy_should_upgrade_weapon_override = undefined;
+    }
 }
 
 ServerMaxAmmoClips()
 {
-    level.ServerMaxAmmoClips = isDefined(level.ServerMaxAmmoClips) ? undefined : true;
-
-    if(isDefined(level.ServerMaxAmmoClips))
+    if(!Is_True(level.ServerMaxAmmoClips))
+    {
+        level.ServerMaxAmmoClips = true;
         level thread WatchForMaxAmmo();
+    }
     else
+    {
+        level.ServerMaxAmmoClips = false;
+        level.WatchForMaxAmmo = false;
         level notify("EndMaxAmmoMonitor");
+    }
 }
 
 ShootToRevive()
 {
-    level.ShootToRevive = isDefined(level.ShootToRevive) ? undefined : true;
-
-    foreach(player in level.players)
+    if(!Is_True(level.ShootToRevive))
     {
-        if(isDefined(level.ShootToRevive))
+        level.ShootToRevive = true;
+
+        foreach(player in level.players)
             player thread PlayerShootToRevive();
-        else
-            player notify("EndShootToRevive");
+    }
+    else
+    {
+        level.ShootToRevive = false;
+        level notify("EndShootToRevive");
     }
 }
 
 PlayerShootToRevive()
 {
     self endon("disconnect");
-    self endon("EndShootToRevive");
+    level endon("EndShootToRevive");
 
-    while(isDefined(level.ShootToRevive))
+    while(Is_True(level.ShootToRevive))
     {
         self waittill("weapon_fired");
 
@@ -975,7 +998,7 @@ PlayerShootToRevive()
         tracePosition = trace["position"];
         
         /*
-            For a more accurate and less of a hassle for the player, I'm running two traces.
+            For less of a hassle for the player, I'm running two traces.
             The first one is the case where you didn't shoot directly at the downed player, but you got within 50m of them.
             The second one is the case that you shot them directly
         */
@@ -1047,36 +1070,54 @@ GetPlayerPerkLimit(player)
 
 IncreasedDropRate()
 {
-    if((isDefined(level.no_powerups) && level.no_powerups) && !isDefined(level.IncreasedDropRate))
+    if(Is_True(level.no_powerups) && !Is_True(level.IncreasedDropRate))
         level DisablePowerups();
 
-    level.IncreasedDropRate = isDefined(level.IncreasedDropRate) ? undefined : true;
-
-    while(isDefined(level.IncreasedDropRate))
+    if(!Is_True(level.IncreasedDropRate))
     {
-        level.powerup_drop_count = 0;
-        level.zombie_vars["zombie_powerup_drop_max_per_round"] = 999;
-        level.zombie_vars["zombie_drop_item"] = 1;
-        
-        zombies = GetAITeamArray(level.zombie_team);
+        level.IncreasedDropRate = true;
 
-        for(a = 0; a < zombies.size; a++)
+        while(Is_True(level.IncreasedDropRate))
         {
-            if(isDefined(zombies[a].no_powerup) && zombies[a].no_powerup)
-                zombies[a].no_powerups = false;
-        }
+            if(isDefined(level.powerup_drop_count) && level.powerup_drop_count > 0 || !isDefined(level.powerup_drop_count))
+                level.powerup_drop_count = 0;
 
-        wait 0.01;
+            if(level.zombie_vars["zombie_drop_item"] != 1)
+                level.zombie_vars["zombie_drop_item"] = 1;
+
+            if(level.zombie_vars["zombie_powerup_drop_max_per_round"] != 999)
+                level.zombie_vars["zombie_powerup_drop_max_per_round"] = 999;
+            
+            zombies = GetAITeamArray(level.zombie_team);
+
+            for(a = 0; a < zombies.size; a++)
+            {
+                if(isDefined(zombies[a]) && (!isDefined(zombies[a].no_powerup) || zombies[a].no_powerup))
+                    zombies[a].no_powerups = false;
+            }
+
+            wait 0.01;
+        }
     }
-    
-    if(!isDefined(level.IncreasedDropRate))
+    else
+    {
+        level.IncreasedDropRate = false;
         level.zombie_vars["zombie_powerup_drop_max_per_round"] = 4;
+    }
 }
 
 PowerupsNeverLeave()
 {
-    level.PowerupsNeverLeave = isDefined(level.PowerupsNeverLeave) ? undefined : true;
-    level._powerup_timeout_override = isDefined(level.PowerupsNeverLeave) ? PowerUpTime() : undefined;
+    if(!Is_True(level.PowerupsNeverLeave))
+    {
+        level.PowerupsNeverLeave = true;
+        level._powerup_timeout_override = PowerUpTime();
+    }
+    else
+    {
+        level.PowerupsNeverLeave = false;
+        level._powerup_timeout_override = undefined;
+    }
 }
 
 PowerUpTime()
@@ -1086,14 +1127,14 @@ PowerUpTime()
 
 DisablePowerups()
 {
-    if(isDefined(level.IncreasedDropRate) && !isDefined(level.DisablePowerups))
+    if(Is_True(level.IncreasedDropRate) && !Is_True(level.DisablePowerups))
         level IncreasedDropRate();
 
-    level.DisablePowerups = isDefined(level.DisablePowerups) ? undefined : true;
-
-    if(isDefined(level.DisablePowerups))
+    if(!Is_True(level.DisablePowerups))
     {
-        foreach(index, powerup in level.active_powerups)
+        level.DisablePowerups = true;
+
+        foreach(powerup in level.active_powerups)
         {
             powerup notify("powerup_timedout");
             powerup zm_powerups::powerup_delete();
@@ -1101,7 +1142,7 @@ DisablePowerups()
             wait 0.01;
         }
         
-        while(isDefined(level.DisablePowerups))
+        while(Is_True(level.DisablePowerups))
         {
             level waittill("powerup_dropped", powerup);
             
@@ -1113,17 +1154,30 @@ DisablePowerups()
         }
     }
     else
+    {
         level.powerup_drop_count = 0;
+        level.DisablePowerups = false;
+    }
 }
 
 headshots_only()
 {
-    level.headshots_only = isDefined(level.headshots_only) ? undefined : true;
+    level.headshots_only = !Is_True(level.headshots_only);
 }
 
 ServerSetClipSizeMultiplier(multiplier)
 {
     SetDvar("player_clipSizeMultiplier", multiplier);
+}
+
+ServerSetReviveRadius(radius)
+{
+    SetDvar("revive_trigger_radius", radius);
+}
+
+ServerSetLastandTime(time)
+{
+    SetDvar("player_lastStandBleedoutTime", time);
 }
 
 EditPackAPunchPrice(price)

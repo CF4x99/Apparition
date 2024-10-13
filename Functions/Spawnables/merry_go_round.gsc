@@ -1,10 +1,14 @@
 SpawnMerryGoRound()
 {
-    if(isDefined(level.spawnable["Merry Go Round_Spawned"]))
+    if(Is_True(level.spawnable["Merry Go Round_Spawned"]))
         return;
     
     model = GetSpawnableBaseModel("vending_three_gun");
-    seatModel = isInArray(level.MenuModels, "test_sphere_silver") ? "test_sphere_silver" : "defaultactor";
+
+    if(isInArray(level.MenuModels, "test_sphere_silver"))
+        seatModel = "test_sphere_silver";
+    else
+        seatModel = "defaultactor";
 
     origin = self TraceBullet();
     level.MerryGoRoundSpeed = 10;
@@ -63,7 +67,10 @@ SpawnMerryGoRound()
         if(!isDefined(seats[a]))
             continue;
         
-        seats[a] LinkTo((a % 2) ? SeatsLinker[0] : SeatsLinker[1]);
+        if(a % 2)
+            seats[a] LinkTo(SeatsLinker[0]);
+        else
+            seats[a] LinkTo(SeatsLinker[1]);
     }
     
     MerryGoRoundLinker thread RotateMerryYaw();
@@ -76,7 +83,6 @@ SpawnMerryGoRound()
         if(isDefined(SeatsLinker[a]))
         {
             SeatsLinker[a] thread SeatsMove(origin[2] + 45);
-
             wait 0.6;
         }
     }
@@ -95,10 +101,10 @@ RotateMerryYaw()
 
 SetMerryGoRoundSpeed(speed)
 {
-    speeds = [0, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+    speeds = Array(0, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
     level.MerryGoRoundSpeed = speeds[speed];
 
-    if(isDefined(level.spawnable["Merry Go Round_Spawned"]))
+    if(Is_True(level.spawnable["Merry Go Round_Spawned"]))
         self iPrintlnBold("^1NOTE: ^7This Might Take A Few Seconds To Take Effect");
 }
 
@@ -108,8 +114,12 @@ SeatsMove(origin)
 
     while(isDefined(self))
     {
-        self MoveZ((self.origin[2] > origin) ? -50 : 50, 0.65);
-
+        if(self.origin[2] > origin)
+            value = -50;
+        else
+            value = 50;
+        
+        self MoveZ(value, 0.65);
         wait 0.6;
     }
 }
