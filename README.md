@@ -1,6 +1,6 @@
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.4.0.0
+    Version:              1.5.0.0
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
@@ -13,18 +13,22 @@
     Apparition Discord: https://discord.gg/NExXdMhDnW
     YouTube:            https://www.youtube.com/c/CF499
 
-    If you are using Crafty's Compiler/Injector, make sure you have the latest build. If not, you will get a syntax error.
-    Latest Build: https://github.com/LJW-Dev/Black-Ops-3-GSC-Compiler/releases/latest
+    Apparition can be injected using T7, or Crafty's Injector.
+    If you decide to compile the source yourself, you can use either one of their compilers as well.
 
+    Crafty's Compiler/Injector: https://github.com/LJW-Dev/Black-Ops-3-GSC-Compiler/releases/latest
 
-    Controls:
-        - Apparition: Aim & Knife
-        - Quick Menu: Aim & Secondary Offhand Button
-        - Scroll: Aim/Shoot Or Actionslots 1 & 2(Controller Users: Dpad up/down)
-        - Slider Scroll: Actionslot 3 & 4(Controller Users: Dpad left/right)
-        - Select: Use Button(PlayStation Controller: Square || Xbox Controller: X)
-        - Go Back/Exit: Knife
+    NOTE:
+        I Can Without A Doubt Say Apparition Will Be Unmatched In Every Possible Way.
+        It Will Be The Most Stable, In-Depth, Detail Oriented, Organized, and Largest Mod Menu You Will Ever See.
 
+        You Won't Find Anything That Will Be Comparable To Apparition, Not Even The Menus With "Devs" That Constantly Have To Rip Scripts From Apparition For Their Projects.
+        Apparition Will Remain On Top, Regardless Of Who Tries To Compete With It.
+
+        Since There Has Been Confusion and Accusations, In The Past, Apparition Belongs To Me(CF4_99) and Me Only.
+        I Am The Sole Developer Of Apparition, No One Else Helps With it, Or Provides Scripts.
+        The Credits Below Says Exactly What These People Offered Apparition, Nothing More, Nothing Less.
+    
 
     Credits:
         - CF4_99 ~ Project Developer
@@ -69,20 +73,7 @@
         Where to find options that help completing EE's:
             Main Menu -> [map name] Scripts
             Server Modifications -> Craftables
-        
-        Whole EE's Completed:
-            - The Giant
-            - Nacht Der Untoten
-            - Verruckt
-            - Shi No Numa
-            - Kino Der Toten
 
-
-
-    If you find any bugs, or come across something that you feel isn't working as it should, please message me on discord.
-    IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
-
-    Discord: cf4_99
 
 ## Changelog
 <details>
