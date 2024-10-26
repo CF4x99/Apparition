@@ -9,10 +9,10 @@ GetAISpawnLocation()
     {
         case "Crosshairs":
             return self TraceBullet();
-		
+
         case "Self":
             return self.origin + (0, 0, 10);
-		
+
         default:
             return self TraceBullet();
     }

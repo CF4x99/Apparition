@@ -21,12 +21,10 @@ PopulateAimbotMenu(menu, player)
             if(!isDefined(player.SmoothSnaps))
                 player.SmoothSnaps = 5;
             
-            tags = Array("j_head", "j_neck", "j_spine4", "j_spinelower", "j_mainroot", "pelvis", "tag_body", "j_ankle_le", "j_ankle_ri");
-            
             self addMenu("Aimbot Menu");
                 self addOptBool(player.Aimbot, "Aimbot", ::Aimbot, player);
                 self addOptSlider("Type", ::AimbotType, "Snap;Smooth Snap;Silent", player);
-                self addOptSlider("Tag", ::AimBoneTag, tags, player);
+                self addOptSlider("Tag", ::AimBoneTag, "j_head;j_neck;j_spine4;j_spinelower;j_mainroot;pelvis;tag_body;j_ankle_le;j_ankle_ri", player);
                 self addOptSlider("Key", ::AimbotKey, "None;Aiming;Firing", player);
                 self addOptSlider("Requirement", ::AimbotVisibilityRequirement, "None;Visible;Damageable", player);
                 self addOptIncSlider("Smooth Snaps", ::SetSmoothSnaps, 5, 5, 15, 1, player);

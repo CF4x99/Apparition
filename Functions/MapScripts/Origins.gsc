@@ -8,6 +8,7 @@ PopulateOriginsScripts(menu)
 				self addOpt("Generators", ::newMenu, "Origins Generators");
 				self addOpt("Gateways", ::newMenu, "Origins Gateways");
 				self addOpt("Give Shovel", ::newMenu, "Give Shovel Origins");
+				self addOpt("Give Helmet", ::newMenu, "Give Helmet Origins");
 				self addOptBool(isDefined(level.a_e_slow_areas), "Mud Slowdown", ::MudSlowdown);
 				self addOpt("Soul Boxes", ::newMenu, "Soul Boxes");
 				self addOpt("Challenges", ::newMenu, "Origins Challenges");
@@ -44,8 +45,16 @@ PopulateOriginsScripts(menu)
 			self addMenu("Give Shovel");
 
 				foreach(player in level.players)
-					self addOptBool(player.dig_vars["has_shovel"], CleanName(player getName()), ::GivePlayerShovel, player);
+					self addOptSlider(CleanName(player getName()), ::GivePlayerShovel, "Normal;Golden", player);
 			break;
+		
+		case "Give Helmet Origins":
+			self addMenu("Give Helmet");
+				
+				foreach(player in level.players)
+					self addOptBool(player.dig_vars["has_helmet"], CleanName(player getName()), ::GivePlayerHelmet, player);
+			break;
+
 
 		case "Soul Boxes":
 			boxes = GetEntArray("foot_box", "script_noteworthy");
@@ -405,13 +414,45 @@ play_pap_anim(b_assemble)
 	level clientfield::set("packapunch_anim", get_captured_zone_count());
 }
 
-GivePlayerShovel(player)
+GivePlayerShovel(type, player)
 {
-	player.dig_vars["has_shovel"] = !player.dig_vars["has_shovel"];
-	player.dig_vars["has_upgraded_shovel"] = player.dig_vars["has_shovel"];
-	player.dig_vars["has_helmet"] = player.dig_vars["has_shovel"];
+	if(!player.dig_vars["has_shovel"])
+	{
+		player.dig_vars["has_shovel"] = 1;
+		level clientfield::set("player" + player GetEntityNumber() + "hasItem", 1);
+		player PlaySound("zmb_craftable_pickup");
 
-	level clientfield::set("player" + player GetEntityNumber() + "hasItem", player.dig_vars["has_shovel"]);
+		wait 0.1;
+	}
+
+	if(type == "Normal")
+		return;
+	
+	//Golden shovel
+	player.dig_vars["has_upgraded_shovel"] = 1;
+	level clientfield::set("player" + player GetEntityNumber() + "hasItem", 2);
+	player PlaySoundToPlayer("zmb_squest_golden_anything", player);
+}
+
+GivePlayerHelmet(player)
+{
+	if(player.dig_vars["has_helmet"])
+		return;
+	
+	player.dig_vars["has_helmet"] = 1;
+	level clientfield::set("player" + player GetEntityNumber() + "wearableItem", 1);
+	player PlaySoundToPlayer("zmb_squest_golden_anything", player);
+	
+	if(!isDefined(player.var_8e065802))
+		player.var_8e065802 = SpawnStruct();
+
+	player.var_8e065802.model = "c_t7_zm_dlchd_origins_golden_helmet";
+	player.var_8e065802.tag = "j_head";
+	player.var_ae07e72c = "golden_helmet";
+	player Attach(player.var_8e065802.model, player.var_8e065802.tag);
+
+	if(player.characterindex == 1)
+		player SetCharacterBodyStyle(2);
 }
 
 GetGatewayState(gateway)

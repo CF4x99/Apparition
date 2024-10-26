@@ -4,36 +4,16 @@ PopulateProfileManagement(menu, player)
     {
         case "Profile Management":
             self addMenu("Profile Management");
-
-                if(level.isUEM)
-                {
-                    self addOpt("Complete Current Camo", ::UEMCompleteCurrentCamo, player);
-                    self addOpt("Unlock Hats", ::newMenu, "Unlock Hats");
-                    self addOpt("Leaderboard Killer", ::UEMLeaderboardKiller);
-                    self addOpt("Force Save Stats", ::UEMForceSaveStats, player);
-                }
-                else
-                {
-                    self addOptBool(player.LiquidsLoop, "Liquid Divinium", ::LiquidsLoop, player);
-                    self addOptSlider("Challenges", ::AllChallenges, "Unlock;Lock", player);
-                    self addOpt("Complete Daily Challenges", ::CompleteDailyChallenges, player);
-                    self addOptSlider("Weapon Ranks", ::PlayerWeaponRanks, "Max;Reset", player);
-                    self addOptIncSlider("Rank", ::SetPlayerRank, (player GetDStat("PlayerStatsList", "plevel", "StatValue") == level.maxprestige) ? 36 : 1, (player GetDStat("PlayerStatsList", "plevel", "StatValue") == level.maxprestige) ? 36 : 1, (player GetDStat("PlayerStatsList", "plevel", "StatValue") == level.maxprestige) ? 1000 : 35, 1, player);
-                    self addOptIncSlider("Prestige", ::SetPlayerPrestige, 0, player.pers["plevel"], 11, 1, player);
-                    self addOpt("Unlock All Achievements", ::UnlockAchievements, player);
-                    self addOpt("Clan Tag Options", ::newMenu, "Clan Tag Options");
-                    self addOpt("Custom Stats", ::newMenu, "Custom Stats");
-                    self addOpt("EE Stats", ::newMenu, "EE Stats");
-                }
-            break;
-        
-        case "Unlock Hats":
-            hats = Array("christmas", "halloween_pumpkin");
-
-            self addMenu("Unlock Hats");
-                
-                for(a = 0; a < hats.size; a++)
-                    self addOptBool(player.pers[hats[a] + "_hat"], CleanString(hats[a]), ::UEMUnlockHat, hats[a], player);
+                self addOptBool(player.LiquidsLoop, "Liquid Divinium", ::LiquidsLoop, player);
+                self addOptSlider("Challenges", ::AllChallenges, "Unlock;Lock", player);
+                self addOpt("Complete Daily Challenges", ::CompleteDailyChallenges, player);
+                self addOptSlider("Weapon Ranks", ::PlayerWeaponRanks, "Max;Reset", player);
+                self addOptIncSlider("Rank", ::SetPlayerRank, (player GetDStat("PlayerStatsList", "plevel", "StatValue") == level.maxprestige) ? 36 : 1, (player GetDStat("PlayerStatsList", "plevel", "StatValue") == level.maxprestige) ? 36 : 1, (player GetDStat("PlayerStatsList", "plevel", "StatValue") == level.maxprestige) ? 1000 : 35, 1, player);
+                self addOptIncSlider("Prestige", ::SetPlayerPrestige, 0, player.pers["plevel"], 11, 1, player);
+                self addOpt("Unlock All Achievements", ::UnlockAchievements, player);
+                self addOpt("Clan Tag Options", ::newMenu, "Clan Tag Options");
+                self addOpt("Custom Stats", ::newMenu, "Custom Stats");
+                self addOpt("EE Stats", ::newMenu, "EE Stats");
             break;
         
         case "Clan Tag Options":

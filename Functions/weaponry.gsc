@@ -6,9 +6,10 @@ PopulateWeaponry(menu, player)
             weapons = Array("Assault Rifles", "Sub Machine Guns", "Light Machine Guns", "Sniper Rifles", "Shotguns", "Pistols", "Launchers", "Specials");
 
             self addMenu("Weaponry");
-                self addOpt("Weapon Options", ::newMenu, "Weapon Options");
+                self addOpt("Options", ::newMenu, "Weapon Options");
                 self addOpt("Attachments", ::newMenu, "Weapon Attachments");
-                self addOpt("Weapon AAT", ::newMenu, "Weapon AAT");
+                self addOpt("Camo", ::newMenu, "Weapon Camo");
+                self addOpt("AAT", ::newMenu, "Weapon AAT");
                 self addOpt("");
                 self addOpt("Equipment", ::newMenu, "Equipment Menu");
 
@@ -17,18 +18,18 @@ PopulateWeaponry(menu, player)
             break;
         
         case "Weapon Options":
-            self addMenu("Weapon Options");
+            self addMenu("Options");
                 self addOpt("Take Current Weapon", ::TakeCurrentWeapon, player);
                 self addOpt("Take All Weapons", ::TakePlayerWeapons, player);
                 self addOptSlider("Drop Current Weapon", ::DropCurrentWeapon, "Take;Don't Take", player);
                 self addOpt("");
-                self addOpt("Camo", ::newMenu, "Weapon Camo");
-                self addOptBool(player.FlashingCamo, "Flashing Camo", ::FlashingCamo, player);
                 self addOptBool(player zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()), "Pack 'a' Punch Current Weapon", ::PackCurrentWeapon, player);
             break;
         
         case "Weapon Camo":
             self addMenu("Camo");
+                self addOptBool(player.FlashingCamo, "Flashing Camo", ::FlashingCamo, player);
+                self addOpt("");
 
                 skip = Array(37, 72, 127, 128, 129, 130); //These are camos that aren't in the game anymore, so they will be skipped
 
@@ -74,7 +75,7 @@ PopulateWeaponry(menu, player)
         case "Weapon AAT":
             keys = GetArrayKeys(level.aat);
             
-            self addMenu("Weapon AAT");
+            self addMenu("AAT");
                 
                 if(isDefined(keys) && keys.size)
                 {

@@ -66,10 +66,7 @@ TrapApothicon()
         self iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7Waiting For The Apothicon To Be Near The Trap");
 
         while(!level flag::get("apothicon_near_trap"))
-        {
-            level notify(#"hash_864571db");
             wait 0.01;
-        }
     }
 
     trapTrigger = struct::get("apothicon_trap_trig", "targetname");

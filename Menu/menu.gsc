@@ -8,8 +8,8 @@ runMenuIndex(menu)
         case "Main":
             titleString = level.menuName;
 
-        	if(self.MenuStyle == "Native")
-        		titleString = "Main Menu";
+            if(self.MenuStyle == "Native")
+                titleString = "Main Menu";
             
             self addMenu(titleString);
                 self addOpt("Basic Scripts", ::newMenu, "Basic Scripts");
@@ -24,10 +24,6 @@ runMenuIndex(menu)
                     self addOpt("Weaponry", ::newMenu, "Weaponry");
                     self addOpt("Bullet Menu", ::newMenu, "Bullet Menu");
                     self addOpt("Fun Scripts", ::newMenu, "Fun Scripts");
-                    
-                    if(level.isUEM)
-                        self addOpt("Hat Manipulation", ::newMenu, "Hat Manipulation");
-
                     self addOpt("Model Manipulation", ::newMenu, "Model Manipulation");
                     self addOpt("Aimbot Menu", ::newMenu, "Aimbot Menu");
 
@@ -62,11 +58,7 @@ runMenuIndex(menu)
 
                 if(Is_Alive(self))
                 {
-                    if(!level.isUEM)
-                        self addOptBool(self.godmode, "God Mode", ::Godmode, self);
-                    else
-                        self addOptBool(self.PlayerDemiGod, "God Mode", ::DemiGod, self);
-
+                    self addOptBool(self.godmode, "God Mode", ::Godmode, self);
                     self addOptBool(self.Noclip, "Noclip", ::Noclip1, self);
                     self addOptBool(self.NoclipBind1, "Bind Noclip To [{+frag}]", ::BindNoclip, self);
                     self addOptSlider("Unlimited Ammo", ::UnlimitedAmmo, "Continuous;Reload;Disable", self);
@@ -166,6 +158,7 @@ runMenuIndex(menu)
         case "Origins Generators":
         case "Origins Gateways":
         case "Give Shovel Origins":
+        case "Give Helmet Origins":
         case "Soul Boxes":
         case "Origins Challenges":
         case "Origins Puzzles":
@@ -221,6 +214,8 @@ runMenuIndex(menu)
         case "Zombie Traps":
         case "Mystery Box Options":
         case "Mystery Box Weapons":
+        case "Mystery Box Normal Weapons":
+        case "Mystery Box Upgraded Weapons":
         case "Joker Model":
         case "Server Tweakables":
         case "Change Map":
@@ -252,10 +247,7 @@ runMenuIndex(menu)
                 self addOptBool((GetDvarString("r_showTris") == "1"), "Tris Lines", ::TrisLines);
                 self addOptBool((GetDvarString("ui_lobbyDebugVis") == "1"), "DevGui Info", ::DevGUIInfo);
                 self addOptBool((GetDvarString("r_fog") == "0"), "Disable Fog", ::DisableFog);
-
-                if(!level.isUEM)
-                    self addOptBool((GetDvarString("sv_cheats") == "1"), "SV Cheats", ::ServerCheats);
-                
+                self addOptBool((GetDvarString("sv_cheats") == "1"), "SV Cheats", ::ServerCheats);
                 self addOptBool((GetDvarInt("developer") == 2), "Developer Mode", ::SetDeveloperMode);
             break;
         
@@ -359,7 +351,6 @@ MenuOptionsPlayer(menu, player)
             break;
         
         case "Profile Management":
-        case "Unlock Hats":
         case "Clan Tag Options":
         case "Custom Stats":
         case "General Stats":
@@ -398,10 +389,6 @@ MenuOptionsPlayer(menu, player)
             self PopulateFunScripts(menu, player);
             break;
         
-        case "Hat Manipulation":
-            self PopulateHatManipulation(menu, player);
-            break;
-        
         case "Model Manipulation":            
             self PopulateModelManipulation(menu, player);
             break;
@@ -427,7 +414,6 @@ MenuOptionsPlayer(menu, player)
             break;
         
         default:
-            mapStr = ReturnMapName(level.script);
             weapons = Array("Assault Rifles", "Sub Machine Guns", "Light Machine Guns", "Sniper Rifles", "Shotguns", "Pistols", "Launchers", "Specials");
             weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
 
@@ -450,12 +436,12 @@ MenuOptionsPlayer(menu, player)
                             if(zm_utility::GetWeaponClassZM(weapon) != "weapon_" + weaponsVar[index] && menu != "Specials" || MakeLocalizedString(weapon.displayname) == "" || weapon.isgrenadeweapon || weapon.name == "knife" || IsSubStr(weapon.name, "upgraded") || weapon.name == "none")
                                 continue;
                             
-                            string = weapon.name;
+                            strng = weapon.name;
 
                             if(MakeLocalizedString(weapon.displayname) != "")
-                                string = weapon.displayname;
+                                strng = weapon.displayname;
 
-                            self addOptBool(player HasWeapon1(weapon), string, ::GivePlayerWeapon, weapon, player);
+                            self addOptBool(player HasWeapon1(weapon), strng, ::GivePlayerWeapon, weapon, player);
                         }
                 }
 
@@ -464,67 +450,8 @@ MenuOptionsPlayer(menu, player)
                     self addOptBool(player HasWeapon1(GetWeapon("defaultweapon")), "Default Weapon", ::GivePlayerWeapon, GetWeapon("defaultweapon"), player);
                     self addOptBool(player HasWeapon1(GetWeapon("minigun")), GetWeapon("minigun").displayname, ::GivePlayerWeapon, GetWeapon("minigun"), player);
 
-                    if(mapStr == "Shadows Of Evil")
+                    if(ReturnMapName(level.script) == "Shadows Of Evil")
                         self addOptBool(player HasWeapon1(GetWeapon("tesla_gun")), GetWeapon("tesla_gun").displayname, ::GivePlayerWeapon, GetWeapon("tesla_gun"), player);
-                }
-            }
-            else if(menu == "Mystery Box Normal Weapons" || menu == "Mystery Box Upgraded Weapons")
-            {
-                arr = [];
-
-                if(menu == "Mystery Box Normal Weapons")
-                    type = level.zombie_weapons;
-                else
-                    type = level.zombie_weapons_upgraded;
-                
-                weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
-                weaps = GetArrayKeys(type);
-
-                titleString = "Upgraded Weapons";
-
-                if(menu == "Mystery Box Normal Weapons")
-                    titleString = "Normal Weapons";
-                
-                self addMenu(titleString);
-                self addOptBool(IsAllWeaponsInBox(type), "Enable All", ::EnableAllWeaponsInBox, type);
-
-                if(isDefined(weaps) && weaps.size)
-                {
-                    for(a = 0; a < weaps.size; a++)
-                    {
-                        if(menu == "Mystery Box Normal Weapons" && IsSubStr(weaps[a].name, "upgraded"))
-                            continue;
-
-                        if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a]))))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
-                        {
-                            string = weaps[a].name;
-
-                            if(MakeLocalizedString(weaps[a].displayname) != "")
-                                string = weaps[a].displayname;
-                            
-                            if(!IsInArray(arr, string))
-                            {
-                                arr[arr.size] = string;
-                                self addOptBool(IsWeaponInBox(weaps[a]), string, ::SetBoxWeaponState, weaps[a]);
-                            }
-                        }
-                    }
-                }
-                
-                if(menu == "Mystery Box Normal Weapons")
-                {
-                    equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
-                    keys = GetArrayKeys(equipment);
-
-                    self addOptBool(IsWeaponInBox(GetWeapon("minigun")), "Death Machine", ::SetBoxWeaponState, GetWeapon("minigun"));
-                    self addOptBool(IsWeaponInBox(GetWeapon("defaultweapon")), "Default Weapon", ::SetBoxWeaponState, GetWeapon("defaultweapon"));
-
-                    if(isDefined(keys) && keys.size)
-                    {
-                        foreach(index, weapon in GetArrayKeys(level.zombie_weapons))
-                            if(isInArray(equipment, weapon))
-                                self addOptBool(IsWeaponInBox(weapon), weapon.displayname, ::SetBoxWeaponState, weapon);
-                    }
                 }
             }
             else if(isInArray(level.MenuVOXCategory, menu))
@@ -547,11 +474,11 @@ MenuOptionsPlayer(menu, player)
                     }
                 }
 
-                if(IsSubStr(menu, mapStr + " Teleports") || menu == mapStr + " Teleports")
+                if(IsSubStr(menu, ReturnMapName(level.script) + " Teleports") || menu == ReturnMapName(level.script) + " Teleports")
                 {
                     error404 = false;
 
-                    self addMenu(mapStr + " Teleports");
+                    self addMenu(ReturnMapName(level.script) + " Teleports");
                         
                         if(isDefined(level.menuTeleports) && level.menuTeleports.size)
                             for(a = 0; a < level.menuTeleports.size; a += 2)

@@ -41,9 +41,10 @@ addOptIncSlider(name, fnc, min = 0, start = 0, max = 1, increment = 1, input1, i
 
     if(self isInQuickMenu())
         menu = self.currentMenuQM;
+    else
+        menu = self.currentMenu;
     
     index = self.menuStructure.size;
-    
     option = SpawnStruct();
     
     option.name      = name;
@@ -88,13 +89,12 @@ addOptIncSlider(name, fnc, min = 0, start = 0, max = 1, increment = 1, input1, i
 
 addOptSlider(name, fnc, values, input1, input2, input3, input4)
 {
-    menu = self.currentMenu;
-
     if(self isInQuickMenu())
         menu = self.currentMenuQM;
+    else
+        menu = self.currentMenu;
     
     index = self.menuStructure.size;
-    
     option = SpawnStruct();
 
     option.name         = name;

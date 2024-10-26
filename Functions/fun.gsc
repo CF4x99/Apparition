@@ -9,8 +9,6 @@ PopulateFunScripts(menu, player)
             if(!isDefined(player.DamagePointsMultiplier))
                 player.DamagePointsMultiplier = 1;
             
-            tags = Array("j_ankle_ri", "j_ankle_le", "pelvis", "j_mainroot", "j_spinelower", "j_spine4", "j_neck", "j_head", "tag_body");
-            
             self addMenu("Fun Scripts");
                 self addOpt("Earthquake", ::SendEarthquake, player);
                 self addOpt("Adventure Time", ::AdventureTime, player);
@@ -18,7 +16,7 @@ PopulateFunScripts(menu, player)
                 self addOpt("Audio Quotes", ::newMenu, "Sound/Music");
                 self addOpt("Hit Markers", ::newMenu, "Hit Markers");
                 self addOptSlider("Insta-Kill", ::PlayerInstaKill, "Disable;All;Melee", player);
-                self addOptSlider("Mount Camera", ::PlayerMountCamera, "Disable;" + tags, player);
+                self addOptSlider("Mount Camera", ::PlayerMountCamera, "Disable;j_head;j_neck;j_spine4;j_spinelower;j_mainroot;pelvis;tag_body;j_ankle_le;j_ankle_ri", player);
                 self addOptBool(player.DropCamera, "Drop Camera", ::PlayerDropCamera, player);
                 self addOptBool(player.DeadOpsView, "Dead Ops View", ::DeadOpsView, player);
                 self addOptBool(player.ZombieCounter, "Zombie Counter", ::ZombieCounter, player);
@@ -644,10 +642,15 @@ PlayerMountCamera(tag, player)
     {
         if(Is_True(player.PlayerMountCamera))
             PlayerMountCamera("Disable", player);
+        
+        tagOrigin = player GetTagOrigin(tag) + (AnglesToForward(player GetPlayerAngles()) * 9);
+
+        if(!isDefined(tagOrigin))
+            return self iPrintlnBold("^1ERROR: ^7Couldn't Find Tag On Player");
 
         player.PlayerMountCamera = true;
 
-        player.camlinker = SpawnScriptModel((player GetTagOrigin(tag) + (AnglesToForward(player GetPlayerAngles()) * 9)), "tag_origin");
+        player.camlinker = SpawnScriptModel(tagOrigin, "tag_origin");
         player.camlinker LinkToBlendToTag(player, tag);
 
         player CameraSetPosition(player.camlinker);

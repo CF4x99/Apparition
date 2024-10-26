@@ -160,8 +160,8 @@ openMenu1(showAnim)
     wait 0.05;
 
     if(!isDefined(self.currentMenu) || self.currentMenu == "")
-    	self.currentMenu = "Main";
-    
+        self.currentMenu = "Main";
+
     if(!isDefined(self.menuCurs[self getCurrent()]))
         self setCursor(0);
 
@@ -169,36 +169,36 @@ openMenu1(showAnim)
         self.SelectedPlayer = self.SavedSelectedPlayer;
 
     if(self.MenuStyle == "Zodiac")
-    	tempY = (self.menuY - 60);
+        tempY = (self.menuY - 60);
     else if(self.MenuStyle == "Native")
         tempY = (self.menuY + 6);
     else
         tempY = self.menuY;
 
-	tempColor = (0, 0, 0);
+    tempColor = (0, 0, 0);
 
-	if(self.MenuStyle == "Nautaremake")
-		tempColor = divideColor(25, 25, 25);
+    if(self.MenuStyle == "Nautaremake")
+        tempColor = divideColor(25, 25, 25);
 
-	if(isDefined(showAnim) && showAnim)
-		tempAlpha = 0;
-	else
-	{
-		if(self.MenuStyle == "Zodiac")
-			tempAlpha = 0.8;
-		else if(self.MenuStyle == "Native")
-			tempAlpha = 0.35;
-		else
-			tempAlpha = 1;
-	}
-    
+    if(isDefined(showAnim) && showAnim)
+        tempAlpha = 0;
+    else
+    {
+        if(self.MenuStyle == "Zodiac")
+            tempAlpha = 0.8;
+        else if(self.MenuStyle == "Native")
+            tempAlpha = 0.35;
+        else
+            tempAlpha = 1;
+    }
+
     self.menuHud["background"] = self createRectangle("TOP", "CENTER", self.menuX, tempY, self.MenuWidth, 0, tempColor, 2, tempAlpha, "white");
 
     if(isDefined(showAnim) && showAnim)
-    	tempAlpha = 0;
-	else
-		tempAlpha = 1;
-    
+        tempAlpha = 0;
+    else
+        tempAlpha = 1;
+
     if(self.MenuStyle == "Nautaremake")
     {
         self.menuHud["nautabackground"] = self createRectangle("TOP", "CENTER", self.menuX, (self.menuY - 40), self.MenuWidth, 0, self.AltColor, 1, tempAlpha, "white");
@@ -208,39 +208,39 @@ openMenu1(showAnim)
     if(self.MenuStyle != "Zodiac")
     {
         self.menuHud["outlines"] = [];
-        
+
         if(self.MenuStyle != "Native")
         {
-        	tempY = self.menuY;
+            tempY = self.menuY;
 
-        	if(self.MenuStyle == "Nautaremake")
-        		tempY = (self.menuY - 40);
+            if(self.MenuStyle == "Nautaremake")
+                tempY = (self.menuY - 40);
 
             //Left Side
             self.menuHud["outlines"][self.menuHud["outlines"].size] = self createRectangle("TOP", "CENTER", (self.menuX - (self.MenuWidth / 2)), tempY, 1, 0, self.MainColor, 5, tempAlpha, "white");
-            
+
             //Right Side
             self.menuHud["outlines"][self.menuHud["outlines"].size] = self createRectangle("TOP", "CENTER", (self.menuX + (self.MenuWidth / 2)), tempY, 1, 0, self.MainColor, 5, tempAlpha, "white");
         }
 
         if(self.MenuStyle == "Nautaremake")
-        	tempY = self.menuY;
+            tempY = self.menuY;
         else if(self.MenuStyle == "Native")
-        	tempY = (self.menuY - 50);
-    	else
-    		tempY = (self.menuY - 13);
+            tempY = (self.menuY - 50);
+        else
+            tempY = (self.menuY - 13);
 
-		tempWidth = self.MenuWidth;
+        tempWidth = self.MenuWidth;
 
-		if(self.MenuStyle == level.menuName)
-			tempWidth = (self.MenuWidth + 1);
+        if(self.MenuStyle == level.menuName)
+            tempWidth = (self.MenuWidth + 1);
 
-		if(self.MenuStyle == "Nautaremake")
-			tempHeight = 1;
-		else if(self.MenuStyle == "Native")
-			tempHeight = 39;
-		else
-			tempHeight = 16;
+        if(self.MenuStyle == "Nautaremake")
+            tempHeight = 1;
+        else if(self.MenuStyle == "Native")
+            tempHeight = 39;
+        else
+            tempHeight = 16;
 
         //Top 2 || Native Design Banner
         self.menuHud["outlines"][self.menuHud["outlines"].size] = self createRectangle("TOP", "CENTER", self.menuX, tempY, tempWidth, tempHeight, self.MainColor, 5, tempAlpha, "white");
@@ -251,21 +251,21 @@ openMenu1(showAnim)
 
         if(self.MenuStyle == "Nautaremake" || self.MenuStyle == "Native")
         {
-        	tempY = (self.menuY - 40);
+            tempY = (self.menuY - 40);
 
-        	if(self.MenuStyle == "Native")
-        		tempY = (self.menuY - 11);
+            if(self.MenuStyle == "Native")
+                tempY = (self.menuY - 11);
 
-    		if(self.MenuStyle == "Native")
-    		{
-    			tempHeight = 17;
-    			tempColor = (0, 0, 0);
-    		}
-			else
-			{
-				tempHeight = 1;
-				tempColor = self.MainColor;
-			}
+            if(self.MenuStyle == "Native")
+            {
+                tempHeight = 17;
+                tempColor = (0, 0, 0);
+            }
+            else
+            {
+                tempHeight = 1;
+                tempColor = self.MainColor;
+            }
 
             //Top 1 || Native Design Title Bar
             self.menuHud["outlines"][self.menuHud["outlines"].size] = self createRectangle("TOP", "CENTER", self.menuX, tempY, self.MenuWidth, tempHeight, tempColor, 6, tempAlpha, "white");
@@ -277,37 +277,37 @@ openMenu1(showAnim)
     }
 
     if(self.MenuStyle == "Nautaremake")
-    	tempColor = self.AltColor;
-	else
-		tempColor = self.MainColor;
-    
+        tempColor = self.AltColor;
+    else
+        tempColor = self.MainColor;
+
     self.menuHud["scroller"] = self createRectangle("TOP", "CENTER", self.menuX, self.menuY, self.MenuWidth, 18, tempColor, 4, tempAlpha, "white");
-    
+
     if(self.MenuStyle != "Nautaremake")
     {
-    	tempFontScale = self.TitleFontScale;
+        tempFontScale = self.TitleFontScale;
 
-    	if(self.MenuStyle == "Native")
-    		tempFontScale = 1.2;
+        if(self.MenuStyle == "Native")
+            tempFontScale = 1.2;
 
-		if(self.MenuStyle == "Native")
-			tempY = (self.menuY - 3);
-		else if(self.MenuStyle == "Zodiac")
-			tempY = (self.menuY - 20);
-		else
-			tempY = (self.menuY - 6);
+        if(self.MenuStyle == "Native")
+            tempY = (self.menuY - 3);
+        else if(self.MenuStyle == "Zodiac")
+            tempY = (self.menuY - 20);
+        else
+            tempY = (self.menuY - 6);
 
-		if(self.MenuStyle == "Zodiac")
-			tempColor = self.MainColor;
-		else
-		{
+        if(self.MenuStyle == "Zodiac")
+            tempColor = self.MainColor;
+        else
+        {
             if(isDefined(self.TitleColor) && IsVec(self.TitleColor))
                 tempColor = self.TitleColor;
             else if(IsString(self.TitleColor))
                 tempColor = level.RGBFadeColor;
             else
                 tempColor = (0, 0, 0);
-		}
+        }
 
         if(self.MenuStyle == "Native")
         {
@@ -322,10 +322,10 @@ openMenu1(showAnim)
 
         self.menuHud["title"] = self createText("default", tempFontScale, 7, "", tempAlign, "CENTER", tempX, tempY, tempAlpha, tempColor);
     }
-    
+
     if(self.MenuStyle == "Native")
         self.menuHud["MenuName"] = self createText("default", self.TitleFontScale, 7, level.menuName, "CENTER", "CENTER", self.menuX, (self.menuY - 31), tempAlpha, (1, 1, 1));
-    
+
     self drawText(showAnim);
 
     if(self getCurrent() == "Players" && !Is_True(self.PlayerInfoHandler))
@@ -401,9 +401,9 @@ closeMenu1(showAnim)
                 continue;
             
             if(self.MenuStyle == "Nautaremake" && hud != self.menuHud["background"])
-            	value = 89;
-        	else
-        		value = 29;
+                value = 89;
+            else
+                value = 29;
             
             if(!(self.MenuStyle == "Native" && isInArray(self.menuHud["outlines"], hud)))
                 hud thread hudScaleOverTime(fadeTime, hud.width, value);
@@ -463,10 +463,10 @@ openQuickMenu1(menu)
 
     if(!isDefined(self.currentMenuQM))
     {
-    	if(isDefined(menu) && menu != "")
-    		self.currentMenuQM = menu;
-		else
-			self.currentMenuQM = "Quick Menu";
+        if(isDefined(menu) && menu != "")
+            self.currentMenuQM = menu;
+        else
+            self.currentMenuQM = "Quick Menu";
     }
 
     if(!isDefined(self.menuCursQM[self.currentMenuQM]))
@@ -729,27 +729,27 @@ ScrollingSystem(dir)
     self endon("disconnect");
 
     menu = self getCurrent();
-    
+
     if(!self isInQuickMenu())
     {
         half = Int(self.MaxOptions / 2);
-        
+
         if(isDefined(self.menuStructure[self getCursor()]) && IsInvalidOption(self.menuStructure[self getCursor()].name))
         {
             self setCursor(self getCursor() + dir);
             return ScrollingSystem(dir);
         }
-        
+
         if(self.menuStructure.size > self.MaxOptions || self getCursor() >= 0 || self getCursor() <= 0)
         {
             if(self getCursor() >= self.menuStructure.size || self getCursor() < 0)
             {
-            	if(self getCursor() >= self.menuStructure.size)
-            		self setCursor(0);
-        		else
-        			self setCursor((self.menuStructure.size - 1));
+                if(self getCursor() >= self.menuStructure.size)
+                    self setCursor(0);
+                else
+                    self setCursor((self.menuStructure.size - 1));
             }
-            
+
             self drawText();
         }
         else
@@ -762,42 +762,42 @@ ScrollingSystem(dir)
                 {
                     if(!isDefined(self.menuHud[hud]) || !self.menuHud[hud].size || hud == "BoolOpt" && self.ToggleStyle != "Text")
                         continue;
-                    
+
                     foreach(index, elem in self.menuHud[hud])
                     {
-                    	if(isDefined(self.menuStructure[index].bool) && self.menuStructure[index].bool && self.ToggleStyle == "Text Color")
-                    	{
-                    		if(self.ToggleTextColor == "Rainbow")
-                    			color = level.RGBFadeColor;
-                			else
-                				color = self.ToggleTextColor;
-                    	}
-                    	else
-                    	{
-                    		if(index == self getCursor())
-                    			color = self.ScrollingTextColor;
-                			else
-                				color = self.OptionsColor;
-                    	}
+                        if(isDefined(self.menuStructure[index].bool) && self.menuStructure[index].bool && self.ToggleStyle == "Text Color")
+                        {
+                            if(self.ToggleTextColor == "Rainbow")
+                                color = level.RGBFadeColor;
+                            else
+                                color = self.ToggleTextColor;
+                        }
+                        else
+                        {
+                            if(index == self getCursor())
+                                color = self.ScrollingTextColor;
+                            else
+                                color = self.OptionsColor;
+                        }
 
-                    	if(Is_True(self.LargeCursor) && index == self getCursor())
-                    		scale = (self.OptionsFontScale + 0.2);
-            			else
-            				scale = self.OptionsFontScale;
-                        
+                        if(Is_True(self.LargeCursor) && index == self getCursor())
+                            scale = (self.OptionsFontScale + 0.2);
+                        else
+                            scale = self.OptionsFontScale;
+
                         if(elem.fontScale != scale)
                             elem ChangeFontscaleOverTime1(scale, 0.05);
-                        
+
                         if(elem.color != color)
                             elem.color = color;
                     }
                 }
             }
         }
-        
+
         if(isDefined(self.menuHud["scroller"]) && isDefined(self.menuHud["text"][self getCursor()]))
             self.menuHud["scroller"].y = (self.menuHud["text"][self getCursor()].y - 8);
-        
+
         self UpdateOptCount();
     }
     else
@@ -806,19 +806,19 @@ ScrollingSystem(dir)
         {
             if(self.menuCursQM[menu] >= self.menuStructure.size || self.menuCursQM[menu] < 0)
             {
-            	if(self.menuCursQM[menu] >= self.menuStructure.size)
-            		self.menuCursQM[menu] = 0;
-        		else
-        			self.menuCursQM[menu] = (self.menuStructure.size - 1);
+                if(self.menuCursQM[menu] >= self.menuStructure.size)
+                    self.menuCursQM[menu] = 0;
+                else
+                    self.menuCursQM[menu] = (self.menuStructure.size - 1);
             }
-            
+
             self drawText();
         }
 
         for(a = 0; a < self.menuHud["QMScroller"].size; a++)
             if(isDefined(self.menuHud["QMScroller"][a]))
                 self.menuHud["QMScroller"][a].y = self.menuHud["QMBG"][self.menuCursQM[menu]].y;
-        
+
         self.menuHud["QMScroller"][0] SetShaderValues(undefined, self.menuHud["QMBG"][self.menuCursQM[menu]].width, undefined);
         self.menuHud["QMScroller"][1] SetShaderValues(undefined, (self.menuHud["QMBG"][self.menuCursQM[menu]].width + 2), undefined);
     }
@@ -828,39 +828,39 @@ SoftLockMenu(bgHeight)
 {
     if(!self hasMenu() || self hasMenu() && !self isInMenu())
         return;
-    
+
     self endon("disconnect");
-    
+
     self.DisableMenuControls = true;
     self DestroyOpts();
 
     if(self.MenuStyle == "Zodiac")
         return;
-    
+
     if(isDefined(self.menuHud["background"]))
         self.menuHud["background"] SetShaderValues(undefined, undefined, bgHeight);
-    
+
     if(isDefined(self.menuHud["nautabackground"]))
         self.menuHud["nautabackground"] SetShaderValues(undefined, undefined, (40 + bgHeight) + 20);
-    
+
     if(self.MenuStyle != "Native")
     {
         if(isDefined(self.menuHud["outlines"][0]))
         {
-        	tempHeight = bgHeight;
+            tempHeight = bgHeight;
 
-        	if(self.MenuStyle == "Nautaremake")
-        		tempHeight = ((40 + bgHeight) + 20);
+            if(self.MenuStyle == "Nautaremake")
+                tempHeight = ((40 + bgHeight) + 20);
 
             self.menuHud["outlines"][0] SetShaderValues(undefined, undefined, tempHeight);
         }
-        
+
         if(isDefined(self.menuHud["outlines"][1]))
         {
-        	tempHeight = bgHeight;
+            tempHeight = bgHeight;
 
-        	if(self.MenuStyle == "Nautaremake")
-        		tempHeight = ((40 + bgHeight) + 20);
+            if(self.MenuStyle == "Nautaremake")
+                tempHeight = ((40 + bgHeight) + 20);
 
             self.menuHud["outlines"][1] SetShaderValues(undefined, undefined, tempHeight);
         }
@@ -897,18 +897,18 @@ SetMenuTitle(title)
 
     if(!isDefined(self.menuHud["title"]))
         return;
-    
+
     if(!isDefined(title))
         title = self.menuTitle;
-    
+
     self.menuHud["title"] SetTextString(title);
 
     if((!IsString(self.TitleColor) && self.menuHud["title"].color != self.TitleColor || IsString(self.TitleColor) && self.menuHud["title"].color != level.RGBFadeColor) && self.MenuStyle != "Zodiac" && !self isInQuickMenu())
     {
         if(IsVec(self.TitleColor))
-    	    tempColor = self.TitleColor;
-    	else if(IsString(self.TitleColor))
-    		tempColor = level.RGBFadeColor;
+        tempColor = self.TitleColor;
+        else if(IsString(self.TitleColor))
+        tempColor = level.RGBFadeColor;
 
         self.menuHud["title"].color = tempColor;
     }
@@ -925,12 +925,11 @@ UpdateOptCount(showAnim)
     self endon("disconnect");
 
     if(self.menuStructure.size >= self.MaxOptions)
-    	height = self.MaxOptions;
-	else
-		height = self.menuStructure.size;
+        height = self.MaxOptions;
+    else
+        height = self.menuStructure.size;
 
-	height *= 20;
-
+    height *= 20;
     hudElems = Array(self.menuHud["background"], self.menuHud["nautabackground"]);
 
     //self.menuHud["outlines"] won't always be defined, so before we try to use it to grab the elements from the array, we need to make sure it's actually defined as an array.
@@ -942,7 +941,7 @@ UpdateOptCount(showAnim)
 
     if(self.MenuStyle == "Zodiac")
         height = 1000;
-    
+
     if(isDefined(showAnim) && showAnim)
     {
         keys = GetArrayKeys(self.menuHud);
@@ -951,43 +950,43 @@ UpdateOptCount(showAnim)
         {
             if(!isDefined(self.menuHud[key]))
                 continue;
-            
+
             if(self.MenuStyle == "Zodiac")
                 alpha = 0.8;
             else if(self.MenuStyle == "Native")
             {
                 if(key == "background")
-                    alpha = 0.45;
+                alpha = 0.45;
                 else
-                    alpha = 1;
+                alpha = 1;
             }
             else
                 alpha = 1;
-            
+
             if(IsArray(self.menuHud[key]))
             {
                 foreach(hud in self.menuHud[key])
-                    if(isDefined(hud))
-                        hud thread hudFade(alpha, 0.15);
+                if(isDefined(hud))
+                hud thread hudFade(alpha, 0.15);
             }
             else
                 self.menuHud[key] thread hudFade(alpha, 0.15);
         }
     }
-    
+
     foreach(hud in hudElems)
     {
         if(!isDefined(hud) || self.MenuStyle == "Native" && isInArray(self.menuHud["outlines"], hud))
             continue;
 
         if(self.MenuStyle == "Native")
-        	height = (height - 11);
-        
+            height = (height - 11);
+
         if(self.MenuStyle == "Nautaremake" && hud != self.menuHud["background"])
-        	value = ((40 + (height + 9)) + 20);
-    	else
-    		value = (height + 9);
-        
+            value = ((40 + (height + 9)) + 20);
+        else
+            value = (height + 9);
+
         if(isDefined(showAnim) && showAnim)
             hud thread hudScaleOverTime(0.15, hud.width, value);
         else
@@ -1002,7 +1001,7 @@ UpdateOptCount(showAnim)
 
             if(isDefined(self.menuHud["outlines"][5]))
                 self.menuHud["outlines"][5] thread hudMoveY((self.menuY + (height + 8)) + 20, 0.15);
-            
+
             wait 0.05;
         }
         else
@@ -1088,10 +1087,10 @@ IsInvalidOption(text)
 
 BackMenu()
 {
-	if(!self isInQuickMenu())
-		return self.menuParent[(self.menuParent.size - 1)];
+    if(!self isInQuickMenu())
+        return self.menuParent[(self.menuParent.size - 1)];
 
-	return self.menuParentQM[(self.menuParentQM.size - 1)];
+    return self.menuParentQM[(self.menuParentQM.size - 1)];
 }
 
 isInMenu(iqm)
@@ -1109,18 +1108,18 @@ isInQuickMenu()
 
 getCurrent()
 {
-	if(self isInQuickMenu())
-		return self.currentMenuQM;
+    if(self isInQuickMenu())
+        return self.currentMenuQM;
 
-	return self.currentMenu;
+    return self.currentMenu;
 }
 
 getCursor()
 {
-	if(self isInQuickMenu())
-		return self.menuCursQM[self getCurrent()];
+    if(self isInQuickMenu())
+        return self.menuCursQM[self getCurrent()];
 
-	return self.menuCurs[self getCurrent()];
+    return self.menuCurs[self getCurrent()];
 }
 
 setCursor(curs)
@@ -1369,27 +1368,27 @@ PlayerInfoHandler()
 
 BuildInfoString()
 {
-    string = "";
+    strng = "";
 
     controller = "No";
 
     if(self GamepadUsedLast())
         controller = "Yes";
 
-    string += "^1PLAYER INFO:";
-    string += "\n^7Name: ^2" + CleanName(self getName());
-    string += "\n^7Verification: ^2" + self.verification;
+    strng += "^1PLAYER INFO:";
+    strng += "\n^7Name: ^2" + CleanName(self getName());
+    strng += "\n^7Verification: ^2" + self.verification;
 
     if(Is_True(level.IncludeIPInfo))
-        string += "\n^7IP: ^2" + StrTok(self GetIPAddress(), "Public Addr: ")[0];
+        strng += "\n^7IP: ^2" + StrTok(self GetIPAddress(), "Public Addr: ")[0];
     
-    string += "\n^7XUID: ^2" + self GetXUID();
-    string += "\n^7STEAM ID: ^2" + self GetXUID(1);
-    string += "\n^7Controller: ^2" + controller;
-    string += "\n^7Weapon: ^2" + StrTok(self GetCurrentWeapon().name, "+")[0]; //Can't use the displayname
+    strng += "\n^7XUID: ^2" + self GetXUID();
+    strng += "\n^7STEAM ID: ^2" + self GetXUID(1);
+    strng += "\n^7Controller: ^2" + controller;
+    strng += "\n^7Weapon: ^2" + StrTok(self GetCurrentWeapon().name, "+")[0]; //Can't use the displayname
 
     //I set it up like this for better organization, and to make it easier to add more display strings
     //Make sure you add \n before every new string you add
 
-    return string;
+    return strng;
 }

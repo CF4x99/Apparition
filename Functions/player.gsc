@@ -8,12 +8,7 @@ PopulatePlayerOptions(menu, player)
             self addMenu("[^2" + player.verification + "^7]" + CleanName(player getName()));
 
                 for(a = 0; a < submenus.size; a++)
-                {
-                    if(submenus[a] == "Model Manipulation" && level.isUEM)
-                        self addOpt("Hat Manipulation", ::newMenu, "Hat Manipulation");
-                    
                     self addOpt(submenus[a], ::newMenu, submenus[a]);
-                }
 
                 self addOpt("Send Message", ::Keyboard, ::MessagePlayer, player);
                 self addOptBool(player.FreezePlayer, "Freeze", ::FreezePlayer, player);
@@ -32,14 +27,12 @@ PopulatePlayerOptions(menu, player)
         case "Model Attachment":
             if(!isDefined(self.playerAttachBone))
                 self.playerAttachBone = "j_head";
-            
-            tags = Array("j_ankle_ri", "j_ankle_le", "pelvis", "j_mainroot", "j_spinelower", "j_spine4", "j_neck", "j_head", "tag_body");
-            
+
             self addMenu("Model Attachment");
                 
                 if(isDefined(level.MenuModels) && level.MenuModels.size)
                 {
-                    self addOptSlider("Location", ::PlayerAttachmentBone, tags);
+                    self addOptSlider("Location", ::PlayerAttachmentBone, "j_ankle_ri;j_ankle_le;pelvis;j_mainroot;j_spinelower;j_spine4;j_neck;j_head;tag_body");
                     self addOpt("Detach All", ::PlayerDetachModels, player);
                     self addOpt("");
 

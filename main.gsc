@@ -1,17 +1,15 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.0.0
+    Version:              1.5.0.1
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
     Discord:            cf4_99
-    Apparition Discord: https://discord.gg/NExXdMhDnW
     YouTube:            https://www.youtube.com/c/CF499
     
     Menu Source & Current Update: https://github.com/CF4x99/Apparition
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
-
 
     NOTE:
         I Can Without A Doubt Say Apparition Will Be Unmatched In Every Possible Way.
@@ -57,7 +55,6 @@
         Some craftables have to be added and collected manually
         So if you can't find a craftable in the Craftables menu, check the map scripts menu
         If it's not found in Craftables, or the map scripts menu, then it's a craftable that would have to be added manually, and I haven't made a script to collect the parts yet
-
 
 
     If you find any bugs, or come across something that you feel isn't working as it should, please message me on discord.
@@ -169,14 +166,6 @@ init()
     
     level.custom_game_over_hud_elem = ::override_game_over_hud_elem;
     level.player_score_override = ::override_player_points;
-
-    level.closest_player_targets_override = ::closest_player_targets_override;
-    level.get_closest_valid_player_override = ::get_closest_valid_player_override;
-
-    if(ReturnMapName(level.script) == "Revelations")
-        level thread Genesis_closest_valid_player();
-    else if(ReturnMapName(level.script) == "Zetsubou No Shima")
-        level thread Island_closest_valid_player();
 }
 
 OnPlayerConnect()
@@ -199,8 +188,6 @@ onPlayerSpawned()
         
         level.player_out_of_playable_area_monitor = 0;
         level.player_out_of_playable_area_monitor_callback = ::player_out_of_playable_area_monitor;
-
-        level.isUEM = isDefined(level.var_7f38ec2c);
     }
 
     level flag::wait_till("initial_blackscreen_passed");
@@ -238,7 +225,7 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName    = "Apparition";
-    level.menuVersion = "1.5.0.0";
+    level.menuVersion = "1.5.0.1";
 
     level.MenuStatus = Array("Bot", "None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer");
 
@@ -618,16 +605,16 @@ WelcomeMessage(message)
             	str = "[{+speed_throw}] & [{+gostand}]: Open Quick Menu";
 
             	if(self isInMenu(true))
-            		str = "[{+attack}]/[{+speed_throw}]: Scroll\n[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right\n[{+activate}]: Select\n[{+gostand}]: Exit";
+                    str = "[{+attack}]/[{+speed_throw}]: Scroll\n[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right\n[{+activate}]: Select\n[{+gostand}]: Exit";
             }
             
             if(self.MenuInstructions.text != str)
                 self.MenuInstructions SetTextString(str);
 
             if(IsSubStr(str, "\n"))
-            	height = (CorrectNL_BGHeight(str) - 5);
-        	else
-        		height = CorrectNL_BGHeight(str);
+                height = (CorrectNL_BGHeight(str) - 5);
+            else
+                height = CorrectNL_BGHeight(str);
             
             width = self.MenuInstructions GetTextWidth3arc(self);
             

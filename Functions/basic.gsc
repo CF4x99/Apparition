@@ -3,14 +3,9 @@ PopulateBasicScripts(menu, player)
     switch(menu)
     {
         case "Basic Scripts":
-            playerVisions = Array("Default", "zombie_last_stand", "zombie_death");
-
             self addMenu("Basic Scripts");
-
-                if(!level.isUEM)
-                    self addOptBool(player.godmode, "God Mode", ::Godmode, player);
-                
-                self addOptBool(player.PlayerDemiGod, level.isUEM ? "God Mode" : "Demi-God", ::DemiGod, player);
+                self addOptBool(player.godmode, "God Mode", ::Godmode, player);
+                self addOptBool(player.PlayerDemiGod, "Demi-God", ::DemiGod, player);
                 self addOptBool(player.Noclip, "Noclip", ::Noclip1, player);
                 self addOptBool(player.NoclipBind1, "Bind Noclip To [{+frag}]", ::BindNoclip, player);
                 self addOptBool(player.UFOMode, "UFO Mode", ::UFOMode, player);
@@ -20,13 +15,13 @@ PopulateBasicScripts(menu, player)
                 self addOpt("Perk Menu", ::newMenu, "Perk Menu");
                 self addOpt("Gobblegum Menu", ::newMenu, "Gobblegum Menu");
                 self addOptBool(player.ThirdPerson, "Third Person", ::ThirdPerson, player);
-                self addOptIncSlider("Movement Speed", ::SetMovementSpeed, 0, 1, level.isUEM ? 2 : 3, 0.5, player);
+                self addOptIncSlider("Movement Speed", ::SetMovementSpeed, 0, 1, 3, 0.5, player);
                 self addOptSlider("Clone", ::PlayerClone, "Clone;Dead", player);
                 self addOptBool(player.Invisibility, "Invisibility", ::Invisibility, player);
                 self addOptBool(player.playerIgnoreMe, "No Target", ::NoTarget, player);
                 self addOptBool(player.ReducedSpread, "Reduced Spread", ::ReducedSpread, player);
                 self addOptBool(player.MultiJump, "Multi-Jump", ::MultiJump, player);
-                self addOptSlider("Set Vision", ::PlayerSetVision, playerVisions, player);
+                self addOptSlider("Set Vision", ::PlayerSetVision, "Default;zombie_last_stand;zombie_death", player);
                 self addOpt("Visual Effects", ::newMenu, "Visual Effects");
                 self addOptSlider("Zombie Charms", ::ZombieCharms, "None;Orange;Green;Purple;Blue", player);
                 self addOptBool(player.DisablePlayerHUD, "Disable HUD", ::DisablePlayerHUD, player);
@@ -525,13 +520,23 @@ Invisibility(player)
 
 NoTarget(player)
 {
+    player endon("disconnect");
+    
     if(Is_True(player.AIPrioritizePlayer))
         AIPrioritizePlayer(player);
     
-    player.playerIgnoreMe = !Is_True(player.playerIgnoreMe);
+    if(!Is_True(player.playerIgnoreMe))
+    {
+        player.playerIgnoreMe = true;
 
-    if(Is_True(player.playerIgnoreMe))
-        player.playerIgnoreMeReset = false;
+        while(Is_True(player.playerIgnoreMe))
+        {
+            player.ignoreme = true;
+            wait 0.5;
+        }
+    }
+    else
+        player.playerIgnoreMe = false;
 }
 
 ReducedSpread(player)
@@ -651,8 +656,8 @@ GetVisualEffectState(effect)
 
     state = level.vsmgr[type].info[effect].state;
     
-	if(!isDefined(state.players[self GetEntityNumber()]))
-		return false;
+    if(!isDefined(state.players[self GetEntityNumber()]))
+        return false;
     
 	return isDefined(state.players[self GetEntityNumber()].active) && state.players[self GetEntityNumber()].active == 1;
 }

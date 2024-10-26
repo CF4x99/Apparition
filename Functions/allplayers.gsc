@@ -6,10 +6,7 @@ PopulateAllPlayerOptions(menu)
             self addMenu("All Players");
                 self addOpt("Verification", ::newMenu, "All Players Verification");
                 self addOptSlider("Teleport", ::AllPlayersTeleport, "Self;Crosshairs;Sky");
-
-                if(!level.isUEM)
-                    self addOpt("Profile Management", ::newMenu, "All Players Profile Management");
-                
+                self addOpt("Profile Management", ::newMenu, "All Players Profile Management");
                 self addOpt("Model Manipulation", ::newMenu, "All Players Model Manipulation");
                 self addOpt("Malicious Options", ::newMenu, "All Players Malicious Options");
                 self addOptBool(AllClientsGodModeCheck(), "God Mode", ::AllClientsGodMode);

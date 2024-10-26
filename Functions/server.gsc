@@ -111,6 +111,66 @@ PopulateServerModifications(menu)
                 self addOpt("Upgraded", ::newMenu, "Mystery Box Upgraded Weapons");
             break;
         
+        case "Mystery Box Normal Weapons":
+        case "Mystery Box Upgraded Weapons":
+            arr = [];
+
+            if(menu == "Mystery Box Normal Weapons")
+                type = level.zombie_weapons;
+            else
+                type = level.zombie_weapons_upgraded;
+
+            weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
+            weaps = GetArrayKeys(type);
+
+            if(menu == "Mystery Box Normal Weapons")
+                titleString = "Normal Weapons";
+            else
+                titleString = "Upgraded Weapons";
+
+            self addMenu(titleString);
+                self addOptBool(IsAllWeaponsInBox(type), "Enable All", ::EnableAllWeaponsInBox, type);
+
+                if(isDefined(weaps) && weaps.size)
+                {
+                    for(a = 0; a < weaps.size; a++)
+                    {
+                        if(menu == "Mystery Box Normal Weapons" && IsSubStr(weaps[a].name, "upgraded"))
+                            continue;
+
+                        if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a]))))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
+                        {
+                            strng = weaps[a].name;
+
+                            if(MakeLocalizedString(weaps[a].displayname) != "")
+                                strng = weaps[a].displayname;
+
+                            if(!IsInArray(arr, strng))
+                            {
+                                arr[arr.size] = strng;
+                                self addOptBool(IsWeaponInBox(weaps[a]), strng, ::SetBoxWeaponState, weaps[a]);
+                            }
+                        }
+                    }
+                }
+
+                if(menu == "Mystery Box Normal Weapons")
+                {
+                    equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
+                    keys = GetArrayKeys(equipment);
+
+                    self addOptBool(IsWeaponInBox(GetWeapon("minigun")), "Death Machine", ::SetBoxWeaponState, GetWeapon("minigun"));
+                    self addOptBool(IsWeaponInBox(GetWeapon("defaultweapon")), "Default Weapon", ::SetBoxWeaponState, GetWeapon("defaultweapon"));
+
+                    if(isDefined(keys) && keys.size)
+                    {
+                        foreach(index, weapon in GetArrayKeys(level.zombie_weapons))
+                            if(isInArray(equipment, weapon))
+                                self addOptBool(IsWeaponInBox(weapon), weapon.displayname, ::SetBoxWeaponState, weapon);
+                    }
+                }
+            break;
+        
         case "Joker Model":
             self addMenu("Joker Model");
                 self addOptBool((level.chest_joker_model == level.savedJokerModel), "Reset", ::SetBoxJokerModel, level.savedJokerModel);
@@ -383,10 +443,10 @@ SetDoheartText(text, refresh)
     }
 }
 
-DoheartTextPass(string)
+DoheartTextPass(strng)
 {
-    if(string != "Custom")
-        self thread SetDoheartText(string);
+    if(strng != "Custom")
+        self thread SetDoheartText(strng);
     else
         self Keyboard(::SetDoheartText);
 }

@@ -60,15 +60,15 @@ PopulateAdvancedScripts(menu)
                     {
                         if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
                         {
-                            string = weaps[a].name;
+                            strn = weaps[a].name;
 
                             if(MakeLocalizedString(weaps[a].displayname) != "")
-                                string = weaps[a].displayname;
+                                strn = weaps[a].displayname;
                             
-                            if(!IsInArray(arr, string))
+                            if(!IsInArray(arr, strn))
                             {
-                                arr[arr.size] = string;
-                                self addOpt(string, ::LobbyRain, "Projectile", weaps[a]);
+                                arr[arr.size] = strn;
+                                self addOpt(strn, ::LobbyRain, "Projectile", weaps[a]);
                             }
                         }
                     }
@@ -94,15 +94,15 @@ PopulateAdvancedScripts(menu)
                     {
                         if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
                         {
-                            string = weaps[a].name;
+                            strn = weaps[a].name;
 
                             if(MakeLocalizedString(weaps[a].displayname) != "")
-                                string = weaps[a].displayname;
+                                strn = weaps[a].displayname;
                             
-                            if(!IsInArray(arr, string))
+                            if(!IsInArray(arr, strn))
                             {
-                                arr[arr.size] = string;
-                                self addOptBool((self.CustomSentryWeapon == weaps[a]), string, ::SetCustomSentryWeapon, weaps[a]);
+                                arr[arr.size] = strn;
+                                self addOptBool((self.CustomSentryWeapon == weaps[a]), strn, ::SetCustomSentryWeapon, weaps[a]);
                             }
                         }
                     }
@@ -298,11 +298,11 @@ RainPowerups()
 
 CustomPowerupSpawn(powerup_name, drop_spot)
 {
-	powerup = zm_net::network_safe_spawn("powerup", 1, "script_model", (drop_spot + VectorScale((0, 0, 1), 40)));
+    powerup = zm_net::network_safe_spawn("powerup", 1, "script_model", (drop_spot + VectorScale((0, 0, 1), 40)));
 
-	if(isDefined(powerup))
-	{
-		powerup zm_powerups::powerup_setup(powerup_name);
+    if(isDefined(powerup))
+    {
+        powerup zm_powerups::powerup_setup(powerup_name);
 
         if(!isDefined(powerup))
             return;
@@ -314,7 +314,7 @@ CustomPowerupSpawn(powerup_name, drop_spot)
         powerup thread zm_powerups::powerup_grab();
         powerup thread zm_powerups::powerup_wobble_fx();
 
-		return powerup;
+        return powerup;
 	}
 }
 

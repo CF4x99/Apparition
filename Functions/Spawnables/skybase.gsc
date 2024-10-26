@@ -7,12 +7,12 @@ SpawnSkybase()
 {
     if(Is_True(level.spawnable["Skybase_Spawned"]))
         return;
-    
+
     model = GetSpawnableBaseModel("vending_doubletap");
-    
+
     self closeMenu1();
     wait 0.25;
-    
+
     distance = 500;
     goalPos = SpawnScriptModel(GetGroundPos(self TraceBullet()), "tag_origin");
     PlayFXOnTag(level._effect["powerup_on"], goalPos, "tag_origin");
@@ -65,29 +65,29 @@ SpawnSkybase()
     for(a = 0; a < x; a++)
         for(b = 0; b < y; b++)
             floor[floor.size] = SpawnScriptModel(origin + ((a * width), (b * height), 0), model, (0, 0, 90), 0.01);
-    
+
     array::thread_all(floor, ::SpawnableArray, "Skybase");
-    
+
     for(a = 0; a < x; a++)
         for(b = 0; b < y; b++)
             roof[roof.size] = SpawnScriptModel(origin + ((a * width), (b * height), (height + 35)), model, (180, 0, 90), 0.01);
-    
+
     array::thread_all(roof, ::SpawnableArray, "Skybase");
 
     for(a = 0; a < 2; a++)
         for(b = 0; b < y; b++)
             walls[walls.size] = SpawnScriptModel(origin + (-25 + ((width * x) * a) + (10 * a), (b * height), 20), model, (90 - (180 * a), 0, 90), 0.01);
-    
+
     for(a = 0; a < 2; a++)
         for(b = 0; b < (x - 4); b++)
             walls[walls.size] = SpawnScriptModel(origin + (5 + width + (b * height), (height * -1) + ((height * y) * a), 20), model, (-90 + (180 * a), 0, 0 - (180 * a)), 0.01);
-    
+
     array::thread_all(walls, ::SpawnableArray, "Skybase");
-    
+
     for(a = 0; a < 2; a++)
         for(b = 0; b < 2; b++)
             corners[corners.size] = SpawnScriptModel(origin + (0 - (((25 * b) + (25 * a)) - ((50 * a) * b)), (height * -1) + (15 * b) + (((height * y) - 15) * a), 44), model, (0, 0 - ((b * 90) + (a * 90)), 0), 0.01);
-    
+
     for(a = 0; a < 2; a++)
         for(b = 0; b < 2; b++)
             corners[corners.size] = SpawnScriptModel(origin + ((width * (x - 1)) + (((36 * b) + (36 * a)) - ((72 * a) * b)), (height * -1) + (15 * b) + (((height * y) - 15) * a), 44), model, (0, 0 + ((b * 90) + (a * 90)), 0), 0.01);
@@ -131,7 +131,7 @@ ActivateGlowingPerk(origin)
 
             wait 1;
         }
-        
+
         wait 0.1;
     }
 }
@@ -144,7 +144,7 @@ BottleTrigger()
 
         if(!isDefined(self) || player isDown() || isDefined(player.perks_active) && player.perks_active.size == level.MenuPerks.size)
             continue;
-        
+
         PlayerAllPerks(player);
     }
 }
@@ -159,8 +159,8 @@ GetSpawnableBottle()
 SpawnSkybaseTeleporter()
 {
     if(Is_True(level.spawnable["Skybase_Building"]) || Is_True(level.spawnable["Skybase_Dismantle"]) || Is_True(level.spawnable["Skybase_Deleted"]) || !Is_True(level.spawnable["Skybase_Spawned"]))
-        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option Right Now");
-    
+    return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option Right Now");
+
     if(!isDefined(level.SkybaseTeleporters) || !level.SkybaseTeleporters.size)
     {
         traceSurface = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["surfacetype"];
@@ -177,7 +177,7 @@ SpawnSkybaseTeleporter()
                 origin = (level.SkybaseOrigin + (20, -45, 45));
             else
                 origin = (crosshairs + (0, 0, 45));
-            
+
             level.SkybaseTeleporters[level.SkybaseTeleporters.size] = SpawnTeleporter("Spawn", origin, !a, true);
         }
     }
@@ -185,7 +185,7 @@ SpawnSkybaseTeleporter()
     {
         foreach(teleporter in level.SkybaseTeleporters)
             teleporter delete();
-        
+
         level.SkybaseTeleporters = undefined;
     }
 }

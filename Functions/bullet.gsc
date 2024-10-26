@@ -44,15 +44,15 @@ PopulateBulletMenu(menu, player)
                     {
                         if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
                         {
-                            string = weaps[a].name;
+                            strng = weaps[a].name;
 
                             if(MakeLocalizedString(weaps[a].displayname) != "")
-                                string = weaps[a].displayname;
+                                strng = weaps[a].displayname;
                             
-                            if(!IsInArray(arr, string))
+                            if(!IsInArray(arr, strng))
                             {
-                                arr[arr.size] = string;
-                                self addOpt(string, ::BulletProjectile, weaps[a], "Projectile", player);
+                                arr[arr.size] = strng;
+                                self addOpt(strng, ::BulletProjectile, weaps[a], "Projectile", player);
                             }
                         }
                     }
@@ -72,15 +72,15 @@ PopulateBulletMenu(menu, player)
                     {
                         if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
                         {
-                            string = weaps[a].name;
+                            strng = weaps[a].name;
 
                             if(MakeLocalizedString(weaps[a].displayname) != "")
-                                string = weaps[a].displayname;
+                                strng = weaps[a].displayname;
                             
-                            if(!IsInArray(arr, string))
+                            if(!IsInArray(arr, strng))
                             {
-                                arr[arr.size] = string;
-                                self addOpt(string, ::BulletProjectile, weaps[a], "Projectile", player);
+                                arr[arr.size] = strng;
+                                self addOpt(strng, ::BulletProjectile, weaps[a], "Projectile", player);
                             }
                         }
                     }
@@ -98,14 +98,26 @@ PopulateBulletMenu(menu, player)
 
                 if(isDefined(keys) && keys.size || isDefined(include_equipment) && include_equipment.size)
                 {
-                    foreach(index, weapon in GetArrayKeys(level.zombie_weapons))
+                    foreach(weapon in GetArrayKeys(level.zombie_weapons))
+                    {
+                        if(IsSubStr(weapon.name, "shield"))
+                            continue;
+                        
                         if(isInArray(equipment, weapon))
                             self addOpt(weapon.displayname, ::BulletProjectile, weapon, "Equipment", player);
+                    }
                     
 
                     if(isDefined(include_equipment) && include_equipment.size)
+                    {
                         foreach(weapon in include_equipment)
+                        {
+                            if(IsSubStr(weapon.name, "shield"))
+                                continue;
+
                             self addOpt(weapon.displayname, ::BulletProjectile, weapon, "Equipment", player);
+                        }
+                    }
                 }
             break;
         

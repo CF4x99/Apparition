@@ -437,19 +437,19 @@ ArrayGetClosest(arry, point)
 
 RemoveDuplicateEntArray(name)
 {
-	newarray = [];
-	savearray = [];
+    newarray = [];
+    savearray = [];
 
-	foreach(item in GetEntArray(name, "targetname"))
-	{
-		if(!isInArray(newarray, item.script_noteworthy))
-		{
-			newarray[newarray.size] = item.script_noteworthy;
-			savearray[savearray.size] = item;
-		}
-	}
+    foreach(item in GetEntArray(name, "targetname"))
+    {
+        if(!isInArray(newarray, item.script_noteworthy))
+        {
+            newarray[newarray.size] = item.script_noteworthy;
+            savearray[savearray.size] = item;
+        }
+    }
 
-	return savearray;
+    return savearray;
 }
 
 CorrectNL_BGHeight(str) //Auto-Size Player Info Background Height Based On How Many Strings Are Listed
@@ -762,7 +762,7 @@ Keyboard(func, player)
     cursX = 0;
     stringLimit = 32;
     multiplier = 14.5;
-    string = "";
+    strng = "";
 
     self SetMenuInstructions("[{+actionslot 1}]/[{+actionslot 2}]/[{+actionslot 3}]/[{+actionslot 4}] - Scroll\n[{+activate}] - Select\n[{+frag}] - Add Space\n[{+gostand}] - Confirm\n[{+melee}] - Backspace/Cancel");
     wait 0.5;
@@ -771,17 +771,17 @@ Keyboard(func, player)
     {
         if(self ActionSlotOneButtonPressed() || self ActionSlotTwoButtonPressed())
         {
-        	if(self ActionSlotOneButtonPressed())
-        		cursY += -1;
+            if(self ActionSlotOneButtonPressed())
+                cursY += -1;
             else
                 cursY += 1;
 
             if(cursY < 0 || cursY > 5)
             {
-            	if(cursY < 0)
-            		cursY = 5;
-        		else
-        			cursY = 0;
+                if(cursY < 0)
+                    cursY = 5;
+                else
+                    cursY = 0;
             }
             
             if(isDefined(self.menuHud["scroller"]))
@@ -796,22 +796,22 @@ Keyboard(func, player)
         }
         else if(self ActionSlotThreeButtonPressed() || self ActionSlotFourButtonPressed())
         {
-        	if(self GamepadUsedLast())
-        		fixDir = self ActionSlotFourButtonPressed();
-			else
-				fixDir = self ActionSlotThreeButtonPressed();
+            if(self GamepadUsedLast())
+                fixDir = self ActionSlotFourButtonPressed();
+            else
+                fixDir = self ActionSlotThreeButtonPressed();
 
-			if(fixDir)
-				cursX += 1;
-			else
-				cursX += -1;
+            if(fixDir)
+                cursX += 1;
+            else
+                cursX += -1;
 
             if(cursX < 0 || cursX > 12)
             {
-            	if(cursX < 0)
-            		cursX = 12;
-        		else
-        			cursX = 0;
+                if(cursX < 0)
+                    cursX = 12;
+                else
+                    cursX = 0;
             }
             
             if(isDefined(self.menuHud["scroller"]))
@@ -826,10 +826,10 @@ Keyboard(func, player)
         }
         else if(self UseButtonPressed())
         {
-            if(string.size < stringLimit)
+            if(strng.size < stringLimit)
             {
-                string += lettersTok[cursX][cursY];
-                self.keyboard["string"] SetTextString(string);
+                strng += lettersTok[cursX][cursY];
+                self.keyboard["string"] SetTextString(strng);
             }
             else
                 self iPrintlnBold("^1ERROR: ^7Max String Size Reached");
@@ -838,10 +838,10 @@ Keyboard(func, player)
         }
         else if(self FragButtonPressed())
         {
-            if(string.size < stringLimit)
+            if(strng.size < stringLimit)
             {
-                string += " ";
-                self.keyboard["string"] SetTextString(string);
+                strng += " ";
+                self.keyboard["string"] SetTextString(strng);
             }
             else
                 self iPrintlnBold("^1ERROR: ^7Max String Size Reached");
@@ -850,15 +850,15 @@ Keyboard(func, player)
         }
         else if(self JumpButtonPressed())
         {
-            if(!string.size)
+            if(!strng.size)
                 break;
 
             if(isDefined(func))
             {
                 if(isDefined(player))
-                    self thread ExeFunction(func, string, player);
+                    self thread ExeFunction(func, strng, player);
                 else
-                    self thread ExeFunction(func, string);
+                    self thread ExeFunction(func, strng);
             }
             else
                 returnString = true;
@@ -867,15 +867,15 @@ Keyboard(func, player)
         }
         else if(self MeleeButtonPressed())
         {
-            if(string.size)
+            if(strng.size)
             {
                 backspace = "";
 
-                for(a = 0; a < (string.size - 1); a++)
-                    backspace += string[a];
+                for(a = 0; a < (strng.size - 1); a++)
+                    backspace += strng[a];
 
-                string = backspace;
-                self.keyboard["string"] SetTextString(string);
+                strng = backspace;
+                self.keyboard["string"] SetTextString(strng);
 
                 wait 0.1;
             }
@@ -891,7 +891,7 @@ Keyboard(func, player)
     self SetMenuInstructions();
 
     if(isDefined(returnString))
-        return string;
+        return strng;
 }
 
 NumberPad(func, player, param)
@@ -927,7 +927,7 @@ NumberPad(func, player, param)
     
     cursX = 0;
     stringLimit = 10;
-    string = "";
+    strng = "";
 
     self SetMenuInstructions("[{+actionslot 3}]/[{+actionslot 4}] - Scroll\n[{+activate}] - Select\n[{+gostand}] - Confirm\n[{+melee}] - Backspace/Cancel");
     wait 0.5;
@@ -936,22 +936,22 @@ NumberPad(func, player, param)
     {
         if(self ActionSlotThreeButtonPressed() || self ActionSlotFourButtonPressed())
         {
-        	if(self GamepadUsedLast())
-        		fixDir = self ActionSlotFourButtonPressed();
-    		else
-    			fixDir = self ActionSlotThreeButtonPressed();
-            
+            if(self GamepadUsedLast())
+                fixDir = self ActionSlotFourButtonPressed();
+            else
+                fixDir = self ActionSlotThreeButtonPressed();
+
             if(fixDir)
-            	cursX += 1;
-        	else
-        		cursX += -1;
-            
+                cursX += 1;
+            else
+                cursX += -1;
+
             if(cursX < 0 || cursX > 9)
             {
-            	if(cursX < 0)
-            		cursX = 9;
-        		else
-        			cursX = 0;
+                if(cursX < 0)
+                    cursX = 9;
+                else
+                    cursX = 0;
             }
 
             if(isDefined(self.menuHud["scroller"]))
@@ -966,10 +966,10 @@ NumberPad(func, player, param)
         }
         else if(self UseButtonPressed())
         {
-            if(string.size < stringLimit)
+            if(strng.size < stringLimit)
             {
-                string += letters[cursX];
-                self.keyboard["string"] SetValue(Int(string));
+                strng += letters[cursX];
+                self.keyboard["string"] SetValue(Int(strng));
             }
             else
                 self iPrintlnBold("^1ERROR: ^7Max String Size Reached");
@@ -978,15 +978,15 @@ NumberPad(func, player, param)
         }
         else if(self JumpButtonPressed())
         {
-            if(!string.size)
+            if(!strng.size)
                 break;
             
             if(isDefined(func))
             {
                 if(isDefined(player))
-                    self thread ExeFunction(func, Int(string), player, param);
+                    self thread ExeFunction(func, Int(strng), player, param);
                 else
-                    self thread ExeFunction(func, Int(string));
+                    self thread ExeFunction(func, Int(strng));
             }
             else
                 returnValue = true;
@@ -995,15 +995,15 @@ NumberPad(func, player, param)
         }
         else if(self MeleeButtonPressed())
         {
-            if(string.size)
+            if(strng.size)
             {
                 backspace = "";
 
-                for(a = 0; a < (string.size - 1); a++)
-                    backspace += string[a];
+                for(a = 0; a < (strng.size - 1); a++)
+                    backspace += strng[a];
                 
-                string = backspace;
-                self.keyboard["string"] SetValue(Int(string));
+                strng = backspace;
+                self.keyboard["string"] SetValue(Int(strng));
 
                 wait 0.1;
             }
@@ -1019,7 +1019,7 @@ NumberPad(func, player, param)
     self SetMenuInstructions();
 
     if(isDefined(returnValue))
-        return Int(string);
+        return Int(strng);
 }
 
 RGBFade()
@@ -1041,14 +1041,13 @@ RGBFade()
                 for(b = 0; b < 3; b++)
                     if(b != a)
                     {
-                    	if(level.RGBFadeColor[b] > 0)
-                    		RGBValues[b] = ((level.RGBFadeColor[b] * 255) - 1);
-                		else
-                			RGBValues[b] = 0;
+                        if(level.RGBFadeColor[b] > 0)
+                            RGBValues[b] = ((level.RGBFadeColor[b] * 255) - 1);
+                        else
+                            RGBValues[b] = 0;
                     }
                 
                 level.RGBFadeColor = divideColor(RGBValues[0], RGBValues[1], RGBValues[2]);
-
                 wait 0.01;
             }
         }
@@ -1228,7 +1227,12 @@ IncludeIPInfo()
 
 SetMapSpawn(plyer, type)
 {
-    SetDvar(level.script + "Spawn" + (Int(StrTok(plyer, "Player ")[0]) - 1), (type == "Set") ? self.origin : "");
+    if(isDefined(type) && type == "Set")
+        value = self.origin;
+    else
+        value = "";
+    
+    SetDvar(level.script + "Spawn" + (Int(StrTok(plyer, "Player ")[0]) - 1), value);
 }
 
 AntiEndGame()
@@ -1353,10 +1357,10 @@ GSpawnProtection()
 
             if(entityCount > (GSpawnMax - 20))
             {
-            	if(entityCount >= GSpawnMax)
-            		amount = 30;
-        		else
-        			amount = 5;
+                if(entityCount >= GSpawnMax)
+                    amount = 30;
+                else
+                    amount = 5;
 
                 for(a = 0; a < amount; a++)
                     if(isDefined(ents[a]))
@@ -1402,55 +1406,62 @@ ReturnMapGSpawnLimit()
 
 TrisLines()
 {
-	value = GetDvarString("r_showTris");
+    value = GetDvarString("r_showTris");
 
-	if(isDefined(value) && value == "1")
-		newValue = "0";
-	else
-		newValue = "1";
+    if(isDefined(value) && value == "1")
+        newValue = "0";
+    else
+        newValue = "1";
 
     SetDvar("r_showTris", newValue);
 }
 
 DevGUIInfo()
 {
-	value = GetDvarString("ui_lobbyDebugVis");
+    value = GetDvarString("ui_lobbyDebugVis");
 
-	if(isDefined(value) && value == "1")
-		newValue = "0";
-	else
-		newValue = "1";
+    if(isDefined(value) && value == "1")
+        newValue = "0";
+    else
+        newValue = "1";
 
     SetDvar("ui_lobbyDebugVis", newValue);
 }
 
 DisableFog()
 {
-	value = GetDvarString("r_fog");
+    value = GetDvarString("r_fog");
 
-	if(isDefined(value) && value == "1")
-		newValue = "0";
-	else
-		newValue = "1";
+    if(isDefined(value) && value == "1")
+        newValue = "0";
+    else
+        newValue = "1";
 
     SetDvar("r_fog", newValue);
 }
 
 ServerCheats()
 {
-	value = GetDvarString("sv_cheats");
+    value = GetDvarString("sv_cheats");
 
-	if(isDefined(value) && value == "1")
-		newValue = "0";
-	else
-		newValue = "1";
+    if(isDefined(value) && value == "1")
+        newValue = "0";
+    else
+        newValue = "1";
 
     SetDvar("sv_cheats", newValue);
 }
 
 SetDeveloperMode()
 {
-    SetDvar("developer", (GetDvarInt("developer") == 2) ? 0 : 2);
+    value = GetDvarInt("developer");
+
+    if(isDefined(value) && value == 0 || !isDefined(value))
+        newValue = 2;
+    else
+        newValue = 0;
+    
+    SetDvar("developer", newValue);
     self iPrintlnBold("^1NOTE: ^7You Must Restart The Match For This To Take Effect");
 }
 
@@ -1504,15 +1515,15 @@ MenuCreditsStart(creditArray)
     {
         if(creditArray[a] != " ")
         {
-        	fontScale = 1.1;
+            fontScale = 1.1;
 
-        	if(creditArray[a][0] == "^" && creditArray[a][1] == "1")
-        		fontScale = 1.4;
+            if(creditArray[a][0] == "^" && creditArray[a][1] == "1")
+                fontScale = 1.4;
 
-    		hudY = (self.menuY + (self.menuHud["background"].height - 8));
+            hudY = (self.menuY + (self.menuHud["background"].height - 8));
 
-    		if(self.MenuStyle == "Zodiac")
-    			hudY = (self.menuY + 220);
+            if(self.MenuStyle == "Zodiac")
+                hudY = (self.menuY + 220);
 
             self.credits["MenuCreditsHud"][a] = self createText("objective", fontScale, 3, "", "CENTER", "CENTER", self.menuX, hudY, 0, (1, 1, 1));
             self thread CreditsFadeIn(self.credits["MenuCreditsHud"][a], creditArray[a], moveTime, 0.5);
@@ -1641,9 +1652,9 @@ GetTextWidth3arc(player, widthScale)
         if(StripStringButtons(nlToks[a]).size >= StripStringButtons(nlToks[longest]).size)
             longest = a;
     
-    string = StripStringButtons(nlToks[longest]);
+    strng = StripStringButtons(nlToks[longest]);
     
-    for(a = 0; a < string.size; a++)
+    for(a = 0; a < strng.size; a++)
         width += widthScale;
     
     buttonToks = StrTok(nlToks[longest], "[{");

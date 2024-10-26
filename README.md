@@ -1,6 +1,6 @@
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.0.0
+    Version:              1.5.0.1
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
@@ -10,7 +10,6 @@
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
     Discord:            cf4_99
-    Apparition Discord: https://discord.gg/NExXdMhDnW
     YouTube:            https://www.youtube.com/c/CF499
 
     Apparition can be injected using T7, or Crafty's Injector.
@@ -78,14 +77,31 @@
 ## Changelog
 <details>
     <summary>
+        Version 1.5.0.1
+    </summary>
+    - Removed: All UEM Related Options/Scripts -- Apparition is now 100% detected by UEM, so I don't see a reason to keep the UEM scripts in the project.
+
+    - Added: Origins -- Option To Give Players Helmets
+    - Added: Origins -- Option To Give Players Normal or Golden Shovels
+
+    - Changed: Moved Weapon Camo Options From 'Weapon Options' To 'Weaponry'
+    - Changed: The New No Target(made to run undetected on UEM) Has Been Reverted Back To The Original Script
+
+    - Fixed: Bug With Broken Mount Camera Slider
+    - Fixed: Undefined Tag Origin -- Mount Camera(tag_body)
+    - Fixed: Bug With Trapping The Apothicon On Revelations
+</details>
+
+<details>    
+    <summary>
         Version 1.5.0.0
     </summary>
     There Were Countless Backend Changes That Won't Be Listed. Apparition Recieved A Much Needed Overhaul In Every Way.
     I Can Without A Doubt Say Apparition Will Be Unmatched In Every Possible Way.
     It Will Be The Most Stable, In-Depth, Detail Oriented, Organized, and Largest Mod Menu You Will Ever See.
-
     You Won't Find Anything That Will Be Comparable To Apparition, Not Even The Menus With "Devs" That Constantly Have To Rip Scripts From Apparition For Their Projects.
     Apparition Will Remain On Top, Regardless Of Who Tries To Compete With It.
+
 
 
     - NOTE: Update 1.4.0.0 was built only for the workshop. So 1.5.0.0 includes the 1.4.0.0 changes as well.
