@@ -1,6 +1,6 @@
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.0.3
+    Version:              1.5.0.4
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
@@ -62,6 +62,16 @@
 
 
 ## Changelog
+<details>
+    <summary>
+        Version 1.5.0.4
+    </summary>
+
+    - Added: Better Overall Support For The New Quick Menu Style
+
+    - Fixed: Menu Repositioning For The New Quick Menu Style
+</details>
+
 <details>
     <summary>
         Version 1.5.0.3

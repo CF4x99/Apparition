@@ -335,9 +335,9 @@ openMenu1(showAnim)
     }
     else
     {
-        self.menuHud["background"] = self createRectangle("TOP", "CENTER", 0, -210, 155, 0, (0, 0, 0), 2, 0.7, "white");
-        self.menuHud["scroller"] = self createRectangle("TOP", "CENTER", 0, -210, 155, 14, self.MainColor, 4, 1, "white");
-        self.menuHud["title"] = self createText("default", 1.4, 4, "", "CENTER", "CENTER", 0, self.menuHud["background"].y + 8, 1, self.MainColor);
+        self.menuHud["background"] = self createRectangle("TOP", "CENTER", self.menuX, self.menuY, 155, 0, (0, 0, 0), 2, 0.7, "white");
+        self.menuHud["scroller"] = self createRectangle("TOP", "CENTER", self.menuX, self.menuY, 155, 14, self.MainColor, 4, 1, "white");
+        self.menuHud["title"] = self createText("default", self.TitleFontScale, 4, "", "CENTER", "CENTER", self.menuX, (self.menuHud["background"].y + 8), 1, self.MainColor);
     }
 
     self drawText(showAnim);
@@ -685,13 +685,13 @@ drawText(showAnim)
     }
     else
     {
-        if(self.menuStructure.size > 15)
-            numOpts = 15;
+        if(self.menuStructure.size > self.MaxOptions)
+            numOpts = self.MaxOptions;
         else
             numOpts = self.menuStructure.size;
         
-        if(self getCursor() >= 15)
-            start = (self getCursor() - 14);
+        if(self getCursor() >= self.MaxOptions)
+            start = (self getCursor() - (self.MaxOptions - 1));
         else
             start = 0;
         
@@ -716,7 +716,7 @@ drawText(showAnim)
             if(isDefined(self.menuStructure[(start + a)].bool) && self.menuStructure[(start + a)].bool)
                 tempColor = (0, 1, 0);
             
-            self.menuHud["text"][(start + a)] = self createText("default", 1.1, 5, optStr, "CENTER", "CENTER", 0, self.menuHud["background"].y + 30 + (a * 15), 1, tempColor);
+            self.menuHud["text"][(start + a)] = self createText("default", 1.1, 5, optStr, "CENTER", "CENTER", self.menuHud["background"].x, (self.menuHud["background"].y + 30 + (a * 15)), 1, tempColor);
 
             if(self.menuHud["text"][(start + a)] GetTextWidth3arc(self) > largestStr)
                 largestStr = self.menuHud["text"][(start + a)] GetTextWidth3arc(self);

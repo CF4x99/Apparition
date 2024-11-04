@@ -17,6 +17,8 @@ PopulateMenuCustomization(menu)
         case "Design Preferences":
 
             if(self.MenuStyle == "Zodiac")
+                maxOptions = 12;
+            else if(self.MenuStyle == "Quick Menu")
                 maxOptions = 20;
             else
                 maxOptions = 10;
@@ -484,10 +486,20 @@ MenuStyle(style)
             self.menuY = -185;
             
             self.TitleFontScale = 1.6;
-
             self.MaxOptions = 12; //Zodiac Uses Less Hud, So We Can Show A Few More Options
             self.LargeCursor = true;
             self.ToggleStyle = "Boxes";
+            break;
+        
+        case "Quick Menu":
+            self.menuX = 0;
+            self.menuY = -210;
+
+            self.TitleFontScale = 1.5;
+            self.MaxOptions = 20;
+
+            if(Is_True(self.LargeCursor))
+                self.LargeCursor = BoolVar(self.LargeCursor);
             break;
         
         default:
@@ -552,13 +564,20 @@ LoadMenuVars()
     
     if(self.MenuStyle == "Zodiac")
         self.menuX = 298;
+    else if(self.MenuStyle == "Quick Menu")
+        self.menuX = 0;
     else
         self.menuX = -81;
     
-    self.menuY = -185;
+    if(self.MenuStyle == "Quick Menu")
+        self.menuY = -210;
+    else
+        self.menuY = -185;
     
     if(self.MenuStyle == "Zodiac") //Zodiac uses Less Hud, So We Can Show A Few More Options
         self.MaxOptions = 12;
+    else if(self.MenuStyle == "Quick Menu")
+        self.MaxOptions = 20;
     else
         self.MaxOptions = 10;
     
@@ -570,7 +589,6 @@ LoadMenuVars()
     self.ToggleTextColor    = (0, 1, 0);
     self.ScrollingTextColor = (1, 1, 1);
     
-    //Change 'false' to 'true' if you want to enable large cursor by default
     if(self.MenuStyle == "Zodiac")
         self.LargeCursor = true;
     
@@ -633,11 +651,13 @@ LoadMenuVars()
         self thread SmoothRainbowTheme(); //The color defaults to smooth rainbow. Remove this if you want the color to default to the self.MainColor variable.
         self SaveMenuTheme();
     }
-
+    
     if(self.MenuStyle == "Zodiac")
         self.TitleFontScale = 1.6;
     else if(self.MenuStyle == "Native")
         self.TitleFontScale = 2;
+    else if(self.MenuStyle == "Quick Menu")
+        self.TitleFontScale = 1.5;
     else
         self.TitleFontScale = 1.4;
 }

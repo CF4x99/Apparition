@@ -1,7 +1,7 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.0.3
+    Version:              1.5.0.4
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
@@ -225,7 +225,7 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName    = "Apparition";
-    level.menuVersion = "1.5.0.3";
+    level.menuVersion = "1.5.0.4";
     level.MenuStatus  = Array("Bot", "None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer");
     level.colorNames  = Array("Ciper Purple", "xbOnline Blue", "Skyblue", "Pink", "Green", "Brown", "Blue", "Red", "Orange", "Purple", "Cyan", "Yellow", "Black", "White");
     level.colors      = Array(100, 0, 100, 57, 152, 254, 135, 206, 250, 255, 110, 255, 0, 255, 0, 101, 67, 33, 0, 0, 255, 255, 0, 0, 255, 128, 0, 100, 0, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255);
