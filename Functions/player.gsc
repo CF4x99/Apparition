@@ -32,7 +32,7 @@ PopulatePlayerOptions(menu, player)
                 
                 if(isDefined(level.MenuModels) && level.MenuModels.size)
                 {
-                    self addOptSlider("Location", ::PlayerAttachmentBone, "j_ankle_ri;j_ankle_le;pelvis;j_mainroot;j_spinelower;j_spine4;j_neck;j_head;tag_body");
+                    self addOptSlider("Location", ::PlayerAttachmentBone, "j_head;j_neck;j_spine4;j_spinelower;j_mainroot;pelvis;j_ankle_ri;j_ankle_le");
                     self addOpt("Detach All", ::PlayerDetachModels, player);
                     self addOpt("");
 
@@ -120,12 +120,12 @@ PlayerOpenPauseMenu(player)
 
 DisableAiming(player)
 {
-    if(!Is_True(player.DisableAiming))
+    player endon("disconnect");
+
+    player.DisableAiming = BoolVar(player.DisableAiming);
+
+    if(Is_True(player.DisableAiming))
     {
-        player endon("disconnect");
-
-        player.DisableAiming = true;
-
         while(Is_True(player.DisableAiming))
         {
             player AllowAds(false);
@@ -133,20 +133,17 @@ DisableAiming(player)
         }
     }
     else
-    {
-        player.DisableAiming = false;
         player AllowAds(true);
-    }
 }
 
 DisableJumping(player)
 {
-    if(!Is_True(player.DisableJumping))
+    player endon("disconnect");
+
+    player.DisableJumping = BoolVar(player.DisableJumping);
+    
+    if(Is_True(player.DisableJumping))
     {
-        player endon("disconnect");
-
-        player.DisableJumping = true;
-
         while(Is_True(player.DisableJumping))
         {
             player AllowJump(false);
@@ -154,20 +151,17 @@ DisableJumping(player)
         }
     }
     else
-    {
-        player.DisableJumping = false;
         player AllowJump(true);
-    }
 }
 
 DisableSprinting(player)
 {
-    if(!Is_True(player.DisableSprinting))
+    player endon("disconnect");
+
+    player.DisableSprinting = BoolVar(player.DisableSprinting);
+    
+    if(Is_True(player.DisableSprinting))
     {
-        player endon("disconnect");
-
-        player.DisableSprinting = true;
-
         while(Is_True(player.DisableSprinting))
         {
             player AllowSprint(false);
@@ -175,20 +169,17 @@ DisableSprinting(player)
         }
     }
     else
-    {
-        player.DisableSprinting = false;
         player AllowSprint(true);
-    }
 }
 
 DisableOffhands(player)
 {
-    if(!Is_True(player.DisableOffhands))
+    player endon("disconnect");
+
+    player.DisableOffhands = BoolVar(player.DisableOffhands);
+    
+    if(Is_True(player.DisableOffhands))
     {
-        player endon("disconnect");
-
-        player.DisableOffhands = true;
-
         while(Is_True(player.DisableOffhands))
         {
             player DisableOffHandWeapons();
@@ -196,20 +187,17 @@ DisableOffhands(player)
         }
     }
     else
-    {
-        player.DisableOffhands = false;
         player EnableOffHandWeapons();
-    }
 }
 
 DisableWeaps(player)
 {
-    if(!Is_True(player.DisableWeaps))
+    player endon("disconnect");
+
+    player.DisableWeaps = BoolVar(player.DisableWeaps);
+    
+    if(Is_True(player.DisableWeaps))
     {
-        player endon("disconnect");
-
-        player.DisableWeaps = true;
-
         while(Is_True(player.DisableWeaps))
         {
             player DisableWeapons();
@@ -217,10 +205,7 @@ DisableWeaps(player)
         }
     }
     else
-    {
-        player.DisableWeaps = false;
         player EnableWeapons();
-    }
 }
 
 SetPlayerStance(stance, player)
@@ -247,41 +232,36 @@ MortarStrikePlayer(player)
 
 AutoDownPlayer(player)
 {
-    if(!Is_True(player.AutoDown))
+    player endon("disconnect");
+
+    player.AutoDown = BoolVar(player.AutoDown);
+    
+    while(Is_True(player.AutoDown))
     {
-        player endon("disconnect");
-
-        player.AutoDown = true;
-
-        while(Is_True(player.AutoDown))
+        if(Is_Alive(player) && !player IsDown() && !player IsHost() && !player isDeveloper())
         {
-            if(Is_Alive(player) && !player IsDown() && !player IsHost() && !player isDeveloper())
-            {
-                if(Is_True(player.godmode))
-                    player Godmode(player);
+            if(Is_True(player.godmode))
+                player Godmode(player);
 
-                if(Is_True(player.PlayerDemiGod))
-                    player DemiGod(player);
-                
-                player DisableInvulnerability(); //Just to ensure that the player is able to be damaged.
-                player DoDamage(player.health + 999, (0, 0, 0));
-            }
-
-            wait 0.1;
+            if(Is_True(player.PlayerDemiGod))
+                player DemiGod(player);
+            
+            player DisableInvulnerability(); //Just to ensure that the player is able to be damaged.
+            player DoDamage(player.health + 999, (0, 0, 0));
         }
+
+        wait 0.1;
     }
-    else
-        player.AutoDown = false;
 }
 
 FlashLoop(player)
 {
-    if(!Is_True(player.FlashLoop))
+    player endon("disconnect");
+
+    player.FlashLoop = BoolVar(player.FlashLoop);
+    
+    if(Is_True(player.FlashLoop))
     {
-        player endon("disconnect");
-
-        player.FlashLoop = true;
-
         while(Is_True(player.FlashLoop))
         {
             player ShellShock("concussion_grenade_mp", 5);
@@ -289,10 +269,7 @@ FlashLoop(player)
         }
     }
     else
-    {
         player StopShellShock();
-        player.FlashLoop = false;
-    }
 }
 
 ApplyShellShock(shock, player)
@@ -325,30 +302,25 @@ SetShellShockTime(time, player)
 
 SpinPlayer(player)
 {
-    if(!Is_True(player.SpinPlayer))
+    player endon("disconnect");
+
+    player.SpinPlayer = BoolVar(player.SpinPlayer);
+    
+    while(Is_True(player.SpinPlayer))
     {
-        player endon("disconnect");
-
-        player.SpinPlayer = true;
-
-        while(Is_True(player.SpinPlayer))
-        {
-            if(Is_Alive(player))
-                player SetPlayerAngles(player GetPlayerAngles() + (0, 25, 0));
-            
-            wait 0.01;
-        }
+        if(Is_Alive(player))
+            player SetPlayerAngles(player GetPlayerAngles() + (0, 25, 0));
+        
+        wait 0.01;
     }
-    else
-        player.SpinPlayer = false;
 }
 
 BlackScreenPlayer(player)
 {
-    if(!Is_True(player.BlackScreen))
-    {
-        player.BlackScreen = true;
+    player.BlackScreen = BoolVar(player.BlackScreen);
 
+    if(Is_True(player.BlackScreen))
+    {
         if(!isDefined(player.BlackScreenHud))
             player.BlackScreenHud = [];
 
@@ -356,31 +328,23 @@ BlackScreenPlayer(player)
             player.BlackScreenHud[player.BlackScreenHud.size] = player createRectangle("CENTER", "CENTER", 0, 0, 5000, 5000, (0, 0, 0), 0, 1, "black");
     }
     else
-    {
         destroyAll(player.BlackScreenHud);
-        player.BlackScreen = false;
-    }
 }
 
 FakeLag(player)
 {
-    if(!Is_True(player.FakeLag))
+    player endon("disconnect");
+
+    player.FakeLag = BoolVar(player.FakeLag);
+    
+    while(Is_True(player.FakeLag))
     {
-        player endon("disconnect");
+        player SetVelocity((RandomIntRange(-255, 255), RandomIntRange(-255, 255), 0));
+        wait 0.25;
 
-        player.FakeLag = true;
-
-        while(Is_True(player.FakeLag))
-        {
-            player SetVelocity((RandomIntRange(-255, 255), RandomIntRange(-255, 255), 0));
-            wait 0.25;
-
-            player SetVelocity((0, 0, 0));
-            wait 0.025;
-        }
+        player SetVelocity((0, 0, 0));
+        wait 0.025;
     }
-    else
-        player.FakeLag = false;
 }
 
 AttachSelfToPlayer(player)
@@ -393,13 +357,13 @@ AttachSelfToPlayer(player)
     
     if(!Is_Alive(player))
         return self iPrintlnBold("^1ERROR: ^7Player Isn't Alive");
+    
+    player endon("disconnect");
 
-    if(!Is_True(self.AttachToPlayer))
+    self.AttachToPlayer = BoolVar(self.AttachToPlayer);
+
+    if(Is_True(self.AttachToPlayer))
     {
-        player endon("disconnect");
-
-        self.AttachToPlayer = true;
-
         while(Is_True(self.AttachToPlayer))
         {
             if(!self IsLinkedTo(player))
@@ -412,10 +376,7 @@ AttachSelfToPlayer(player)
         }
     }
     else
-    {
         self Unlink();
-        self.AttachToPlayer = false;
-    }
 }
 
 JumpScarePlayer(type, player)
@@ -446,7 +407,7 @@ JumpScarePlayer(type, player)
     if(isDefined(player.var_92fcfed8))
         player CloseLUIMenu(player.var_92fcfed8);
     
-    player.JumpScarePlayer = false;
+    player.JumpScarePlayer = BoolVar(player.JumpScarePlayer);
 }
 
 FakeDerank(player)
@@ -487,12 +448,12 @@ MessagePlayer(msg, player)
 
 FreezePlayer(player)
 {
-    if(!Is_True(player.FreezePlayer))
+    player endon("disconnect");
+
+    player.FreezePlayer = BoolVar(player.FreezePlayer);
+    
+    if(Is_True(player.FreezePlayer))
     {
-        player endon("disconnect");
-
-        player.FreezePlayer = true;
-
         while(Is_True(player.FreezePlayer))
         {
             player FreezeControls(true);
@@ -500,10 +461,7 @@ FreezePlayer(player)
         }
     }
     else
-    {
         player FreezeControls(false);
-        player.FreezePlayer = false;
-    }
 }
 
 KickPlayer(player)

@@ -44,7 +44,7 @@ PopulateAdvancedScripts(menu)
             self addMenu("Effects");
 
                 for(a = 0; a < level.MenuEffects.size; a++)
-                    self addOpt(level.MenuEffects[a].displayName, ::LobbyRain, "FX", level.MenuEffects[a].name);
+                    self addOpt(CleanString(level.MenuEffects[a]), ::LobbyRain, "FX", level.MenuEffects[a]);
             break;
         
         case "Rain Projectiles":
@@ -191,8 +191,11 @@ AC130(type)
             self Show();
     }
 
-    self.DisableMenuControls = false;
-    self.AC130 = false;
+    if(Is_True(self.DisableMenuControls))
+        self.DisableMenuControls = BoolVar(self.DisableMenuControls);
+
+    if(Is_True(self.AC130))
+        self.AC130 = BoolVar(self.AC130);
 }
 
 AC130NextWeapon(current)
@@ -233,7 +236,9 @@ FireAC130(ammoType)
         MagicBullet(ammoType, fire_origin, self TraceBullet(), self);
     
     wait AC130FireRate(ammoType);
-    self.AC130DisableFire[ammoType] = false;
+
+    if(Is_True(self.AC130DisableFire[ammoType]))
+        self.AC130DisableFire[ammoType] = BoolVar(self.AC130DisableFire[ammoType]);
 }
 
 AC130Rotate()
@@ -278,22 +283,17 @@ RefreshAC130HUD(ammo)
 
 RainPowerups()
 {
-    if(!Is_True(level.RainPowerups))
+    level.RainPowerups = BoolVar(level.RainPowerups);
+
+    while(Is_True(level.RainPowerups))
     {
-        level.RainPowerups = true;
+        powerup = level CustomPowerupSpawn(GetArrayKeys(level.zombie_include_powerups)[RandomInt(level.zombie_include_powerups.size)], bot::get_host_player().origin + (RandomIntRange(-1000, 1000), RandomIntRange(-1000, 1000), RandomIntRange(750, 2000)));
+        
+        if(isDefined(powerup))
+            powerup PhysicsLaunch(powerup.origin, (RandomIntRange(-5, 5), RandomIntRange(-5, 5), RandomIntRange(-5, 5)));
 
-        while(Is_True(level.RainPowerups))
-        {
-            powerup = level CustomPowerupSpawn(GetArrayKeys(level.zombie_include_powerups)[RandomInt(level.zombie_include_powerups.size)], bot::get_host_player().origin + (RandomIntRange(-1000, 1000), RandomIntRange(-1000, 1000), RandomIntRange(750, 2000)));
-            
-            if(isDefined(powerup))
-                powerup PhysicsLaunch(powerup.origin, (RandomIntRange(-5, 5), RandomIntRange(-5, 5), RandomIntRange(-5, 5)));
-
-            wait 0.025;
-        }
+        wait 0.05;
     }
-    else
-        level.RainPowerups = false;
 }
 
 CustomPowerupSpawn(powerup_name, drop_spot)
@@ -399,13 +399,12 @@ DisableLobbyRain()
 CustomSentry(origin)
 {
     self endon("disconnect");
+    self endon("EndCustomSentry");
 
-    if(!Is_True(self.CustomSentry))
+    self.CustomSentry = BoolVar(self.CustomSentry);
+
+    if(Is_True(self.CustomSentry))
     {
-        self endon("EndCustomSentry");
-
-        self.CustomSentry = true;
-        
         if(!isDefined(origin))
             origin = self.origin;
 
@@ -457,8 +456,6 @@ CustomSentry(origin)
 
             self.sentrygun_weapon delete();
         }
-
-        self.CustomSentry = false;
     }
 }
 
@@ -538,7 +535,9 @@ ArtilleryStrike()
     }
     
     goalPos delete();
-    self.DisableMenuControls = false;
+
+    if(Is_True(self.DisableMenuControls))
+        self.DisableMenuControls = BoolVar(self.DisableMenuControls);
 
     self SetMenuInstructions();
     
@@ -561,7 +560,8 @@ ArtilleryStrike()
             }
     }
     
-    self.ArtilleryStrike = false;
+    if(Is_True(self.ArtilleryStrike))
+        self.ArtilleryStrike = BoolVar(self.ArtilleryStrike);
 }
 
 Tornado()
@@ -587,7 +587,7 @@ Tornado()
                 level.SpawnableArray["Tornado"][a] delete();
         
         level notify("Tornado_Stop");
-        level.TornadoSpawned = false;
+        level.TornadoSpawned = BoolVar(level.TornadoSpawned);
 
         return;
     }
@@ -734,7 +734,8 @@ TornadoLaunchPlayer(a)
     if(!isDefined(self) || !Is_Alive(self))
         return;
 
-    self.OnTornado = false;
+    if(Is_True(self.OnTornado))
+        self.OnTornado = BoolVar(self.OnTornado);
 }
 
 TornadoLaunchZombie(a)
@@ -775,7 +776,8 @@ TornadoLaunchZombie(a)
     if(isDefined(linker))
         linker delete();
     
-    self.OnTornado = false;
+    if(Is_True(self.OnTornado))
+        self.OnTornado = BoolVar(self.OnTornado);
 }
 
 TornadoLaunchEntity(a)
@@ -810,7 +812,8 @@ TornadoLaunchEntity(a)
     if(!isDefined(self))
         return;
 
-    self.OnTornado = false;
+    if(Is_True(self.OnTornado))
+        self.OnTornado = BoolVar(self.OnTornado);
 }
 
 MoonDoors()
@@ -822,15 +825,13 @@ MoonDoors()
 
         self OpenAllDoors();
     }
+
+    level.MoonDoors = BoolVar(level.MoonDoors);
     
-    if(!Is_True(level.MoonDoors))
-    {
-        level.MoonDoors = true;
+    if(Is_True(level.MoonDoors))
         thread OpenCloseMoonDoors();
-    }
     else
     {
-        level.MoonDoors = false;
         types = Array("zombie_door", "zombie_airlock_buy", "zombie_debris");
 
         for(a = 0; a < types.size; a++)
@@ -1009,19 +1010,14 @@ ControllableZombie(team)
     self closeMenu1();
     self.ControllableZombie = true;
     self.DisableMenuControls = true;
+    self.ignoreme = true;
 
     CZSavedOrigin = self.origin;
     CZSavedAngles = self.angles;
 
     spawner = ArrayGetClosest(level.zombie_spawners, self.origin);
     zombie = zombie_utility::spawn_zombie(spawner);
-
-    if(!Is_True(self.playerIgnoreMe))
-    {
-        self.playerIgnoreMeReset = true;
-        self.playerIgnoreMe = true;
-    }
-
+    
     self SetStance("stand");
     wait 0.1;
     
@@ -1106,16 +1102,20 @@ ControllableZombie(team)
     self EnableWeapons();
     self EnableOffhandWeapons();
 
-    if(Is_True(self.playerIgnoreMeReset))
-        self.playerIgnoreMe = false;
-
     viewModel delete();
     goalPos delete();
     
     self SetOrigin(CZSavedOrigin);
     self SetPlayerAngles(CZSavedAngles);
-    self.DisableMenuControls = false;
-    self.ControllableZombie = false;
+
+    if(Is_True(self.DisableMenuControls))
+        self.DisableMenuControls = BoolVar(self.DisableMenuControls);
+
+    if(Is_True(self.ControllableZombie))
+        self.ControllableZombie = BoolVar(self.ControllableZombie);
+
+    if(Is_True(self.ignoreme))
+        self.ignoreme = BoolVar(self.ignoreme);
 }
 
 CanControl()
@@ -1155,19 +1155,18 @@ ZombieAttack()
 
 BodyGuard()
 {
+    self endon("disconnect");
+    self endon("EndBodyGuard");
+    
     if(Is_True(self.ControllableZombie) && !Is_True(self.BodyGuard))
         return self iPrintlnBold("^1ERROR: ^7You Can't Use Body Guard While Controllable Zombie Is Enabled");
     
-    if(!Is_True(self.BodyGuard))
+    self.BodyGuard = BoolVar(self.BodyGuard);
+    
+    if(Is_True(self.BodyGuard))
     {
-        self endon("disconnect");
-        self endon("EndBodyGuard");
-
-        self.BodyGuard = true;
-        
         spawner = ArrayGetClosest(level.zombie_spawners, self.origin);
         self.BodyGuardZombie = zombie_utility::spawn_zombie(spawner);
-
         wait 0.1;
         
         if(isDefined(self.BodyGuardZombie))
@@ -1247,8 +1246,6 @@ BodyGuard()
 
         if(isDefined(self.BodyGuardZombieLinker))
             self.BodyGuardZombieLinker delete();
-        
-        self.BodyGuard = false;
     }
 }
 
@@ -1375,7 +1372,8 @@ UseTeleporter(teleporter)
     PlayFX(level._effect["teleport_splash"], teleporter.LinkedTeleporter.origin);
     wait 1.5;
 
-    self.UsingTeleporter = false;
+    if(Is_True(self.UsingTeleporter))
+        self.UsingTeleporter = BoolVar(self.UsingTeleporter);
 }
 
 SpiralStaircase(size)
@@ -1401,9 +1399,10 @@ SpiralStaircase(size)
             }
         
         wait 5;
-
         level.SpiralStaircase = [];
-        level.SpiralStaircaseDeleting = false;
+
+        if(Is_True(level.SpiralStaircaseDeleting))
+            level.SpiralStaircaseDeleting = BoolVar(level.SpiralStaircaseDeleting);
     }
     else
     {
@@ -1438,19 +1437,20 @@ SpiralStaircase(size)
             level.SpiralStaircase[level.SpiralStaircase.size] = SpawnScriptModel((origin + (AnglesToForward(angles) * 10) + (0, 0, 8)), model, (startAngles[0], (angles[1] + 12), startAngles[2]), 0.01);
         }
 
-        level.SpiralStaircaseSpawning = false;
+        if(Is_True(level.SpiralStaircaseSpawning))
+            level.SpiralStaircaseSpawning = BoolVar(level.SpiralStaircaseSpawning);
     }
 }
 
 ZombieTeleportGrenades()
 {
-    if(!Is_True(self.ZombieTeleportGrenades))
+    self endon("disconnect");
+    self endon("EndZombieTeleportGrenades");
+    
+    self.ZombieTeleportGrenades = BoolVar(self.ZombieTeleportGrenades);
+
+    if(Is_True(self.ZombieTeleportGrenades))
     {
-        self endon("disconnect");
-        self endon("EndZombieTeleportGrenades");
-
-        self.ZombieTeleportGrenades = true;
-
         while(isDefined(self.ZombieTeleportGrenades))
         {
             self waittill("grenade_fire", grenade);
@@ -1476,10 +1476,7 @@ ZombieTeleportGrenades()
         }
     }
     else
-    {
         self notify("EndZombieTeleportGrenades");
-        self.ZombieTeleportGrenades = false;
-    }
 }
 
 MexicanWave(size)
@@ -1490,7 +1487,6 @@ MexicanWave(size)
             self.MexicanWave[a] delete();
         
         self.MexicanWave = undefined;
-        
         return;
     }
     

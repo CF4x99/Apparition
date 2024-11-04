@@ -150,42 +150,42 @@ PopulateZombieOptions(menu)
         case "Zombie Death Effect":
             
             if(!isDefined(level.ZombiesDeathFX))
-                level.ZombiesDeathFX = level.MenuEffects[0].name;
+                level.ZombiesDeathFX = level.MenuEffects[0];
             
             self addMenu("Death Effect");
                 self addOptBool(level.ZombiesDeathEffect, "Death Effect", ::ZombiesDeathEffect);
                 self addOpt("");
 
                 for(a = 0; a < level.MenuEffects.size; a++)
-                    self addOptBool((level.ZombiesDeathFX == level.MenuEffects[a].name), level.MenuEffects[a].displayName, ::SetZombiesDeathEffect, level.MenuEffects[a].name);
+                    self addOptBool((level.ZombiesDeathFX == level.MenuEffects[a]), CleanString(level.MenuEffects[a]), ::SetZombiesDeathEffect, level.MenuEffects[a]);
             break;
 
         case "Zombie Damage Effect":
 
             if(!isDefined(level.ZombiesDamageFX))
-                level.ZombiesDamageFX = level.MenuEffects[0].name;
+                level.ZombiesDamageFX = level.MenuEffects[0];
             
             self addMenu("Damage Effect");
                 self addOptBool(level.ZombiesDamageEffect, "Damage Effect", ::ZombiesDamageEffect);
                 self addOpt("");
 
                 for(a = 0; a < level.MenuEffects.size; a++)
-                    self addOptBool((level.ZombiesDamageFX == level.MenuEffects[a].name), level.MenuEffects[a].displayName, ::SetZombiesDamageEffect, level.MenuEffects[a].name);
+                    self addOptBool((level.ZombiesDamageFX == level.MenuEffects[a]), CleanString(level.MenuEffects[a]), ::SetZombiesDamageEffect, level.MenuEffects[a]);
             break;
     }
 }
 
 AIPrioritizePlayer(player)
 {
-    if(!Is_True(player.AIPrioritizePlayer))
+    player endon("disconnect");
+        
+    player.AIPrioritizePlayer = BoolVar(player.AIPrioritizePlayer);
+    
+    if(Is_True(player.AIPrioritizePlayer))
     {
         if(Is_True(player.playerIgnoreMe))
             NoTarget(player);
         
-        player endon("disconnect");
-        
-        player.AIPrioritizePlayer = true;
-
         while(Is_True(player.AIPrioritizePlayer))
         {
             if(!Is_True(player.b_is_designated_target))
@@ -195,10 +195,7 @@ AIPrioritizePlayer(player)
         }
     }
     else
-    {
         player.b_is_designated_target = false;
-        player.AIPrioritizePlayer = false;
-    }
 }
 
 SetZombieHealth(type)
@@ -278,7 +275,7 @@ SetZombieHealth1(health)
     
     for(a = 0; a < zombies.size; a++)
     {
-        if(!isDefined(zombies[a]) || !IsAlive(zombies[a]) || zombies[a].maxhealth == health)
+        if(!isDefined(zombies[a]) || !IsAlive(zombies[a]) || isDefined(zombies[a].maxhealth) && zombies[a].maxhealth == health)
             continue;
         
         zombies[a].maxhealth = health;
@@ -547,9 +544,10 @@ TeleportZombies(loc)
 
 ZombiesToCrosshairsLoop()
 {
-    if(!Is_True(level.ZombiesToCrosshairsLoop))
+    level.ZombiesToCrosshairsLoop = BoolVar(level.ZombiesToCrosshairsLoop);
+
+    if(Is_True(level.ZombiesToCrosshairsLoop))
     {
-        level.ZombiesToCrosshairsLoop = true;
         origin = self TraceBullet();
 
         while(Is_True(level.ZombiesToCrosshairsLoop))
@@ -566,16 +564,14 @@ ZombiesToCrosshairsLoop()
             wait 0.05;
         }
     }
-    else
-        level.ZombiesToCrosshairsLoop = false;
 }
 
 DisableZombieCollision()
 {
-    if(!Is_True(level.DisableZombieCollision))
-    {
-        level.DisableZombieCollision = true;
+    level.DisableZombieCollision = BoolVar(level.DisableZombieCollision);
 
+    if(Is_True(level.DisableZombieCollision))
+    {
         while(Is_True(level.DisableZombieCollision))
         {
             zombies = GetAITeamArray(level.zombie_team);
@@ -602,19 +598,19 @@ DisableZombieCollision()
                 continue;
             
             zombies[a] SetPlayerCollision(1);
-            zombies[a].DisableCollision = false;
-        }
 
-        level.DisableZombieCollision = false;
+            if(Is_True(zombies[a].DisableCollision))
+                zombies[a].DisableCollision = BoolVar(zombies[a].DisableCollision);
+        }
     }
 }
 
 DisableZombiePush()
 {
-    if(!Is_True(level.DisableZombiePush))
-    {
-        level.DisableZombiePush = true;
+    level.DisableZombiePush = BoolVar(level.DisableZombiePush);
 
+    if(Is_True(level.DisableZombiePush))
+    {
         while(Is_True(level.DisableZombiePush))
         {
             foreach(player in level.players)
@@ -627,17 +623,15 @@ DisableZombiePush()
     {
         foreach(player in level.players)
             player SetClientPlayerPushAmount(1);
-        
-        level.DisableZombiePush = false;
     }
 }
 
 ZombiesInvisibility()
 {
-    if(!Is_True(level.ZombiesInvisibility))
-    {
-        level.ZombiesInvisibility = true;
+    level.ZombiesInvisibility = BoolVar(level.ZombiesInvisibility);
 
+    if(Is_True(level.ZombiesInvisibility))
+    {
         while(Is_True(level.ZombiesInvisibility))
         {
             zombies = GetAITeamArray(level.zombie_team);
@@ -656,34 +650,27 @@ ZombiesInvisibility()
         for(a = 0; a < zombies.size; a++)
             if(isDefined(zombies[a]) && IsAlive(zombies[a]))
                 zombies[a] Show();
-        
-        level.ZombiesInvisibility = false;
     }
 }
 
 ZombieProjectileVomiting()
 {
-    if(!Is_True(level.ZombieProjectileVomiting))
+    level.ZombieProjectileVomiting = BoolVar(level.ZombieProjectileVomiting);
+
+    while(Is_True(level.ZombieProjectileVomiting))
     {
-        level.ZombieProjectileVomiting = true;
-        
-        while(Is_True(level.ZombieProjectileVomiting))
+        zombies = GetAITeamArray(level.zombie_team);
+
+        for(a = 0; a < zombies.size; a++)
         {
-            zombies = GetAITeamArray(level.zombie_team);
-
-            for(a = 0; a < zombies.size; a++)
-            {
-                if(!isDefined(zombies[a]) || !IsAlive(zombies[a]) || Is_True(zombies[a].ProjectileVomit))
-                    continue;
-                
-                zombies[a] thread ZombieProjectileVomit();
-            }
-
-            wait 0.1;
+            if(!isDefined(zombies[a]) || !IsAlive(zombies[a]) || Is_True(zombies[a].ProjectileVomit))
+                continue;
+            
+            zombies[a] thread ZombieProjectileVomit();
         }
+
+        wait 0.1;
     }
-    else
-        level.ZombieProjectileVomiting = false;
 }
 
 ZombieProjectileVomit()
@@ -697,7 +684,8 @@ ZombieProjectileVomit()
     self clientfield::increment("projectile_vomit", 1);
     wait 6;
 
-    self.ProjectileVomit = false;
+    if(Is_True(self.ProjectileVomit))
+        self.ProjectileVomit = BoolVar(self.ProjectileVomit);
 }
 
 FreezeZombies()
@@ -712,10 +700,10 @@ FreezeZombies()
 
 DisappearingZombies()
 {
-    if(!Is_True(level.DisappearingZombies))
-    {
-        level.DisappearingZombies = true;
+    level.DisappearingZombies = BoolVar(level.DisappearingZombies);
 
+    if(Is_True(level.DisappearingZombies))
+    {
         while(Is_True(level.DisappearingZombies))
         {
             zombies = GetAITeamArray(level.zombie_team);
@@ -742,15 +730,14 @@ DisappearingZombies()
             if(!isDefined(zombies[a]) || !IsAlive(zombies[a]))
                 continue;
             
-            zombies[a].disappearing = false;
+            if(Is_True(zombies[a].disappearing))
+                zombies[a].disappearing = BoolVar(zombies[a].disappearing);
 
             if(!Is_True(level.ZombiesInvisibility))
                 zombies[a] Show();
             else
                 zombies[a] Hide();
         }
-
-        level.DisappearingZombies = false;
     }
 }
 
@@ -777,10 +764,10 @@ DisappearingZombie()
 
 ExplodingZombies()
 {
-    if(!Is_True(level.ExplodingZombies))
-    {
-        level.ExplodingZombies = true;
+    level.ExplodingZombies = BoolVar(level.ExplodingZombies);
 
+    if(Is_True(level.ExplodingZombies))
+    {
         while(Is_True(level.ExplodingZombies))
         {
             zombies = GetAITeamArray(level.zombie_team);
@@ -805,11 +792,13 @@ ExplodingZombies()
         for(a = 0; a < zombies.size; a++)
         {
             zombies[a] clientfield::set("arch_actor_fire_fx", 0);
-            zombies[a].explodingzombie = false;
-            zombies[a].burnplayers = false;
+
+            if(Is_True(zombies[a].explodingzombie))
+                zombies[a].explodingzombie = BoolVar(zombies[a].explodingzombie);
+
+            if(Is_True(zombies[a].burnplayers))
+                zombies[a].burnplayers = BoolVar(zombies[a].burnplayers);
         }
-        
-        level.ExplodingZombies = false;
     }
 }
 
@@ -840,15 +829,15 @@ ZombieBurnPlayers()
 
 ZombieRagdoll()
 {
-    level.ZombieRagdoll = !Is_True(level.ZombieRagdoll);
+    level.ZombieRagdoll = BoolVar(level.ZombieRagdoll);
 }
 
 StackZombies()
 {
-    if(!Is_True(level.StackZombies))
-    {
-        level.StackZombies = true;
+    level.StackZombies = BoolVar(level.StackZombies);
 
+    if(Is_True(level.StackZombies))
+    {
         while(Is_True(level.StackZombies))
         {
             zombies = GetAITeamArray(level.zombie_team);
@@ -904,11 +893,12 @@ StackZombies()
                 continue;
             
             zombies[a] Unlink();
-            zombies[a].stacked = false;
+
+            if(Is_True(zombies[a].stacked))
+                zombies[a].stacked = BoolVar(zombies[a].stacked);
         }
 
         level notify("EndStackZombies");
-        level.StackZombies = false;
     }
 }
 
@@ -925,13 +915,15 @@ StackedZombieWatcher(top)
     if(isDefined(top) && IsAlive(top))
     {
         top Unlink();
-        top.stacked = false;
+
+        if(Is_True(top.stacked))
+            top.stacked = BoolVar(top.stacked);
     }
 }
 
 ZombiesDeathEffect()
 {
-    level.ZombiesDeathEffect = !Is_True(level.ZombiesDeathEffect);
+    level.ZombiesDeathEffect = BoolVar(level.ZombiesDeathEffect);
 }
 
 SetZombiesDeathEffect(effect)
@@ -941,7 +933,7 @@ SetZombiesDeathEffect(effect)
 
 ZombiesDamageEffect()
 {
-    level.ZombiesDamageEffect = !Is_True(level.ZombiesDamageEffect);
+    level.ZombiesDamageEffect = BoolVar(level.ZombiesDamageEffect);
 }
 
 SetZombiesDamageEffect(effect)

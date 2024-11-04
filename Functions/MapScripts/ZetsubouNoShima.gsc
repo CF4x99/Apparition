@@ -83,7 +83,8 @@ CollectKT4Parts(part)
                 wait 0.1;
             }
 
-            level.find_ww1 = false;
+            if(Is_True(level.find_ww1))
+                level.find_ww1 = BoolVar(level.find_ww1);
             break;
 
         case "ww2_found":
@@ -112,7 +113,8 @@ CollectKT4Parts(part)
                 wait 0.1;
             }
 
-            level.find_ww2 = false;
+            if(Is_True(level.find_ww2))
+                level.find_ww2 = BoolVar(level.find_ww2);
             break;
 
         case "ww3_found":
@@ -140,7 +142,8 @@ CollectKT4Parts(part)
                 }
             }
 
-            level.find_ww3 = false;
+            if(Is_True(level.find_ww3))
+                level.find_ww3 = BoolVar(level.find_ww3);
             break;
 
         default:

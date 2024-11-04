@@ -50,7 +50,8 @@ CommonDamageOverride(mod, hit_location, hit_origin, player, amount, team, weapon
 		            TriggerFX(fx);
             }
             
-            player thread DamageFeedBack();
+            if(isDefined(player.hud_damagefeedback) && Is_True(player.ShowHitmarkers))
+                player thread DamageFeedBack();
 
             if(isDefined(player.PlayerInstaKill) && (player.PlayerInstaKill == "All" || player.PlayerInstaKill == "Melee" && mod == "MOD_MELEE"))
             {
@@ -82,7 +83,8 @@ override_actor_killed(einflictor, attacker, idamage, smeansofdeath, weapon, vdir
                 TriggerFX(fx);
         }
 
-        attacker thread DamageFeedBack();
+        if(isDefined(attacker.hud_damagefeedback) && Is_True(attacker.ShowHitmarkers))
+            attacker thread DamageFeedBack();
     }
     
     if(Is_True(self.explodingzombie) || Is_True(self.ZombieFling) || Is_True(level.ZombieRagdoll))
@@ -109,24 +111,23 @@ override_player_points(damage_weapon, player_points)
 
 DamageFeedBack()
 {
-    if(isDefined(self.hud_damagefeedback) && Is_True(self.ShowHitmarkers))
+    if(isDefined(self.HitMarkerColor))
     {
-        if(isDefined(self.HitMarkerColor))
+        if(IsString(self.HitMarkerColor) && self.HitMarkerColor == "Rainbow")
+            self.hud_damagefeedback thread HudRGBFade();
+        else
         {
-            if(IsString(self.HitMarkerColor) && self.HitMarkerColor == "Rainbow")
-                self.hud_damagefeedback thread HudRGBFade();
-            else
-            {
-                self.hud_damagefeedback.RGBFade = false;
-                self.hud_damagefeedback.color = self.HitMarkerColor;
-            }
+            if(Is_True(self.hud_damagefeedback.RGBFade))
+                self.hud_damagefeedback.RGBFade = BoolVar(self.hud_damagefeedback.RGBFade);
+            
+            self.hud_damagefeedback.color = self.HitMarkerColor;
         }
-        
-        self zombie_utility::show_hit_marker();
-        
-        if(isDefined(self.HitmarkerFeedback))
-            self.hud_damagefeedback SetShaderValues(self.HitmarkerFeedback, 24, 48);
     }
+    
+    self zombie_utility::show_hit_marker();
+    
+    if(isDefined(self.HitmarkerFeedback))
+        self.hud_damagefeedback SetShaderValues(self.HitmarkerFeedback, 24, 48);
 }
 
 DisplayZombieEffect(fx, origin)

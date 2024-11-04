@@ -149,7 +149,10 @@ ControlLander(lander)
             continue;
 
         player Unlink();
-        player.DisableMenuControls = false;
+
+        if(Is_True(player.DisableMenuControls))
+            player.DisableMenuControls = BoolVar(player.DisableMenuControls);
+        
         player.lander = false;
     }
 
@@ -157,7 +160,9 @@ ControlLander(lander)
     lander.riders = 0;
     lander clientfield::set("COSMO_LANDER_MOVE_FX", 0);
 
-    self.ControlLunarLander = false;
+    if(Is_True(self.ControlLunarLander))
+        self.ControlLunarLander = BoolVar(self.ControlLunarLander);
+    
     level.lander_in_use = false;
     level flag::clear("lander_inuse");
 }

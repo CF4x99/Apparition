@@ -17,10 +17,12 @@ PopulatePowerupMenu(menu)
                     self addOpt("");
 
                     for(a = 0; a < powerups.size; a++)
+                    {
                         if(isDefined(powerups[a]) && powerups[a] != "free_perk")
                             self addOpt(CleanString(powerups[a]), ::SpawnPowerUp, powerups[a]);
                         else if(isDefined(powerups[a]) && powerups[a] == "free_perk")
                             self addOpt("Free Perk", ::SpawnPowerUp, powerups[a]);
+                    }
                 }
             break;
     }

@@ -2,12 +2,12 @@ PopulateMapChallenges(player)
 {
     self addMenu("Challenges");
 
-    if(isDefined(player._challenges))
-    {
-        self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_4687355c.n_index), ReturnMapChallengeIString(player._challenges.var_4687355c.str_notify), ::MapCompleteChallenge, player._challenges.var_4687355c, player);
-        self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_b88ea497.n_index), ReturnMapChallengeIString(player._challenges.var_b88ea497.str_notify), ::MapCompleteChallenge, player._challenges.var_b88ea497, player);
-        self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_928c2a2e.n_index), ReturnMapChallengeIString(player._challenges.var_928c2a2e.str_notify), ::MapCompleteChallenge, player._challenges.var_928c2a2e, player);
-    }
+        if(isDefined(player._challenges))
+        {
+            self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_4687355c.n_index), ReturnMapChallengeIString(player._challenges.var_4687355c.str_notify), ::MapCompleteChallenge, player._challenges.var_4687355c, player);
+            self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_b88ea497.n_index), ReturnMapChallengeIString(player._challenges.var_b88ea497.str_notify), ::MapCompleteChallenge, player._challenges.var_b88ea497, player);
+            self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_928c2a2e.n_index), ReturnMapChallengeIString(player._challenges.var_928c2a2e.str_notify), ::MapCompleteChallenge, player._challenges.var_928c2a2e, player);
+        }
 }
 
 ActivateZombieTrap(index)
@@ -102,7 +102,10 @@ SamanthasHideAndSeekSong()
     trigger notify("trigger_activated");
 
     level flag::wait_till("snd_zhdegg_completed");
-    level.StartedSamanthaSong = false;
+
+    if(Is_True(level.StartedSamanthaSong))
+        level.StartedSamanthaSong = BoolVar(level.StartedSamanthaSong);
+    
     self RefreshMenu(menu, curs);
 }
 

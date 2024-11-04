@@ -1,21 +1,14 @@
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.0.1
+    Version:              1.5.0.2
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
-    Menu Source & Current Update: https://github.com/CF4x99/Apparition
-    Make sure you check my github link for updates. This menu is updated often.
-
-    IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
-
     Discord:            cf4_99
     YouTube:            https://www.youtube.com/c/CF499
-
-    Apparition can be injected using T7, or Crafty's Injector.
-    If you decide to compile the source yourself, you can use either one of their compilers as well.
-
-    Crafty's Compiler/Injector: https://github.com/LJW-Dev/Black-Ops-3-GSC-Compiler/releases/latest
+    
+    Menu Source & Current Update: https://github.com/CF4x99/Apparition
+    IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
     NOTE:
         I Can Without A Doubt Say Apparition Will Be Unmatched In Every Possible Way.
@@ -24,31 +17,17 @@
         You Won't Find Anything That Will Be Comparable To Apparition, Not Even The Menus With "Devs" That Constantly Have To Rip Scripts From Apparition For Their Projects.
         Apparition Will Remain On Top, Regardless Of Who Tries To Compete With It.
 
-        Since There Has Been Confusion and Accusations, In The Past, Apparition Belongs To Me(CF4_99) and Me Only.
+        Since There Has Been Confusion and Accusations, Apparition(including the base) Belongs To Me(CF4_99) and Me Only. I have built it 100%, from the ground up.
         I Am The Sole Developer Of Apparition, No One Else Helps With it, Or Provides Scripts.
         The Credits Below Says Exactly What These People Offered Apparition, Nothing More, Nothing Less.
     
-
+    
     Credits:
         - CF4_99 ~ Project Developer
-        - Extinct ~ Ideas, Suggestions, Constructive Criticism, Spec-Nade, and LUI Hud
+        - Extinct ~ Ideas, Suggestions, Constructive Criticism, and His Spec-Nade
         - CraftyCritter ~ BO3 Compiler
         - ItsFebiven ~ Some Ideas and Suggestions
         - Joel ~ Suggestions, Bug Reports, and Testing The Unique String Crash Protection
-
-    IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
-
-
-
-    Apparition has been in development for a long time(too long).
-    While I haven't spent every second of every day on this project, a lot of time and work has gone into it.
-    Every step of the way, I have tried to make it one of the biggest, and best menus for BO3 Zombies.
-    I have spent countless hours not only developing, but also bug testing every option in this menu.
-    While I don't think it will ever officially be finished, I thought it was in a good state to be released.
-
-    While I do test everything I add, or change, there are probably things I have missed.
-    If you come across any bugs, please message me on discord.
-
 
 
     Custom Maps:
@@ -60,25 +39,53 @@
                 ~ I am aware of this. There isn't anything I can do about it. Most of them, if not all, are moved into the 'Specials' Category.
 
 
-
     Map EE Options:
         I have created scripts to complete the EE's for the classic maps that have smaller EE's.
         As for the bigger maps that have bigger and more complex EE's, I have made scripts to make completing the EE's, a lot easier.
-        The reason for me not adding an option to complete the whole EE for bigger maps, isn't because I can't do it.
-        It saves myself time, which I don't have a lot of.
-
-        If I missed something that would help with EE's, or you just want to request a USEFUL script, feel free to message me on discord.
+        The EE scripts will complete steps properly, not just set flags/variables tricking the game into thinking the step is completed, when it actually hasn't(unlike other "developers")
+        This will prevent any issues with crashes/conflictions later on while continuing regular gameplay/playing through other parts of the EE.
 
         Where to find options that help completing EE's:
             Main Menu -> [map name] Scripts
             Server Modifications -> Craftables
+        
+    Craftables:
+        Not all craftables will be found in the Craftables menu
+        Some craftables have to be added and collected manually
+        So if you can't find a craftable in the Craftables menu, check the map scripts menu
+        If it's not found in Craftables, or the map scripts menu, then it's a craftable that would have to be added manually, and I haven't made a script to collect the parts yet
+
+
+    If you find any bugs, or come across something that you feel isn't working as it should, please message me on discord.
+
+    Discord: cf4_99
 
 
 ## Changelog
 <details>
     <summary>
+        Version 1.5.0.2
+    </summary>
+    
+    - Update Is Mostly Backend Changes
+
+    - Removed: Entity Options
+    - Removed: Welcome Message
+    - Removed: Entity Count Display
+    - Removed: 'tag_body' As A Player Bone Tag Option -- It Isn't A Valid Player Tag
+
+    - Changed: Quick Menu Design
+    - Changed: Default Scrolling Buffer From 12 to 10 -- Scrolling Should Be A Little Faster Now
+
+    - Fixed: Bug With No Target Not Turning Off
+    - Fixed: Bug With Anti-End Game Not Turning Off
+</details>
+
+<details>
+    <summary>
         Version 1.5.0.1
     </summary>
+
     - Removed: All UEM Related Options/Scripts -- Apparition is now 100% detected by UEM, so I don't see a reason to keep the UEM scripts in the project.
 
     - Added: Origins -- Option To Give Players Helmets

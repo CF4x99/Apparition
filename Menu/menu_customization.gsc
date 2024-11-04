@@ -24,10 +24,9 @@ PopulateMenuCustomization(menu)
             self addMenu("Design Preferences");
                 self addOptSlider("Toggle Style", ::ToggleStyle, "Boxes;Text;Text Color");
                 self addOptIncSlider("Max Options", ::MenuMaxOptions, 5, 5, maxOptions, 1);
-                self addOptIncSlider("Scrolling Buffer", ::MenuScrollingBuffer, 1, 12, 15, 1);
+                self addOptIncSlider("Scrolling Buffer", ::MenuScrollingBuffer, 1, self.ScrollingBuffer, 15, 1);
                 self addOpt("Reposition Menu", ::RepositionMenu);
                 self addOptBool(self.LargeCursor, "Large Cursor", ::LargeCursor);
-                self addOptBool(self.DisableEntityCount, "Disable Entity Count", ::DisableEntityCount);
                 self addOptBool(self.DisableMenuInstructions, "Disable Instructions", ::DisableMenuInstructions);
                 self addOptBool(self.DisableQM, "Disable Quick Menu", ::DisableQuickMenu);
                 self addOptBool(self.DisableMenuAnimations, "Disable Menu Animations", ::DisableMenuAnimations);
@@ -84,9 +83,11 @@ PopulateMenuCustomization(menu)
 MenuTheme(color)
 {
     self notify("EndSmoothRainbowTheme");
-    self.SmoothRainbowTheme = false;
+
+    if(Is_True(self.SmoothRainbowTheme))
+        self.SmoothRainbowTheme = BoolVar(self.SmoothRainbowTheme);
     
-    hud = Array("outlines", "bannerQM");
+    hud = Array("outlines");
     
     if(self.MenuStyle != "Nautaremake")
         hud[hud.size] = "scroller";
@@ -127,14 +128,8 @@ MenuTheme(color)
             if(isDefined(self.menuHud[wHud][a]) && (isDefined(self.menuStructure[a].bool) && self.menuStructure[a].bool || self.MenuStyle == "Nautaremake") && self.ToggleStyle != "Text")
                 self.menuHud[wHud][a] hudFadeColor(color, 1);
     
-    if(isDefined(self.EntCountBGOuter))
-        self.EntCountBGOuter hudFadeColor(color, 1);
-    
     if(isDefined(self.MenuInstructionsBGOuter))
         self.MenuInstructionsBGOuter hudFadeColor(color, 1);
-    
-    if(isDefined(self.menuHud) && isDefined(self.menuHud["QMScroller"]) && isDefined(self.menuHud["QMScroller"][1]))
-        self.menuHud["QMScroller"][1] hudFadeColor(color, 1);
     
     if(isDefined(self.PlayerInfoBackgroundOuter))
         self.PlayerInfoBackgroundOuter hudFadeColor(color, 1);
@@ -156,12 +151,12 @@ SmoothRainbowTheme()
     
     while(Is_True(self.SmoothRainbowTheme))
     {
-        hud = Array("outlines", "bannerQM");
+        hud = Array("outlines");
         
         if(self.MenuStyle != "Nautaremake")
             hud[hud.size] = "scroller";
         
-        if(self.MenuStyle == "Zodiac" && !self isInQuickMenu())
+        if(self.MenuStyle == "Zodiac" || self isInQuickMenu())
             hud[hud.size] = "title";
 
         for(a = 0; a < hud.size; a++)
@@ -200,12 +195,6 @@ SmoothRainbowTheme()
         if(isDefined(self.MenuInstructionsBGOuter))
             self.MenuInstructionsBGOuter.color = level.RGBFadeColor;
         
-        if(isDefined(self.EntCountBGOuter))
-            self.EntCountBGOuter.color = level.RGBFadeColor;
-        
-        if(isDefined(self.menuHud) && isDefined(self.menuHud["QMScroller"]) && isDefined(self.menuHud["QMScroller"][1]))
-            self.menuHud["QMScroller"][1].color = level.RGBFadeColor;
-        
         if(isDefined(self.PlayerInfoBackgroundOuter))
             self.PlayerInfoBackgroundOuter.color = level.RGBFadeColor;
         
@@ -213,7 +202,6 @@ SmoothRainbowTheme()
             self.keyboard["scroller"].color = level.RGBFadeColor;
         
         self.MainColor = level.RGBFadeColor;
-        
         wait 0.01;
     }
 }
@@ -340,18 +328,6 @@ SetScrollingTextColor(color)
     self SaveMenuTheme();
 }
 
-SetMenuFontscale(fontscale, hud)
-{
-    if(hud == "Title")
-        self.TitleFontScale = fontscale;
-    else
-        self.OptionsFontScale = fontscale;
-    
-    self closeMenu1();
-    self openMenu1();
-    self SaveMenuTheme();
-}
-
 MenuMaxOptions(max)
 {
     self.MaxOptions = max;
@@ -462,64 +438,34 @@ RepositionMenu()
     self SaveMenuTheme();
 }
 
-DisableEntityCount()
-{
-    if(!Is_True(self.DisableEntityCount))
-        self.DisableEntityCount = true;
-    else
-        self.DisableEntityCount = false;
-    
-    self SaveMenuTheme();
-}
-
 DisableMenuInstructions()
 {
-    if(!Is_True(self.DisableMenuInstructions))
-        self.DisableMenuInstructions = true;
-    else
-        self.DisableMenuInstructions = false;
-    
+    self.DisableMenuInstructions = BoolVar(self.DisableMenuInstructions);
     self SaveMenuTheme();
 }
 
 LargeCursor()
 {
-    if(!Is_True(self.LargeCursor))
-        self.LargeCursor = true;
-    else
-        self.LargeCursor = false;
-    
+    self.LargeCursor = BoolVar(self.LargeCursor);
     self RefreshMenu();
     self SaveMenuTheme();
 }
 
 DisableQuickMenu()
 {
-    if(!Is_True(self.DisableQM))
-        self.DisableQM = true;
-    else
-        self.DisableQM = false;
-    
+    self.DisableQM = BoolVar(self.DisableQM);
     self SaveMenuTheme();
 }
 
 DisableMenuAnimations()
 {
-    if(!Is_True(self.DisableMenuAnimations))
-        self.DisableMenuAnimations = true;
-    else
-        self.DisableMenuAnimations = false;
-    
+    self.DisableMenuAnimations = BoolVar(self.DisableMenuAnimations);
     self SaveMenuTheme();
 }
 
 DisableMenuSounds()
 {
-    if(!Is_True(self.DisableMenuSounds))
-        self.DisableMenuSounds = true;
-    else
-        self.DisableMenuSounds = false;
-    
+    self.DisableMenuSounds = BoolVar(self.DisableMenuSounds);
     self SaveMenuTheme();
 }
 
@@ -538,7 +484,6 @@ MenuStyle(style)
             self.menuY = -185;
             
             self.TitleFontScale = 1.6;
-            self.OptionsFontScale = 1.2;
 
             self.MaxOptions = 12; //Zodiac Uses Less Hud, So We Can Show A Few More Options
             self.LargeCursor = true;
@@ -554,12 +499,12 @@ MenuStyle(style)
             else
                 self.TitleFontScale = 1.4;
             
-            self.OptionsFontScale = 1;
-            
             if(self.MaxOptions > 10)
                 self.MaxOptions = 10;
             
-            self.LargeCursor = false;
+            if(Is_True(self.LargeCursor))
+                self.LargeCursor = BoolVar(self.LargeCursor);
+            
             self.ToggleStyle = "Boxes";
             break;
     }
@@ -570,8 +515,8 @@ MenuStyle(style)
 
 SaveMenuTheme()
 {
-    variables = Array("MenuStyle", "ToggleStyle", "MaxOptions", "menuX", "menuY", "MenuWidth", "TitleFontScale", "OptionsFontScale", "ScrollingBuffer", "DisableEntityCount", "DisableMenuInstructions", "LargeCursor", "DisableQM", "DisableMenuAnimations", "DisableMenuSounds", "OptionsColor", "TitleColor", "ToggleTextColor", "ScrollingTextColor", "MainColor");
-    values    = Array(self.MenuStyle, self.ToggleStyle, self.MaxOptions, self.menuX, self.menuY, self.MenuWidth, self.TitleFontScale, self.OptionsFontScale, self.ScrollingBuffer, self.DisableEntityCount, self.DisableMenuInstructions, self.LargeCursor, self.DisableQM, self.DisableMenuAnimations, self.DisableMenuSounds, self.OptionsColor, self.TitleColor, self.ToggleTextColor, self.ScrollingTextColor, self.MainColor);
+    variables = Array("MenuStyle", "ToggleStyle", "MaxOptions", "menuX", "menuY", "ScrollingBuffer", "DisableMenuInstructions", "LargeCursor", "DisableQM", "DisableMenuAnimations", "DisableMenuSounds", "MainColor", "OptionsColor", "TitleColor", "ToggleTextColor", "ScrollingTextColor");
+    values    = Array(self.MenuStyle, self.ToggleStyle, self.MaxOptions, self.menuX, self.menuY, self.ScrollingBuffer, self.DisableMenuInstructions, self.LargeCursor, self.DisableQM, self.DisableMenuAnimations, self.DisableMenuSounds, self.MainColor, self.OptionsColor, self.TitleColor, self.ToggleTextColor, self.ScrollingTextColor);
     
     foreach(index, variable in variables)
     {
@@ -579,13 +524,12 @@ SaveMenuTheme()
             value = "Rainbow";
         else
         {
-            if(!isDefined(values[index]))
-                value = "0";
-            else
+            if(isDefined(values[index]))
                 value = "" + values[index];
         }
         
-        self SetSavedVariable(variable, value);
+        if(isDefined(variable) && isDefined(value))
+            self SetSavedVariable(variable, value);
     }
 }
 
@@ -606,9 +550,6 @@ LoadMenuVars()
 {
     self.MenuStyle = level.menuName; //Current Choices: level.menuName, Zodiac, Nautaremake, Native
     
-    self.menuXQM = -1;
-    self.menuYQM = -161;
-    
     if(self.MenuStyle == "Zodiac")
         self.menuX = 298;
     else
@@ -616,51 +557,22 @@ LoadMenuVars()
     
     self.menuY = -185;
     
-    if(self.MenuStyle == "Zodiac")
-        self.TitleFontScale = 1.6;
-    else if(self.MenuStyle == "Native")
-        self.TitleFontScale = 2;
-    else
-        self.TitleFontScale = 1.4;
-    
-    self.OptionsFontScale = 1;
-    
     if(self.MenuStyle == "Zodiac") //Zodiac uses Less Hud, So We Can Show A Few More Options
         self.MaxOptions = 12;
     else
         self.MaxOptions = 10;
     
-    self.maxOptionsQM       = 15;
-    self.ScrollingBuffer    = 12;
+    self.ScrollingBuffer    = 10;
     self.ToggleStyle        = "Boxes";
     self.MainColor          = (1, 0, 0); //Default theme color
-    self.AltColor           = divideColor(45, 45, 45);
     self.OptionsColor       = (1, 1, 1);
     self.TitleColor         = (1, 1, 1);
     self.ToggleTextColor    = (0, 1, 0);
     self.ScrollingTextColor = (1, 1, 1);
-    self.MenuWidth          = 262;
-    
-    //Change 'false' to 'true' if you want to disable the entity count by default
-    self.DisableEntityCount = false;
-    
-    //Change 'false' to 'true' if you want to disable the instructions by default
-    self.DisableMenuInstructions = false;
-    
-    //Change 'false' to 'true' if you want to disable the quick menu by default
-    self.DisableQM = false;
-    
-    //Change 'false' to 'true' if you want to disable the menu open/close animations by default
-    self.DisableMenuAnimations = false;
-    
-    //Change 'false' to 'true' if you want to disable the menu sounds by default
-    self.DisableMenuSounds = false;
     
     //Change 'false' to 'true' if you want to enable large cursor by default
     if(self.MenuStyle == "Zodiac")
         self.LargeCursor = true;
-    else
-        self.LargeCursor = false;
     
     saved = self GetSavedVariable("MenuStyle");
     
@@ -671,11 +583,8 @@ LoadMenuVars()
         self.MaxOptions              = Int(self GetSavedVariable("MaxOptions"));
         self.menuX                   = Int(self GetSavedVariable("menuX"));
         self.menuY                   = Int(self GetSavedVariable("menuY"));
-        self.MenuWidth               = Int(self GetSavedVariable("MenuWidth"));
         self.TitleFontScale          = Float(self GetSavedVariable("TitleFontScale"));
-        self.OptionsFontScale        = Float(self GetSavedVariable("OptionsFontScale"));
         self.ScrollingBuffer         = Int(self GetSavedVariable("ScrollingBuffer"));
-        self.DisableEntityCount      = self GetSavedVariable("DisableEntityCount") == "1";
         self.DisableMenuInstructions = self GetSavedVariable("DisableMenuInstructions") == "1";
         self.LargeCursor             = self GetSavedVariable("LargeCursor") == "1";
         self.DisableQM               = self GetSavedVariable("DisableQM") == "1";
@@ -724,4 +633,11 @@ LoadMenuVars()
         self thread SmoothRainbowTheme(); //The color defaults to smooth rainbow. Remove this if you want the color to default to the self.MainColor variable.
         self SaveMenuTheme();
     }
+
+    if(self.MenuStyle == "Zodiac")
+        self.TitleFontScale = 1.6;
+    else if(self.MenuStyle == "Native")
+        self.TitleFontScale = 2;
+    else
+        self.TitleFontScale = 1.4;
 }

@@ -47,7 +47,9 @@ CompleteSamanthaSays(part)
 	}
 
 	self RefreshMenu(menu, curs);
-	level.SamanthaSays = false;
+
+	if(Is_True(level.SamanthaSays))
+		level.SamanthaSays = BoolVar(level.SamanthaSays);
 }
 
 ActivateDigger(force_digger)
@@ -73,12 +75,12 @@ SetDiggerSpeed(speed)
 
 FastExcavators()
 {
-	if(!Is_True(level.FastExcavators))
+	level endon("EndFastExcavators");
+
+	level.FastExcavators = BoolVar(level.FastExcavators);
+
+	if(Is_True(level.FastExcavators))
 	{
-		level endon("EndFastExcavators");
-
-		level.FastExcavators = true;
-
 		while(Is_True(level.FastExcavators))
 		{
 			level flag::wait_till("digger_moving");
@@ -104,10 +106,7 @@ FastExcavators()
 		}
 	}
 	else
-	{
 		level notify("EndFastExcavators");
-		level.FastExcavators = false;
-	}
 }
 
 send_clientnotify(digger_name, pause)

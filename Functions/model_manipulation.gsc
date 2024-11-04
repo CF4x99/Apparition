@@ -18,8 +18,8 @@ SetPlayerModel(model, player)
 {
     player endon("disconnect");
 
-    if(!Is_True(player.ModelManipulation))
-        player.ModelManipulation = false;
+    if(Is_True(player.ModelManipulation))
+        player.ModelManipulation = BoolVar(player.ModelManipulation);
     
     wait 0.1;
     player.ModelManipulation = true;
@@ -52,7 +52,8 @@ SetPlayerModel(model, player)
 
 ResetPlayerModel(player)
 {
-    player.ModelManipulation = false;
+    if(Is_True(player.ModelManipulation))
+        player.ModelManipulation = BoolVar(player.ModelManipulation);
 
     if(isDefined(player.spawnedPlayerModel))
         player.spawnedPlayerModel delete();

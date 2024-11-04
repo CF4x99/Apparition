@@ -29,7 +29,7 @@ SpawnSkybase()
             distance += 25;
         else if(self AdsButtonPressed())
             distance -= 25;
-        else if(self UseButtonPressed())
+        else if(self UseButtonPressed() || self MeleeButtonPressed())
         {
             origin = trace["position"];
             level.SkybaseOrigin = origin;
@@ -46,7 +46,10 @@ SpawnSkybase()
     }
 
     goalPos delete();
-    self.DisableMenuControls = false;
+    
+    if(Is_True(self.DisableMenuControls))
+        self.DisableMenuControls = BoolVar(self.DisableMenuControls);
+    
     self SetMenuInstructions();
 
     floor = [];
@@ -159,7 +162,7 @@ GetSpawnableBottle()
 SpawnSkybaseTeleporter()
 {
     if(Is_True(level.spawnable["Skybase_Building"]) || Is_True(level.spawnable["Skybase_Dismantle"]) || Is_True(level.spawnable["Skybase_Deleted"]) || !Is_True(level.spawnable["Skybase_Spawned"]))
-    return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option Right Now");
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option Right Now");
 
     if(!isDefined(level.SkybaseTeleporters) || !level.SkybaseTeleporters.size)
     {

@@ -34,12 +34,16 @@ setVerification(a, player, msg)
     player.menuCurs["Main"] = 0;
     
     player notify("endMenuMonitor");
-    player.menuMonitor    = false;
-    player.WelcomeDisplay = false;
+
+    if(Is_True(player.menuMonitor))
+        player.menuMonitor = BoolVar(player.menuMonitor);
+
+    if(Is_True(player.MenuInstructionsDisplay))
+        player.MenuInstructionsDisplay = BoolVar(player.MenuInstructionsDisplay);
 
     if(player hasMenu())
     {
-        player thread WelcomeMessage("Welcome To ^1" + level.menuName + ",Status: ^1" + player.verification + ",[{+speed_throw}] & [{+melee}] To ^1Open");
+        player thread MenuInstructionsDisplay();
         player thread menuMonitor();
     }
 }

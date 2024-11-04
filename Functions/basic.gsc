@@ -98,10 +98,10 @@ Godmode(player)
     if(Is_True(player.PlayerDemiGod))
         player DemiGod(player);
     
-    if(!Is_True(player.godmode))
+    player.godmode = BoolVar(player.godmode);
+    
+    if(Is_True(player.godmode))
     {
-        player.godmode = true;
-
         while(Is_True(player.godmode))
         {
             player EnableInvulnerability();
@@ -109,10 +109,7 @@ Godmode(player)
         }
     }
     else
-    {
-        player.godmode = false;
         player DisableInvulnerability();
-    }
 }
 
 DemiGod(player)
@@ -120,10 +117,7 @@ DemiGod(player)
     if(Is_True(player.godmode))
         player Godmode(player);
 
-    if(!Is_True(player.PlayerDemiGod))
-        player.PlayerDemiGod = true;
-    else
-        player.PlayerDemiGod = false;
+    player.PlayerDemiGod = BoolVar(player.PlayerDemiGod);
 }
 
 Noclip1(player)
@@ -133,10 +127,10 @@ Noclip1(player)
     if(!Is_True(player.Noclip) && player isPlayerLinked())
         return self iPrintlnBold("^1ERROR: ^7Player Is Linked To An Entity");
     
-    if(!Is_True(player.Noclip))
+    player.Noclip = BoolVar(player.Noclip);
+    
+    if(Is_True(player.Noclip))
     {
-        player.Noclip = true;
-
         if(player hasMenu() && player isInMenu(true))
             player closeMenu1();
 
@@ -173,9 +167,9 @@ Noclip1(player)
         player EnableWeapons();
         player EnableOffHandWeapons();
 
-        player.DisableMenuControls = false;
-        player.Noclip = false;
-
+        if(Is_True(player.DisableMenuControls))
+            player.DisableMenuControls = BoolVar(player.DisableMenuControls);
+        
         player SetMenuInstructions();
     }
 }
@@ -190,23 +184,18 @@ BindNoclip(player)
     if(Is_True(player.SpecNade) && !Is_True(player.NoclipBind1))
         return self iPrintlnBold("^1ERROR: ^7Player Has Spec-Nade Enabled");
     
-    if(!Is_True(player.NoclipBind1))
+    player.NoclipBind1 = BoolVar(player.NoclipBind1);
+    
+    while(Is_True(player.NoclipBind1))
     {
-        player.NoclipBind1 = true;
-
-        while(Is_True(player.NoclipBind1))
+        if(player FragButtonPressed() && !Is_True(player.DisableMenuControls))
         {
-            if(player FragButtonPressed() && !Is_True(player.DisableMenuControls))
-            {
-                player thread Noclip1(player);
-                wait 0.2;
-            }
-
-            wait 0.025;
+            player thread Noclip1(player);
+            wait 0.2;
         }
+
+        wait 0.025;
     }
-    else
-        player.NoclipBind1 = false;
 }
 
 UFOMode(player)
@@ -216,10 +205,10 @@ UFOMode(player)
     if(!Is_True(player.UFOMode) && player isPlayerLinked())
         return self iPrintlnBold("^1ERROR: ^7Player Is Linked To An Entity");
     
-    if(!Is_True(player.UFOMode))
+    player.UFOMode = BoolVar(player.UFOMode);
+    
+    if(Is_True(player.UFOMode))
     {
-        player.UFOMode = true;
-
         if(player hasMenu() && player isInMenu(true))
             player closeMenu1();
 
@@ -261,9 +250,9 @@ UFOMode(player)
         player EnableWeapons();
         player EnableOffHandWeapons();
 
-        player.DisableMenuControls = false;
-        player.UFOMode = false;
-
+        if(Is_True(player.DisableMenuControls))
+            player.DisableMenuControls = BoolVar(player.DisableMenuControls);
+        
         player SetMenuInstructions();
     }
 }
@@ -297,22 +286,17 @@ UnlimitedEquipment(player)
 {
     player endon("disconnect");
 
-    if(!Is_True(player.UnlimitedEquipment))
+    player.UnlimitedEquipment = BoolVar(player.UnlimitedEquipment);
+
+    while(Is_True(player.UnlimitedEquipment))
     {
-        player.UnlimitedEquipment = true;
+        offhand = player GetCurrentOffhand();
 
-        while(Is_True(player.UnlimitedEquipment))
-        {
-            player waittill("grenade_fire");
-
-            offhand = player GetCurrentOffhand();
-
-            if(isDefined(offhand) && offhand != level.weaponnone)
-                player GiveMaxAmmo(offhand);
-        }
+        if(isDefined(offhand) && offhand != level.weaponnone)
+            player GiveMaxAmmo(offhand);
+        
+        player waittill("grenade_fire");
     }
-    else
-        player.UnlimitedEquipment = false;
 }
 
 ModifyScore(score, player)
@@ -464,8 +448,8 @@ GivePlayerGobblegum(name, player)
 
 ThirdPerson(player)
 {
-    player.ThirdPerson = !Is_True(player.ThirdPerson);
-    player SetClientThirdPerson(player.ThirdPerson);
+    player.ThirdPerson = BoolVar(player.ThirdPerson);
+    player SetClientThirdPerson(Is_True(player.ThirdPerson));
 }
 
 SetMovementSpeed(scale, player)
@@ -506,16 +490,12 @@ PlayerClone(type, player)
 
 Invisibility(player)
 {
-    if(!Is_True(player.Invisibility))
-    {
+    player.Invisibility = BoolVar(player.Invisibility);
+
+    if(Is_True(player.Invisibility))
         player Hide();
-        player.Invisibility = true;
-    }
     else
-    {
         player Show();
-        player.Invisibility = false;
-    }
 }
 
 NoTarget(player)
@@ -525,10 +505,10 @@ NoTarget(player)
     if(Is_True(player.AIPrioritizePlayer))
         AIPrioritizePlayer(player);
     
-    if(!Is_True(player.playerIgnoreMe))
+    player.playerIgnoreMe = BoolVar(player.playerIgnoreMe);
+    
+    if(Is_True(player.playerIgnoreMe))
     {
-        player.playerIgnoreMe = true;
-
         while(Is_True(player.playerIgnoreMe))
         {
             player.ignoreme = true;
@@ -536,17 +516,17 @@ NoTarget(player)
         }
     }
     else
-        player.playerIgnoreMe = false;
+        player.ignoreme = false;
 }
 
 ReducedSpread(player)
 {
     player endon("disconnect");
 
-    if(!Is_True(player.ReducedSpread))
-    {
-        player.ReducedSpread = true;
+    player.ReducedSpread = BoolVar(player.ReducedSpread);
 
+    if(Is_True(player.ReducedSpread))
+    {
         while(Is_True(player.ReducedSpread))
         {
             player SetSpreadOverride(1);
@@ -554,56 +534,46 @@ ReducedSpread(player)
         }
     }
     else
-    {
         player ResetSpreadOverride();
-        player.ReducedSpread = false;
-    }
 }
 
 MultiJump(player)
 {    
     player endon("disconnect");
 
-    if(!Is_True(player.MultiJump))
-    {
-        player.MultiJump = true;
+    player.MultiJump = BoolVar(player.MultiJump);
 
-        while(Is_True(player.MultiJump))
+    while(Is_True(player.MultiJump))
+    {
+        if(player IsOnGround())
+            firstJump = true;
+        
+        if(player JumpButtonPressed() && !player IsOnGround() && Is_True(firstJump))
         {
-            if(player IsOnGround())
-                firstJump = true;
+            while(player JumpButtonPressed())
+                wait 0.01;
             
-            if(player JumpButtonPressed() && !player IsOnGround() && Is_True(firstJump))
+            firstJump = false;
+        }
+        
+        if(Is_Alive(player) && !player IsOnGround() && !Is_True(firstJump))
+        {
+            if(player JumpButtonPressed())
             {
                 while(player JumpButtonPressed())
                     wait 0.01;
                 
-                firstJump = false;
+                player SetVelocity(player GetVelocity() + (0, 0, 250));
+                wait 0.05;
             }
-            
-            if(Is_Alive(player) && !player IsOnGround() && !Is_True(firstJump))
-            {
-                if(player JumpButtonPressed())
-                {
-                    while(player JumpButtonPressed())
-                        wait 0.01;
-                    
-                    player SetVelocity(player GetVelocity() + (0, 0, 250));
-                    wait 0.05;
-                }
-            }
-            
-            wait 0.05;
         }
+        
+        wait 0.05;
     }
-    else
-        player.MultiJump = false;
 }
 
 PlayerSetVision(vision, player)
 {
-    player endon("disconnect");
-
     if(vision == "Default")
         player UseServerVisionSet(false);
     else
@@ -749,17 +719,17 @@ ZombieCharms(color, player)
 
 NoExplosiveDamage(player)
 {
-    player.NoExplosiveDamage = !Is_True(player.NoExplosiveDamage);
+    player.NoExplosiveDamage = BoolVar(player.NoExplosiveDamage);
 }
 
 DisablePlayerHUD(player)
 {
     player endon("disconnect");
 
-    if(!Is_True(player.DisablePlayerHUD))
-    {
-        player.DisablePlayerHUD = true;
+    player.DisablePlayerHUD = BoolVar(player.DisablePlayerHUD);
 
+    if(Is_True(player.DisablePlayerHUD))
+    {
         while(Is_True(player.DisablePlayerHUD))
         {
             player SetClientUIVisibilityFlag("hud_visible", 0);
@@ -767,10 +737,7 @@ DisablePlayerHUD(player)
         }
     }
     else
-    {
         player SetClientUIVisibilityFlag("hud_visible", 1);
-        player.DisablePlayerHUD = false;
-    }
 }
 
 SetCharacterModelIndex(index, player, disableEffect)
@@ -792,28 +759,23 @@ LoopCharacterModelIndex(player)
 {
     player endon("disconnect");
 
-    if(!Is_True(player.LoopCharacterModelIndex))
-    {
-        player.LoopCharacterModelIndex = true;
+    player.LoopCharacterModelIndex = BoolVar(player.LoopCharacterModelIndex);
 
-        while(Is_True(player.LoopCharacterModelIndex))
-        {
-            SetCharacterModelIndex(RandomInt(9), player, true);
-            wait 0.25;
-        }
+    while(Is_True(player.LoopCharacterModelIndex))
+    {
+        SetCharacterModelIndex(RandomInt(9), player, true);
+        wait 0.25;
     }
-    else
-        player.LoopCharacterModelIndex = false;
 }
 
 UnlimitedSprint(player)
 {
     player endon("disconnect");
 
-    if(!Is_True(player.UnlimitedSprint))
-    {
-        player.UnlimitedSprint = true;
+    player.UnlimitedSprint = BoolVar(player.UnlimitedSprint);
 
+    if(Is_True(player.UnlimitedSprint))
+    {
         while(Is_True(player.UnlimitedSprint))
         {
             if(!player HasPerk("specialty_unlimitedsprint"))
@@ -823,20 +785,17 @@ UnlimitedSprint(player)
         }
     }
     else
-    {
         player UnSetPerk("specialty_unlimitedsprint");
-        player.UnlimitedSprint = false;
-    }
 }
 
 ShootWhileSprinting(player)
 {
     player endon("disconnect");
 
-    if(!Is_True(player.ShootWhileSprinting))
-    {
-        player.ShootWhileSprinting = true;
+    player.ShootWhileSprinting = BoolVar(player.ShootWhileSprinting);
 
+    if(Is_True(player.ShootWhileSprinting))
+    {
         while(Is_True(player.ShootWhileSprinting))
         {
             if(!player HasPerk("specialty_sprintfire"))
@@ -846,10 +805,7 @@ ShootWhileSprinting(player)
         }
     }
     else
-    {
         player UnSetPerk("specialty_sprintfire");
-        player.ShootWhileSprinting = false;
-    }
 }
 
 ServerRespawnPlayer(player)

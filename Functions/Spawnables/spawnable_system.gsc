@@ -84,7 +84,9 @@ SpawnSystem(action, type, func)
             if(isDefined(func))
                 self [[ func ]]();
 
-            level.spawnable[type + "_Building"] = false;
+            if(Is_True(level.spawnable[type + "_Building"]))
+                level.spawnable[type + "_Building"] = BoolVar(level.spawnable[type + "_Building"]);
+            
             level.spawnable[type + "_Spawned"] = true;
             break;
 
@@ -168,8 +170,12 @@ DeleteSpawnable(spawn, type)
 
     //after delete
     level.SpawnableArray[spawn] = undefined;
-    level.spawnable[spawn + "_" + type] = false;
-    level.spawnable[spawn + "_Spawned"] = false;
+
+    if(Is_True(level.spawnable[spawn + "_" + type]))
+        level.spawnable[spawn + "_" + type] = BoolVar(level.spawnable[spawn + "_" + type]);
+
+    if(Is_True(level.spawnable[spawn + "_Spawned"]))
+        level.spawnable[spawn + "_Spawned"] = BoolVar(level.spawnable[spawn + "_Spawned"]);
 
     if(isLargeSpawnable(spawn))
         level.spawnable["LargeSpawnable"] = undefined;
@@ -259,7 +265,8 @@ StopRidingSpawnable(type, seat)
         seat SetHintString("Press [{+activate}] To Ride The " + type);
     }
 
-    self.OnSpawnable = false;
+    if(Is_True(self.OnSpawnable))
+        self.OnSpawnable = BoolVar(self.OnSpawnable);
 }
 
 GetSpawnableBaseModel(favor)

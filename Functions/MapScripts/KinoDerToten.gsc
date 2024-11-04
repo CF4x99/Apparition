@@ -31,7 +31,9 @@ CompleteDoorKnockingCombination()
         wait 0.025;
     }
 
-    level.KnockingCombination = false;
+    if(Is_True(level.KnockingCombination))
+        level.KnockingCombination = BoolVar(level.KnockingCombination);
+    
     level flag::set("snd_zhdegg_activate");
 }
 

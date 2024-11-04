@@ -546,7 +546,7 @@ TraceBullet()
     return BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["position"];
 }
 
-AngleNormalize360(angle)
+AngleNormalize180(angle)
 {
     v3 = Floor((angle * 0.0027777778));
     result = (((angle * 0.0027777778) - v3) * 360.0);
@@ -554,14 +554,7 @@ AngleNormalize360(angle)
     v2 = (result - 360.0);
 
     if((result - 360.0) < 0.0)
-    	v2 = (((angle * 0.0027777778) - v3) * 360.0);
-
-    return v2;
-}
-
-AngleNormalize180(angle)
-{
-    angle = AngleNormalize360(angle);
+        v2 = (((angle * 0.0027777778) - v3) * 360.0);
 
     if(angle > 180)
         angle -= 360;
@@ -750,10 +743,10 @@ Keyboard(func, player)
     self.keyboard["string"] = self createText("objective", 1.1, 5, "", "CENTER", "CENTER", self.menuX, (self.menuY + 15), 1, (1, 1, 1));
 
     for(a = 0; a < letters.size; a++)
-        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menuX - (self.MenuWidth / 2)) + ((self.MenuWidth / 2) / 5) + 10 + (a * 15), (self.menuY + 35), 1, (1, 1, 1));
+        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menuX - 94) + (a * 15), (self.menuY + 35), 1, (1, 1, 1));
     
     if(isDefined(self.menuHud["scroller"]))
-        self.menuHud["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), 0.1);
+        self.menuHud["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), 0.01);
     
     if(self.MenuStyle == "Nautaremake")
         self.keyboard["scroller"] = self createRectangle("TOP", "CENTER", self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 9), 17, 18, self.MainColor, 3, 1, "white");
@@ -856,9 +849,9 @@ Keyboard(func, player)
             if(isDefined(func))
             {
                 if(isDefined(player))
-                    self thread ExeFunction(func, strng, player);
+                    self ExeFunction(func, strng, player);
                 else
-                    self thread ExeFunction(func, strng);
+                    self ExeFunction(func, strng);
             }
             else
                 returnString = true;
@@ -917,10 +910,10 @@ NumberPad(func, player, param)
     self.keyboard["string"] = self createText("objective", 1.2, 5, 0, "CENTER", "CENTER", self.menuX, (self.menuY + 15), 1, (1, 1, 1));
 
     for(a = 0; a < letters.size; a++)
-        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menuX - (self.MenuWidth / 2)) + ((self.MenuWidth / 2) / 3) + 10 + (a * 15), (self.menuY + 35), 1, (1, 1, 1));
+        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menuX - 130) + 53 + (a * 15), (self.menuY + 35), 1, (1, 1, 1));
     
     if(isDefined(self.menuHud["scroller"]))
-        self.menuHud["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 7), 0.1);
+        self.menuHud["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 7), 0.01);
     
     if(self.MenuStyle == "Nautaremake")
         self.keyboard["scroller"] = self createRectangle("TOP", "CENTER", self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), 15, 16, self.MainColor, 3, 1, "white");
@@ -984,9 +977,9 @@ NumberPad(func, player, param)
             if(isDefined(func))
             {
                 if(isDefined(player))
-                    self thread ExeFunction(func, Int(strng), player, param);
+                    self ExeFunction(func, Int(strng), player, param);
                 else
-                    self thread ExeFunction(func, Int(strng));
+                    self ExeFunction(func, Int(strng));
             }
             else
                 returnValue = true;
@@ -1217,12 +1210,12 @@ disconnect()
 
 DisablePlayerInfo()
 {
-    level.DisablePlayerInfo = !Is_True(level.DisablePlayerInfo);
+    level.DisablePlayerInfo = BoolVar(level.DisablePlayerInfo);
 }
 
 IncludeIPInfo()
 {
-    level.IncludeIPInfo = !Is_True(level.IncludeIPInfo);
+    level.IncludeIPInfo = BoolVar(level.IncludeIPInfo);
 }
 
 SetMapSpawn(plyer, type)
@@ -1237,10 +1230,10 @@ SetMapSpawn(plyer, type)
 
 AntiEndGame()
 {
-    if(!Is_True(level.AntiEndGame))
-    {
-        level.AntiEndGame = true;
+    level.AntiEndGame = BoolVar(level.AntiEndGame);
 
+    if(Is_True(level.AntiEndGame))
+    {
         foreach(player in level.players)
         {
             if(Is_True(player.AntiEndGameHandler))
@@ -1259,7 +1252,8 @@ AntiEndGame()
         level.gameended = false;
 
         foreach(player in level.players)
-            player.AntiEndGameHandler = false;
+            if(Is_True(player.AntiEndGameHandler))
+                player.AntiEndGameHandler = BoolVar(player.AntiEndGameHandler);
     }
 }
 
@@ -1345,10 +1339,10 @@ ForceHost()
 
 GSpawnProtection()
 {
-    if(!Is_True(level.GSpawnProtection))
-    {
-    	level.GSpawnProtection = true;
+    level.GSpawnProtection = BoolVar(level.GSpawnProtection);
 
+    if(Is_True(level.GSpawnProtection))
+    {
         while(Is_True(level.GSpawnProtection))
         {
             entityCount = GetEntArray().size;
@@ -1372,8 +1366,6 @@ GSpawnProtection()
             wait 0.01;
         }
     }
-    else
-    	level.GSpawnProtection = false;
 }
 
 ReturnMapGSpawnLimit()
@@ -1496,7 +1488,9 @@ MenuCredits()
         wait 0.05;
     }
     
-    self.CreditsPlaying = false;
+    if(Is_True(self.CreditsPlaying))
+        self.CreditsPlaying = BoolVar(self.CreditsPlaying);
+    
     self notify("EndMenuCredits");
     self SetMenuInstructions();
     self SoftUnlockMenu();
@@ -1535,7 +1529,9 @@ MenuCreditsStart(creditArray)
     }
     
     wait moveTime;
-    self.CreditsPlaying = false;
+
+    if(Is_True(self.CreditsPlaying))
+        self.CreditsPlaying = BoolVar(self.CreditsPlaying);
 }
 
 CreditsFadeIn(hud, text, moveTime, fadeTime)
@@ -1850,6 +1846,14 @@ Is_True(boolVar)
 {
     if(!isDefined(boolVar) || !boolVar)
         return false;
+    
+    return true;
+}
+
+BoolVar(variable)
+{
+    if(Is_True(variable))
+        return undefined;
     
     return true;
 }

@@ -189,10 +189,7 @@ ForgeModelDistance(int)
 
 ForgeIgnoreCollisions()
 {
-    if(!Is_True(self.forgeignoreCollisions))
-        self.forgeignoreCollisions = true;
-    else
-        self.forgeignoreCollisions = false;
+    self.forgeignoreCollisions = BoolVar(self.forgeignoreCollisions);
 }
 
 ForgeDeleteLastSpawn()
@@ -232,13 +229,13 @@ ForgeShootModel()
     if(!isDefined(self.forgemodel) && !Is_True(self.ForgeShootModel))
         return;
     
-    if(!Is_True(self.ForgeShootModel))
+    self endon("disconnect");
+    self endon("EndShootModel");
+    
+    self.ForgeShootModel = BoolVar(self.ForgeShootModel);
+    
+    if(Is_True(self.ForgeShootModel))
     {
-        self endon("disconnect");
-        self endon("EndShootModel");
-
-        self.ForgeShootModel = true;
-        
         ent = self.forgemodel.model;
         self ForgeDeleteModel();
         
@@ -259,8 +256,5 @@ ForgeShootModel()
         }
     }
     else
-    {
         self notify("EndShootModel");
-        self.ForgeShootModel = false;
-    }
 }

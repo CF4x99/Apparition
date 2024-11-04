@@ -63,10 +63,12 @@ PopulateProfileManagement(menu, player)
             break;
         
         case "Map Stats":
+            mapNames = Array("zm_zod", "zm_factory", "zm_castle", "zm_island", "zm_stalingrad", "zm_genesis", "zm_prototype", "zm_asylum", "zm_sumpf", "zm_theater", "zm_cosmodrome", "zm_temple", "zm_moon", "zm_tomb");
+            
             self addMenu("Map Stats");
 
-                for(a = 0; a < level.mapNames.size; a++)
-                    self addOpt(ReturnMapName(level.mapNames[a]), ::newMenu, "Map Stats " + level.mapNames[a]);
+                for(a = 0; a < mapNames.size; a++)
+                    self addOpt(ReturnMapName(mapNames[a]), ::newMenu, "Map Stats " + mapNames[a]);
             break;
         
         case "EE Stats":
@@ -92,9 +94,10 @@ LiquidsLoop(player)
 {
     player endon("disconnect");
 
-    if(!Is_True(player.LiquidsLoop))
+    player.LiquidsLoop = BoolVar(player.LiquidsLoop);
+
+    if(Is_True(player.LiquidsLoop))
     {
-        player.LiquidsLoop = true;
         reports = 0;
         
         while(Is_True(player.LiquidsLoop))
@@ -108,8 +111,6 @@ LiquidsLoop(player)
             wait 0.1;
         }
     }
-    else
-        player.LiquidsLoop = false;
 }
 
 AllChallenges(type, player)
@@ -175,7 +176,7 @@ AllChallenges(type, player)
         wait 0.1;
     }
 
-    player.AllChallenges = false;
+    player.AllChallenges = undefined;
     UploadStats(player);
 
     if(self != player)
@@ -270,15 +271,16 @@ SetCustomStats(player)
     }
     
     wait 0.1;
-
     UploadStats(player);
 }
 
 IsMapStat(stat, returnMap)
 {
-    for(a = 0; a < level.mapNames.size; a++)
-        if(IsSubStr(stat, level.mapNames[a]))
-            return returnMap ? level.mapNames[a] : true;
+    mapNames = Array("zm_zod", "zm_factory", "zm_castle", "zm_island", "zm_stalingrad", "zm_genesis", "zm_prototype", "zm_asylum", "zm_sumpf", "zm_theater", "zm_cosmodrome", "zm_temple", "zm_moon", "zm_tomb");
+
+    for(a = 0; a < mapNames.size; a++)
+        if(IsSubStr(stat, mapNames[a]))
+            return returnMap ? mapNames[a] : true;
     
     return returnMap ? undefined : false;
 }
@@ -388,5 +390,5 @@ PlayerWeaponRanks(type, player)
 
     wait 0.1;
     UploadStats(player);
-    player.PlayerWeaponRanks = false;
+    player.PlayerWeaponRanks = undefined;
 }

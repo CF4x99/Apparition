@@ -125,7 +125,7 @@ PopulateBulletMenu(menu, player)
             self addMenu("Bullet Effect");
 
                 for(a = 0; a < level.MenuEffects.size; a++)
-                    self addOpt(level.MenuEffects[a].displayName, ::BulletProjectile, level.MenuEffects[a].name, "Effect", player);
+                    self addOpt(CleanString(level.MenuEffects[a]), ::BulletProjectile, level.MenuEffects[a], "Effect", player);
             break;
         
         case "Bullet Spawnables":
@@ -205,13 +205,13 @@ ProjectileSpreadMultiplier(multiplier, player)
 
 ExplosiveBullets(player)
 {
-    if(!Is_True(player.ExplosiveBullets))
-    {
-        player endon("disconnect");
-        player endon("EndExplosiveBullets");
+    player endon("disconnect");
+    player endon("EndExplosiveBullets");
+    
+    player.ExplosiveBullets = BoolVar(player.ExplosiveBullets);
 
-        player.ExplosiveBullets = true;
-        
+    if(Is_True(player.ExplosiveBullets))
+    {
         while(Is_True(player.ExplosiveBullets))
         {
             player waittill("weapon_fired");
@@ -230,15 +230,12 @@ ExplosiveBullets(player)
         }
     }
     else
-    {
         player notify("EndExplosiveBullets");
-        player.ExplosiveBullets = false;
-    }
 }
 
 ExplosiveBulletEffect(player)
 {
-    player.ExplosiveBulletEffect = !Is_True(player.ExplosiveBulletEffect);
+    player.ExplosiveBulletEffect = BoolVar(player.ExplosiveBulletEffect);
 }
 
 ExplosiveBulletDamage(num, player)
@@ -254,6 +251,8 @@ ExplosiveBulletRange(num, player)
 ResetBullet(player)
 {
     player notify("endProjectile");
-    player.ExplosiveBullets = false;
     player notify("EndExplosiveBullets");
+
+    if(Is_True(player.ExplosiveBullets))
+        player.ExplosiveBullets = BoolVar(player.ExplosiveBullets);
 }

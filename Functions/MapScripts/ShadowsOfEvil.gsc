@@ -336,9 +336,9 @@ TriggerSOEESwitch(eswitch)
 	self RefreshMenu(menu, curs);
 }
 
-ReturnSOEPowerName(int)
+ReturnSOEPowerName(ints)
 {
-	switch(int)
+	switch(ints)
 	{
 		case 1:
 			return "Quick Revive";

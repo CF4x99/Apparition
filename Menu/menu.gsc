@@ -38,7 +38,6 @@ runMenuIndex(menu)
                         
                         if(self getVerification() > 4) //Co-Host
                         {
-                            self addOpt("Entity Options", ::newMenu, "Entity Options");
                             self addOpt("Server Modifications", ::newMenu, "Server Modifications");
                             self addOpt("Zombie Options", ::newMenu, "Zombie Options");
                             self addOpt("Spawnables", ::newMenu, "Spawnables");
@@ -115,14 +114,6 @@ runMenuIndex(menu)
         case "Spawn Script Model":
         case "Rotate Script Model":
             self PopulateForgeOptions(menu);
-            break;
-        
-        case "Entity Options":
-        case "Entity Editing List":
-        case "Entity Editor":
-        case "Entity Rotation":
-        case "Entities Rotation":
-            self PopulateEntityOptions(menu);
             break;
         
         case "The Giant Scripts":
@@ -459,18 +450,19 @@ MenuOptionsPlayer(menu, player)
             else
             {
                 error404 = true;
+                mapNames = Array("zm_zod", "zm_factory", "zm_castle", "zm_island", "zm_stalingrad", "zm_genesis", "zm_prototype", "zm_asylum", "zm_sumpf", "zm_theater", "zm_cosmodrome", "zm_temple", "zm_moon", "zm_tomb");
 
-                for(a = 0; a < level.mapNames.size; a++)
+                for(a = 0; a < mapNames.size; a++)
                 {
-                    if(IsSubStr(menu, "Map Stats " + level.mapNames[a]) || menu == "Map Stats " + level.mapNames[a])
+                    if(IsSubStr(menu, "Map Stats " + mapNames[a]) || menu == "Map Stats " + mapNames[a])
                     {
                         error404 = false;
                         mapStats = Array("score", "total_games_played", "total_rounds_survived", "highest_round_reached", "time_played_total", "total_downs");
 
-                        self addMenu(ReturnMapName(level.mapNames[a]));
+                        self addMenu(ReturnMapName(mapNames[a]));
                             
                             for(b = 0; b < mapStats.size; b++)
-                                self addOptBool(isInArray(player.CustomStatsArray, mapStats[b] + "_" + level.mapNames[a]), CleanString(mapStats[b]), ::AddToCustomStats, mapStats[b] + "_" + level.mapNames[a], player);
+                                self addOptBool(isInArray(player.CustomStatsArray, mapStats[b] + "_" + mapNames[a]), CleanString(mapStats[b]), ::AddToCustomStats, mapStats[b] + "_" + mapNames[a], player);
                     }
                 }
 

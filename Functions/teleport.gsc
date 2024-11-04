@@ -57,7 +57,7 @@ PopulateTeleportMenu(menu, player)
 
 DisableTeleportEffect(player)
 {
-    player.DisableTeleportEffect = !Is_True(player.DisableTeleportEffect);
+    player.DisableTeleportEffect = BoolVar(player.DisableTeleportEffect);
 }
 
 TeleportPlayer(origin, player, angles, name)
@@ -164,13 +164,13 @@ EntityTeleport(entity, player, eEntity)
 
 TeleportGun(player)
 {
-    if(!Is_True(player.TeleportGun))
-    {
-        player endon("disconnect");
-        player endon("EndTeleportGun");
-        
-        player.TeleportGun = true;
+    player endon("disconnect");
+    player endon("EndTeleportGun");
+    
+    player.TeleportGun = BoolVar(player.TeleportGun);
 
+    if(Is_True(player.TeleportGun))
+    {
         while(Is_True(player.TeleportGun))
         {
             player waittill("weapon_fired");
@@ -180,20 +180,17 @@ TeleportGun(player)
         }
     }
     else
-    {
         player notify("EndTeleportGun");
-        player.TeleportGun = false;
-    }
 }
 
 SaveAndLoad(player)
 {
     player endon("disconnect");
 
-    if(!Is_True(player.SaveAndLoad))
-    {
-        player.SaveAndLoad = true;
+    player.SaveAndLoad = BoolVar(player.SaveAndLoad);
 
+    if(Is_True(player.SaveAndLoad))
+    {
         player iPrintlnBold("Press [{+actionslot 3}] To ^2Save Current Location");
         player iPrintlnBold("Press [{+actionslot 2}] To ^2Load Saved Location");
 
@@ -217,8 +214,6 @@ SaveAndLoad(player)
             wait 0.05;
         }
     }
-    else
-        player.SaveAndLoad = false;
 }
 
 SaveCurrentLocation(player)

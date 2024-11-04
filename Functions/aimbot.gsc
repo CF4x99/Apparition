@@ -41,102 +41,90 @@ PopulateAimbotMenu(menu, player)
 
 Aimbot(player)
 {
-    if(!Is_True(player.Aimbot))
+    player endon("disconnect");
+
+    player.Aimbot = BoolVar(player.Aimbot);
+
+    while(Is_True(player.Aimbot))
     {
-        player endon("disconnect");
+        enemy = player GetClosestTarget();
 
-        player.Aimbot = true;
+        if(Is_True(player.Noclip) || Is_True(player.UFOMode) || Is_True(player.ControllableZombie) || Is_True(player.AC130) || Is_True(player.MenuOpenCheck) && player isInMenu(true))
+            enemy = undefined;
 
-        while(Is_True(player.Aimbot))
+        if(isDefined(enemy) && Is_True(player.AimbotDistanceCheck) && Distance(player.origin, enemy.origin) > player.AimbotDistance)
+            enemy = undefined;
+        
+        if(isDefined(enemy) && Is_True(player.PlayableAreaCheck) && !zm_behavior::inplayablearea(enemy))
+            enemy = undefined;
+        
+        if(isDefined(enemy) && player.AimbotVisibilityRequirement != "None")
         {
-            enemy = player GetClosestTarget();
-
-            if(Is_True(player.Noclip) || Is_True(player.UFOMode) || Is_True(player.ControllableZombie) || Is_True(player.AC130) || Is_True(player.MenuOpenCheck) && player isInMenu(true))
-                enemy = undefined;
-
-            if(isDefined(enemy) && Is_True(player.AimbotDistanceCheck) && Distance(player.origin, enemy.origin) > player.AimbotDistance)
+            if(player.AimbotVisibilityRequirement == "Damageable" && enemy DamageConeTrace(player GetEye(), player) < 0.1)
                 enemy = undefined;
             
-            if(isDefined(enemy) && Is_True(player.PlayableAreaCheck) && !zm_behavior::inplayablearea(enemy))
+            if(player.AimbotVisibilityRequirement == "Visible" && !player IsVisible(enemy))
                 enemy = undefined;
-            
-            if(isDefined(enemy) && player.AimbotVisibilityRequirement != "None")
+        }
+        
+        if(player.AimbotKey == "Aiming" && !player AdsButtonPressed() || player.AimbotKey == "Firing" && !player isFiring1())
+            enemy = undefined;
+
+        if(isDefined(enemy))
+        {
+            origin = enemy GetTagOrigin(player.AimBoneTag);
+
+            if(!isDefined(origin)) //If the tag origin for the target tag can't be found, this will test the given tags to see if one can be used
             {
-                if(player.AimbotVisibilityRequirement == "Damageable" && enemy DamageConeTrace(player GetEye(), player) < 0.1)
-                    enemy = undefined;
-                
-                if(player.AimbotVisibilityRequirement == "Visible" && !player IsVisible(enemy))
-                    enemy = undefined;
+                tags = Array("j_ankle_ri", "j_ankle_le", "pelvis", "j_mainroot", "j_spinelower", "j_spine4", "j_neck", "j_head", "tag_body");
+
+                for(a = 0; a < tags.size; a++)
+                {
+                    test = enemy GetTagOrigin(tags[a]);
+
+                    if(isDefined(test))
+                        origin = enemy GetTagOrigin(tags[a]);
+                }
             }
-            
-            if(player.AimbotKey == "Aiming" && !player AdsButtonPressed() || player.AimbotKey == "Firing" && !player isFiring1())
-                enemy = undefined;
 
-            if(isDefined(enemy))
+            if(isDefined(origin))
             {
-                origin = enemy GetTagOrigin(player.AimBoneTag);
-
-                if(!isDefined(origin)) //If the tag origin for the target tag can't be found, this will test the given tags to see if one can be used
+                if(player.AimbotType == "Snap")
                 {
-                    tags = Array("j_ankle_ri", "j_ankle_le", "pelvis", "j_mainroot", "j_spinelower", "j_spine4", "j_neck", "j_head", "tag_body");
+                    player SetPlayerAngles(VectorToAngles(origin - player GetEye()));
 
-                    for(a = 0; a < tags.size; a++)
-                    {
-                        test = enemy GetTagOrigin(tags[a]);
-
-                        if(isDefined(test))
-                            origin = enemy GetTagOrigin(tags[a]);
-                    }
+                    if(Is_True(player.AutoFire))
+                        player FireGun();
                 }
-
-                if(isDefined(origin))
+                else if(player.AimbotType == "Smooth Snap")
                 {
-                    if(player.AimbotType == "Snap")
+                    if(!isDefined(player.smoothTarget) || player.smoothTarget != enemy)
                     {
-                        player SetPlayerAngles(VectorToAngles(origin - player GetEye()));
-
-                        if(Is_True(player.AutoFire))
-                            player FireGun();
+                        player.smoothTarget = enemy;
+                        player.snapsRemaining = player.SmoothSnaps;
+                        player.snapAngles = VectorToAngles(origin - player GetEye());
                     }
-                    else if(player.AimbotType == "Smooth Snap")
+
+                    if(player.snapsRemaining)
                     {
-                        if(!isDefined(player.smoothTarget) || player.smoothTarget != enemy)
-                        {
-                            player.smoothTarget = enemy;
-                            player.snapsRemaining = player.SmoothSnaps;
-                            player.snapAngles = VectorToAngles(origin - player GetEye());
-                        }
+                        viewAngles = player GetPlayerAngles();
+                        
+                        smoothangles = (AngleNormalize180(player.snapAngles[0] - viewAngles[0]), AngleNormalize180(player.snapAngles[1] - viewAngles[1]), 0);
+                        smoothangles /= player.snapsRemaining;
 
-                        if(player.snapsRemaining)
-                        {
-                            viewAngles = player GetPlayerAngles();
-                            
-                            smoothangles = (AngleNormalize180(player.snapAngles[0] - viewAngles[0]), AngleNormalize180(player.snapAngles[1] - viewAngles[1]), 0);
-                            smoothangles /= player.snapsRemaining;
-
-                            player SetPlayerAngles((AngleNormalize180(viewAngles[0] + smoothangles[0]), AngleNormalize180(viewAngles[1] + smoothangles[1]), 0));
-                            player.snapsRemaining--;
-                        }
-                        else
-                            player SetPlayerAngles(VectorToAngles(origin - player GetEye())); //After it has finished the smooth snap to the target, it will stay locked on
-
-                        if(Is_True(player.AutoFire) && player.snapsRemaining <= 1)
-                            player FireGun();
+                        player SetPlayerAngles((AngleNormalize180(viewAngles[0] + smoothangles[0]), AngleNormalize180(viewAngles[1] + smoothangles[1]), 0));
+                        player.snapsRemaining--;
                     }
-                    else if(player.AimbotType == "Silent")
-                    {
-                        if(Is_True(player.AutoFire) || player isFiring1())
-                            player FireGun(origin + (5, 0, 0), origin, false);
-                    }
+                    else
+                        player SetPlayerAngles(VectorToAngles(origin - player GetEye())); //After it has finished the smooth snap to the target, it will stay locked on
+
+                    if(Is_True(player.AutoFire) && player.snapsRemaining <= 1)
+                        player FireGun();
                 }
-                else
+                else if(player.AimbotType == "Silent")
                 {
-                    if(isDefined(player.smoothTarget))
-                    {
-                        player.smoothTarget = undefined;
-                        player.snapsRemaining = undefined;
-                        player.snapAngles = undefined;
-                    }
+                    if(Is_True(player.AutoFire) || player isFiring1())
+                        player FireGun(origin + (5, 0, 0), origin, false);
                 }
             }
             else
@@ -148,12 +136,19 @@ Aimbot(player)
                     player.snapAngles = undefined;
                 }
             }
-
-            wait 0.01;
         }
+        else
+        {
+            if(isDefined(player.smoothTarget))
+            {
+                player.smoothTarget = undefined;
+                player.snapsRemaining = undefined;
+                player.snapAngles = undefined;
+            }
+        }
+
+        wait 0.01;
     }
-    else
-        player.Aimbot = false;
 }
 
 SetSmoothSnaps(snaps, player)
@@ -266,19 +261,19 @@ AimbotOptions(a, player)
     switch(a)
     {
         case 1:
-            player.PlayableAreaCheck = !Is_True(player.PlayableAreaCheck);
+            player.PlayableAreaCheck = BoolVar(player.PlayableAreaCheck);
             break;
         
         case 2:
-            player.AutoFire = !Is_True(player.AutoFire);
+            player.AutoFire = BoolVar(player.AutoFire);
             break;
         
         case 3:
-            player.MenuOpenCheck = !Is_True(player.MenuOpenCheck);
+            player.MenuOpenCheck = BoolVar(player.MenuOpenCheck);
             break;
         
         case 4:
-            player.AimbotDistanceCheck = !Is_True(player.AimbotDistanceCheck);
+            player.AimbotDistanceCheck = BoolVar(player.AimbotDistanceCheck);
             break;
         
         default:

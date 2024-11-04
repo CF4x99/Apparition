@@ -313,10 +313,7 @@ GetInvalidAttachments(attachments, attachment)
 
 CorrectInvalidCombo(player)
 {
-    if(!Is_True(player.CorrectInvalidCombo))
-        player.CorrectInvalidCombo = true;
-    else
-        player.CorrectInvalidCombo = false;
+    player.CorrectInvalidCombo = BoolVar(player.CorrectInvalidCombo);
 }
 
 SetPlayerCamo(camo, player)
@@ -336,20 +333,15 @@ FlashingCamo(player)
 {
     player endon("disconnect");
 
-    if(!Is_True(player.FlashingCamo))
-    {
-        player.FlashingCamo = true;
+    player.FlashingCamo = BoolVar(player.FlashingCamo);
 
-        while(Is_True(player.FlashingCamo))
-        {
-            if(!player IsMeleeing() && !player IsSwitchingWeapons() && !player IsReloading() && !player IsSprinting() && !player IsUsingOffhand() && !zm_utility::is_placeable_mine(player GetCurrentWeapon()) && !zm_equipment::is_equipment(player GetCurrentWeapon()) && !player zm_utility::has_powerup_weapon() && !zm_utility::is_hero_weapon(player GetCurrentWeapon()) && !player zm_utility::in_revive_trigger() && !player.is_drinking && player GetCurrentWeapon() != level.weaponnone)
-                SetPlayerCamo(RandomInt(139), player);
-            
-            wait 0.25;
-        }
+    while(Is_True(player.FlashingCamo))
+    {
+        if(!player IsMeleeing() && !player IsSwitchingWeapons() && !player IsReloading() && !player IsSprinting() && !player IsUsingOffhand() && !zm_utility::is_placeable_mine(player GetCurrentWeapon()) && !zm_equipment::is_equipment(player GetCurrentWeapon()) && !player zm_utility::has_powerup_weapon() && !zm_utility::is_hero_weapon(player GetCurrentWeapon()) && !player zm_utility::in_revive_trigger() && !player.is_drinking && player GetCurrentWeapon() != level.weaponnone)
+            SetPlayerCamo(RandomInt(139), player);
+        
+        wait 0.25;
     }
-    else
-        player.FlashingCamo = false;
 }
 
 GiveWeaponAAT(aat, player)

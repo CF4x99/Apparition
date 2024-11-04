@@ -1,7 +1,7 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.0.1
+    Version:              1.5.0.2
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
@@ -18,7 +18,7 @@
         You Won't Find Anything That Will Be Comparable To Apparition, Not Even The Menus With "Devs" That Constantly Have To Rip Scripts From Apparition For Their Projects.
         Apparition Will Remain On Top, Regardless Of Who Tries To Compete With It.
 
-        Since There Has Been Confusion and Accusations, In The Past, Apparition Belongs To Me(CF4_99) and Me Only.
+        Since There Has Been Confusion and Accusations, Apparition(including the base) Belongs To Me(CF4_99) and Me Only. I have built it 100%, from the ground up.
         I Am The Sole Developer Of Apparition, No One Else Helps With it, Or Provides Scripts.
         The Credits Below Says Exactly What These People Offered Apparition, Nothing More, Nothing Less.
     
@@ -208,14 +208,14 @@ onPlayerSpawned()
 
     if(self IsHost())
     {
-        level thread DefineMenuArrays();
+        level DefineMenuArrays();
 
         //If there is an unknown map detected(custom map) it will display this note to the host.
         if(ReturnMapName(level.script) == "Unknown")
             self DebugiPrint("^1" + ToUpper(level.menuName) + ": ^7On Custom Maps, Some Things Might Not Work As They Should.");
     }
     
-    self thread playerSetup();
+    self playerSetup();
 }
 
 DefineOnce()
@@ -225,12 +225,10 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName    = "Apparition";
-    level.menuVersion = "1.5.0.1";
-
-    level.MenuStatus = Array("Bot", "None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer");
-
-    level.colorNames = Array("Ciper Purple", "xbOnline Blue", "Skyblue", "Pink", "Green", "Brown", "Blue", "Red", "Orange", "Purple", "Cyan", "Yellow", "Black", "White");
-    level.colors     = Array(100, 0, 100, 57, 152, 254, 135, 206, 250, 255, 110, 255, 0, 255, 0, 101, 67, 33, 0, 0, 255, 255, 0, 0, 255, 128, 0, 100, 0, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255);
+    level.menuVersion = "1.5.0.2";
+    level.MenuStatus  = Array("Bot", "None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer");
+    level.colorNames  = Array("Ciper Purple", "xbOnline Blue", "Skyblue", "Pink", "Green", "Brown", "Blue", "Red", "Orange", "Purple", "Cyan", "Yellow", "Black", "White");
+    level.colors      = Array(100, 0, 100, 57, 152, 254, 135, 206, 250, 255, 110, 255, 0, 255, 0, 101, 67, 33, 0, 0, 255, 255, 0, 0, 255, 128, 0, 100, 0, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255);
     
     level thread RGBFade();
 }
@@ -349,17 +347,10 @@ DefineMenuArrays()
         if(!isDefined(fxs[a]))
             continue;
         
-        if(IsSubStr(fxs[a], "step_") || IsSubStr(fxs[a], "fall_") || IsSubStr(fxs[a], "tesla_viewmodel"))
+        if(IsSubStr(fxs[a], "step_") || IsSubStr(fxs[a], "fall_") || IsSubStr(fxs[a], "tesla_viewmodel") || isInArray(level.MenuEffects, fxs[a]))
             continue;
         
-        effect = SpawnStruct();
-        effect.name = fxs[a];
-        effect.displayName = CleanString(fxs[a]);
-
-        if(isInArray(level.MenuEffects, effect))
-            continue;
-        
-        level.MenuEffects[level.MenuEffects.size] = effect;
+        level.MenuEffects[level.MenuEffects.size] = fxs[a];
     }
     
     level.customBoxWeapons = [];
@@ -394,21 +385,39 @@ DefineMenuArrays()
     foreach(DeathBarrier in GetEntArray("trigger_hurt", "classname"))
         DeathBarrier delete();
     
-    level.SavedMapEntities = [];
-
-    foreach(entity in GetEntArray("script_model", "classname"))
+    //this will save the origin/angles of doors to be used by moon doors
+    if(ReturnMapName(level.script) != "Moon" && ReturnMapName(level.script) != "Origins")
     {
-        if(entity.model == "tag_origin" || IsSubStr(entity.model, "collision"))
-            continue;
+        types = Array("zombie_door", "zombie_airlock_buy");
+        validScriptStrings = Array("rotate", "slide_apart", "move");
 
-        level.SavedMapEntities[level.SavedMapEntities.size] = entity;
-        
-        entity.savedOrigin = entity.origin;
-        entity.savedAngles = entity.angles;
+        for(a = 0; a < types.size; a++)
+        {
+            doors = GetEntArray(types[a], "targetname");
+            
+            if(!isDefined(doors))
+                continue;
+            
+            for(b = 0; b < doors.size; b++)
+            {
+                if(!isDefined(doors[b]))
+                    continue;
+                
+                for(c = 0; c < doors[b].doors.size; c++)
+                {
+                    if(!isDefined(doors[b].doors[c]) || !isInArray(validScriptStrings, doors[b].doors[c].script_string))
+                        continue;
+                    
+                    if(doors[b].doors[c].script_string == "slide_apart" || doors[b].doors[c].script_string == "move")
+                        doors[b].doors[c].savedOrigin = doors[b].doors[c].origin;
+                    else
+                        doors[b].doors[c].savedAngles = doors[b].doors[c].angles;
+                }
+            }
+        }
     }
 
     level.savedJokerModel = level.chest_joker_model;
-    level.mapNames = Array("zm_zod", "zm_factory", "zm_castle", "zm_island", "zm_stalingrad", "zm_genesis", "zm_prototype", "zm_asylum", "zm_sumpf", "zm_theater", "zm_cosmodrome", "zm_temple", "zm_moon", "zm_tomb");
     
     SetDvar("wallRun_maxTimeMs_zm", 10000);
     SetDvar("playerEnergy_maxReserve_zm", 200);
@@ -453,7 +462,7 @@ playerSetup()
     
     if(self hasMenu())
     {
-        self thread WelcomeMessage("Welcome To ^1" + level.menuName + ",Status: ^1" + self.verification + ",[{+speed_throw}] & [{+melee}] To ^1Open");
+        self thread MenuInstructionsDisplay();
         self thread menuMonitor();
     }
 }
@@ -464,85 +473,42 @@ defineVariables()
         return;
     self.DefinedVariables = true;
     
-    self.menuHud      = [];
-    self.menuParent   = [];
+    self.menuHud = [];
+    self.menuParent = [];
     self.menuParentQM = [];
-    self.menuCurs     = [];
-    self.menuCursQM   = [];
-    self.menuSS       = [];
+    self.menuCurs = [];
+    self.menuSS = [];
     
     //Menu Design Variables
     self LoadMenuVars();
 }
 
-NotifyWelcomeMessage(message = "", time = 5)
-{
-    WelcomeMessage = [];
-    msg            = StrTok(message, ",");
-    
-    for(a = 0; a < msg.size; a++)
-    {
-        WelcomeMessage[a] = self createText("objective", 1.3, 0, "", "CENTER", "CENTER", 800, 30 + (a * 15), 0, (1, 1, 1));
-        WelcomeMessage[a] thread SetTextFX(msg[a], time);
-        WelcomeMessage[a] thread hudMoveX(0, 0.4);
-        
-        wait 0.5;
-    }
-}
-
-WelcomeMessage(message)
+MenuInstructionsDisplay()
 {
     self endon("disconnect");
     
-    if(Is_True(self.WelcomeDisplay))
+    if(Is_True(self.MenuInstructionsDisplay))
         return;
-    self.WelcomeDisplay = true;
-
-    self thread NotifyWelcomeMessage(message);
-    
-    //Menu Instructions only display when the player is verified
-    //Menu Instructions Can Be Disabled In Menu Customization
-    //If you want to disable by default: menu_customization.gsc -> LoadMenuVars() -> self.DisableMenuInstructions = false; <- Change to true
-    inY = 230;
+    self.MenuInstructionsDisplay = true;
     
     while(1)
     {
-        if(self hasMenu() && (!Is_True(self.DisableMenuInstructions) && (!isDefined(self.MenuInstructionsBG) || !isDefined(self.MenuInstructionsBGOuter) || !isDefined(self.MenuInstructions)) || !Is_True(self.DisableEntityCount) && !self isInMenu(true) && (!isDefined(self.EntCountBG) || !isDefined(self.EntCountBGOuter) || !isDefined(self.EntityCount) || !isDefined(self.EntArrayCount))))
+        if(self hasMenu() && (!Is_True(self.DisableMenuInstructions) && (!isDefined(self.MenuInstructionsBG) || !isDefined(self.MenuInstructionsBGOuter) || !isDefined(self.MenuInstructions))))
         {
             if(!Is_True(self.DisableMenuInstructions))
             {
                 if(!isDefined(self.MenuInstructionsBG))
-                    self.MenuInstructionsBG = self createRectangle("TOP_LEFT", "CENTER", -100, inY, 0, 15, (0, 0, 0), 2, 1, "white");
+                    self.MenuInstructionsBG = self createRectangle("TOP_LEFT", "CENTER", -100, 230, 0, 15, (0, 0, 0), 2, 1, "white");
                 
                 if(!isDefined(self.MenuInstructionsBGOuter))
-                    self.MenuInstructionsBGOuter = self createRectangle("TOP_LEFT", "CENTER", -101, (inY - 1), 0, 17, self.MainColor, 1, 1, "white");
+                    self.MenuInstructionsBGOuter = self createRectangle("TOP_LEFT", "CENTER", -101, 229, 0, 17, self.MainColor, 1, 1, "white");
                 
                 if(!isDefined(self.MenuInstructions))
                     self.MenuInstructions = self createText("default", 1.1, 3, "", "LEFT", "CENTER", (self.MenuInstructionsBG.x + 1), (self.MenuInstructionsBG.y + 7), 1, (1, 1, 1));
             }
-
-            if(!Is_True(self.DisableEntityCount))
-            {
-                if(!isDefined(self.EntCountBG))
-                    self.EntCountBG = self createRectangle("LEFT", "CENTER", -410, 230, 0, 15, (0, 0, 0), 2, 1, "white");
-                
-                if(!isDefined(self.EntCountBGOuter))
-                    self.EntCountBGOuter = self createRectangle("LEFT", "CENTER", -411, 230, 0, 17, self.MainColor, 1, 1, "white");
-                
-                max = ReturnMapGSpawnLimit();
-                
-                if(!isDefined(self.EntityCount))
-                    self.EntityCount = self createText("default", 1.1, 3, "Entity Count(Max: " + max + "):", "LEFT", "CENTER", (self.EntCountBG.x + 1), self.EntCountBG.y, 1, (1, 1, 1));
-                
-                if(!isDefined(self.EntArrayCount)) //This will be using SetValue, rather than SetText(won't contribute to string overflow)
-                    self.EntArrayCount = self createText("default", 1.1, 3, GetEntArray().size, "RIGHT", "CENTER", self.EntityCount.x + self.EntityCount GetTextWidth3arc(self), self.EntCountBG.y, 1, (1, 1, 1));
-                
-                self.EntCountBG SetShaderValues(undefined, (self.EntityCount GetTextWidth3arc(self) + self.EntArrayCount GetTextWidth3arc(self)) + 1);
-                self.EntCountBGOuter SetShaderValues(undefined, self.EntCountBG.width + 2);
-            }
         }
 
-        if(isDefined(self.MenuInstructions) && Is_True(self.DisableMenuInstructions) || isDefined(self.EntityCount) && (Is_True(self.DisableEntityCount) || self isInMenu(true)) || !self hasMenu() || !Is_Alive(self) && !Is_True(self.refreshInstructions))
+        if(isDefined(self.MenuInstructions) && Is_True(self.DisableMenuInstructions) || !self hasMenu() || !Is_Alive(self) && !Is_True(self.refreshInstructions))
         {
             if(Is_True(self.DisableMenuInstructions) || !self hasMenu() || !Is_Alive(self) && !Is_True(self.refreshInstructions))
             {
@@ -555,21 +521,6 @@ WelcomeMessage(message)
                 if(isDefined(self.MenuInstructionsBGOuter))
                     self.MenuInstructionsBGOuter DestroyHud();
             }
-
-            if(Is_True(self.DisableEntityCount) || !self hasMenu() || self isInMenu(true) || !Is_Alive(self) && !Is_True(self.refreshInstructions))
-            {
-                if(isDefined(self.EntCountBG))
-                    self.EntCountBG DestroyHud();
-                
-                if(isDefined(self.EntCountBGOuter))
-                    self.EntCountBGOuter DestroyHud();
-                
-                if(isDefined(self.EntityCount))
-                    self.EntityCount DestroyHud();
-                
-                if(isDefined(self.EntArrayCount))
-                    self.EntArrayCount DestroyHud();
-            }
             
             if(!self hasMenu())
                 break;
@@ -579,7 +530,7 @@ WelcomeMessage(message)
         }
 
         if(Is_Alive(self) && Is_True(self.refreshInstructions))
-            self.refreshInstructions = false;
+            self.refreshInstructions = BoolVar(self.refreshInstructions);
         
         if(isDefined(self.MenuInstructions))
         {
@@ -602,9 +553,9 @@ WelcomeMessage(message)
             }
             else
             {
-            	str = "[{+speed_throw}] & [{+gostand}]: Open Quick Menu";
+                str = "[{+speed_throw}] & [{+gostand}]: Open Quick Menu";
 
-            	if(self isInMenu(true))
+                if(self isInMenu(true))
                     str = "[{+attack}]/[{+speed_throw}]: Scroll\n[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right\n[{+activate}]: Select\n[{+gostand}]: Exit";
             }
             
@@ -624,24 +575,24 @@ WelcomeMessage(message)
                 self.MenuInstructionsBGOuter SetShaderValues(undefined, (width + 2), (height + 2));
             }
 
-            if(self.MenuInstructionsBG.y != (inY - height))
+            if(self.MenuInstructionsBG.y != (230 - height))
             {
-                self.MenuInstructionsBG.y = (inY - height);
-                self.MenuInstructionsBGOuter.y = ((inY - height) - 1);
+                self.MenuInstructionsBG.y = (230 - height);
+                self.MenuInstructionsBGOuter.y = (229 - height);
                 self.MenuInstructions.y = (self.MenuInstructionsBG.y + 6);
             }
         }
 
-        if(isDefined(self.EntArrayCount))
-            self.EntArrayCount SetValue(GetEntArray().size);
-
-        wait 0.01;
+        wait 0.1;
     }
 }
 
 SetMenuInstructions(text)
 {
-    self.MenuInstructionsString = (!isDefined(text) || text == "") ? undefined : text;
+    if(!isDefined(text) || text == "")
+        self.MenuInstructionsString = undefined;
+    else
+        self.MenuInstructionsString = text;
 }
 
 override_player_disconnect()
@@ -654,13 +605,13 @@ override_player_disconnect()
         //If a player is navigating another players options, and that player disconnects, it will kick them back to the player menu
         if(isDefined(player.menuParent) && isInArray(player.menuParent, "Players") && player.SelectedPlayer == self)
         {
-            openMenu = false;
-
             if(player isInMenu(false))
             {
                 player thread closeMenu1();
                 openMenu = true;
             }
+            else
+                openMenu = false;
             
             player.menuParent = [];
             player.currentMenu = "Players";

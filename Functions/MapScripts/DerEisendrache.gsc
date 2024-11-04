@@ -119,7 +119,9 @@ FeedDragons()
         wait 0.1;
 
     self RefreshMenu(menu, curs);
-    level.FeedingDragons = false;
+
+    if(Is_True(level.FeedingDragons))
+        level.FeedingDragons = BoolVar(level.FeedingDragons);
 }
 
 FeedDragon(player)
@@ -235,7 +237,10 @@ MagmaRock()
         wait 0.1;
     
     wait 9;
-    level.MagmaRock = false;
+
+    if(Is_True(level.MagmaRock))
+        level.MagmaRock = BoolVar(level.MagmaRock);
+    
     self RefreshMenu(menu, curs);
 }
 
@@ -288,7 +293,9 @@ RunicCircles()
     
     self RefreshMenu(menu, curs);
     wait 5; //Allows buffer time between this, and the next step to help ensure we don't run into any issues
-    level.ChargingCircles = false;
+
+    if(Is_True(level.ChargingCircles))
+        level.ChargingCircles = BoolVar(level.ChargingCircles);
 }
 
 ChargeRunicCircle()
@@ -759,7 +766,8 @@ ReleaseDemonUrn()
     self RefreshMenu(menu, curs);
     wait 5;
 
-    level.ReleaseDemonUrn = false;
+    if(Is_True(level.ReleaseDemonUrn))
+        level.ReleaseDemonUrn = BoolVar(level.ReleaseDemonUrn);
 }
 
 TriggerDemonFossils()

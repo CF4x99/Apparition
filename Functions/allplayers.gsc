@@ -124,7 +124,8 @@ AllPlayersTeleport(origin)
 
     wait 2;
 
-    level.AllPlayersTeleporting = false;
+    if(Is_True(level.AllPlayersTeleporting))
+        level.AllPlayersTeleporting = BoolVar(level.AllPlayersTeleporting);
 }
 
 AllClientsGodModeCheck()

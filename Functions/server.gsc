@@ -199,26 +199,24 @@ PopulateServerModifications(menu)
             break;
         
         case "Change Map":
+            mapNames = Array("zm_zod", "zm_factory", "zm_castle", "zm_island", "zm_stalingrad", "zm_genesis", "zm_prototype", "zm_asylum", "zm_sumpf", "zm_theater", "zm_cosmodrome", "zm_temple", "zm_moon", "zm_tomb");
+
             self addMenu("Change Map");
 
-                for(a = 0; a < level.mapNames.size; a++)
-                    self addOptBool((level.script == level.mapNames[a]), ReturnMapName(level.mapNames[a]), ::ServerChangeMap, level.mapNames[a]);
+                for(a = 0; a < mapNames.size; a++)
+                    self addOptBool((level.script == mapNames[a]), ReturnMapName(mapNames[a]), ::ServerChangeMap, mapNames[a]);
             break;
     }
 }
 
 SuperJump()
 {
-    if(!Is_True(level.SuperJump))
-    {
-        level.SuperJump = true;
+    level.SuperJump = BoolVar(level.SuperJump);
+
+    if(Is_True(level.SuperJump))
         SetJumpHeight(1023);
-    }
     else
-    {
-        level.SuperJump = false;
         SetJumpHeight(39);
-    }
 }
 
 LowGravity()
@@ -279,50 +277,36 @@ SetRound(round)
 
 AntiQuit()
 {
-    if(!Is_True(level.AntiQuit))
-        level.AntiQuit = true;
-    else
-        level.AntiQuit = false;
-
-    SetMatchFlag("disableIngameMenu", level.AntiQuit);
+    level.AntiQuit = BoolVar(level.AntiQuit);
+    SetMatchFlag("disableIngameMenu", Is_True(level.AntiQuit));
 }
 
 AutoRevive()
 {
-    if(!Is_True(level.AutoRevive))
+    level.AutoRevive = BoolVar(level.AutoRevive);
+
+    while(Is_True(level.AutoRevive))
     {
-        level.AutoRevive = true;
+        foreach(player in level.players)
+            if(player isDown())
+                player thread PlayerRevive(player);
 
-        while(Is_True(level.AutoRevive))
-        {
-            foreach(player in level.players)
-                if(player isDown())
-                    player thread PlayerRevive(player);
-
-            wait 0.1;
-        }
+        wait 0.1;
     }
-    else
-        level.AutoRevive = false;
 }
 
 AutoRespawn()
 {
-    if(!Is_True(level.AutoRespawn))
+    level.AutoRespawn = BoolVar(level.AutoRespawn);
+    
+    while(Is_True(level.AutoRespawn))
     {
-        level.AutoRespawn = true;
+        foreach(player in level.players)
+            if(player.sessionstate == "spectator")
+                player thread ServerRespawnPlayer(player);
 
-        while(Is_True(level.AutoRespawn))
-        {
-            foreach(player in level.players)
-                if(player.sessionstate == "spectator")
-                    player thread ServerRespawnPlayer(player);
-
-            wait 0.1;
-        }
+        wait 0.1;
     }
-    else
-        level.AutoRespawn = false;
 }
 
 ServerPauseWorld()
@@ -343,10 +327,10 @@ ServerPauseWorld()
 
 Newsbar()
 {
-    if(!Is_True(level.Newsbar))
-    {
-        level.Newsbar = true;
+    level.Newsbar = BoolVar(level.Newsbar);
 
+    if(Is_True(level.Newsbar))
+    {
         level.NewsbarBG   = level createServerRectangle("CENTER", "CENTER", 0, -232, 5000, 18, (0, 0, 0), 1, 0.6, "white");
         level.NewsbarText = level createServerText("default", 1, 3, "", "CENTER", "CENTER", 0, -255, 1, (1, 1, 1));
         
@@ -358,16 +342,25 @@ Newsbar()
         {
             for(a = 0; a < strings.size; a++)
             {
-                level.NewsbarText SetTextString(strings[a]);
-                level.NewsbarText hudMoveY(-232, 0.55);
-                level.NewsbarText ChangeFontscaleOverTime1(1.2, 0.75);
-                wait 5;
+                if(isDefined(level.NewsbarText))
+                {
+                    level.NewsbarText SetTextString(strings[a]);
+                    level.NewsbarText hudMoveY(-232, 0.55);
+                    level.NewsbarText ChangeFontscaleOverTime1(1.2, 0.75);
+                    wait 5;
+                }
                 
-                level.NewsbarText ChangeFontscaleOverTime1(1, 0.3);
-                wait 0.3;
+                if(isDefined(level.NewsbarText))
+                {
+                    level.NewsbarText ChangeFontscaleOverTime1(1, 0.3);
+                    wait 0.3;
+                }
                 
-                level.NewsbarText thread hudMoveY(-255, 0.55);
-                wait 0.55;
+                if(isDefined(level.NewsbarText))
+                {
+                    level.NewsbarText thread hudMoveY(-255, 0.55);
+                    wait 0.55;
+                }
             }
         }
     }
@@ -380,22 +373,17 @@ Newsbar()
             level.NewsbarText destroy();
         
         level notify("EndNewsBar");
-
-        level.Newsbar = false;
     }
 }
 
 Doheart()
 {
-    if(!Is_True(level.Doheart))
-    {
-        level.Doheart = true;
+    level.Doheart = BoolVar(level.Doheart);
+    
+    if(Is_True(level.Doheart))
         level thread SetDoheartText(level.DoheartSavedText, true);
-    }
     else
     {
-        level.Doheart = false;
-
         if(isDefined(level.DoheartText))
             level.DoheartText destroy();
     }
@@ -464,13 +452,11 @@ SetDoheartStyle(style)
 
 LobbyTimer()
 {
-    if(!Is_True(level.LobbyTimer))
+    level.LobbyTimer = BoolVar(level.LobbyTimer);
+
+    if(Is_True(level.LobbyTimer))
     {
         level endon("EndLobbyTimer");
-
-        level.LobbyTimer = true;
-
-        n_time = (level.LobbyTime * 60);
 
         foreach(player in level.players)
         {
@@ -479,7 +465,7 @@ LobbyTimer()
             player SetLUIMenuData(player.LobbyTimer, "x", 25);
             player SetLUIMenuData(player.LobbyTimer, "y", 600);
             player SetLUIMenuData(player.LobbyTimer, "height", 28);
-            player SetLUIMenuData(player.LobbyTimer, "time", (GetTime() + (n_time * 1000)));
+            player SetLUIMenuData(player.LobbyTimer, "time", (GetTime() + ((level.LobbyTime * 60) * 1000)));
         }
 
         wait (level.LobbyTime * 60);
@@ -500,7 +486,6 @@ LobbyTimer()
                 player CloseLUIMenu(player.LobbyTimer);
 
         level notify("EndLobbyTimer");
-        level.LobbyTimer = false;
     }
 }
 
@@ -677,7 +662,6 @@ SpawnBot()
         return self iPrintlnBold("^1ERROR: ^7Couldn't Spawn Bot");
 
     bot.pers["isBot"] = 1;
-    bot.equipment_enabled = 0;
     wait 0.5;
     
     if(bot.sessionstate == "spectator")
@@ -798,7 +782,9 @@ ShowAllChests()
             wait 0.1;
         
         self RefreshMenu(menu, curs);
-        level.ShowAllChestsWaiting = false;
+
+        if(Is_True(level.ShowAllChestsWaiting))
+            level.ShowAllChestsWaiting = BoolVar(level.ShowAllChestsWaiting);
     }
     else
     {
@@ -819,7 +805,9 @@ ShowAllChests()
             wait 0.1;
         
         self RefreshMenu(menu, curs);
-        level.ShowAllChestsWaiting = false;
+        
+        if(Is_True(level.ShowAllChestsWaiting))
+            level.ShowAllChestsWaiting = BoolVar(level.ShowAllChestsWaiting);
     }
 }
 
@@ -992,10 +980,10 @@ SetBoxJokerModel(model)
 
 ServerUpgradeWeaponWallbuys()
 {
-    if(!Is_True(level.UpgradeWeaponWallbuys))
-    {
-        level.UpgradeWeaponWallbuys = true;
+    level.UpgradeWeaponWallbuys = BoolVar(level.UpgradeWeaponWallbuys);
 
+    if(Is_True(level.UpgradeWeaponWallbuys))
+    {
         if(isDefined(level.wallbuy_should_upgrade_weapon_override))
             level.saved_wallbuy_should_upgrade_weapon_override = level.wallbuy_should_upgrade_weapon_override;
         
@@ -1003,8 +991,6 @@ ServerUpgradeWeaponWallbuys()
     }
     else
     {
-        level.UpgradeWeaponWallbuys = false;
-
         if(isDefined(level.saved_wallbuy_should_upgrade_weapon_override))
             level.wallbuy_should_upgrade_weapon_override = level.saved_wallbuy_should_upgrade_weapon_override;
         else
@@ -1014,33 +1000,28 @@ ServerUpgradeWeaponWallbuys()
 
 ServerMaxAmmoClips()
 {
-    if(!Is_True(level.ServerMaxAmmoClips))
-    {
-        level.ServerMaxAmmoClips = true;
+    level.ServerMaxAmmoClips = Boolvar(level.ServerMaxAmmoClips);
+
+    if(Is_True(level.ServerMaxAmmoClips))
         level thread WatchForMaxAmmo();
-    }
     else
     {
-        level.ServerMaxAmmoClips = false;
-        level.WatchForMaxAmmo = false;
+        level.WatchForMaxAmmo = undefined;
         level notify("EndMaxAmmoMonitor");
     }
 }
 
 ShootToRevive()
 {
-    if(!Is_True(level.ShootToRevive))
-    {
-        level.ShootToRevive = true;
+    level.ShootToRevive = BoolVar(level.ShootToRevive);
 
+    if(Is_True(level.ShootToRevive))
+    {
         foreach(player in level.players)
             player thread PlayerShootToRevive();
     }
     else
-    {
-        level.ShootToRevive = false;
         level notify("EndShootToRevive");
-    }
 }
 
 PlayerShootToRevive()
@@ -1132,11 +1113,11 @@ IncreasedDropRate()
 {
     if(Is_True(level.no_powerups) && !Is_True(level.IncreasedDropRate))
         level DisablePowerups();
+    
+    level.IncreasedDropRate = BoolVar(level.IncreasedDropRate);
 
-    if(!Is_True(level.IncreasedDropRate))
+    if(Is_True(level.IncreasedDropRate))
     {
-        level.IncreasedDropRate = true;
-
         while(Is_True(level.IncreasedDropRate))
         {
             if(isDefined(level.powerup_drop_count) && level.powerup_drop_count > 0 || !isDefined(level.powerup_drop_count))
@@ -1160,24 +1141,17 @@ IncreasedDropRate()
         }
     }
     else
-    {
-        level.IncreasedDropRate = false;
         level.zombie_vars["zombie_powerup_drop_max_per_round"] = 4;
-    }
 }
 
 PowerupsNeverLeave()
 {
-    if(!Is_True(level.PowerupsNeverLeave))
-    {
-        level.PowerupsNeverLeave = true;
+    level.PowerupsNeverLeave = BoolVar(level.PowerupsNeverLeave);
+
+    if(Is_True(level.PowerupsNeverLeave))
         level._powerup_timeout_override = PowerUpTime();
-    }
     else
-    {
-        level.PowerupsNeverLeave = false;
         level._powerup_timeout_override = undefined;
-    }
 }
 
 PowerUpTime()
@@ -1189,11 +1163,11 @@ DisablePowerups()
 {
     if(Is_True(level.IncreasedDropRate) && !Is_True(level.DisablePowerups))
         level IncreasedDropRate();
+    
+    level.DisablePowerups = BoolVar(level.DisablePowerups);
 
-    if(!Is_True(level.DisablePowerups))
+    if(Is_True(level.DisablePowerups))
     {
-        level.DisablePowerups = true;
-
         foreach(powerup in level.active_powerups)
         {
             powerup notify("powerup_timedout");
@@ -1214,15 +1188,12 @@ DisablePowerups()
         }
     }
     else
-    {
         level.powerup_drop_count = 0;
-        level.DisablePowerups = false;
-    }
 }
 
 headshots_only()
 {
-    level.headshots_only = !Is_True(level.headshots_only);
+    level.headshots_only = BoolVar(level.headshots_only);
 }
 
 ServerSetClipSizeMultiplier(multiplier)
@@ -1271,7 +1242,9 @@ ServerChangeMap(map)
 
 ServerRestartGame()
 {
-    if(isInArray(level.mapNames, level.script))
+    mapNames = Array("zm_zod", "zm_factory", "zm_castle", "zm_island", "zm_stalingrad", "zm_genesis", "zm_prototype", "zm_asylum", "zm_sumpf", "zm_theater", "zm_cosmodrome", "zm_temple", "zm_moon", "zm_tomb");
+
+    if(isInArray(mapNames, level.script))
         Map(level.script);
     else
         MissionFailed();
