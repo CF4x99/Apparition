@@ -482,9 +482,12 @@ openQuickMenu1(menu)
             self.currentMenuQM = "Quick Menu";
     }
 
-    self.menuHud["background"] = self createRectangle("TOP", "CENTER", 0, -210, 155, 0, (0, 0, 0), 2, 0.7, "white");
-    self.menuHud["scroller"] = self createRectangle("TOP", "CENTER", 0, -210, 155, 14, self.MainColor, 4, 1, "white");
-    self.menuHud["title"] = self createText("default", 1.4, 4, "", "CENTER", "CENTER", 0, self.menuHud["background"].y + 8, 1, self.MainColor);
+    qmX = 0;
+    qmY = -210;
+
+    self.menuHud["background"] = self createRectangle("TOP", "CENTER", qmX, qmY, 155, 0, (0, 0, 0), 2, 0.7, "white");
+    self.menuHud["scroller"] = self createRectangle("TOP", "CENTER", self.menuHud["background"].x, self.menuHud["background"].y, 155, 14, self.MainColor, 4, 1, "white");
+    self.menuHud["title"] = self createText("default", 1.4, 4, "", "CENTER", "CENTER", self.menuHud["background"].x, (self.menuHud["background"].y + 8), 1, self.MainColor);
 
     self drawText();
 }
