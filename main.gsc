@@ -1,7 +1,7 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.0.2
+    Version:              1.5.0.3
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
@@ -225,7 +225,7 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName    = "Apparition";
-    level.menuVersion = "1.5.0.2";
+    level.menuVersion = "1.5.0.3";
     level.MenuStatus  = Array("Bot", "None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer");
     level.colorNames  = Array("Ciper Purple", "xbOnline Blue", "Skyblue", "Pink", "Green", "Brown", "Blue", "Red", "Orange", "Purple", "Cyan", "Yellow", "Black", "White");
     level.colors      = Array(100, 0, 100, 57, 152, 254, 135, 206, 250, 255, 110, 255, 0, 255, 0, 101, 67, 33, 0, 0, 255, 255, 0, 0, 255, 128, 0, 100, 0, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255);
@@ -321,7 +321,7 @@ DefineMenuArrays()
                 break;
             
             case "Origins":
-                locations = Array("Spawn", (2698.43, 5290.48, -346.219), "Staff Chamber", (-2.4956, -2.693, -751.875), "The Crazy Place", (10334.5, -7891.93, -411.875), "Robot Head: Odin", (-6759.17, -6541.72, 159.375), "Robot Head: Thor", (-6223.59, -6547.65, 159.375), "Robot Head: Freya", (-5699.83, -6540.03, 159.375), "Prison", (-3142.11, 1125.09, -63.875));
+                locations = Array("Spawn", (2698.43, 5290.48, -346.219), "Staff Chamber", (-2.4956, -2.693, -751.875), "The Crazy Place", (10334.5, -7891.93, -411.875), "Lightning Tunnel", (-3234, -372, -188), "Wind Tunnel", (3330, 1227, -343), "Fire Tunnel", (3064, 4395, -599), "Ice Tunnel", (1431, -1728, -121), "Robot Head: Odin", (-6759.17, -6541.72, 159.375), "Robot Head: Thor", (-6223.59, -6547.65, 159.375), "Robot Head: Freya", (-5699.83, -6540.03, 159.375), "Prison", (-3142.11, 1125.09, -63.875));
                 break;
             
             default:

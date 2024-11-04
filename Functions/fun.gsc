@@ -408,34 +408,7 @@ ZombieCounter(player)
                     if(!isDefined(player.ZombieCounterHud))
                         player.ZombieCounterHud = [];
                     
-                    xValue = -407;
-
-                    if(player IsHost())
-                    {
-                        resolution = StrTok(GetDvarString("r_mode"), "x");
-                        diff = (Int(resolution[0]) - Int(resolution[1]));
-
-                        if(diff < 550 && diff > 260)
-                        {
-                            incValue = 44;
-
-                            if(xValue > 0)
-                                incValue = -44;
-                            
-                            xValue += incValue;
-                        }
-                        else if(diff <= 260)
-                        {
-                            incValue = 106;
-
-                            if(xValue > 0)
-                                incValue = -106;
-                            
-                            xValue += incValue;
-                        }
-                    }
-                    
-                    player.ZombieCounterHud[0] = player createText("default", 1.4, 1, "Alive:", "LEFT", "CENTER", xValue, -145, 1, level.RGBFadeColor);
+                    player.ZombieCounterHud[0] = player createText("default", 1.4, 1, "Alive:", "LEFT", "CENTER", -407, -145, 1, level.RGBFadeColor);
                     player.ZombieCounterHud[1] = player createText("default", 1.4, 1, "Remaining For Round:", "LEFT", "CENTER", player.ZombieCounterHud[0].x, (player.ZombieCounterHud[0].y + 15), 1, level.RGBFadeColor);
                     
                     player.ZombieCounterHud[2] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (player.ZombieCounterHud[0].x + (player.ZombieCounterHud[0] GetTextWidth() - 8)), player.ZombieCounterHud[0].y, 1, level.RGBFadeColor);

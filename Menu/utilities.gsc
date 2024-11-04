@@ -740,10 +740,19 @@ Keyboard(func, player)
             letters[a] += lettersTok[a][b] + "\n";
     }
 
-    self.keyboard["string"] = self createText("objective", 1.1, 5, "", "CENTER", "CENTER", self.menuX, (self.menuY + 15), 1, (1, 1, 1));
+    valueX = self.menuX;
+    valueY = self.menuY;
+
+    if(self.MenuStyle == "Quick Menu")
+    {
+        valueX = self.menuHud["background"].x;
+        valueY = self.menuHud["title"].y;
+    }
+
+    self.keyboard["string"] = self createText("objective", 1.1, 5, "", "CENTER", "CENTER", valueX, (valueY + 15), 1, (1, 1, 1));
 
     for(a = 0; a < letters.size; a++)
-        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menuX - 94) + (a * 15), (self.menuY + 35), 1, (1, 1, 1));
+        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (valueX - 94) + (a * 15), (valueY + 35), 1, (1, 1, 1));
     
     if(isDefined(self.menuHud["scroller"]))
         self.menuHud["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), 0.01);
@@ -898,7 +907,7 @@ NumberPad(func, player, param)
 
     if(isDefined(self.menuHud["scroller"]))
         self.menuHud["scroller"] hudScaleOverTime(0.1, 14, 14);
-
+    
     self SoftLockMenu(50);
     
     letters = [];
@@ -907,10 +916,19 @@ NumberPad(func, player, param)
     for(a = 0; a < 10; a++)
         letters[a] = a;
     
-    self.keyboard["string"] = self createText("objective", 1.2, 5, 0, "CENTER", "CENTER", self.menuX, (self.menuY + 15), 1, (1, 1, 1));
+    valueX = self.menuX;
+    valueY = self.menuY;
+
+    if(self.MenuStyle == "Quick Menu")
+    {
+        valueX = self.menuHud["background"].x;
+        valueY = self.menuHud["title"].y;
+    }
+    
+    self.keyboard["string"] = self createText("objective", 1.2, 5, 0, "CENTER", "CENTER", valueX, (valueY + 15), 1, (1, 1, 1));
 
     for(a = 0; a < letters.size; a++)
-        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menuX - 130) + 53 + (a * 15), (self.menuY + 35), 1, (1, 1, 1));
+        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (valueX - 130) + 53 + (a * 15), (valueY + 35), 1, (1, 1, 1));
     
     if(isDefined(self.menuHud["scroller"]))
         self.menuHud["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 7), 0.01);
@@ -1514,12 +1532,18 @@ MenuCreditsStart(creditArray)
             if(creditArray[a][0] == "^" && creditArray[a][1] == "1")
                 fontScale = 1.4;
 
+            hudX = self.menuX;
             hudY = (self.menuY + (self.menuHud["background"].height - 8));
 
             if(self.MenuStyle == "Zodiac")
                 hudY = (self.menuY + 220);
+            else if(self.MenuStyle == "Quick Menu")
+            {
+                hudX = self.menuHud["background"].x;
+                hudY = (self.menuHud["title"].y + 215);
+            }
 
-            self.credits["MenuCreditsHud"][a] = self createText("objective", fontScale, 3, "", "CENTER", "CENTER", self.menuX, hudY, 0, (1, 1, 1));
+            self.credits["MenuCreditsHud"][a] = self createText("objective", fontScale, 3, "", "CENTER", "CENTER", hudX, hudY, 0, (1, 1, 1));
             self thread CreditsFadeIn(self.credits["MenuCreditsHud"][a], creditArray[a], moveTime, 0.5);
             
             wait (moveTime / 12);
@@ -1544,7 +1568,13 @@ CreditsFadeIn(hud, text, moveTime, fadeTime)
     self thread credits_delete(hud);
     hud SetTextString(text);
     hud thread hudFade(1, fadeTime);
-    hud thread hudMoveY(self.menuY, moveTime);
+
+    hudY = self.menuY;
+
+    if(self.MenuStyle == "Quick Menu")
+        hudY = (self.menuHud["title"].y + 15);
+    
+    hud thread hudMoveY(hudY, moveTime);
 
     if(self.MenuStyle == "Nautaremake")
         moveTime -= 0.3;

@@ -5,7 +5,7 @@ PopulateMenuCustomization(menu)
         case "Menu Customization":
             self addMenu("Menu Customization");
                 self addOpt("Menu Credits", ::MenuCredits);
-                self addOptSlider("Menu Style", ::MenuStyle, level.menuName + ";Zodiac;Nautaremake;Native");
+                self addOptSlider("Menu Style", ::MenuStyle, level.menuName + ";Zodiac;Nautaremake;Native;Quick Menu");
                 self addOpt("Design Preferences", ::newMenu, "Design Preferences");
                 self addOpt("Main Design Color", ::newMenu, "Main Design Color");
                 self addOpt("Title Color", ::newMenu, "Title Color");
@@ -89,10 +89,10 @@ MenuTheme(color)
     
     hud = Array("outlines");
     
-    if(self.MenuStyle != "Nautaremake")
+    if(self.MenuStyle != "Nautaremake" || self isInQuickMenu())
         hud[hud.size] = "scroller";
     
-    if(self.MenuStyle == "Zodiac" && !self isInQuickMenu())
+    if(self.MenuStyle == "Zodiac" || self.MenuStyle == "Quick Menu" || self isInQuickMenu())
         hud[hud.size] = "title";
     
     for(a = 0; a < hud.size; a++)
@@ -153,10 +153,10 @@ SmoothRainbowTheme()
     {
         hud = Array("outlines");
         
-        if(self.MenuStyle != "Nautaremake")
+        if(self.MenuStyle != "Nautaremake" || self isInQuickMenu())
             hud[hud.size] = "scroller";
         
-        if(self.MenuStyle == "Zodiac" || self isInQuickMenu())
+        if(self.MenuStyle == "Zodiac" || self.MenuStyle == "Quick Menu" || self isInQuickMenu())
             hud[hud.size] = "title";
 
         for(a = 0; a < hud.size; a++)
@@ -548,7 +548,7 @@ GetSavedVariable(variable)
 
 LoadMenuVars()
 {
-    self.MenuStyle = level.menuName; //Current Choices: level.menuName, Zodiac, Nautaremake, Native
+    self.MenuStyle = level.menuName; //Current Choices: level.menuName, Zodiac, Nautaremake, Native, Quick Menu
     
     if(self.MenuStyle == "Zodiac")
         self.menuX = 298;

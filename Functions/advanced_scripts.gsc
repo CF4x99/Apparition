@@ -627,7 +627,6 @@ TornadoMovement(defaultOrigin)
         self zm_utility::create_zombie_point_of_interest(5000, 255, 10000, 1);
         self MoveTo(self.origin + (RandomIntRange(-100, 100), RandomIntRange(-100, 100), 0), 3);
         self RotateYaw(360, 3);
-
         wait 3;
 
         if(Distance(defaultOrigin, self.origin) >= 750)

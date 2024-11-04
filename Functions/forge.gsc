@@ -182,9 +182,9 @@ ForgeDropModel()
     self.forgemodel delete();
 }
 
-ForgeModelDistance(int)
+ForgeModelDistance(num)
 {
-    self.forgeModelDistance = int;
+    self.forgeModelDistance = num;
 }
 
 ForgeIgnoreCollisions()

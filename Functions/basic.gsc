@@ -464,7 +464,7 @@ SetMovementSpeed(scale, player)
     while(player.MovementSpeed != 1)
     {
         player SetMoveSpeedScale(scale);
-        wait 0.01;
+        wait 0.5;
     }
 }
 

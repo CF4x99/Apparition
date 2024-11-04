@@ -1,6 +1,6 @@
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.0.2
+    Version:              1.5.0.3
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
@@ -62,6 +62,20 @@
 
 
 ## Changelog
+<details>
+    <summary>
+        Version 1.5.0.3
+    </summary>
+
+    - Removed: Useless Variable That Was Used For Entity Options(Was Removed In The Last Update)
+
+    - Added: Origins Teleports For All Staff Tunnels
+    - Added: Quick Menu Style -- The Quick Menu Style Can Now Be Used As The Main Style Of Apparition
+
+    - Fixed: Bug With Smooth Rainbow Theme Not Working For Quick Menu, While Using Nautaremake Style
+    - Fixed: Potential Bug With The New Auto-Sizing Quick Menu Design
+</details>
+
 <details>
     <summary>
         Version 1.5.0.2
