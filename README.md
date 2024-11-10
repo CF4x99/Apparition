@@ -1,65 +1,65 @@
-Menu:                 Apparition
-Developer:            CF4_99
-Version:              1.5.0.5
-Project Start Date:   6/10/21
-Initial Release Date: 1/29/23
+    Menu:                 Apparition
+    Developer:            CF4_99
+    Version:              1.5.0.5
+    Project Start Date:   6/10/21
+    Initial Release Date: 1/29/23
 
-Discord:            cf4_99
-YouTube:            https://www.youtube.com/c/CF499
+    Discord:            cf4_99
+    YouTube:            https://www.youtube.com/c/CF499
 
-Menu Source & Current Update: https://github.com/CF4x99/Apparition
-IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
+    Menu Source & Current Update: https://github.com/CF4x99/Apparition
+    IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
-NOTE:
-    I Can Without A Doubt Say Apparition Will Be Unmatched In Every Possible Way.
-    It Will Be The Most Stable, In-Depth, Detail Oriented, Organized, and Largest Mod Menu You Will Ever See.
-    I Have Spent Countless Hours Over The Years Getting Apparition To Where It Is, Which Includes On Other Games As Well(Newer and Older).
+    NOTE:
+        I Can Without A Doubt Say Apparition Will Be Unmatched In Every Possible Way.
+        It Will Be The Most Stable, In-Depth, Detail Oriented, Organized, and Largest Mod Menu You Will Ever See.
+        I Have Spent Countless Hours Over The Years Getting Apparition To Where It Is, Which Includes On Other Games As Well(Newer and Older).
 
-    You Won't Find Anything That Will Be Comparable To Apparition, Not Even The Menus With "Devs" That Constantly Have To Rip Scripts From Apparition For Their Projects.
-    Apparition Will Remain On Top, Regardless Of Who Tries To Compete With It.
+        You Won't Find Anything That Will Be Comparable To Apparition, Not Even The Menus With "Devs" That Constantly Have To Rip Scripts From Apparition For Their Projects.
+        Apparition Will Remain On Top, Regardless Of Who Tries To Compete With It.
 
-    Since There Has Been Confusion and Accusations, Apparition(including the base) Belongs To Me(CF4_99) and Me Only. I have built it 100%, from the ground up.
-    I Am The Sole Developer Of Apparition, No One Else Helps With it, Or Provides Scripts.
-    The Credits Below Says Exactly What These People Offered Apparition, Nothing More, Nothing Less.
-
-
-Credits:
-    - CF4_99 ~ Project Developer
-    - Extinct ~ Ideas, Suggestions, Constructive Criticism, and His Spec-Nade
-    - CraftyCritter ~ BO3 Compiler
-    - ItsFebiven ~ Some Ideas and Suggestions
-    - Joel ~ Suggestions, Bug Reports, and Testing The Unique String Crash Protection
+        Since There Has Been Confusion and Accusations, Apparition(including the base) Belongs To Me(CF4_99) and Me Only. I have built it 100%, from the ground up.
+        I Am The Sole Developer Of Apparition, No One Else Helps With it, Or Provides Scripts.
+        The Credits Below Says Exactly What These People Offered Apparition, Nothing More, Nothing Less.
 
 
-Custom Maps:
-    While I have tested Apparition a lot on custom maps, you may run into some issues with a few options not working 100% as they should.
-
-    Known Issues On Custom Maps(Ones that can't, or won't, be fixed):
-
-        Weaponry - Not all weapons are in the right category(Also applies to custom weapon mods):
-            ~ I am aware of this. There isn't anything I can do about it. Most of them, if not all, are moved into the 'Specials' Category.
-
-
-Map EE Options:
-    I have created scripts to complete the EE's for the classic maps that have smaller EE's.
-    As for the bigger maps that have bigger and more complex EE's, I have made scripts to make completing the EE's, a lot easier.
-    The EE scripts will complete steps properly, not just set flags/variables tricking the game into thinking the step is completed, when it actually hasn't(unlike other "developers")
-    This will prevent any issues with crashes/conflictions later on while continuing regular gameplay/playing through other parts of the EE.
-
-    Where to find options that help completing EE's:
-        Main Menu -> [map name] Scripts
-        Server Modifications -> Craftables
-    
-Craftables:
-    Not all craftables will be found in the Craftables menu
-    Some craftables have to be added and collected manually
-    So if you can't find a craftable in the Craftables menu, check the map scripts menu
-    If it's not found in Craftables, or the map scripts menu, then it's a craftable that would have to be added manually, and I haven't made a script to collect the parts yet
+    Credits:
+        - CF4_99 ~ Project Developer
+        - Extinct ~ Ideas, Suggestions, Constructive Criticism, and His Spec-Nade
+        - CraftyCritter ~ BO3 Compiler
+        - ItsFebiven ~ Some Ideas and Suggestions
+        - Joel ~ Suggestions, Bug Reports, and Testing The Unique String Crash Protection
 
 
-If you find any bugs, or come across something that you feel isn't working as it should, please message me on discord.
+    Custom Maps:
+        While I have tested Apparition a lot on custom maps, you may run into some issues with a few options not working 100% as they should.
 
-Discord: cf4_99
+        Known Issues On Custom Maps(Ones that can't, or won't, be fixed):
+
+            Weaponry - Not all weapons are in the right category(Also applies to custom weapon mods):
+                ~ I am aware of this. There isn't anything I can do about it. Most of them, if not all, are moved into the 'Specials' Category.
+
+
+    Map EE Options:
+        I have created scripts to complete the EE's for the classic maps that have smaller EE's.
+        As for the bigger maps that have bigger and more complex EE's, I have made scripts to make completing the EE's, a lot easier.
+        The EE scripts will complete steps properly, not just set flags/variables tricking the game into thinking the step is completed, when it actually hasn't(unlike other "developers")
+        This will prevent any issues with crashes/conflictions later on while continuing regular gameplay/playing through other parts of the EE.
+
+        Where to find options that help completing EE's:
+            Main Menu -> [map name] Scripts
+            Server Modifications -> Craftables
+        
+    Craftables:
+        Not all craftables will be found in the Craftables menu
+        Some craftables have to be added and collected manually
+        So if you can't find a craftable in the Craftables menu, check the map scripts menu
+        If it's not found in Craftables, or the map scripts menu, then it's a craftable that would have to be added manually, and I haven't made a script to collect the parts yet
+
+
+    If you find any bugs, or come across something that you feel isn't working as it should, please message me on discord.
+
+    Discord: cf4_99
 
 
 
