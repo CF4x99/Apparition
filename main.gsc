@@ -1,19 +1,20 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.0.4
+    Version:              1.5.0.5
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
     Discord:            cf4_99
     YouTube:            https://www.youtube.com/c/CF499
-    
+
     Menu Source & Current Update: https://github.com/CF4x99/Apparition
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
     NOTE:
         I Can Without A Doubt Say Apparition Will Be Unmatched In Every Possible Way.
         It Will Be The Most Stable, In-Depth, Detail Oriented, Organized, and Largest Mod Menu You Will Ever See.
+        I Have Spent Countless Hours Over The Years Getting Apparition To Where It Is, Which Includes On Other Games As Well(Newer and Older).
 
         You Won't Find Anything That Will Be Comparable To Apparition, Not Even The Menus With "Devs" That Constantly Have To Rip Scripts From Apparition For Their Projects.
         Apparition Will Remain On Top, Regardless Of Who Tries To Compete With It.
@@ -21,8 +22,8 @@
         Since There Has Been Confusion and Accusations, Apparition(including the base) Belongs To Me(CF4_99) and Me Only. I have built it 100%, from the ground up.
         I Am The Sole Developer Of Apparition, No One Else Helps With it, Or Provides Scripts.
         The Credits Below Says Exactly What These People Offered Apparition, Nothing More, Nothing Less.
-    
-    
+
+
     Credits:
         - CF4_99 ~ Project Developer
         - Extinct ~ Ideas, Suggestions, Constructive Criticism, and His Spec-Nade
@@ -61,6 +62,7 @@
 
     Discord: cf4_99
 */
+
 
 #include scripts\codescripts\struct;
 #include scripts\shared\callbacks_shared;
@@ -131,7 +133,6 @@ autoexec __init__system__()
 __init__()
 {
     callback::on_start_gametype(::init);
-    callback::on_connect(::onPlayerConnect);
     callback::on_spawned(::onPlayerSpawned);
 }
 
@@ -168,17 +169,15 @@ init()
     level.player_score_override = ::override_player_points;
 }
 
-OnPlayerConnect()
-{
-    if(IsPlayerBanned(self))
-        Kick(self GetEntityNumber());
-}
-
 onPlayerSpawned()
 {
     self endon("disconnect");
 
-    if(self IsHost() && !isDefined(self.OnPlayerSpawned))
+    if(Is_True(self.runningSpawned))
+        return;
+    self.runningSpawned = true;
+
+    if(self IsHost() && !isDefined(self.playerSpawned))
     {
         if(!Is_True(level.AntiEndGame))
             self thread AntiEndGame();
@@ -190,6 +189,8 @@ onPlayerSpawned()
         level.player_out_of_playable_area_monitor_callback = ::player_out_of_playable_area_monitor;
     }
 
+    self thread GivePlayerLoadout();
+
     level flag::wait_till("initial_blackscreen_passed");
 
     self AllowWallRun(0);
@@ -200,11 +201,13 @@ onPlayerSpawned()
 
     if(GetDvarString(level.script + "Spawn" + self GetEntityNumber()) != "")
         self SetOrigin(GetDvarVector1(level.script + "Spawn" + self GetEntityNumber()));
+    
+    self.runningSpawned = BoolVar(self.runningSpawned);
 
     //Anthing Above This Is Ran Every Time The Player Spawns
-    if(isDefined(self.OnPlayerSpawned))
+    if(isDefined(self.playerSpawned))
         return;
-    self.OnPlayerSpawned = true;
+    self.playerSpawned = true;
 
     if(self IsHost())
     {
@@ -225,7 +228,7 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName    = "Apparition";
-    level.menuVersion = "1.5.0.4";
+    level.menuVersion = "1.5.0.5";
     level.MenuStatus  = Array("Bot", "None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer");
     level.colorNames  = Array("Ciper Purple", "xbOnline Blue", "Skyblue", "Pink", "Green", "Brown", "Blue", "Red", "Orange", "Purple", "Cyan", "Yellow", "Black", "White");
     level.colors      = Array(100, 0, 100, 57, 152, 254, 135, 206, 250, 255, 110, 255, 0, 255, 0, 101, 67, 33, 0, 0, 255, 255, 0, 0, 255, 128, 0, 100, 0, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255);

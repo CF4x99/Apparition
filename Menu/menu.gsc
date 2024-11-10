@@ -353,6 +353,7 @@ MenuOptionsPlayer(menu, player)
 
         case "Weaponry":
         case "Weapon Options":
+        case "Weapon Loadout":
         case "Weapon Camo":
         case "Weapon Attachments":
         case "Weapon AAT":

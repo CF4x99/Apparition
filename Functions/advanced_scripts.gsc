@@ -399,7 +399,6 @@ DisableLobbyRain()
 CustomSentry(origin)
 {
     self endon("disconnect");
-    self endon("EndCustomSentry");
 
     self.CustomSentry = BoolVar(self.CustomSentry);
 
@@ -408,11 +407,10 @@ CustomSentry(origin)
         if(!isDefined(origin))
             origin = self.origin;
 
-        angles = self.angles;
         self.CustomSentryOrigin = origin;
         
         sentrygun = self.CustomSentryWeapon;
-        self.sentrygun_weapon = zm_utility::spawn_weapon_model(sentrygun, undefined, origin, (0, angles[1], 0));
+        self.sentrygun_weapon = zm_utility::spawn_weapon_model(sentrygun, undefined, origin, (0, self.angles[1], 0));
         self.sentrygun_weapon.owner = self;
 
         self.sentrygun_weapon thread clientfield::set("zm_aat_fire_works", 1);
@@ -450,7 +448,6 @@ CustomSentry(origin)
     {
         if(isDefined(self.sentrygun_weapon))
         {
-            self notify("EndCustomSentry");
             self.sentrygun_weapon clientfield::set("zm_aat_fire_works", 0);
             wait 0.01;
 
@@ -576,8 +573,7 @@ Tornado()
         if(isDefined(surface) && (surface == "none" || surface == "default"))
             return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
     }
-
-    if(Is_True(level.TornadoSpawned))
+    else
     {
         if(!isDefined(level.SpawnableArray["Tornado"]) || !level.SpawnableArray["Tornado"].size)
             return;
@@ -805,7 +801,6 @@ TornadoLaunchEntity(a)
 
     self Unlink();
     self Launch(AnglesToForward(self.angles) * 5500);
-
     wait 1;
 
     if(!isDefined(self))
@@ -1155,7 +1150,6 @@ ZombieAttack()
 BodyGuard()
 {
     self endon("disconnect");
-    self endon("EndBodyGuard");
     
     if(Is_True(self.ControllableZombie) && !Is_True(self.BodyGuard))
         return self iPrintlnBold("^1ERROR: ^7You Can't Use Body Guard While Controllable Zombie Is Enabled");
@@ -1168,7 +1162,7 @@ BodyGuard()
         self.BodyGuardZombie = zombie_utility::spawn_zombie(spawner);
         wait 0.1;
         
-        if(isDefined(self.BodyGuardZombie))
+        if(Is_True(self.BodyGuard) && isDefined(self.BodyGuardZombie) && IsAlive(self.BodyGuardZombie))
         {
             self.BodyGuardZombieLinker = spawn("script_origin", self.BodyGuardZombie.origin);
 
@@ -1230,8 +1224,6 @@ BodyGuard()
     }
     else
     {
-        self notify("EndBodyGuard");
-
         if(isDefined(self.BodyGuardZombie))
         {
             self.BodyGuardZombie thread clientfield::set("zm_aat_turned", 0);

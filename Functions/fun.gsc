@@ -249,7 +249,13 @@ ElectricFireCherry(player)
         }
     }
     else
+    {
+        //Makes sure electric_cherry is used, which will mean 'electric_cherry_reload_fx' is registered as a client field
+        if(isDefined(level._effect["electric_cherry_explode"]))
+            CodeSetClientField(player, "electric_cherry_reload_fx", 0);
+        
         player notify("EndElectricFireCherry");
+    }
 }
 
 electric_fire_cherry_cooldown_timer(current_weapon)
@@ -471,10 +477,10 @@ LightProtector(player)
     }
     else
     {
-        player notify("EndLightProtector");
-
         if(isDefined(player.LightProtect))
             player.LightProtect delete();
+        
+        player notify("EndLightProtector");
     }
 }
 
@@ -859,8 +865,6 @@ SpecNade(player) //Credit to Extinct for his spec-nade
     }
     else
     {
-        player notify("EndSpecNade");
-        
         if(isDefined(player.nadelinker))
         {
             player CameraActivate(false);
@@ -872,6 +876,8 @@ SpecNade(player) //Credit to Extinct for his spec-nade
 
         if(Is_True(player.ignoreme))
             player.ignoreme = BoolVar(player.ignoreme);
+        
+        player notify("EndSpecNade");
     }
 }
 
@@ -1236,10 +1242,10 @@ GrapplingGun(player)
     }
     else
     {
-        player notify("EndGrapplingGun");
-
         if(isDefined(player.grapplingent))
             player.grapplingent delete();
+        
+        player notify("EndGrapplingGun");
     }
 }
 

@@ -392,6 +392,18 @@ isInArray(arry, text)
     return false;
 }
 
+isInArrayKeys(arry, item)
+{
+    if(!isDefined(arry) || !IsArray(arry) || !isDefined(item))
+        return false;
+    
+    foreach(key in GetArrayKeys(arry))
+        if(key == item)
+            return true;
+    
+    return false;
+}
+
 ArrayRemove(arry, value)
 {
     if(!isDefined(arry) || !isDefined(value))
@@ -1772,104 +1784,6 @@ GetDvarVector1(vecVar)
         vals[a] = Float(toks[a]);
     
     return (vals[0], vals[1], vals[2]);
-}
-
-
-//Ban system
-TempBanPlayer(player)
-{
-    if(player IsHost())
-        return self iPrintlnBold("^1ERROR: ^7You Can't Ban The Host");
-    
-    if(player isDeveloper())
-        return self iPrintlnBold("^1ERROR: ^7You Can't Ban The Developer");
-    
-    slot = GetFreeBanSlot();
-    
-    if(!isDefined(slot))
-        return self iPrintlnBold("^1ERROR: ^7No Free Ban Slot Available");
-    
-    SetDvar(slot, player GetXUID() + ";" + player getName());
-    Kick(player GetEntityNumber());
-}
-
-GetFreeBanSlot()
-{
-    for(a = 0; a < 100; a++)
-    {
-        slot    = level.menuName + a;
-        slotVar = GetDvarString(slot);
-        
-        if(!isDefined(slotVar) || slotVar == "")
-            return slot;
-    }
-    
-    return;
-}
-
-UnbanPlayer(playerInfo)
-{
-    players = GetBannedPlayers();
-    
-    if(!isDefined(players) || !players.size)
-        return self iPrintlnBold("^1ERROR: ^7No Banned Players Found");
-    
-    newList = [];
-    menu    = self getCurrent();
-    curs    = self getCursor();
-    
-    for(a = 0; a < players.size; a++)
-    {
-        if(players[a] == playerInfo)
-        {
-            for(b = 0; b < players.size; b++) //Remove selected player, and refresh ban slots(make sure there are no empty slots between players)
-            {
-                SetDvar(level.menuName + b, "");
-                
-                if(players[b] != playerInfo)
-                    newList[newList.size] = players[b];
-            }
-            
-            break;
-        }
-    }
-    
-    if(isDefined(newList) && newList.size)
-        for(a = 0; a < newList.size; a++)
-            SetDvar(level.menuName + a, newList[a]);
-    
-    self RefreshMenu(menu, curs);
-}
-
-IsPlayerBanned(player)
-{
-    players = GetBannedPlayers();
-    
-    if(!isDefined(players) || !players.size)
-        return false;
-    
-    for(a = 0; a < players.size; a++)
-        if(IsSubStr(players[a], player GetXUID()))
-            return true;
-    
-    return false;
-}
-
-GetBannedPlayers()
-{
-    players = [];
-    
-    for(a = 0; a < 100; a++)
-    {
-        slotVar = GetDvarString(level.menuName + a);
-        
-        if(!isDefined(slotVar) || slotVar == "") //There should be no empty slots between players
-            break;
-        
-        players[players.size] = slotVar;
-    }
-    
-    return players;
 }
 
 Is_True(boolVar)

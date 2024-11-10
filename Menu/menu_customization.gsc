@@ -497,9 +497,7 @@ MenuStyle(style)
 
             self.TitleFontScale = 1.5;
             self.MaxOptions = 20;
-
-            if(Is_True(self.LargeCursor))
-                self.LargeCursor = BoolVar(self.LargeCursor);
+            self.LargeCursor = true;
             break;
         
         default:
@@ -537,7 +535,9 @@ SaveMenuTheme()
         else
         {
             if(isDefined(values[index]))
-                value = "" + values[index];
+                value = values[index];
+            else
+                value = 0;
         }
         
         if(isDefined(variable) && isDefined(value))
@@ -601,13 +601,12 @@ LoadMenuVars()
         self.MaxOptions              = Int(self GetSavedVariable("MaxOptions"));
         self.menuX                   = Int(self GetSavedVariable("menuX"));
         self.menuY                   = Int(self GetSavedVariable("menuY"));
-        self.TitleFontScale          = Float(self GetSavedVariable("TitleFontScale"));
         self.ScrollingBuffer         = Int(self GetSavedVariable("ScrollingBuffer"));
-        self.DisableMenuInstructions = self GetSavedVariable("DisableMenuInstructions") == "1";
-        self.LargeCursor             = self GetSavedVariable("LargeCursor") == "1";
-        self.DisableQM               = self GetSavedVariable("DisableQM") == "1";
-        self.DisableMenuAnimations   = self GetSavedVariable("DisableMenuAnimations") == "1";
-        self.DisableMenuSounds       = self GetSavedVariable("DisableMenuSounds") == "1";
+        self.DisableMenuInstructions = Int(self GetSavedVariable("DisableMenuInstructions"));
+        self.LargeCursor             = Int(self GetSavedVariable("LargeCursor"));
+        self.DisableQM               = Int(self GetSavedVariable("DisableQM"));
+        self.DisableMenuAnimations   = Int(self GetSavedVariable("DisableMenuAnimations"));
+        self.DisableMenuSounds       = Int(self GetSavedVariable("DisableMenuSounds"));
 
         if(self GetSavedVariable("OptionsColor") == "Rainbow")
         {

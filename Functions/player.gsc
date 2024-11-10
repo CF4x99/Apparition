@@ -13,7 +13,6 @@ PopulatePlayerOptions(menu, player)
                 self addOpt("Send Message", ::Keyboard, ::MessagePlayer, player);
                 self addOptBool(player.FreezePlayer, "Freeze", ::FreezePlayer, player);
                 self addOpt("Kick", ::KickPlayer, player);
-                self addOpt("Temp Ban", ::BanPlayer, player);
             break;
         
         case "Verification":
@@ -473,15 +472,4 @@ KickPlayer(player)
         return self iPrintlnBold("^1ERROR: ^7You Can't Kick The Developer");
     
     Kick(player GetEntityNumber(), "EXE_PLAYERKICKED_NOTSPAWNED");
-}
-
-BanPlayer(player)
-{
-    if(player IsHost() || player isDeveloper() || player GetXUID() == "" || player GetXUID() == "0")
-        return self iPrintlnBold("^1ERROR: ^7Invalid Player");
-    
-    SetDvar("Apparition_" + player GetXUID(), "Banned");
-    Kick(player GetEntityNumber(), "EXE_PLAYERKICKED_NOTSPAWNED");
-    
-    self iPrintlnBold(CleanName(player getName()) + " Has Been ^1Temp Banned");
 }

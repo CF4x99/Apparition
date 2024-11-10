@@ -834,6 +834,8 @@ ZombieRagdoll()
 
 StackZombies()
 {
+    level endon("EndStackZombies");
+    
     level.StackZombies = BoolVar(level.StackZombies);
 
     if(Is_True(level.StackZombies))

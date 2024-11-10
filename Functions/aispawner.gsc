@@ -20,16 +20,15 @@ GetAISpawnLocation()
 
 ServerSpawnAI(amount, spawner)
 {
-    if(!isDefined(spawner) || !IsFunctionPtr((spawner)))
-        return;
-    
+	if(!isDefined(spawner) || !IsFunctionPtr((spawner)))
+		return;
+
 	for(a = 0; a < amount; a++)
 	{
 		self thread [[ spawner ]]();
 		wait 0.1;
 	}
 }
-
 
 
 //Zombies
@@ -42,28 +41,28 @@ ServerSpawnZombie()
 	{
 		wait 0.1;
 
-        zombie endon("death");
+		zombie endon("death");
 
 		zombie StopAnimScripted(0);
-        target = self GetAISpawnLocation();
+		target = self GetAISpawnLocation();
 
-        linker = Spawn("script_origin", zombie.origin);
-        linker.origin = zombie.origin;
-        linker.angles = zombie.angles;
+		linker = Spawn("script_origin", zombie.origin);
+		linker.origin = zombie.origin;
+		linker.angles = zombie.angles;
 
-        zombie LinkTo(linker);
-        linker MoveTo(target, 0.01);
-        
-        linker waittill("movedone");
+		zombie LinkTo(linker);
+		linker MoveTo(target, 0.01);
 
-        zombie Unlink();
-        linker delete();
-        
-        zombie.completed_emerging_into_playable_area = 1;
-        zombie.find_flesh_struct_string = "find_flesh";
-        zombie.ai_state = "find_flesh";
-        zombie notify("zombie_custom_think_done", "find_flesh");
-    }
+		linker waittill("movedone");
+
+		zombie Unlink();
+		linker delete();
+
+		zombie.completed_emerging_into_playable_area = 1;
+		zombie.find_flesh_struct_string = "find_flesh";
+		zombie.ai_state = "find_flesh";
+		zombie notify("zombie_custom_think_done", "find_flesh");
+	}
 }
 
 
