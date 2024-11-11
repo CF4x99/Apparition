@@ -294,6 +294,10 @@ KillZombies(type)
         
         switch(type)
         {
+            case "Death":
+                zombies[a] DoDamage((zombies[a].health + 666), zombies[a].origin);
+                break;
+            
             case "Head Gib":
                 zombies[a] thread ZombieHeadGib();
                 break;
@@ -956,18 +960,19 @@ KnockdownZombies(dir)
 {
     switch(dir)
     {
-        case "Front":
+        case "Back":
             knockDir = "front";
             upDir = "getup_back";
             break;
         
-        case "Back":
-        
-        default:
+        case "Front":
             knockDir = "back";
             upDir = "getup_belly";
             break;
     }
+
+    if(!isDefined(knockDir) || !isDefined(upDir))
+        return;
 
     zombies = GetAITeamArray(level.zombie_team);
     

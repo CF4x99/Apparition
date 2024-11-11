@@ -656,9 +656,8 @@ drawText(showAnim)
                     else
                         tempColor = self.OptionsColor;
                 }
-                
-                self.menuHud["text"][(a + start)] = self createText("default", tempFontScale, 5, self.menuStructure[(start + a)].name, "LEFT", "CENTER", (self.menuX - 126), (self.menuY + 14) + (a * 20), 0, tempColor);
 
+                self.menuHud["text"][(a + start)] = self createText("default", tempFontScale, 5, self.menuStructure[(start + a)].name, "LEFT", "CENTER", (self.menuX - 126), (self.menuY + 14) + (a * 20), 0, tempColor);
                 elems = Array(self.menuHud["BoolBack"][(a + start)], self.menuHud["BoolOpt"][(a + start)], self.menuHud["subMenu"][(a + start)], self.menuHud["IntSlider"][(a + start)], self.menuHud["StringSlider"][(a + start)], self.menuHud["text"][(a + start)]);
 
                 foreach(elem in elems)
@@ -736,7 +735,7 @@ drawText(showAnim)
                     tempColor = self.OptionsColor;
             }
 
-            if((a + start) == self getCursor() && Is_True(self.LargeCursor))
+            if((a + start) == self getCursor() && (Is_True(self.LargeCursor) || self isInQuickMenu()))
                 tempFontScale = 1.2;
             else
                 tempFontScale = 1;
@@ -789,57 +788,15 @@ ScrollingSystem(dir)
 
     if(!self isInQuickMenu() && self.MenuStyle != "Quick Menu")
     {
-        if(self.menuStructure.size > self.MaxOptions || self getCursor() >= 0 || self getCursor() <= 0)
+        if(self getCursor() >= self.menuStructure.size || self getCursor() < 0)
         {
-            if(self getCursor() >= self.menuStructure.size || self getCursor() < 0)
-            {
-                if(self getCursor() >= self.menuStructure.size)
-                    self setCursor(0);
-                else
-                    self setCursor((self.menuStructure.size - 1));
-            }
-
-            self drawText();
+            if(self getCursor() >= self.menuStructure.size)
+                self setCursor(0);
+            else
+                self setCursor((self.menuStructure.size - 1));
         }
-        else
-        {
-            hudElems = Array("text", "BoolOpt", "subMenu", "IntSlider", "StringSlider");
 
-            foreach(hud in hudElems)
-            {
-                if(!isDefined(self.menuHud[hud]) || !self.menuHud[hud].size || hud == "BoolOpt" && self.ToggleStyle != "Text")
-                    continue;
-
-                foreach(index, elem in self.menuHud[hud])
-                {
-                    if(isDefined(self.menuStructure[index].bool) && self.menuStructure[index].bool && self.ToggleStyle == "Text Color")
-                    {
-                        if(IsString(self.ToggleTextColor) && self.ToggleTextColor == "Rainbow")
-                            color = level.RGBFadeColor;
-                        else
-                            color = self.ToggleTextColor;
-                    }
-                    else
-                    {
-                        if(index == self getCursor())
-                            color = self.ScrollingTextColor;
-                        else
-                            color = self.OptionsColor;
-                    }
-
-                    if(Is_True(self.LargeCursor) && index == self getCursor())
-                        scale = 1.2;
-                    else
-                        scale = 1;
-
-                    if(elem.fontScale != scale)
-                        elem ChangeFontscaleOverTime1(scale, 0.05);
-
-                    if(elem.color != color)
-                        elem.color = color;
-                }
-            }
-        }
+        self drawText();
 
         if(isDefined(self.menuHud["scroller"]) && isDefined(self.menuHud["text"][self getCursor()]))
             self.menuHud["scroller"].y = (self.menuHud["text"][self getCursor()].y - 8);
@@ -884,7 +841,7 @@ ScrollingSystem(dir)
                         color = self.OptionsColor;
                 }
 
-                if(Is_True(self.LargeCursor) && index == self getCursor())
+                if(index == self getCursor() && (Is_True(self.LargeCursor) || self isInQuickMenu()))
                     scale = 1.2;
                 else
                     scale = 1;

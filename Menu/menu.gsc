@@ -20,7 +20,10 @@ runMenuIndex(menu)
                 if(self getVerification() > 2) //VIP
                 {
                     self addOpt("Power-Up Menu", ::newMenu, "Power-Up Menu");
-                    self addOpt("Profile Management", ::newMenu, "Profile Management");
+
+                    if(SessionModeIsOnlineGame())
+                        self addOpt("Profile Management", ::newMenu, "Profile Management");
+                    
                     self addOpt("Weaponry", ::newMenu, "Weaponry");
                     self addOpt("Bullet Menu", ::newMenu, "Bullet Menu");
                     self addOpt("Fun Scripts", ::newMenu, "Fun Scripts");

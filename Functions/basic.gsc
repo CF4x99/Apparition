@@ -21,11 +21,11 @@ PopulateBasicScripts(menu, player)
                 self addOptBool(player.playerIgnoreMe, "No Target", ::NoTarget, player);
                 self addOptBool(player.ReducedSpread, "Reduced Spread", ::ReducedSpread, player);
                 self addOptBool(player.MultiJump, "Multi-Jump", ::MultiJump, player);
-                self addOptSlider("Set Vision", ::PlayerSetVision, "Default;zombie_last_stand;zombie_death", player);
-                self addOpt("Visual Effects", ::newMenu, "Visual Effects");
-                self addOptSlider("Zombie Charms", ::ZombieCharms, "None;Orange;Green;Purple;Blue", player);
                 self addOptBool(player.DisablePlayerHUD, "Disable HUD", ::DisablePlayerHUD, player);
+                self addOpt("Visual Effects", ::newMenu, "Visual Effects");
                 self addOptBool(player.NoExplosiveDamage, "No Explosive Damage", ::NoExplosiveDamage, player);
+                self addOptSlider("Set Vision", ::PlayerSetVision, "Default;zombie_last_stand;zombie_death", player);
+                self addOptSlider("Zombie Charms", ::ZombieCharms, "None;Orange;Green;Purple;Blue", player);
                 self addOptIncSlider("Character Model Index", ::SetCharacterModelIndex, 0, player.characterIndex, 8, 1, player);
                 self addOptBool(player.LoopCharacterModelIndex, "Random Character Model Index", ::LoopCharacterModelIndex, player);
                 self addOptBool(player.ShootWhileSprinting, "Shoot While Sprinting", ::ShootWhileSprinting, player);

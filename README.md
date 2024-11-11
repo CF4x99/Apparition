@@ -1,6 +1,6 @@
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.0.5
+    Version:              1.5.0.6
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
@@ -64,6 +64,18 @@
 
 
 ## Changelog
+<details>
+    <summary>
+        Version 1.5.0.6
+    </summary>
+
+    - Changed: Quick Menu Will Always Have A Large Option Cursor
+    - Changed: Profile Management Will Only Show When You're In A Ranked Match
+
+    - Fixed: Zombie Options -- Kill -> Death Slider Option Is Now Fixed
+
+</details>
+
 <details>
     <summary>
         Version 1.5.0.5

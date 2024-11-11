@@ -3,12 +3,17 @@ PopulatePlayerOptions(menu, player)
     switch(menu)
     {
         case "Options":
-            submenus = Array("Verification", "Basic Scripts", "Teleport Menu", "Profile Management", "Weaponry", "Bullet Menu", "Fun Scripts", "Model Manipulation", "Aimbot Menu", "Model Attachment", "Malicious Options");
+            submenus = Array("Verification", "Basic Scripts", "Teleport Menu", "Weaponry", "Bullet Menu", "Fun Scripts", "Model Manipulation", "Aimbot Menu", "Model Attachment", "Malicious Options");
             
             self addMenu("[^2" + player.verification + "^7]" + CleanName(player getName()));
 
                 for(a = 0; a < submenus.size; a++)
+                {
                     self addOpt(submenus[a], ::newMenu, submenus[a]);
+
+                    if(submenus[a] == "Teleport Menu" && SessionModeIsOnlineGame())
+                        self addOpt("Profile Management", ::newMenu, "Profile Management");
+                }
 
                 self addOpt("Send Message", ::Keyboard, ::MessagePlayer, player);
                 self addOptBool(player.FreezePlayer, "Freeze", ::FreezePlayer, player);
