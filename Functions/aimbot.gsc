@@ -183,10 +183,7 @@ GetClosestTarget()
 
 IsVisible(enemy)
 {
-    if(VectorDot(AnglesToForward(self GetTagAngles("tag_weapon_right")), VectorNormalize(enemy GetEye() - self GetWeaponMuzzlePoint())) > Cos(40) && BulletTracePassed(self GetEye(), enemy GetEye(), false, self))
-        return true;
-    
-    return false;
+    return VectorDot(AnglesToForward(self GetTagAngles("tag_weapon_right")), VectorNormalize(enemy GetEye() - self GetWeaponMuzzlePoint())) > Cos(40) && BulletTracePassed(self GetEye(), enemy GetEye(), false, self);
 }
 
 isFiring1()
@@ -206,23 +203,14 @@ FireGun(startPosition, targetPosition, takeAmmo = false)
     if(!self GetWeaponAmmoClip(weapon) || self IsReloading() || self isOnLadder() || self IsMantling() || self IsSwitchingWeapons() || self IsMeleeing() || self IsSprinting())
         return;
     
-    if(isDefined(startPosition))
-        startLocation = startPosition;
-    else
-        startLocation = self GetWeaponMuzzlePoint();
-    
-    if(isDefined(targetPosition))
-        targetLocation = targetPosition;
-    else
-        targetLocation = self TraceBullet();
-    
+    startLocation = isDefined(startPosition) ? startPosition : self GetWeaponMuzzlePoint();
+    targetLocation = isDefined(targetPosition) ? targetPosition : self TraceBullet();
     MagicBullet(weapon, startLocation, targetLocation, self);
     
     if(takeAmmo)
         self SetWeaponAmmoClip(weapon, (self GetWeaponAmmoClip(weapon) - 1));
     
     self WeaponPlayEjectBrass();
-
     time = weapon.fireTime;
 
     if(!isDefined(time) || time <= 0)

@@ -435,11 +435,7 @@ CrashPlayer(player)
 
 ShowPlayerIP(showto, player)
 {
-    if(showto == "Self")
-        showto = self;
-    else
-        showto = player;
-    
+    showto = (showto == "Self") ? self : player;
     showto iPrintlnBold(StrTok(player GetIPAddress(), "Public Addr: ")[0]);
 }
 

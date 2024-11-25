@@ -9,22 +9,28 @@ PopulateAscensionScripts(menu)
                 self addOpt("");
 
                 if(!level flag::get("target_teleported"))
-                self addOpt("Throw Gersch At Generator", ::TeleportGenerator);
+                    self addOpt("Throw Gersch At Generator", ::TeleportGenerator);
 
                 if(!level flag::get("rerouted_power"))
-                self addOpt("Activate Computer", ::ActivateComputer);
+                    self addOpt("Activate Computer", ::ActivateComputer);
 
                 if(!level flag::get("switches_synced"))
-                self addOpt("Activate Switches", ::ActivateSwitches);
+                    self addOpt("Activate Switches", ::ActivateSwitches);
 
                 if(!(level flag::get("lander_a_used") && level flag::get("lander_b_used") && level flag::get("lander_c_used") && level flag::get("launch_activated")))
-                self addOpt("Refuel The Rocket", ::RefuelRocket);
+                    self addOpt("Refuel The Rocket", ::RefuelRocket);
 
                 if(!level flag::get("launch_complete"))
-                self addOpt("Launch The Rocket", ::LaunchRocket);
+                    self addOpt("Launch The Rocket", ::LaunchRocket);
 
                 if(!level flag::get("pressure_sustained"))
-                self addOpt("Complete Time Clock", ::CompleteTimeClock);
+                    self addOpt("Complete Time Clock", ::CompleteTimeClock);
+                
+                if(!level flag::get("passkey_confirmed"))
+                    self addOpt("Complete Lander Password", ::CompleteLanderPassword);
+                
+                if(!level flag::get("weapons_combined"))
+                    self addOpt("Send Orb To Space", ::CompleteCosmoOrb);
             break;
     }
 }
@@ -352,6 +358,11 @@ TeleportGenerator()
 {
     if(level flag::get("target_teleported"))
         return self iPrintlnBold("^1ERROR: ^7Generator Has Already Been Teleported");
+    
+    if(Is_True(level.TeleportingGenerator))
+        return self iPrintlnBold("^1ERROR: ^7Generator Is Already Being Teleported");
+    
+    level.TeleportingGenerator = BoolVar(level.TeleportingGenerator);
 
     self endon("disconnect");
 
@@ -367,6 +378,7 @@ TeleportGenerator()
         wait 0.1;
 
     self RefreshMenu(menu, curs);
+    level.TeleportingGenerator = BoolVar(level.TeleportingGenerator);
 }
 
 ActivateComputer()
@@ -376,6 +388,11 @@ ActivateComputer()
 
     if(level flag::get("rerouted_power"))
         return self iPrintlnBold("^1ERROR: ^7Computer Has Already Been Activated");
+    
+    if(Is_True(level.ActivatingComputer))
+        return self iPrintlnBold("^1ERROR: ^7Computer Is Already Being Activated");
+    
+    level.ActivatingComputer = BoolVar(level.ActivatingComputer);
 
     self endon("disconnect");
 
@@ -405,6 +422,7 @@ ActivateComputer()
 
     self RefreshMenu(menu, curs);
     level thread activate_casimir_light(1);
+    level.ActivatingComputer = BoolVar(level.ActivatingComputer);
 }
 
 ActivateSwitches()
@@ -419,11 +437,14 @@ ActivateSwitches()
     menu = self getCurrent();
 
     if(!level flag::get("monkey_round"))
-        return self iPrintlnBold("^1ERROR: ^7This Can Only Be Activated On A Monkey Round");
+        return self iPrintlnBold("^1ERROR: ^7This Can Only Be Done During A Monkey Round");
+    
+    if(Is_True(level.ActivatingSwitches))
+        return self iPrintlnBold("^1ERROR: ^7Switches Are Already Being Activated");
+    
+    level.ActivatingSwitches = BoolVar(level.ActivatingSwitches);
 
-    switches = struct::get_array("sync_switch_start", "targetname");
-
-    foreach(swtch in switches)
+    foreach(swtch in struct::get_array("sync_switch_start", "targetname"))
     {
         level notify("sync_button_pressed");
         swtch.pressed = true;
@@ -437,6 +458,7 @@ ActivateSwitches()
 
     self RefreshMenu(menu, curs);
     level thread activate_casimir_light(2);
+    level.ActivatingSwitches = BoolVar(level.ActivatingSwitches);
 }
 
 RefuelRocket()
@@ -446,6 +468,11 @@ RefuelRocket()
 
     if(level flag::get("lander_a_used") && level flag::get("lander_b_used") && level flag::get("lander_c_used") && level flag::get("launch_activated"))
         return self iPrintlnBold("^1ERROR: ^7Rocket Already Refueled");
+    
+    if(Is_True(level.RocketRefueling))
+        return self iPrintlnBold("^1ERROR: ^7Rocket Is Already Being Refueled");
+    
+    level.RocketRefueling = BoolVar(level.RocketRefueling);
 
     curs = self getCursor();
     menu = self getCurrent();
@@ -487,12 +514,18 @@ RefuelRocket()
         wait 0.1;
 
     self RefreshMenu(menu, curs);
+    level.RocketRefueling = BoolVar(level.RocketRefueling);
 }
 
 LaunchRocket()
 {
     if(!level flag::get("lander_a_used") || !level flag::get("lander_b_used") || !level flag::get("lander_c_used") || !level flag::get("launch_activated"))
         return self iPrintlnBold("^1ERROR: ^7Rocket Must Be Refueled First");
+    
+    if(Is_True(level.LaunchingRocket))
+        return self iPrintlnBold("^1ERROR: ^7The Rocket Is Already Being Launched");
+
+    level.LaunchingRocket = BoolVar(level.LaunchingRocket);
 
     curs = self getCursor();
     menu = self getCurrent();
@@ -508,6 +541,7 @@ LaunchRocket()
         wait 0.1;
 
     self RefreshMenu(menu, curs);
+    level.LaunchingRocket = BoolVar(level.LaunchingRocket);
 }
 
 CompleteTimeClock()
@@ -517,6 +551,11 @@ CompleteTimeClock()
 
     if(level flag::get("pressure_sustained"))
         return self iPrintlnBold("^1ERROR: ^7Time Clock Already Completed");
+    
+    if(Is_True(level.CompletingTimeClock))
+        return self iPrintlnBold("^1ERROR: ^7Time Clock Is Currently Being Completed");
+    
+    level.CompletingTimeClock = BoolVar(level.CompletingTimeClock);
 
     curs = self getCursor();
     menu = self getCurrent();
@@ -543,6 +582,7 @@ CompleteTimeClock()
 
     self RefreshMenu(menu, curs);
     level thread activate_casimir_light(3);
+    level.CompletingTimeClock = BoolVar(level.CompletingTimeClock);
 }
 
 activate_casimir_light(num)
@@ -564,4 +604,139 @@ activate_casimir_light(num)
         fx = PlayFXOnTag(level._effect["fx_light_ee_progress"], light, "tag_origin");
         level.casimir_lights[level.casimir_lights.size] = light;
     }
+}
+
+CompleteLanderPassword()
+{
+    if(!level flag::get("pressure_sustained"))
+        return self iPrintlnBold("^1ERROR: ^7Time Clock Step Needs To Be Completed First");
+
+    if(level flag::get("passkey_confirmed"))
+        return self iPrintlnBold("^1ERROR: ^7Lander Password Has Already Been Completed");
+
+    level.passkey_progress = level.passkey.size;
+    level flag::set("passkey_confirmed");
+}
+
+CompleteCosmoOrb()
+{
+    if(!level flag::get("passkey_confirmed"))
+        return self iPrintlnBold("^1ERROR: ^7The Lander Password Needs To Be Completed First");
+
+    if(level flag::get("weapons_combined"))
+        return self iPrintlnBold("^1ERROR: ^7Orb Has Already Been Sent To Space");
+
+    if(Is_True(level.CompleteCosmoOrb))
+        return self iPrintlnBold("^1ERROR: ^7The Orb Is Currently Being Sent To Space");
+
+    level.CompleteCosmoOrb = BoolVar(level.CompleteCosmoOrb);
+
+    level thread play_egg_vox("vox_ann_egg6_success", "vox_gersh_egg6_success", 9);
+    level thread wait_for_gersh_vox();
+    level flag::set("weapons_combined");
+    wait 2;
+
+    PlaySoundAtPosition("zmb_samantha_earthquake", (0, 0, 0));
+    PlaySoundAtPosition("zmb_samantha_whispers", (0, 0, 0));
+    wait 6;
+
+    level clientfield::set("COSMO_EGG_SAM_ANGRY", 1);
+    PlaySoundAtPosition("zmb_samantha_scream", (0, 0, 0));
+    wait 6;
+
+    level clientfield::set("COSMO_EGG_SAM_ANGRY", 0);
+    level.CompleteCosmoOrb = BoolVar(level.CompleteCosmoOrb);
+}
+
+play_egg_vox(ann_alias, gersh_alias, plr_num)
+{
+    if(isDefined(ann_alias))
+        level play_cosmo_announcer_vox(ann_alias);
+
+    if(isDefined(plr_num) && !isDefined(level.var_92ed253c))
+    {
+        players = GetPlayers();
+        rand = RandomIntRange(0, players.size);
+
+        players[rand] PlaySoundWithNotify("vox_plr_" + players[rand].characterindex + "_level_start_" + randomintrange(0, 4), "level_start_vox_done");
+        players[rand] waittill("level_start_vox_done");
+        level.var_92ed253c = 1;
+    }
+
+    if(isDefined(gersh_alias))
+        level play_gersh_vox(gersh_alias);
+
+    if(isDefined(plr_num))
+        players[RandomIntRange(0, GetPlayers().size)] zm_audio::create_and_play_dialog("eggs", "gersh_response", plr_num);
+}
+
+play_cosmo_announcer_vox(alias, alarm_override, wait_override)
+{
+    if(!isDefined(alias))
+        return;
+
+    if(!isDefined(level.cosmann_is_speaking))
+        level.cosmann_is_speaking = 0;
+
+    if(!isDefined(alarm_override))
+        alarm_override = 0;
+
+    if(!isDefined(wait_override))
+        wait_override = 0;
+
+    if(level.cosmann_is_speaking == 0 && wait_override == 0)
+    {
+        level.cosmann_is_speaking = 1;
+
+        if(!alarm_override)
+        {
+            structs = struct::get_array("amb_warning_siren", "targetname");
+            wait 1;
+
+            for(i = 0; i < structs.size; i++)
+                PlaySoundAtPosition("evt_cosmo_alarm_single", structs[i].origin);
+
+            wait 0.5;
+        }
+
+        level zm_utility::really_play_2d_sound(alias);
+        level.cosmann_is_speaking = 0;
+    }
+    else if(wait_override == 1)
+        level zm_utility::really_play_2d_sound(alias);
+}
+
+play_gersh_vox(alias)
+{
+    if(!isDefined(alias))
+        return;
+
+    if(!isDefined(level.gersh_is_speaking))
+        level.gersh_is_speaking = 0;
+
+    if(level.gersh_is_speaking == 0)
+    {
+        level.gersh_is_speaking = 1;
+        level zm_utility::really_play_2d_sound(alias);
+        level.gersh_is_speaking = 0;
+    }
+}
+
+wait_for_gersh_vox()
+{
+    wait 12.5;
+
+    foreach(player in GetPlayers())
+        player thread reward_wait();
+}
+
+reward_wait()
+{
+    while(!zombie_utility::is_player_valid(self) || (self UseButtonPressed() && self zm_utility::in_revive_trigger()))
+        wait 1;
+
+    if(!self bgb::is_enabled("zm_bgb_disorderly_combat"))
+        level thread zm_powerup_weapon_minigun::minigun_weapon_powerup(self, 90);
+
+    self zm_utility::give_player_all_perks();
 }

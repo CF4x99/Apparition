@@ -151,12 +151,7 @@ EntityTeleport(entity, player, eEntity)
     if(!isDefined(ent) || !isDefined(entAngleDir))
         return;
     
-    distance = undefined;
-    
-    if(!isDefined(distance))
-        distance = 70; //Optional to pre-define the distance for specific entities. Defaults to this value.
-           
-    player SetOrigin(ent.origin + (entAngleDir * distance));
+    player SetOrigin(ent.origin + (entAngleDir * 70));
     player SetPlayerAngles(VectorToAngles((ent.origin + (0, 0, 55)) - player GetEye()));
 
     player PlayTeleportEffect();

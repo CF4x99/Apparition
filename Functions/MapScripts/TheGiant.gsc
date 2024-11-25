@@ -76,7 +76,6 @@ GiantCompleteSixthPerk()
         GiantLinkAllTeleporters();
 
     wait 0.1;
-
     flags = Array("one", "two", "three");
     consoles = Array("blue", "green", "red");
 

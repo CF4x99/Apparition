@@ -1,6 +1,8 @@
 /*
     Due To My Goal Of Allowing The Skybase To Be Used On All Maps, I Decided To Force The Player To Use A Custom Position Marker.
     You Could Easily Make It Spawn At A Specific Location On All Maps, But That Seems Pointless If The Player Is Able To Choose Their Own Position.
+
+    This is still a WIP. So don't expect it to be a fully functional skybase.
 */
 
 SpawnSkybase()
@@ -175,14 +177,7 @@ SpawnSkybaseTeleporter()
         level.SkybaseTeleporters = [];
 
         for(a = 0; a < 2; a++)
-        {
-            if(a)
-                origin = (level.SkybaseOrigin + (20, -45, 45));
-            else
-                origin = (crosshairs + (0, 0, 45));
-
-            level.SkybaseTeleporters[level.SkybaseTeleporters.size] = SpawnTeleporter("Spawn", origin, !a, true);
-        }
+            level.SkybaseTeleporters[level.SkybaseTeleporters.size] = SpawnTeleporter("Spawn", a ? (level.SkybaseOrigin + (20, -45, 45)) : (crosshairs + (0, 0, 45)), !a, true);
     }
     else
     {

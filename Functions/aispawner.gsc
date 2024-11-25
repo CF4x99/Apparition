@@ -39,10 +39,9 @@ ServerSpawnZombie()
 
 	if(isDefined(zombie) && (self.AISpawnLocation == "Crosshairs" || self.AISpawnLocation == "Self"))
 	{
-		wait 0.1;
-
 		zombie endon("death");
 
+		wait 0.1;
 		zombie StopAnimScripted(0);
 		target = self GetAISpawnLocation();
 

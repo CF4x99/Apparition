@@ -46,12 +46,6 @@ ShinoTheOneSong()
     for(a = 0; a < 4; a++)
     {
         trigger notify("trigger_activated");
-
-        if(!a)
-            time = 1;
-        else
-            time = 0.25;
-
-        wait time;
+        wait !a ? 1 : 0.25;
     }
 }

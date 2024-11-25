@@ -1,17 +1,10 @@
 
 runMenuIndex(menu)
 {
-    self endon("disconnect");
-    
     switch(menu)
     {
         case "Main":
-            titleString = level.menuName;
-
-            if(self.MenuStyle == "Native")
-                titleString = "Main Menu";
-            
-            self addMenu(titleString);
+            self addMenu((self.MenuStyle == "Native") ? "Main Menu" : level.menuName);
                 self addOpt("Basic Scripts", ::newMenu, "Basic Scripts");
                 self addOpt("Menu Customization", ::newMenu, "Menu Customization");
                 self addOpt("Message Menu", ::newMenu,"Message Menu");
@@ -193,6 +186,7 @@ runMenuIndex(menu)
         case "SOE Fumigator":
         case "SOE Smashables":
         case "SOE Power Switches":
+        case "Snakeskin Boots":
             self PopulateSOEScripts(menu);
             break;
         
@@ -325,8 +319,6 @@ runMenuIndex(menu)
 
 MenuOptionsPlayer(menu, player)
 {
-    self endon("disconnect");
-    
     if(!isDefined(player) || !IsPlayer(player))
         menu = "404";
     
@@ -397,7 +389,7 @@ MenuOptionsPlayer(menu, player)
             break;
         
         case "Origins Challenges Player":
-            self PopulateOriginsChallenges(player);
+            self PopulateOriginsScripts(menu, player);
             break;
         
         case "Options":
@@ -431,12 +423,7 @@ MenuOptionsPlayer(menu, player)
                             if(zm_utility::GetWeaponClassZM(weapon) != "weapon_" + weaponsVar[index] && menu != "Specials" || MakeLocalizedString(weapon.displayname) == "" || weapon.isgrenadeweapon || weapon.name == "knife" || IsSubStr(weapon.name, "upgraded") || weapon.name == "none")
                                 continue;
                             
-                            strng = weapon.name;
-
-                            if(MakeLocalizedString(weapon.displayname) != "")
-                                strng = weapon.displayname;
-
-                            self addOptBool(player HasWeapon1(weapon), strng, ::GivePlayerWeapon, weapon, player);
+                            self addOptBool(player HasWeapon1(weapon), (MakeLocalizedString(weapon.displayname) != "") ? weapon.displayname : weapon.name, ::GivePlayerWeapon, weapon, player);
                         }
                 }
 

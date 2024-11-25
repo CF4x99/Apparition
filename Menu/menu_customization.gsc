@@ -15,17 +15,9 @@ PopulateMenuCustomization(menu)
             break;
 
         case "Design Preferences":
-
-            if(self.MenuStyle == "Zodiac")
-                maxOptions = 12;
-            else if(self.MenuStyle == "Quick Menu")
-                maxOptions = 20;
-            else
-                maxOptions = 10;
-            
             self addMenu("Design Preferences");
                 self addOptSlider("Toggle Style", ::ToggleStyle, "Boxes;Text;Text Color");
-                self addOptIncSlider("Max Options", ::MenuMaxOptions, 5, 5, maxOptions, 1);
+                self addOptIncSlider("Max Options", ::MenuMaxOptions, 5, 5, (self.MenuStyle == "Zodiac") ? 12 : (self.MenuStyle == "Quick Menu") ? 25 : 10, 1);
                 self addOptIncSlider("Scrolling Buffer", ::MenuScrollingBuffer, 1, self.ScrollingBuffer, 15, 1);
                 self addOpt("Reposition Menu", ::RepositionMenu);
                 self addOptBool(self.LargeCursor, "Large Cursor", ::LargeCursor);
@@ -347,8 +339,6 @@ RepositionMenu()
 {
     self endon("disconnect");
     
-    increment = 8;
-    
     adjX = self.menuX;
     adjY = self.menuY;
     
@@ -357,26 +347,15 @@ RepositionMenu()
     if(isDefined(self.menuHud["scroller"]))
         self.menuHud["scroller"].alpha = 0;
     
-    //You won't be able to move the Y position when the 'Zodiac' menu style is set
-    instructions = "[{+melee}] - Exit\n[{+activate}] - Save Position\n[{+actionslot 1}] - Move Up\n[{+actionslot 2}] - Move Down\n[{+actionslot 3}] - Move Left\n[{+actionslot 4}] - Move Right";
-
-    if(self.MenuStyle == "Zodiac")
-        instructions = "[{+melee}] - Exit\n[{+activate}] - Save Position\n[{+actionslot 3}] - Move Left\n[{+actionslot 4}] - Move Right";
-    
-    self SetMenuInstructions(instructions);
+    self SetMenuInstructions((self.MenuStyle == "Zodiac") ? "[{+melee}] - Exit\n[{+activate}] - Save Position\n[{+actionslot 3}] - Move Left\n[{+actionslot 4}] - Move Right" : "[{+melee}] - Exit\n[{+activate}] - Save Position\n[{+actionslot 1}] - Move Up\n[{+actionslot 2}] - Move Down\n[{+actionslot 3}] - Move Left\n[{+actionslot 4}] - Move Right");
     
     while(1)
     {
         if(self.MenuStyle != "Zodiac" && (self ActionSlotOneButtonPressed() || self ActionSlotTwoButtonPressed()))
         {
-            keys = GetArrayKeys(self.menuHud);
-
-            incValue = (increment * -1);
-
-            if(self ActionSlotTwoButtonPressed())
-                incValue = increment;
+            incValue = self ActionSlotTwoButtonPressed() ? 8 : (8 * -1);
             
-            foreach(key in keys)
+            foreach(key in GetArrayKeys(self.menuHud))
             {
                 if(!isDefined(self.menuHud[key]))
                     continue;
@@ -395,14 +374,9 @@ RepositionMenu()
         }
         else if(self ActionSlotThreeButtonPressed() || self ActionSlotFourButtonPressed())
         {
-            keys = GetArrayKeys(self.menuHud);
-
-            incValue = (increment * -1);
-
-            if(self ActionSlotFourButtonPressed())
-                incValue = increment;
+            incValue = self ActionSlotFourButtonPressed() ? 8 : (8 * -1);
             
-            foreach(key in keys)
+            foreach(key in GetArrayKeys(self.menuHud))
             {
                 if(!isDefined(self.menuHud[key]))
                     continue;
@@ -493,21 +467,17 @@ MenuStyle(style)
         
         case "Quick Menu":
             self.menuX = 0;
-            self.menuY = -210;
+            self.menuY = -230;
 
             self.TitleFontScale = 1.5;
-            self.MaxOptions = 20;
+            self.MaxOptions = 25;
             self.LargeCursor = true;
             break;
         
         default:
             self.menuX = -71;
             self.menuY = -185;
-
-            if(self.MenuStyle == "Native")
-                self.TitleFontScale = 2;
-            else
-                self.TitleFontScale = 1.4;
+            self.TitleFontScale = (self.MenuStyle == "Native") ? 2 : 1.4;
             
             if(self.MaxOptions > 10)
                 self.MaxOptions = 10;
@@ -529,20 +499,7 @@ SaveMenuTheme()
     values    = Array(self.MenuStyle, self.ToggleStyle, self.MaxOptions, self.menuX, self.menuY, self.ScrollingBuffer, self.DisableMenuInstructions, self.LargeCursor, self.DisableQM, self.DisableMenuAnimations, self.DisableMenuSounds, self.MainColor, self.OptionsColor, self.TitleColor, self.ToggleTextColor, self.ScrollingTextColor);
     
     foreach(index, variable in variables)
-    {
-        if(variable == "MainColor" && Is_True(self.SmoothRainbowTheme))
-            value = "Rainbow";
-        else
-        {
-            if(isDefined(values[index]))
-                value = values[index];
-            else
-                value = 0;
-        }
-        
-        if(isDefined(variable) && isDefined(value))
-            self SetSavedVariable(variable, value);
-    }
+        self SetSavedVariable(variable, (variable == "MainColor" && Is_True(self.SmoothRainbowTheme)) ? "Rainbow" : isDefined(values[index]) ? values[index] : 0);
 }
 
 SetSavedVariable(variable, value)
@@ -553,43 +510,26 @@ SetSavedVariable(variable, value)
 
 GetSavedVariable(variable)
 {
-    //Every value will be grabbed as a string. Convert to the desired data type after
+    //Every value will be grabbed as a string. Convert to the desired data type when you load it
     //i.e. Int(GetSavedVariable(< variable >))
     return GetDvarString(variable + self GetXUID());
 }
 
 LoadMenuVars()
 {
-    self.MenuStyle = level.menuName; //Current Choices: level.menuName, Zodiac, Nautaremake, Native, Quick Menu
-    
-    if(self.MenuStyle == "Zodiac")
-        self.menuX = 298;
-    else if(self.MenuStyle == "Quick Menu")
-        self.menuX = 0;
-    else
-        self.menuX = -81;
-    
-    if(self.MenuStyle == "Quick Menu")
-        self.menuY = -210;
-    else
-        self.menuY = -185;
-    
-    if(self.MenuStyle == "Zodiac") //Zodiac uses Less Hud, So We Can Show A Few More Options
-        self.MaxOptions = 12;
-    else if(self.MenuStyle == "Quick Menu")
-        self.MaxOptions = 20;
-    else
-        self.MaxOptions = 10;
-    
+    self.MenuStyle          = level.menuName; //Current Choices: level.menuName, Zodiac, Nautaremake, Native, Quick Menu
+    self.menuX              = (self.MenuStyle == "Zodiac") ? 298 : (self.MenuStyle == "Quick Menu") ? 0 : -81;
+    self.menuY              = (self.MenuStyle == "Quick Menu") ? -230 : -185;
+    self.MaxOptions         = (self.MenuStyle == "Zodiac") ? 12 : (self.MenuStyle == "Quick Menu") ? 25 : 10;
     self.ScrollingBuffer    = 10;
     self.ToggleStyle        = "Boxes";
-    self.MainColor          = (1, 0, 0); //Default theme color
+    self.MainColor          = (1, 0, 0);
     self.OptionsColor       = (1, 1, 1);
     self.TitleColor         = (1, 1, 1);
     self.ToggleTextColor    = (0, 1, 0);
     self.ScrollingTextColor = (1, 1, 1);
     
-    if(self.MenuStyle == "Zodiac")
+    if(self.MenuStyle == "Zodiac" || self.MenuStyle == "Quick Menu")
         self.LargeCursor = true;
     
     saved = self GetSavedVariable("MenuStyle");
@@ -647,16 +587,9 @@ LoadMenuVars()
     }
     else
     {
-        self thread SmoothRainbowTheme(); //The color defaults to smooth rainbow. Remove this if you want the color to default to the self.MainColor variable.
+        self thread SmoothRainbowTheme();
         self SaveMenuTheme();
     }
     
-    if(self.MenuStyle == "Zodiac")
-        self.TitleFontScale = 1.6;
-    else if(self.MenuStyle == "Native")
-        self.TitleFontScale = 2;
-    else if(self.MenuStyle == "Quick Menu")
-        self.TitleFontScale = 1.5;
-    else
-        self.TitleFontScale = 1.4;
+    self.TitleFontScale = (self.MenuStyle == "Zodiac") ? 1.6 : (self.MenuStyle == "Native") ? 2 : (self.MenuStyle == "Quick Menu") ? 1.5 : 1.4;
 }

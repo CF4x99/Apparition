@@ -49,12 +49,7 @@ PopulateWeaponry(menu, player)
                     if(isInArray(skip, a))
                         continue;
                     
-                    name = ReturnCamoName((a + 45));
-
-                    if(name == "" || IsSubStr(name, "PLACEHOLDER") || name == "MPUI_CAMO_LOOT_CONTRACT")
-                        name = CleanString(ReturnRawCamoName((a + 45)));
-                    
-                    self addOpt(name, ::SetPlayerCamo, a, player);
+                    self addOpt((ReturnCamoName((a + 45)) == "" || IsSubStr(ReturnCamoName((a + 45)), "PLACEHOLDER") || ReturnCamoName((a + 45)) == "MPUI_CAMO_LOOT_CONTRACT") ? CleanString(ReturnRawCamoName((a + 45))) : ReturnCamoName((a + 45)), ::SetPlayerCamo, a, player);
                 }
             break;
         
@@ -68,14 +63,10 @@ PopulateWeaponry(menu, player)
 
                 for(a = 0; a < 44; a++)
                 {
-                    attachment = ReturnAttachment(a);
-                    name = ReturnAttachmentName(attachment);
-
-                    if(!isInArray(weapon.supportedAttachments, attachment) || attachment == "none" || attachment == "dw")
+                    if(!isInArray(weapon.supportedAttachments, ReturnAttachment(a)) || ReturnAttachment(a) == "none" || ReturnAttachment(a) == "dw")
                         continue;
                     
-                    self addOptBool(isInArray(weapon.attachments, attachment), name, ::GivePlayerAttachment, attachment, player);
-
+                    self addOptBool(isInArray(weapon.attachments, ReturnAttachment(a)), ReturnAttachmentName(ReturnAttachment(a)), ::GivePlayerAttachment, ReturnAttachment(a), player);
                     attachmentFound++;
                 }
 
@@ -180,10 +171,7 @@ PackCurrentWeapon(player, buildKit = true)
     if(!isDefined(originalWeapon))
         return self iPrintlnBold("^1ERROR: ^7Invalid Weapon");
     
-    if(!zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()))
-        newWeapon = zm_weapons::get_upgrade_weapon(player GetCurrentWeapon());
-    else
-        newWeapon = zm_weapons::get_base_weapon(player GetCurrentWeapon());
+    newWeapon = !zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()) ? zm_weapons::get_upgrade_weapon(player GetCurrentWeapon()) : zm_weapons::get_base_weapon(player GetCurrentWeapon());
     
     if(!isDefined(newWeapon))
         return;
@@ -200,13 +188,7 @@ PackCurrentWeapon(player, buildKit = true)
     if(zm_weapons::is_weapon_included(base_weapon))
 		force_attachments = zm_weapons::get_force_attachments(base_weapon.rootweapon);
     
-    if(!upgraded && isDefined(originalWeapon.savedCamo) && originalWeapon.savedCamo != level.pack_a_punch_camo_index)
-        camo = originalWeapon.savedCamo;
-    else
-    {
-        if(upgraded)
-            camo = level.pack_a_punch_camo_index;
-    }
+    camo = (!upgraded && isDefined(originalWeapon.savedCamo) && originalWeapon.savedCamo != level.pack_a_punch_camo_index) ? originalWeapon.savedCamo : upgraded ? level.pack_a_punch_camo_index : undefined;
 
 	if(isDefined(force_attachments) && force_attachments.size)
 	{
@@ -221,7 +203,6 @@ PackCurrentWeapon(player, buildKit = true)
 		}
         
         acvi = 0;
-
 		newWeapon = GetWeapon(newWeapon.rootweapon.name, force_attachments);
 		weapon_options = player CalcWeaponOptions(camo, 0, 0);
 	}
@@ -261,34 +242,22 @@ SaveCurrentLoadout(type, player)
 
         if(!isDefined(weapon) || weapon == level.weaponnone || weapon == level.weaponbasemelee || IsSubStr(weapon.name, "_knife"))
             return self iPrintlnBold("^1ERROR: ^7Invalid Weapon");
-        
-        if(isDefined(player.aat[player aat::get_nonalternate_weapon(weapon)]))
-            aat = player.aat[player aat::get_nonalternate_weapon(weapon)];
-        else
-            aat = "none";
+
+        aat = isDefined(player.aat[player aat::get_nonalternate_weapon(weapon)]) ? player.aat[player aat::get_nonalternate_weapon(weapon)] : "none";
         
         if(isDefined(weapon.attachments) && weapon.attachments.size)
         {
             attachments = "";
 
             foreach(index, attachment in weapon.attachments)
-            {
-                if(index == weapon.attachments.size)
-                    attachments += attachment;
-                else
-                    attachments += attachment + ";";
-            }
+                attachments += (index == weapon.attachments.size) ? attachment : attachment + ";";
         }
         else
             attachments = "none";
         
-        if(isDefined(weapon.savedCamo))
-            savedCamo = weapon.savedCamo;
-        else
-            savedCamo = 0;
+        savedCamo = isDefined(weapon.savedCamo) ? weapon.savedCamo : 0;
         
         SetDvar("Apparition_Loadout_" + userID, 1);
-
         SetDvar("Loadout_" + type + "_" + userID, zm_weapons::get_base_weapon(weapon).name);
         SetDvar("Loadout_" + type + "_Attachments_" + userID, attachments);
         SetDvar("Loadout_" + type + "_Camo_" + userID, savedCamo);
@@ -297,16 +266,8 @@ SaveCurrentLoadout(type, player)
     }
     else
     {
-        if(type == "Primary Offhand")
-        {
-            saveType = "primary_offhand";
-            weapon = player zm_utility::get_player_lethal_grenade();
-        }
-        else
-        {
-            saveType = "secondary_offhand";
-            weapon = player zm_utility::get_player_tactical_grenade();
-        }
+        saveType = (type == "Primary Offhand") ? "primary_offhand" : "secondary_offhand";
+        weapon = (type == "Primary Offhand") ? player zm_utility::get_player_lethal_grenade() : player zm_utility::get_player_tactical_grenade();
         
         if(!isDefined(weapon) || weapon == level.weaponnone)
             return self iPrintlnBold("^1ERROR: ^7Invalid Offhand");

@@ -69,12 +69,7 @@ ForgeCarryModel()
     
     while(isDefined(self.forgemodel))
     {
-        if(Is_True(self.forgeignoreCollisions))
-            moveOrigin = self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), self.forgeModelDistance);
-        else
-            moveOrigin = BulletTrace(self GetEye(), self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), self.forgeModelDistance), false, self.forgemodel)["position"];
-        
-        self.forgemodel MoveTo(moveOrigin, 0.1);
+        self.forgemodel MoveTo(Is_True(self.forgeignoreCollisions) ? self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), self.forgeModelDistance) : BulletTrace(self GetEye(), self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), self.forgeModelDistance), false, self.forgemodel)["position"], 0.1);
         wait 0.05;
     }
 }

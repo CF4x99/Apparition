@@ -4,12 +4,7 @@ SpawnMerryGoRound()
         return;
 
     model = GetSpawnableBaseModel("vending_three_gun");
-
-    if(isInArray(level.MenuModels, "test_sphere_silver"))
-        seatModel = "test_sphere_silver";
-    else
-        seatModel = "defaultactor";
-
+    seatModel = isInArray(level.MenuModels, "test_sphere_silver") ? "test_sphere_silver" : "defaultactor";
     origin = self TraceBullet();
     level.MerryGoRoundSpeed = 10;
 
@@ -30,14 +25,14 @@ SpawnMerryGoRound()
 
     for(a = 0; a < 4; a++)
         for(b = 0; b < 10; b++)
-            base[base.size] = SpawnScriptModel(origin + (Cos(b * 36) * 27, Sin(b * 36) * 27, ((a * 55) + 25)), model, (0, ((360 / 10) * b), 0), 0.01);
+            base[base.size] = SpawnScriptModel(origin + (Cos(b * 36) * 27, Sin(b * 36) * 27, ((a * 55) + 25)), model, (0, (36 * b), 0), 0.01);
 
     array::thread_all(base, ::SpawnableArray, "Merry Go Round");
 
     for(a = 0; a < 2; a++)
         for(b = 0; b < 12; b++)
         {
-            platforms[platforms.size] = SpawnScriptModel(origin + (0, 0, (a * 250)), model, (0, ((360 / 12) * b), 90), 0.01);
+            platforms[platforms.size] = SpawnScriptModel(origin + (0, 0, (a * 250)), model, (0, (30 * b), 90), 0.01);
 
             if(isDefined(platforms[(platforms.size - 1)]))
             {
@@ -54,7 +49,7 @@ SpawnMerryGoRound()
 
     for(a = 0; a < 10; a++)
     {
-        seats[seats.size] = SpawnScriptModel(origin + (Cos((a * 360) / 10) * 150, Sin((a * 360) / 10) * 150, 45), seatModel, (0, ((360 / 10) * a), 0), 0.01);
+        seats[seats.size] = SpawnScriptModel(origin + (Cos((a * 360) / 10) * 150, Sin((a * 360) / 10) * 150, 45), seatModel, (0, (36 * a), 0), 0.01);
 
         if(isDefined(seats[(seats.size - 1)]) && seatModel != "defaultactor")
             seats[(seats.size - 1)] SetScale(6);
@@ -67,10 +62,7 @@ SpawnMerryGoRound()
         if(!isDefined(seats[a]))
             continue;
 
-        if(a % 2)
-            seats[a] LinkTo(SeatsLinker[0]);
-        else
-            seats[a] LinkTo(SeatsLinker[1]);
+        seats[a] LinkTo(SeatsLinker[a % 2 ? 0 : 1]);
     }
 
     MerryGoRoundLinker thread RotateMerryYaw();
@@ -114,12 +106,7 @@ SeatsMove(origin)
 
     while(isDefined(self))
     {
-        if(self.origin[2] > origin)
-            value = -50;
-        else
-            value = 50;
-
-        self MoveZ(value, 0.65);
+        self MoveZ((self.origin[2] > origin) ? -50 : 50, 0.65);
         wait 0.6;
     }
 }

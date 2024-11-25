@@ -515,22 +515,13 @@ ZombieAnimScript(anm, ntfy)
 
 DisableZombieSpawning()
 {
-    if(GetDvarString("ai_disableSpawn") == "0")
-        value = "1";
-    else
-        value = "0";
-    
-    SetDvar("ai_disableSpawn", value);
+    SetDvar("ai_disableSpawn", (GetDvarString("ai_disableSpawn") == "0") ? "1" : "0");
     KillZombies();
 }
 
 TeleportZombies(loc)
 {
-    origin = self.origin;
-
-    if(loc == "Crosshairs")
-        origin = self TraceBullet();
-    
+    origin = (loc == "Crosshairs") ? self TraceBullet() : self.origin;
     zombies = GetAITeamArray(level.zombie_team);
 
     for(a = 0; a < zombies.size; a++)
@@ -694,12 +685,7 @@ ZombieProjectileVomit()
 
 FreezeZombies()
 {
-    if(GetDvarString("g_ai") == "1")
-        value = "0";
-    else
-        value = "1";
-    
-    SetDvar("g_ai", value);
+    SetDvar("g_ai", (GetDvarString("g_ai") == "1") ? "0" : "1");
 }
 
 DisappearingZombies()
@@ -816,16 +802,10 @@ ZombieBurnPlayers()
 
     while(IsAlive(self) && Is_True(level.ExplodingZombies))
     {
-        players = GetPlayers();
-
-        foreach(player in players)
-        {
-            dist_sq = DistanceSquared(player.origin, self.origin);
-
-            if(dist_sq <= 9216)
+        foreach(player in GetPlayers())
+            if(DistanceSquared(player.origin, self.origin) <= 9216)
                 if(!(isDefined(player.is_burning) && player.is_burning) && zombie_utility::is_player_valid(player, 0))
                     player function_3389e2f3(self);
-        }
 
         wait 0.1;
     }

@@ -44,10 +44,7 @@ PopulateBulletMenu(menu, player)
                     {
                         if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
                         {
-                            strng = weaps[a].name;
-
-                            if(MakeLocalizedString(weaps[a].displayname) != "")
-                                strng = weaps[a].displayname;
+                            strng = (MakeLocalizedString(weaps[a].displayname) != "") ? weaps[a].displayname : weaps[a].name;
                             
                             if(!IsInArray(arr, strng))
                             {
@@ -72,10 +69,7 @@ PopulateBulletMenu(menu, player)
                     {
                         if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
                         {
-                            strng = weaps[a].name;
-
-                            if(MakeLocalizedString(weaps[a].displayname) != "")
-                                strng = weaps[a].displayname;
+                            strng = (MakeLocalizedString(weaps[a].displayname) != "") ? weaps[a].displayname : weaps[a].name;
                             
                             if(!IsInArray(arr, strng))
                             {
@@ -216,17 +210,15 @@ ExplosiveBullets(player)
         {
             player waittill("weapon_fired");
 
-            targetPosition = player TraceBullet();
-
             if(Is_True(player.ExplosiveBulletEffect))
             {
                 if(isDefined(level._effect["raps_impact"]))
-                    PlayFX(level._effect["raps_impact"], targetPosition);
+                    PlayFX(level._effect["raps_impact"], player TraceBullet());
                 else if(isDefined(level._effect["dog_gib"]))
-                    PlayFX(level._effect["dog_gib"], targetPosition);
+                    PlayFX(level._effect["dog_gib"], player TraceBullet());
             }
 
-            RadiusDamage(targetPosition, player.ExplosiveBulletsRange, player.ExplosiveBulletsDamage, player.ExplosiveBulletsDamage, player);
+            RadiusDamage(player TraceBullet(), player.ExplosiveBulletsRange, player.ExplosiveBulletsDamage, player.ExplosiveBulletsDamage, player);
         }
     }
     else

@@ -1,4 +1,4 @@
-PopulateOriginsScripts(menu)
+PopulateOriginsScripts(menu, player)
 {
 	switch(menu)
 	{
@@ -62,10 +62,8 @@ PopulateOriginsScripts(menu)
 			self addMenu("Soul Boxes");
 
 				if(isDefined(boxes) && boxes.size)
-				{
-					for(a = 0; a < boxes.size; a++)
-						self addOpt("Soul Box " + (a + 1), ::CompleteSoulbox, boxes[a]);
-				}
+					foreach(index, box in boxes)
+						self addOpt(ReturnSoulBoxName(box.script_int) + " Soul Box", ::CompleteSoulbox, box);
 			break;
 
 		case "Origins Challenges":
@@ -108,21 +106,25 @@ PopulateOriginsScripts(menu)
 				self addOptBool(level flag::get("electric_puzzle_1_complete"), "Song", ::CompleteLightningSong);
 				self addOptBool(level flag::get("electric_puzzle_2_complete"), "Turn Dials", ::CompleteLightningDials);
 			break;
+		
+		case "Origins Challenges Player":
+			self addMenu("Challenges");
+
+				foreach(challenge in level._challenges.a_stats)
+					self addOptBool(get_stat(challenge.str_name, player).b_medal_awarded, ReturnOriginsIString(challenge.str_name), ::CompleteOriginChallenge, challenge.str_name, player);
+			break;
 	}
-}
-
-PopulateOriginsChallenges(player)
-{
-	self addMenu("Challenges");
-
-		foreach(challenge in level._challenges.a_stats)
-			self addOptBool(get_stat(challenge.str_name, player).b_medal_awarded, ReturnOriginsIString(challenge.str_name), ::CompleteOriginChallenge, challenge.str_name, player);
 }
 
 CompleteSoulbox(box)
 {
-	if(!isDefined(box) || box.n_souls_absorbed >= 30)
+	if(!isDefined(box))
 		return;
+	
+	if(Is_True(box.fillingBox) || box.n_souls_absorbed >= 30)
+		return self iPrintlnBold("^1ERROR: ^7Soul Box Is Already Being Filled");
+	
+	box.fillingBox = BoolVar(box.fillingBox);
 
 	curs = self getCursor();
 	menu = self getCurrent();
@@ -138,24 +140,41 @@ CompleteSoulbox(box)
 	self RefreshMenu(menu, curs, true);
 }
 
+ReturnSoulBoxName(index)
+{
+	switch(index)
+	{
+		case 0:
+			return "Pack 'a' Punch";
+		
+		case 1:
+			return "Generator 4";
+		
+		case 2:
+			return "Church";
+		
+		case 3:
+			return "Generator 5";
+	}
+}
+
 OriginsSetWeather(weather)
 {
 	level.last_snow_round = 0;
 	level.last_rain_round = 0;
-	int = RandomIntRange(1, 5);
 
 	switch(weather)
 	{
 		case "Rain":
 			level.weather_snow = 0;
-			level.weather_rain = int;
+			level.weather_rain = RandomIntRange(1, 5);
 			level.weather_vision = 1;
 
 			level util::set_lighting_state(1);
 			break;
 
 		case "Snow":
-			level.weather_snow = int;
+			level.weather_snow = RandomIntRange(1, 5);
 			level.weather_rain = 0;
 			level.weather_vision = 2;
 
@@ -235,19 +254,12 @@ SetGeneratorState(generator)
 
 	update_captured_zone_count();
 
-	if(struct flag::get("player_controlled"))
-		struct.n_current_progress = 100;
-	else
-		struct.n_current_progress = 0;
-
+	struct.n_current_progress = struct flag::get("player_controlled") ? 100 : 0;
 	struct.n_last_progress = struct.n_current_progress;
 
-	if(struct flag::get("player_controlled"))
-		level clientfield::set("state_" + struct.script_noteworthy, 2);
-	else
-		level clientfield::set("state_" + struct.script_noteworthy, 4);
-
+	level clientfield::set("state_" + struct.script_noteworthy, struct flag::get("player_controlled") ? 2 : 4);
 	level clientfield::set(struct.script_noteworthy, struct.n_current_progress / 100);
+
 	play_pap_anim(struct flag::get("player_controlled"));
 }
 
@@ -503,10 +515,7 @@ ReturnGatewayName(targetname)
 
 MudSlowdown()
 {
-	if(isDefined(level.a_e_slow_areas))
-		level.a_e_slow_areas = undefined;
-	else
-		level.a_e_slow_areas = GetEntArray("player_slow_area", "targetname");
+	level.a_e_slow_areas = isDefined(level.a_e_slow_areas) ? undefined : GetEntArray("player_slow_area", "targetname");
 }
 
 ReturnOriginsIString(stat)

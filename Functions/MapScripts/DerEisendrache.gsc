@@ -32,7 +32,7 @@ PopulateDerEisendracheScripts(menu)
                     {
                         self addOptBool((level flag::get("rune_prison_obelisk") && !isDefined(level.MagmaRock)), "Shoot Magma Rock", ::MagmaRock);
                         self addOptBool(AllRunicCirclesCharged(), "Activate & Charge Runic Circles", ::RunicCircles);
-                        self addOptBool(IsClockFireplaceComplete(), "Complete Fireplace Step", ::ClockFireplaceStep);
+                        self addOptBool(IsClockFireplaceComplete(), "Shoot Fireplace", ::ClockFireplaceStep);
                         self addOptBool(level flag::get("rune_prison_repaired"), "Collect Repaired Arrows", ::CollectRepairedFireArrows);
                     }
                     else
@@ -72,17 +72,19 @@ PopulateDerEisendracheScripts(menu)
             symbol = GetEnt("aq_dg_gatehouse_symbol_trig", "targetname");
 
             self addMenu("Void");
-                self addOptBool(IsDemonSymbolDestroyed(), "Initiate Quest", ::InitVoidBow);
+                self addOptBool(level clientfield::get("quest_state_demon") > 0, "Initiate Quest", ::InitVoidBow);
 
-                if(IsDemonSymbolDestroyed())
+                if(level clientfield::get("quest_state_demon") > 0)
                 {
                     if(isDefined(level.var_6e68c0d8))
                     {
                         fossils = GetEntArray("aq_dg_fossil", "script_noteworthy");
 
                         self addOptBool(level flag::get("demon_gate_seal"), "Release Demon Urn", ::ReleaseDemonUrn);
-                        self addOptBool((!isDefined(fossils) || !fossils.size), "Trigger Fossil Heads", ::TriggerDemonFossils);
+                        self addOptBool((!isDefined(fossils) || !fossils.size), "Fossil Heads", ::TriggerDemonFossils);
                         self addOptBool(level flag::get("demon_gate_crawlers"), "Feed Demon Urn", ::FeedDemonUrn);
+                        self addOptBool(level flag::get("demon_gate_runes"), "Inscribe Demon Name", ::InscribeDemonName);
+                        self addOptBool(level flag::get("demon_gate_repaired"), "Collect Reforged Arrow", ::CollectVoidArrow);
                     }
                     else
                     {
@@ -93,8 +95,26 @@ PopulateDerEisendracheScripts(menu)
                 break;
 
                 case "Wolf Bow":
-                self addMenu("Wolf");
-                //removed for now
+                    //level.var_52978d72 <- player bound to the wolf quest
+
+                    self addMenu("Wolf");
+                        self addOptBool(level flag::get("wolf_howl_paintings"), "Initiate Quest", ::InitWolfBow);
+                        
+                        if(level flag::get("wolf_howl_paintings"))
+                        {
+                            if(isDefined(level.var_52978d72))
+                            {
+                                self addOptBool((level clientfield::get("quest_state_wolf") >= 2), "Collect Skull Shrine", ::CollectSkullShrine);
+                                self addOptBool((level clientfield::get("quest_state_wolf") >= 3), "Attach Skull To Skeleton", ::WolfAttachSkull);
+                                self addOptBool(level flag::get("wolf_howl_escort"), "Escort & Collect Wolf Souls", ::CollectWolfSouls);
+                                self addOptBool(level flag::get("wolf_howl_repaired"), "Collect Reforged Arrows", ::CollectReforgedArrows);
+                            }
+                            else
+                            {
+                                self addOpt("");
+                                self addOpt("Quest Hasn't Been Bound Yet");
+                            }
+                        }
             break;
     }
 }
@@ -143,9 +163,7 @@ EnableAllLandingPads()
     if(AreLandingPadsEnabled())
         return self iPrintlnBold("^1ERROR: ^7All Landing Pads Are Already Enabled");
     
-    pads = GrabPadUniTriggers();
-
-    foreach(pad in pads)
+    foreach(pad in GrabPadUniTriggers())
         pad notify("trigger");
 }
 
@@ -200,7 +218,6 @@ InitFireBow()
     
     menu = self getCurrent();
     curs = self getCursor();
-
     clock = GetEnt("aq_rp_clock_wall_trig", "targetname");
 
     if(isDefined(clock))
@@ -219,6 +236,9 @@ MagmaRock()
     
     if(level flag::get("rune_prison_obelisk"))
         return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+    
+    if(!isDefined(level.var_c62829c7))
+        return self iPrintlnBold("^1ERROR: ^7There Is No Player Bound To The Quest");
     
     level.MagmaRock = true;
     
@@ -257,6 +277,9 @@ RunicCircles()
     
     if(Is_True(level.ChargingCircles))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    if(!isDefined(level.var_c62829c7))
+        return self iPrintlnBold("^1ERROR: ^7There Is No Player Bound To The Quest");
     
     level.ChargingCircles = true;
     
@@ -342,6 +365,9 @@ ClockFireplaceStep()
     
     if(Is_True(level.ClockFireplaceStep))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    if(!isDefined(level.var_c62829c7))
+        return self iPrintlnBold("^1ERROR: ^7There Is No Player Bound To The Quest");
 
     level.ClockFireplaceStep = true;
     
@@ -406,11 +432,11 @@ IsClockFireplaceComplete()
 {
     magmaBall = GetEnt("aq_rp_magma_ball_tag", "targetname");
 
-    if(!isDefined(magmaBall))
-        return false;
-
     if(level flag::get("rune_prison_golf") && magmaBall flag::get("magma_ball_move_done"))
         return true;
+
+    if(!isDefined(magmaBall))
+        return false;
     
     return false;
 }
@@ -425,6 +451,9 @@ CollectRepairedFireArrows()
     
     if(Is_True(level.CollectRepairedFireArrows))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    if(!isDefined(level.var_c62829c7))
+        return self iPrintlnBold("^1ERROR: ^7There Is No Player Bound To The Quest");
 
     level.CollectRepairedFireArrows = true;
 
@@ -498,6 +527,9 @@ LightningBeacons()
     if(Is_True(level.LightningBeacons))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
     
+    if(!isDefined(level.var_f8d1dc16))
+        return self iPrintlnBold("^1ERROR: ^7There Is No Player Bound To The Quest");
+    
     level.LightningBeacons = true;
 
     menu = self getCurrent();
@@ -552,11 +584,13 @@ LightningWallrun()
     if(!AreBeaconsLit())
         return self iPrintlnBold("^1ERROR: ^7Beacons Must Be Lit First");
     
+    if(!isDefined(level.var_f8d1dc16))
+        return self iPrintlnBold("^1ERROR: ^7There Is No Player Bound To The Quest");
+    
     level.LightningWallrun = true;
 
     menu = self getCurrent();
     curs = self getCursor();
-
     trigs = GetEntArray("aq_es_wallrun_trigger", "targetname");
 
     for(a = 0; a < trigs.size; a++)
@@ -583,6 +617,9 @@ LightningChargeBeacons()
     
     if(!level flag::get("elemental_storm_wallrun"))
         return self iPrintlnBold("^1ERROR: ^7Wallrun Step Must Be Completed First");
+    
+    if(!isDefined(level.var_f8d1dc16))
+        return self iPrintlnBold("^1ERROR: ^7There Is No Player Bound To The Quest");
     
     level.LightningChargeBeacons = true;
 
@@ -669,12 +706,14 @@ ChargeLightningArrows()
     
     if(!LightningBeaconsCharged())
         return self iPrintlnBold("^1ERROR: ^7Urns Must Filled & Beacons Need To Be Charged First");
+    
+    if(!isDefined(level.var_f8d1dc16))
+        return self iPrintlnBold("^1ERROR: ^7There Is No Player Bound To The Quest");
 
     level.ChargeLightningArrows = true;
 
     menu = self getCurrent();
     curs = self getCursor();
-
     storm = struct::get("quest_reforge_elemental_storm");
 
     if(isDefined(storm))
@@ -714,8 +753,8 @@ ChargeLightningArrows()
 //Void Bow Quest
 InitVoidBow()
 {
-    if(IsDemonSymbolDestroyed())
-        return;
+    if(level clientfield::get("quest_state_demon") > 0)
+        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
     
     if(Is_True(level.InitVoidBow))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
@@ -724,7 +763,6 @@ InitVoidBow()
 
     menu = self getCurrent();
     curs = self getCursor();
-
     symbol = GetEnt("aq_dg_gatehouse_symbol_trig", "targetname");
 
     if(isDefined(symbol))
@@ -736,11 +774,6 @@ InitVoidBow()
     self RefreshMenu(menu, curs);
 }
 
-IsDemonSymbolDestroyed()
-{
-    return (level clientfield::get("quest_state_demon") > 0 || Is_True(level.InitVoidBow));
-}
-
 ReleaseDemonUrn()
 {
     if(level flag::get("demon_gate_seal"))
@@ -748,6 +781,9 @@ ReleaseDemonUrn()
     
     if(Is_True(level.ReleaseDemonUrn))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    if(!isDefined(level.var_6e68c0d8))
+        return self iPrintlnBold("^1ERROR: ^7There Is No Player Bound To The Quest");
     
     level.ReleaseDemonUrn = true;
 
@@ -786,6 +822,9 @@ TriggerDemonFossils()
     if(Is_True(level.ReleaseDemonUrn))
         return self iPrintlnBold("^1ERROR: ^7Release Demon Urn Is Still Being Completed");
     
+    if(!isDefined(level.var_6e68c0d8))
+        return self iPrintlnBold("^1ERROR: ^7There Is No Player Bound To The Quest");
+    
     level.TriggerDemonFossils = true;
 
     menu = self getCurrent();
@@ -802,6 +841,8 @@ TriggerDemonFossils()
 
     while(1)
     {
+        fossils = GetEntArray("aq_dg_fossil", "script_noteworthy");
+
         if(!isDefined(fossils) || !fossils.size)
             break;
         
@@ -824,24 +865,25 @@ FeedDemonUrn()
     if(Is_True(level.FeedDemonUrn))
         return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
     
+    if(!isDefined(level.var_6e68c0d8))
+        return self iPrintlnBold("^1ERROR: ^7There Is No Player Bound To The Quest");
+    
     level.FeedDemonUrn = true;
 
     menu = self getCurrent();
     curs = self getCursor();
-
     urnTrig = GetEnt("aq_dg_trophy_room_trig", "targetname");
 
     if(isDefined(urnTrig))
         urnTrig notify("trigger", level.var_6e68c0d8);
 
     wait 0.1;
-
     urn = GetEnt("aq_dg_demonic_circle_volume", "targetname");
 
     while(urn.var_e1f456ae < 6)
     {
         SpawnSacrificedZombie();
-        wait 0.5;
+        wait 1;
     }
 
     while(!level flag::get("demon_gate_crawlers"))
@@ -871,10 +913,9 @@ SpawnSacrificedZombie()
 
     if(isDefined(zombie))
     {
-        wait 0.1;
-
         zombie endon("death");
 
+        wait 0.1;
         level.EESpawnedZM[level.EESpawnedZM.size] = zombie;
         zombie zombie_utility::makezombiecrawler(true);
 
@@ -894,10 +935,375 @@ SpawnSacrificedZombie()
         linker delete();
 
         zombie LinkTo(goalEnt);
-
         zombie.completed_emerging_into_playable_area = 1;
-        zombie.find_flesh_struct_string = "find_flesh";
-        zombie.ai_state = "find_flesh";
-        zombie notify("zombie_custom_think_done", "find_flesh");
+    }
+}
+
+InscribeDemonName()
+{
+    if(!level flag::get("demon_gate_crawlers") || level clientfield::get("quest_state_demon") < 4)
+        return self iPrintlnBold("^1ERROR: ^7You Must Feed The Demon Urn First");
+    
+    if(level flag::get("demon_gate_runes"))
+        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+    
+    if(Is_True(level.InscribeDemonName))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    if(!isDefined(level.var_6e68c0d8))
+        return self iPrintlnBold("^1ERROR: ^7There Is No Player Bound To The Quest");
+    
+    menu = self getCurrent();
+    curs = self getCursor();
+    level.InscribeDemonName = true;
+    
+    powerups = GetArrayKeys(level.zombie_include_powerups);
+
+    for(a = 0; a < powerups.size; a++)
+    {
+        if(!isDefined(powerups[a]) || !IsSubStr(powerups[a], "rune"))
+            continue;
+        
+        drop = level zm_powerups::specific_powerup_drop(powerups[a], level.var_6e68c0d8.origin);
+    }
+
+    wait 1;
+    icons = struct::get_array("aq_dg_rune_sequence_struct", "script_noteworthy");
+
+    foreach(icon in icons)
+    {
+        foreach(trig in GetEntArray("aq_dg_circle_rune_trig", "targetname"))
+        {
+            iconTok = StrTok(icon.var_a991b2d8, "_");
+            trigTok = StrTok(trig.script_noteworthy, "_");
+
+            if(iconTok[(iconTok.size - 1)] != trigTok[(trigTok.size - 1)])
+                continue;
+            
+            MagicBullet(GetWeapon("elemental_bow"), trig.origin + (0, 0, 5), trig.origin, level.var_6e68c0d8);
+            wait 1;
+        }
+    }
+
+    while(!level flag::get("demon_gate_runes"))
+        wait 0.1;
+    
+    self RefreshMenu(menu, curs);
+    wait 8;
+
+    level.InscribeDemonName = BoolVar(level.InscribeDemonName);
+}
+
+CollectVoidArrow()
+{
+    if(!level flag::get("demon_gate_runes") || Is_True(level.InscribeDemonName))
+        return self iPrintlnBold("^1ERROR: ^7You Must Inscribe The Demon Name First");
+    
+    if(level flag::get("demon_gate_repaired"))
+        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+    
+    if(Is_True(level.CollectVoidArrow))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    if(!isDefined(level.var_6e68c0d8))
+        return self iPrintlnBold("^1ERROR: ^7There Is No Player Bound To The Quest");
+    
+    menu = self getCurrent();
+    curs = self getCursor();
+    level.CollectVoidArrow = true;
+
+    reforgeGate = struct::get("quest_reforge_demon_gate", "targetname");
+    reforgeGate.var_67b5dd94 notify("trigger", level.var_6e68c0d8);
+
+    level waittill(#"hash_66b2458c");
+    wait 4;
+
+    reforgeGate.var_67b5dd94 notify("trigger", level.var_6e68c0d8);
+
+    while(!level flag::get("demon_gate_repaired"))
+        wait 0.1;
+    
+    self RefreshMenu(menu, curs);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Wolf Bow Quest
+InitWolfBow()
+{
+    if(level flag::get("wolf_howl_paintings"))
+        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+    
+    if(!self HasWeapon(getweapon("elemental_bow")))
+        return self iPrintlnBold("^1ERROR: ^7You Need To Have The Elemental Bow To Complete This Step");
+    
+    if(Is_True(level.InitWolfBow))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    level.InitWolfBow = true;
+    
+    menu = self getCurrent();
+    curs = self getCursor();
+
+    paintings = Array("p7_zm_ctl_kings_painting_01", "p7_zm_ctl_kings_painting_02", "p7_zm_ctl_kings_painting_03", "p7_zm_ctl_kings_painting_04");
+	paintStruct = struct::get_array("aq_wh_painting_struct", "script_noteworthy");
+
+    for(a = 0; a < paintings.size; a++)
+    {
+        for(b = 0; b < paintStruct.size; b++)
+        {
+            if(paintStruct[b].var_b5b31795.model != paintings[a])
+                continue;
+            
+            paintStruct[b].var_67b5dd94 notify("trigger", self);
+        }
+
+        wait 0.1;
+    }
+
+    while(!level flag::get("wolf_howl_paintings"))
+        wait 0.1;
+    
+    self RefreshMenu(menu, curs);
+}
+
+CollectSkullShrine()
+{
+    if(!level flag::get("wolf_howl_paintings"))
+        return self iPrintlnBold("^1ERROR: ^7The Wolf Bow Quest Must Be Initiated First");
+    
+    if(level clientfield::get("quest_state_wolf") >= 2)
+        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+
+    if(Is_True(level.CollectSkullShrine))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    if(!isDefined(level.var_52978d72))
+        return self iPrintlnBold("^1ERROR: ^7There Is No Player Bound To The Quest");
+    
+    level.CollectSkullShrine = true;
+
+    menu = self getCurrent();
+    curs = self getCursor();
+    
+    shrine = GetEnt("aq_wh_skull_shrine_trig", "targetname");
+    MagicBullet(GetWeapon("elemental_bow"), shrine.origin + (0, 0, 5), shrine.origin, level.var_52978d72);
+    wait 10;
+
+    skull = GetEnt("wolf_skull_roll_down", "targetname");
+    skull.var_67b5dd94 notify("trigger", level.var_52978d72);
+    level waittill(#"hash_88b82583");
+
+    while(1)
+    {
+        skull = GetEnt("wolf_skull_roll_down", "targetname");
+
+        if(!isDefined(skull))
+            break;
+        
+        wait 0.1;
+    }
+    
+    self RefreshMenu(menu, curs);
+    level.CollectSkullShrine = BoolVar(level.CollectSkullShrine);
+}
+
+WolfAttachSkull()
+{
+    if(level clientfield::get("quest_state_wolf") < 2 || Is_True(level.CollectSkullShrine))
+        return self iPrintlnBold("^1ERROR: ^7Skull Shrine Must Be Collected First");
+    
+    if(level clientfield::get("quest_state_wolf") >= 3)
+        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+
+    if(Is_True(level.WolfAttachSkull))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    if(!isDefined(level.var_52978d72))
+        return self iPrintlnBold("^1ERROR: ^7There Is No Player Bound To The Quest");
+    
+    menu = self getCurrent();
+    curs = self getCursor();
+    
+    level.WolfAttachSkull = true;
+
+    skull = GetEnt("aq_wh_skadi_skull", "targetname");
+    skull.var_67b5dd94 notify("trigger", level.var_52978d72);
+
+    while(level flag::get("quest_state_wolf") < 2)
+        wait 0.1;
+    
+    self RefreshMenu(menu, curs);
+}
+
+CollectWolfSouls()
+{
+    if(level clientfield::get("quest_state_wolf") < 3)
+        return self iPrintlnBold("^1ERROR: ^7You Must Attach The Skull To The Skeleton First");
+    
+    if(level flag::get("wolf_howl_escort"))
+        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+
+    if(Is_True(level.CollectWolfSouls))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    if(!isDefined(level.var_52978d72))
+        return self iPrintlnBold("^1ERROR: ^7There Is No Player Bound To The Quest");
+    
+    menu = self getCurrent();
+    curs = self getCursor();
+    
+    level.CollectWolfSouls = true;
+    self iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7This Step Is Going To Take A Few Minutes To Complete");
+
+    while(!level flag::get("wolf_howl_escort"))
+    {
+        /*
+            This notify, will end the script checking if the player lost the wolf.
+            Usually, if the player loses the wolf(wolf isn't in sight of the player for too long) it will end the quest step, and it will have to be started again by the player
+        */
+        level notify("player_found_skadi");
+
+        if(!isDefined(level.var_e6d07014) && !level flag::get("wolf_howl_escort")) //This is a fail safe, in the case the quest step gets killed. It will allow the script to be ran again when the step is restarted
+        {
+            self iPrintlnBold("^1ERROR: ^7Failed To Escort & Collect Wolf Souls");
+            break;
+        }
+        
+        if(isDefined(level.var_e6d07014.var_5c4d212e) && !level.var_e6d07014.var_5c4d212e flag::get("dig_spot_complete"))
+        {
+            targetName = level.var_e6d07014.var_5c4d212e.targetName;
+            targetToks = StrTok(targetName, "_");
+
+            while(level.var_e6d07014.var_5c4d212e.var_252d000d < 10)
+            {
+                zombie = SpawnWolfSacrificedZombie(level.var_e6d07014.var_5c4d212e);
+                MagicBullet(GetWeapon("elemental_bow"), zombie.origin + (0, 0, 5), zombie.origin, level.var_52978d72);
+                wait 0.05;
+            }
+
+            wait 10;
+            var_f7d860a2 = GetEnt("aq_wh_bones_" + targetToks[(targetToks.size - 1)], "targetname");
+            var_f7d860a2.var_67b5dd94 notify("trigger", level.var_52978d72);
+        }
+
+        wait 1;
+    }
+
+    level.CollectWolfSouls = BoolVar(level.CollectWolfSouls);
+    self RefreshMenu(menu, curs);
+}
+
+SpawnWolfSacrificedZombie(goalEnt)
+{
+    if(!isDefined(level.EEWolfSpawnedZM))
+        level.EEWolfSpawnedZM = [];
+    
+    zombie = zombie_utility::spawn_zombie(level.zombie_spawners[0]);
+
+    if(isDefined(zombie))
+    {
+        zombie endon("death");
+
+        wait 0.1;
+        level.EEWolfSpawnedZM[level.EEWolfSpawnedZM.size] = zombie;
+        zombie zombie_utility::makezombiecrawler(true);
+        
+        target = goalEnt.origin;
+
+        linker = Spawn("script_origin", zombie.origin);
+        linker.origin = zombie.origin;
+        linker.angles = zombie.angles;
+
+        zombie LinkTo(linker);
+        linker MoveTo(target, 0.01);
+
+        linker waittill("movedone");
+
+        zombie Unlink();
+        linker delete();
+
+        zombie LinkTo(goalEnt);
+        zombie.completed_emerging_into_playable_area = 1;
+        return zombie;
+    }
+}
+
+CollectReforgedArrows()
+{
+    if(!level flag::get("wolf_howl_escort"))
+        return self iPrintlnBold("^1ERROR: ^7You Must Escort & Collect Wolf Souls First");
+    
+    if(level flag::get("wolf_howl_repaired"))
+        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+    
+    if(Is_True(level.CollectReforgedArrows))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    if(!isDefined(level.var_52978d72))
+        return self iPrintlnBold("^1ERROR: ^7There Is No Player Bound To The Quest");
+    
+    level.CollectReforgedArrows = true;
+    
+    menu = self getCurrent();
+    curs = self getCursor();
+    rtnValue = level.var_52978d72.var_374fd3ef;
+    
+    damageTrig = GetEnt("aq_wh_burial_chamber_damage_trig", "targetname");
+    level.var_52978d72 thread WolfWallRunning();
+    MagicBullet(GetWeapon("elemental_bow"), damageTrig.origin + (AnglesToForward(damageTrig.angles) * -10), damageTrig.origin + (0, 0, 5), level.var_52978d72);
+
+    ledgeCollision = GetEnt("aq_wh_ledge_collision", "targetname");
+
+    while(!ledgeCollision flag::get("ledge_built"))
+        wait 0.1;
+
+    reforgedArrows = struct::get("quest_reforge_wolf_howl", "targetname");
+    reforgedArrows.var_67b5dd94 notify("trigger", level.var_52978d72);
+
+    wait 5.5;
+    reforgedArrows.var_67b5dd94 notify("trigger", level.var_52978d72);
+
+    while(!level flag::get("wolf_howl_repaired"))
+        wait 0.1;
+    
+    self RefreshMenu(menu, curs);
+}
+
+WolfWallRunning()
+{
+    self endon("disconnect");
+
+    ledgeCollision = GetEnt("aq_wh_ledge_collision", "targetname");
+
+    while(!level flag::get("wolf_howl_repaired"))
+    {
+        self.var_374fd3ef = true;
+        wait 0.01;
     }
 }

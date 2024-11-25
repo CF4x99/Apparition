@@ -20,7 +20,7 @@ PopulateRevelationsScripts(menu)
     }
 }
 
-
+ 
 
 RevelationsKeeperCraftable(craftable)
 {

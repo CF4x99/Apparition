@@ -92,12 +92,7 @@ FastExcavators()
 				foreach(digger in diggers)
 				{
 					targets = GetEntArray(digger.target, "targetname");
-
-					if(digger.script_string == "teleporter_digger_stopped")
-						tracks = targets[0];
-					else
-						tracks = targets[1];
-
+					tracks = (digger.script_string == "teleporter_digger_stopped") ? targets[0] : targets[1];
 					tracks.digger_speed = 2000; //Set This To Whatever. Default is around 30 - 50. You don't need to reset it since it gets recalculated everytime they move.
 				}
 
@@ -114,24 +109,15 @@ send_clientnotify(digger_name, pause)
 	switch(digger_name)
 	{
 		case "hangar":
-			if(!pause)
-				util::clientnotify("Dz3");
-			else
-				util::clientnotify("Dz3e");
+			util::clientnotify(!pause ? "Dz3" : "Dz3e");
 			break;
 
 		case "teleporter":
-			if(!pause)
-				util::clientnotify("Dz2");
-			else
-				util::clientnotify("Dz2e");
+			util::clientnotify(!pause ? "Dz2" : "Dz2e");
 			break;
 
 		case "biodome":
-			if(!pause)
-				util::clientnotify("Dz5");
-			else
-				util::clientnotify("Dz5e");
+			util::clientnotify(!pause ? "Dz5" : "Dz5e");
 			break;
 
 		default:

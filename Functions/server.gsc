@@ -84,14 +84,7 @@ PopulateServerModifications(menu)
 
                     for(a = 0; a < level.MenuZombieTraps.size; a++)
                         if(isDefined(level.MenuZombieTraps[a]))
-                        {
-                            if(isDefined(level.MenuZombieTraps[a].prefabname))
-                                optString = CleanString(level.MenuZombieTraps[a].prefabname);
-                            else
-                                optString = "Trap " + (a + 1);
-                            
-                            self addOpt(optString, ::ActivateZombieTrap, a);
-                        }
+                            self addOpt(isDefined(level.MenuZombieTraps[a].prefabname) ? CleanString(level.MenuZombieTraps[a].prefabname) : "Trap " + (a + 1), ::ActivateZombieTrap, a);
                 }
             break;
         
@@ -114,19 +107,10 @@ PopulateServerModifications(menu)
         case "Mystery Box Normal Weapons":
         case "Mystery Box Upgraded Weapons":
             arr = [];
-
-            if(menu == "Mystery Box Normal Weapons")
-                type = level.zombie_weapons;
-            else
-                type = level.zombie_weapons_upgraded;
-
+            type = (menu == "Mystery Box Normal Weapons") ? level.zombie_weapons : level.zombie_weapons_upgraded;
             weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
             weaps = GetArrayKeys(type);
-
-            if(menu == "Mystery Box Normal Weapons")
-                titleString = "Normal Weapons";
-            else
-                titleString = "Upgraded Weapons";
+            titleString = (menu == "Mystery Box Normal Weapons") ? "Normal Weapons" : "Upgraded Weapons";
 
             self addMenu(titleString);
                 self addOptBool(IsAllWeaponsInBox(type), "Enable All", ::EnableAllWeaponsInBox, type);
@@ -140,10 +124,7 @@ PopulateServerModifications(menu)
 
                         if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a]))))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
                         {
-                            strng = weaps[a].name;
-
-                            if(MakeLocalizedString(weaps[a].displayname) != "")
-                                strng = weaps[a].displayname;
+                            strng = (MakeLocalizedString(weaps[a].displayname) != "") ? weaps[a].displayname : weaps[a].name;
 
                             if(!IsInArray(arr, strng))
                             {
@@ -212,31 +193,17 @@ PopulateServerModifications(menu)
 SuperJump()
 {
     level.SuperJump = BoolVar(level.SuperJump);
-
-    if(Is_True(level.SuperJump))
-        SetJumpHeight(1023);
-    else
-        SetJumpHeight(39);
+    SetJumpHeight(Is_True(level.SuperJump) ? 1023 : 39);
 }
 
 LowGravity()
 {
-    if(GetDvarInt("bg_gravity") == level.BgGravity)
-        value = 200;
-    else
-        value = level.BgGravity;
-    
-    SetDvar("bg_gravity", value);
+    SetDvar("bg_gravity", (GetDvarInt("bg_gravity") == level.BgGravity) ? 200 : level.BgGravity);
 }
 
 SuperSpeed()
 {
-    if(GetDvarString("g_speed") == level.GSpeed)
-        value = "500";
-    else
-        value = level.GSpeed;
-    
-    SetDvar("g_speed", value);
+    SetDvar("g_speed", (GetDvarString("g_speed") == level.GSpeed) ? "500" : level.GSpeed);
 }
 
 ServerSetTimeScale(timescale)
@@ -251,11 +218,8 @@ SetRound(round)
 {
     round--;
 
-    if(round >= 255)
-        round = 254;
-    
-    if(round <= 0)
-        round = 1;
+    if(round >= 255 || round <= 0)
+        round = (round >= 255) ? 254 : 1;
     
     level.zombie_total = 0;
 	world.roundnumber = (round ^ 115);
@@ -331,12 +295,12 @@ Newsbar()
 
     if(Is_True(level.Newsbar))
     {
+        level endon("EndNewsBar");
+
         level.NewsbarBG   = level createServerRectangle("CENTER", "CENTER", 0, -232, 5000, 18, (0, 0, 0), 1, 0.6, "white");
         level.NewsbarText = level createServerText("default", 1, 3, "", "CENTER", "CENTER", 0, -255, 1, (1, 1, 1));
         
         strings = Array("Welcome To ^1" + level.menuName + " ^7Developed By ^1CF4_99", "Your Host Today Is ^1" + CleanName(bot::get_host_player() getName()), "[{+speed_throw}] & [{+melee}] To Open ^1" + level.menuName, "YouTube.Com/^1CF4_99", "^5Enjoy Your Stay!");
-        
-        level endon("EndNewsBar");
         
         while(Is_True(level.Newsbar))
         {
@@ -859,12 +823,7 @@ BoxNeverMoves()
     if(AllBoxesActive())
         return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While All Mystery Boxes Are Active");
     
-    if(GetDvarString("magic_chest_movable") == "1")
-        value = "0";
-    else
-        value = "1";
-    
-    SetDvar("magic_chest_movable", value);
+    SetDvar("magic_chest_movable", (GetDvarString("magic_chest_movable") == "1") ? "0" : "1");
 }
 
 IsWeaponInBox(weapon)
@@ -896,10 +855,7 @@ IsAllWeaponsInBox(type)
     
     for(a = 0; a < weaps.size; a++)
     {
-        if(weaps[0] == typeArry[0])
-            classWeapons = zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a]));
-        else
-            classWeapons = zm_utility::GetWeaponClassZM(weaps[a]);
+        classWeapons = (weaps[0] == typeArry[0]) ? zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a])) : zm_utility::GetWeaponClassZM(weaps[a]);
 
         if(IsInArray(weaponsVar, ToLower(CleanString(classWeapons))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
             if(!IsWeaponInBox(weaps[a]))
@@ -939,10 +895,7 @@ EnableAllWeaponsInBox(type)
         
         for(a = 0; a < weaps.size; a++)
         {
-            if(weaps[0] == typeArry[0])
-                classWeapons = zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a]));
-            else
-                classWeapons = zm_utility::GetWeaponClassZM(weaps[a]);
+            classWeapons = (weaps[0] == typeArry[0]) ? zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a])) : zm_utility::GetWeaponClassZM(weaps[a]);
 
             if(IsInArray(weaponsVar, ToLower(CleanString(classWeapons))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
                 if(!IsWeaponInBox(weaps[a]))
@@ -990,12 +943,7 @@ ServerUpgradeWeaponWallbuys()
         level.wallbuy_should_upgrade_weapon_override = ::wallbuy_should_upgrade_weapon_override;
     }
     else
-    {
-        if(isDefined(level.saved_wallbuy_should_upgrade_weapon_override))
-            level.wallbuy_should_upgrade_weapon_override = level.saved_wallbuy_should_upgrade_weapon_override;
-        else
-            level.wallbuy_should_upgrade_weapon_override = undefined;
-    }
+        level.wallbuy_should_upgrade_weapon_override = isDefined(level.saved_wallbuy_should_upgrade_weapon_override) ? level.saved_wallbuy_should_upgrade_weapon_override : undefined;
 }
 
 ServerMaxAmmoClips()
@@ -1147,11 +1095,7 @@ IncreasedDropRate()
 PowerupsNeverLeave()
 {
     level.PowerupsNeverLeave = BoolVar(level.PowerupsNeverLeave);
-
-    if(Is_True(level.PowerupsNeverLeave))
-        level._powerup_timeout_override = PowerUpTime();
-    else
-        level._powerup_timeout_override = undefined;
+    level._powerup_timeout_override = Is_True(level.PowerupsNeverLeave) ? PowerUpTime() : undefined;
 }
 
 PowerUpTime()

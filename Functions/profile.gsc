@@ -344,12 +344,7 @@ SetPlayerPrestige(prestige, player)
 SetPlayerRank(rank, player)
 {
     player endon("disconnect");
-
-    stat = (rank > 35) ? "paragon_rankxp" : "rankxp";
-    rtnColumn = (rank == 35 || rank == 1000) ? 7 : 2;
-    value = (rank > 35) ? Int(TableLookup("gamedata/tables/zm/zm_paragonranktable.csv", 13, rank, rtnColumn)) : Int(TableLookup("gamedata/tables/zm/zm_ranktable.csv", 0, (rank - 1), rtnColumn));
-    
-    player AddRankXPValue("win", (value - player GetDStat("PlayerStatsList", stat, "StatValue")));
+    player AddRankXPValue("win", (((rank > 35) ? Int(TableLookup("gamedata/tables/zm/zm_paragonranktable.csv", 13, rank, (rank == 35 || rank == 1000) ? 7 : 2)) : Int(TableLookup("gamedata/tables/zm/zm_ranktable.csv", 0, (rank - 1), (rank == 35 || rank == 1000) ? 7 : 2))) - player GetDStat("PlayerStatsList", (rank > 35) ? "paragon_rankxp" : "rankxp", "StatValue")));
     
     wait 0.1;
     UploadStats(player);
@@ -358,7 +353,6 @@ SetPlayerRank(rank, player)
 PlayerBoolStat(stat, player)
 {
     player endon("disconnect");
-
     player SetDStat("PlayerStatsList", stat, "StatValue", !Int(player GetDStat("PlayerStatsList", stat, "StatValue")));
 
     wait 0.1;

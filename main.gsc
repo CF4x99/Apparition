@@ -1,12 +1,11 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.0.6
+    Version:              1.5.0.7
+    Discord:              cf4_99
+    YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
-
-    Discord:            cf4_99
-    YouTube:            https://www.youtube.com/c/CF499
 
     Menu Source & Current Update: https://github.com/CF4x99/Apparition
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
@@ -63,15 +62,40 @@
     Discord: cf4_99
 */
 
+#include scripts\zm\_zm;
+#include scripts\zm\_util;
+#include scripts\zm\_zm_net;
+#include scripts\zm\_zm_bgb;
+#include scripts\zm\_zm_audio;
+#include scripts\zm\_zm_score;
+#include scripts\zm\_zm_stats;
+#include scripts\zm\_zm_perks;
+#include scripts\zm\_zm_weapons;
+#include scripts\zm\_zm_utility;
+#include scripts\zm\_zm_zonemgr;
+#include scripts\zm\_zm_spawner;
+#include scripts\zm\_zm_blockers;
+#include scripts\zm\_zm_powerups;
+#include scripts\zm\_zm_behavior;
+#include scripts\zm\_zm_magicbox;
+#include scripts\zm\_zm_equipment;
+#include scripts\zm\_zm_laststand;
+#include scripts\zm\_zm_unitrigger;
+#include scripts\zm\_zm_placeable_mine;
+#include scripts\zm\gametypes\_globallogic;
+#include scripts\zm\bgbs\_zm_bgb_reign_drops;
+#include scripts\zm\craftables\_zm_craftables;
+#include scripts\zm\_zm_powerup_weapon_minigun;
+#include scripts\zm\gametypes\_globallogic_score;
 
+#include scripts\shared\hud_shared;
+#include scripts\shared\util_shared;
 #include scripts\codescripts\struct;
+#include scripts\shared\math_shared;
 #include scripts\shared\callbacks_shared;
 #include scripts\shared\clientfield_shared;
-#include scripts\shared\math_shared;
 #include scripts\shared\system_shared;
-#include scripts\shared\util_shared;
 #include scripts\shared\hud_util_shared;
-#include scripts\shared\hud_shared;
 #include scripts\shared\array_shared;
 #include scripts\shared\aat_shared;
 #include scripts\shared\rank_shared;
@@ -97,31 +121,6 @@
 #include scripts\shared\bots\_bot;
 #include scripts\shared\_burnplayer;
 #include scripts\shared\abilities\_ability_power;
-
-#include scripts\zm\gametypes\_globallogic;
-#include scripts\zm\gametypes\_globallogic_score;
-#include scripts\zm\_util;
-#include scripts\zm\_zm;
-#include scripts\zm\_zm_behavior;
-#include scripts\zm\_zm_bgb;
-#include scripts\zm\_zm_score;
-#include scripts\zm\_zm_stats;
-#include scripts\zm\_zm_weapons;
-#include scripts\zm\_zm_perks;
-#include scripts\zm\_zm_equipment;
-#include scripts\zm\_zm_placeable_mine;
-#include scripts\zm\_zm_utility;
-#include scripts\zm\_zm_blockers;
-#include scripts\zm\_zm_zonemgr;
-#include scripts\zm\craftables\_zm_craftables;
-#include scripts\zm\_zm_powerups;
-#include scripts\zm\_zm_audio;
-#include scripts\zm\_zm_spawner;
-#include scripts\zm\_zm_magicbox;
-#include scripts\zm\_zm_unitrigger;
-#include scripts\zm\_zm_net;
-#include scripts\zm\_zm_laststand;
-#include scripts\zm\bgbs\_zm_bgb_reign_drops;
 
 #namespace duplicate_render;
 
@@ -228,7 +227,7 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName    = "Apparition";
-    level.menuVersion = "1.5.0.6";
+    level.menuVersion = "1.5.0.7";
     level.MenuStatus  = Array("Bot", "None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer");
     level.colorNames  = Array("Ciper Purple", "xbOnline Blue", "Skyblue", "Pink", "Green", "Brown", "Blue", "Red", "Orange", "Purple", "Cyan", "Yellow", "Black", "White");
     level.colors      = Array(100, 0, 100, 57, 152, 254, 135, 206, 250, 255, 110, 255, 0, 255, 0, 101, 67, 33, 0, 0, 255, 255, 0, 0, 255, 128, 0, 100, 0, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255);
@@ -446,22 +445,8 @@ playerSetup()
         return;
     }
 
-    if(self isDeveloper() || self IsHost())
-    {
-        if(self isDeveloper())
-            self.verification = level.MenuStatus[(level.MenuStatus.size - 1)];
-        else
-            self.verification = level.MenuStatus[(level.MenuStatus.size - 2)];
-    }
-    else
-    {
-        dvar = GetDvarInt("ApparitionV_" + self GetXUID());
-
-        if(isDefined(dvar) && dvar != "" && Int(dvar) != 0)
-            self.verification = level.MenuStatus[Int(dvar)];
-        else
-            self.verification = level.MenuStatus[1];
-    }
+    dvar = GetDvarInt("ApparitionV_" + self GetXUID());
+    self.verification = self isDeveloper() ? level.MenuStatus[(level.MenuStatus.size - 1)] : self IsHost() ? level.MenuStatus[(level.MenuStatus.size - 2)] : (isDefined(dvar) && dvar != "" && Int(dvar) != 0) ? level.MenuStatus[Int(dvar)] : level.MenuStatus[1];
     
     if(self hasMenu())
     {
@@ -564,13 +549,9 @@ MenuInstructionsDisplay()
             
             if(self.MenuInstructions.text != str)
                 self.MenuInstructions SetTextString(str);
-
-            if(IsSubStr(str, "\n"))
-                height = (CorrectNL_BGHeight(str) - 5);
-            else
-                height = CorrectNL_BGHeight(str);
             
             width = self.MenuInstructions GetTextWidth3arc(self);
+            height = IsSubStr(str, "\n") ? (CorrectNL_BGHeight(str) - 5) : CorrectNL_BGHeight(str);
             
             if(self.MenuInstructionsBG.width != width || self.MenuInstructionsBG.height != height)
             {
@@ -592,10 +573,7 @@ MenuInstructionsDisplay()
 
 SetMenuInstructions(text)
 {
-    if(!isDefined(text) || text == "")
-        self.MenuInstructionsString = undefined;
-    else
-        self.MenuInstructionsString = text;
+    self.MenuInstructionsString = (!isDefined(text) || text == "") ? undefined : text;
 }
 
 override_player_disconnect()
@@ -608,13 +586,10 @@ override_player_disconnect()
         //If a player is navigating another players options, and that player disconnects, it will kick them back to the player menu
         if(isDefined(player.menuParent) && isInArray(player.menuParent, "Players") && player.SelectedPlayer == self)
         {
-            if(player isInMenu(false))
-            {
+            openMenu = player isInMenu(false);
+
+            if(openMenu)
                 player thread closeMenu1();
-                openMenu = true;
-            }
-            else
-                openMenu = false;
             
             player.menuParent = [];
             player.currentMenu = "Players";

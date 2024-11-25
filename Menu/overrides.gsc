@@ -47,7 +47,7 @@ CommonDamageOverride(mod, hit_location, hit_origin, player, amount, team, weapon
                 fx = SpawnFX(level._effect["bloodspurt"], hit_origin, direction_vec);
 
                 if(isDefined(fx))
-		            TriggerFX(fx);
+                    TriggerFX(fx);
             }
             
             if(isDefined(player.hud_damagefeedback) && Is_True(player.ShowHitmarkers))
@@ -100,11 +100,8 @@ override_actor_killed(einflictor, attacker, idamage, smeansofdeath, weapon, vdir
 
 override_player_points(damage_weapon, player_points)
 {
-    if(isDefined(self.DamagePointsMultiplier))
-        player_points *= self.DamagePointsMultiplier;
-    
-    if(Is_True(self.DisableEarningPoints))
-        player_points = 0;
+    if(isDefined(self.DamagePointsMultiplier) || Is_True(self.DisableEarningPoints))
+        player_points = isDefined(self.DamagePointsMultiplier) ? (player_points * self.DamagePointsMultiplier) : 0;
     
     return player_points;
 }
@@ -252,8 +249,14 @@ WatchForMaxAmmo()
         {
             foreach(weapon in player GetWeaponsList(1))
             {
+                if(!isDefined(weapon) || weapon == level.weaponnone)
+                    continue;
+                
                 clipAmmo = player GetWeaponAmmoClip(weapon);
                 clipSize = weapon.clipsize;
+
+                if(!isDefined(clipAmmo) || !isDefined(clipSize))
+                    continue;
 
                 if(clipAmmo < clipSize)
                     player SetWeaponAmmoClip(weapon, clipSize);

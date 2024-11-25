@@ -8,11 +8,12 @@ PopulateSOEScripts(menu)
 				self addOpt("Fumigator", ::newMenu, "SOE Fumigator");
 				self addOpt("Smashables", ::newMenu, "SOE Smashables");
 				self addOpt("Power Switches", ::newMenu, "SOE Power Switches");
+				self addOpt("Snakeskin Boots", ::newMenu, "Snakeskin Boots");
 
 				if(level.players.size < 4)
 					self addOptBool(level.SOEAllowFullEE, "Allow Full Easter Egg(Less Than 4 Players)", ::SOEAllowFullEE);
 
-				self addOpt("Show Symbol Code", ::SOEShowCode);
+				self addOpt("Show Wall Symbol Code", ::SOEShowCode);
 			break;
 
 		case "Beast Mode":
@@ -59,6 +60,22 @@ PopulateSOEScripts(menu)
 						self addOpt(ReturnSOEPowerName(ooze.script_int), ::TriggerSOEESwitch, ooze);
 					}
 				}
+			break;
+		
+		case "Snakeskin Boots":
+			allDone = true;
+			radios = GetEntArray("hs_radio", "targetname");
+
+			foreach(radio in radios)
+				if(isDefined(radio) && !Is_True(radio.b_activated))
+					allDone = false;
+
+			self addMenu("Snakeskin Boots");
+				
+				if(!allDone)
+					foreach(index, radio in radios)
+						if(isDefined(radio) && !Is_True(radio.b_activated))
+							self addOpt(ReturnRadioName(index) + " Radio", ::ActivateSOERadio, radio);
 			break;
 	}
 }
@@ -393,6 +410,35 @@ ReturnSOEPowerName(ints)
 	}
 }
 
+ActivateSOERadio(radio)
+{
+	if(!isDefined(radio) || Is_True(radio.b_activated))
+		return;
+	
+	menu = self getCurrent();
+	curs = self getCursor();
+
+	radio notify("trigger_activated");
+	wait 0.1;
+
+	self RefreshMenu(menu, curs);
+}
+
+ReturnRadioName(ints)
+{
+	switch(ints)
+	{
+		case 0:
+			return "Ruby Rabbit";
+		
+		case 1:
+			return "Boxing Gym";
+		
+		case 2:
+			return "Footlight Station";
+	}
+}
+
 SOEAllowFullEE()
 {
 	if(level flag::get("ee_begin"))
@@ -436,7 +482,7 @@ SOE_RailStayElectrified(index)
 
 SOEShowCode()
 {
-	self iPrintlnBold((level.o_canal_beastcode.m_a_codes[0][0] + 1) + " " + (level.o_canal_beastcode.m_a_codes[0][1] + 1) + " " + (level.o_canal_beastcode.m_a_codes[0][2] + 1));
+	self iPrintlnBold("Left To Right -- " + (level.o_canal_beastcode.m_a_codes[0][0] + 1) + " " + (level.o_canal_beastcode.m_a_codes[0][1] + 1) + " " + (level.o_canal_beastcode.m_a_codes[0][2] + 1));
 }
 
 SOEGrabFumigator(player)

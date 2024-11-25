@@ -69,22 +69,29 @@ PopulateBasicScripts(menu, player)
                 player.ClientVisualEffect = "None";
 
             types = Array("visionset", "overlay");
+            invalid = Array("none", "__none", "last_stand", "_death", "thrasher");
             visuals = [];
 
             self addMenu("Visual Effects");
 
                 for(a = 0; a < types.size; a++)
                 {
-                    Keys = GetArrayKeys(level.vsmgr[types[a]].info);
-
-                    for(b = 0; b < Keys.size; b++)
+                    foreach(key in GetArrayKeys(level.vsmgr[types[a]].info))
                     {
-                        if(isInArray(visuals, Keys[b]) || Keys[b] == "none" || Keys[b] == "__none" || IsSubStr(Keys[b], "last_stand") || IsSubStr(Keys[b], "_death") || IsSubStr(Keys[b], "thrasher"))
+                        if(isInArray(visuals, key) || isInArray(invalid, key))
                             continue;
                         
-                        visuals[visuals.size] = Keys[b];
+                        skip = false;
 
-                        self addOptBool(player GetVisualEffectState(Keys[b]), CleanString(Keys[b]), ::SetClientVisualEffects, Keys[b], player);
+                        for(b = 0; b < invalid.size; b++)
+                            if(IsSubStr(key, invalid[b]))
+                                skip = true;
+                        
+                        if(skip)
+                            continue;
+                        
+                        visuals[visuals.size] = key;
+                        self addOptBool(player GetVisualEffectState(key), CleanString(key), ::SetClientVisualEffects, key, player);
                     }
                 }
             break;
@@ -355,8 +362,6 @@ PlayerRetainPerks(player)
 
 GivePlayerPerk(perk, player)
 {
-    player endon("disconnect");
-
     if(player HasPerk(perk) || player zm_perks::has_perk_paused(perk))
         player notify(perk + "_stop");
     else
@@ -470,8 +475,6 @@ SetMovementSpeed(scale, player)
 
 PlayerClone(type, player)
 {
-    player endon("disconnect");
-
     switch(type)
     {
         case "Clone":
@@ -574,13 +577,10 @@ MultiJump(player)
 
 PlayerSetVision(vision, player)
 {
-    if(vision == "Default")
-        player UseServerVisionSet(false);
-    else
-    {
-        player UseServerVisionSet(true);
+    player UseServerVisionSet(vision != "Default");
+
+    if(vision != "Default")
         player SetVisionSetForPlayer(vision, 0);
-    }
 }
 
 GetVisualType(effect)
@@ -589,18 +589,9 @@ GetVisualType(effect)
     type = undefined;
 
     for(a = 0; a < types.size; a++)
-    {
-        Keys = GetArrayKeys(level.vsmgr[types[a]].info);
-
-        for(b = 0; b < Keys.size; b++)
-            if(isDefined(Keys[b]) && Keys[b] == effect)
-            {
-                if(isDefined(type))
-                    type = "Both";
-                else
-                    type = types[a];
-            }
-    }
+        foreach(key in GetArrayKeys(level.vsmgr[types[a]].info))
+            if(isDefined(key) && key == effect)
+                type = isDefined(type) ? "Both" : types[a];
 
     return type;
 }
@@ -685,8 +676,6 @@ SetClientVisualEffects(effect, player)
 
 ZombieCharms(color, player)
 {
-    player endon("disconnect");
-
     switch(color)
     {
         case "None":
@@ -837,8 +826,6 @@ ServerRespawnPlayer(player)
 
 PlayerRevive(player)
 {
-    player endon("disconnect");
-
     if(!player isDown())
         return;
 

@@ -42,7 +42,6 @@ SpawnPowerUp(powerup, origin)
         else
         {
             trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
-            
             origin = trace["position"];
             surface = trace["surfacetype"];
 

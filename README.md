@@ -1,6 +1,6 @@
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.0.6
+    Version:              1.5.0.7
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
@@ -64,6 +64,36 @@
 
 
 ## Changelog
+<details>
+    <summary>
+        Version 1.5.0.7
+    </summary>
+
+    - I finally Got Around To Finishing All Of The Bow Quest Steps For Der Eisendrache :P
+
+    - Added: Ascension EE Option -- 'Complete Lander Password'
+    - Added: Ascension EE Option -- 'Send Orb To Space'
+    - Added: Shadows Of Evil EE Option -- 'Snakeskin Boots' -- Radios Are Labeled By Location
+    - Added: Der Eisendrache EE Option -- Void Bow: 'Inscribe Demon Name'
+    - Added: Der Eisendrache EE Option -- Void Bow: 'Collect Reforged Arrow'
+    - Added: Der Eisendrache EE Option -- Wolf Bow: 'Initiate Quest'
+    - Added: Der Eisendrache EE Option -- Wolf Bow: 'Collect Skull Shrine'
+    - Added: Der Eisendrache EE Option -- Wolf Bow: 'Attach Skull To Skeleton'
+    - Added: Der Eisendrache EE Option -- Wolf Bow: 'Escort & Collect Wolf Souls'
+    - Added: Der Eisendrache EE Option -- Wolf Bow: 'Collect Reforged Arrows'
+
+    - Changed: Project Syntax -- Switched Back To Using Ternary Operators To Minimalize Some Conditional Blocks -- I Originally Removed Them Due To The Mod Tools Not Supporting Them
+    - Changed: Default Max Options For Quick Menu Style Is 25 -- Default Menu Y Position Has Been Moved Up To Fit Up To 25 Options As Well
+    - Changed: Origins Fill Soul Box -- Soul Boxes Are Now Labeled By Location
+    - Changed: Added '>' Next To Options That Are Submenus -- Applies To The Quick Menu Style Only
+    - Changed: Increased The AC130 Reload Time For The 105mm & 40mm Rounds
+
+    - Fixed: Menu Scroller Opening Animation -- It Should Now Work As It Was Intended
+    - Fixed: Bug With Triggering Fossil Heads For The Void Bow Quest
+    - Fixed: Bug With Fireplace Step Showing As Incomplete When Finishing The Last Step -- Caused By Conditional Returns That Were Out Of Order
+
+</details>
+
 <details>
     <summary>
         Version 1.5.0.6

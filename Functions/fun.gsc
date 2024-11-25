@@ -266,11 +266,7 @@ electric_fire_cherry_cooldown_timer(current_weapon)
     self endon("death");
     self endon("disconnect");
 
-    if(self HasPerk("specialty_fastreload"))
-        reloadTime = (0.25 * GetDvarFloat("perk_weapReloadMultiplier"));
-    else
-        reloadTime = 0.25;
-    
+    reloadTime = self HasPerk("specialty_fastreload") ? (0.25 * GetDvarFloat("perk_weapReloadMultiplier")) : 0.25;
     waitTime = reloadTime + 3;
 
     wait waitTime;
@@ -974,7 +970,6 @@ ShootPowerUps(player)
             player waittill("weapon_fired");
 
             trace = BulletTrace(player GetWeaponMuzzlePoint(), player GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 0, player);
-            
             origin = trace["position"];
             surface = trace["surfacetype"];
 
@@ -1161,7 +1156,6 @@ RocketRiding(player)
             }
             
             wait 0.2;
-            
             rider.RidingRocket = true;
             rider.RocketRidingLinker = SpawnScriptModel(missile.origin, "tag_origin");
 
@@ -1216,7 +1210,6 @@ GrapplingGun(player)
             player waittill("weapon_fired");
             
             trace = BulletTrace(player GetWeaponMuzzlePoint(), player GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 0, player);
-            
             origin = trace["position"];
             surface = trace["surfacetype"];
 
@@ -1449,10 +1442,7 @@ PowerUpMagnet(player)
 
 PlayerInstaKill(type, player)
 {
-    if(isDefined(player.PlayerInstaKill) && type == "Disable")
-        player.PlayerInstaKill = undefined;
-    else if(type != "Disable")
-        player.PlayerInstaKill = type;
+    player.PlayerInstaKill = (type != "Disable") ? type : undefined;
 }
 
 DisableEarningPoints(player)

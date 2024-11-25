@@ -9,14 +9,7 @@ createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
 
     textElem.sort = sort;
     textElem.alpha = alpha;
-
-    if(isDefined(color) && IsVec(color))
-        textElem.color = color;
-    else if(IsString(color))
-        textElem.color = level.RGBFadeColor;
-    else
-        textElem.color = (0, 0, 0);
-
+    textElem.color = (isDefined(color) && IsVec(color)) ? color : IsString(color) ? level.RGBFadeColor : (0, 0, 0);
     textElem hud::SetPoint(align, relative, x, y);
 
     if(IsInt(text) || IsFloat(text))
@@ -83,14 +76,7 @@ createRectangle(align, relative, x, y, width, height, color, sort, alpha, shader
     uiElement.xOffset = 0;
     uiElement.yOffset = 0;
     uiElement.sort = sort;
-
-    if(isDefined(color) && IsVec(color))
-        uiElement.color = color;
-    else if(IsString(color))
-        uiElement.color = level.RGBFadeColor;
-    else
-        uiElement.color = (0, 0, 0);
-
+    uiElement.color = (isDefined(color) && IsVec(color)) ? color : IsString(color) ? level.RGBFadeColor : (0, 0, 0);
     uiElement.alpha = alpha;
     
     uiElement SetShaderValues(shader, width, height);
@@ -609,8 +595,11 @@ SetTextFX(text, time)
     self SetTypeWriterFX(38, Int((time * 1000)), 1000);
     wait time;
 
-    self hudFade(0, 0.5);
-    self DestroyHud();
+    if(isDefined(self))
+    {
+        self hudFade(0, 0.5);
+        self DestroyHud();
+    }
 }
 
 PulseFXText(text, hud)
@@ -752,14 +741,8 @@ Keyboard(func, player)
             letters[a] += lettersTok[a][b] + "\n";
     }
 
-    valueX = self.menuX;
-    valueY = self.menuY;
-
-    if(self.MenuStyle == "Quick Menu")
-    {
-        valueX = self.menuHud["background"].x;
-        valueY = self.menuHud["title"].y;
-    }
+    valueX = (self.MenuStyle == "Quick Menu") ? self.menuX : self.menuHud["background"].x;
+    valueY = (self.MenuStyle == "Quick Menu") ? self.menuY : self.menuHud["title"].y;
 
     self.keyboard["string"] = self createText("objective", 1.1, 5, "", "CENTER", "CENTER", valueX, (valueY + 15), 1, (1, 1, 1));
 
@@ -785,18 +768,10 @@ Keyboard(func, player)
     {
         if(self ActionSlotOneButtonPressed() || self ActionSlotTwoButtonPressed())
         {
-            if(self ActionSlotOneButtonPressed())
-                cursY += -1;
-            else
-                cursY += 1;
+            cursY += self ActionSlotOneButtonPressed() ? -1 : 1;
 
             if(cursY < 0 || cursY > 5)
-            {
-                if(cursY < 0)
-                    cursY = 5;
-                else
-                    cursY = 0;
-            }
+                cursY = (cursY < 0) ? 5 : 0;
             
             if(isDefined(self.menuHud["scroller"]))
                 self.menuHud["scroller"] thread hudMoveY((self.keyboard["keys0"].y - 8) + (multiplier * cursY), 0.05);
@@ -810,23 +785,11 @@ Keyboard(func, player)
         }
         else if(self ActionSlotThreeButtonPressed() || self ActionSlotFourButtonPressed())
         {
-            if(self GamepadUsedLast())
-                fixDir = self ActionSlotFourButtonPressed();
-            else
-                fixDir = self ActionSlotThreeButtonPressed();
-
-            if(fixDir)
-                cursX += 1;
-            else
-                cursX += -1;
+            fixDir = self GamepadUsedLast() ? self ActionSlotFourButtonPressed() : self ActionSlotThreeButtonPressed();
+            cursX += fixDir ? 1 : -1;
 
             if(cursX < 0 || cursX > 12)
-            {
-                if(cursX < 0)
-                    cursX = 12;
-                else
-                    cursX = 0;
-            }
+                cursX = (cursX < 0) ? 12 : 0;
             
             if(isDefined(self.menuHud["scroller"]))
                 self.menuHud["scroller"] thread hudMoveX(self.keyboard["keys0"].x + (15 * cursX), 0.05);
@@ -928,14 +891,8 @@ NumberPad(func, player, param)
     for(a = 0; a < 10; a++)
         letters[a] = a;
     
-    valueX = self.menuX;
-    valueY = self.menuY;
-
-    if(self.MenuStyle == "Quick Menu")
-    {
-        valueX = self.menuHud["background"].x;
-        valueY = self.menuHud["title"].y;
-    }
+    valueX = (self.MenuStyle == "Quick Menu") ? self.menuX : self.menuHud["background"].x;
+    valueY = (self.MenuStyle == "Quick Menu") ? self.menuY : self.menuHud["title"].y;
     
     self.keyboard["string"] = self createText("objective", 1.2, 5, 0, "CENTER", "CENTER", valueX, (valueY + 15), 1, (1, 1, 1));
 
@@ -959,23 +916,11 @@ NumberPad(func, player, param)
     {
         if(self ActionSlotThreeButtonPressed() || self ActionSlotFourButtonPressed())
         {
-            if(self GamepadUsedLast())
-                fixDir = self ActionSlotFourButtonPressed();
-            else
-                fixDir = self ActionSlotThreeButtonPressed();
-
-            if(fixDir)
-                cursX += 1;
-            else
-                cursX += -1;
+            fixDir = self GamepadUsedLast() ? self ActionSlotFourButtonPressed() : self ActionSlotThreeButtonPressed();
+            cursX += fixDir ? 1 : -1;
 
             if(cursX < 0 || cursX > 9)
-            {
-                if(cursX < 0)
-                    cursX = 9;
-                else
-                    cursX = 0;
-            }
+                cursX = (cursX < 0) ? 9 : 0;
 
             if(isDefined(self.menuHud["scroller"]))
                 self.menuHud["scroller"] thread hudMoveX(self.keyboard["keys0"].x + (15 * cursX), 0.05);
@@ -1063,12 +1008,7 @@ RGBFade()
 
                 for(b = 0; b < 3; b++)
                     if(b != a)
-                    {
-                        if(level.RGBFadeColor[b] > 0)
-                            RGBValues[b] = ((level.RGBFadeColor[b] * 255) - 1);
-                        else
-                            RGBValues[b] = 0;
-                    }
+                        RGBValues[b] = (level.RGBFadeColor[b] > 0) ? ((level.RGBFadeColor[b] * 255) - 1) : 0;
                 
                 level.RGBFadeColor = divideColor(RGBValues[0], RGBValues[1], RGBValues[2]);
                 wait 0.01;
@@ -1250,12 +1190,7 @@ IncludeIPInfo()
 
 SetMapSpawn(plyer, type)
 {
-    if(isDefined(type) && type == "Set")
-        value = self.origin;
-    else
-        value = "";
-    
-    SetDvar(level.script + "Spawn" + (Int(StrTok(plyer, "Player ")[0]) - 1), value);
+    SetDvar(level.script + "Spawn" + (Int(StrTok(plyer, "Player ")[0]) - 1), (isDefined(type) && type == "Set") ? self.origin : "");
 }
 
 AntiEndGame()
@@ -1317,7 +1252,6 @@ WatchForEndRound()
 
         self iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7Blocked End Game Response");
         bot::get_host_player() DebugiPrint("^1" + ToUpper(level.menuName) + ": ^2" + CleanName(self getName()) + " ^7Tried To End The Game");
-
         wait 0.5; //buffer
     }
 }
@@ -1381,10 +1315,7 @@ GSpawnProtection()
 
             if(entityCount > (GSpawnMax - 20))
             {
-                if(entityCount >= GSpawnMax)
-                    amount = 30;
-                else
-                    amount = 5;
+                amount = (entityCount >= GSpawnMax) ? 30 : 5;
 
                 for(a = 0; a < amount; a++)
                     if(isDefined(ents[a]))
@@ -1429,61 +1360,32 @@ ReturnMapGSpawnLimit()
 TrisLines()
 {
     value = GetDvarString("r_showTris");
-
-    if(isDefined(value) && value == "1")
-        newValue = "0";
-    else
-        newValue = "1";
-
-    SetDvar("r_showTris", newValue);
+    SetDvar("r_showTris", (isDefined(value) && value == "1") ? "0" : "1");
 }
 
 DevGUIInfo()
 {
     value = GetDvarString("ui_lobbyDebugVis");
-
-    if(isDefined(value) && value == "1")
-        newValue = "0";
-    else
-        newValue = "1";
-
-    SetDvar("ui_lobbyDebugVis", newValue);
+    SetDvar("ui_lobbyDebugVis", (isDefined(value) && value == "1") ? "0" : "1");
 }
 
 DisableFog()
 {
     value = GetDvarString("r_fog");
-
-    if(isDefined(value) && value == "1")
-        newValue = "0";
-    else
-        newValue = "1";
-
-    SetDvar("r_fog", newValue);
+    SetDvar("r_fog", (isDefined(value) && value == "1") ? "0" : "1");
 }
 
 ServerCheats()
 {
     value = GetDvarString("sv_cheats");
-
-    if(isDefined(value) && value == "1")
-        newValue = "0";
-    else
-        newValue = "1";
-
-    SetDvar("sv_cheats", newValue);
+    SetDvar("sv_cheats", (isDefined(value) && value == "1") ? "0" : "1");
 }
 
 SetDeveloperMode()
 {
     value = GetDvarInt("developer");
+    SetDvar("developer", (isDefined(value) && value == 0 || !isDefined(value)) ? 2 : 0);
 
-    if(isDefined(value) && value == 0 || !isDefined(value))
-        newValue = 2;
-    else
-        newValue = 0;
-    
-    SetDvar("developer", newValue);
     self iPrintlnBold("^1NOTE: ^7You Must Restart The Match For This To Take Effect");
 }
 
@@ -1544,16 +1446,8 @@ MenuCreditsStart(creditArray)
             if(creditArray[a][0] == "^" && creditArray[a][1] == "1")
                 fontScale = 1.4;
 
-            hudX = self.menuX;
-            hudY = (self.menuY + (self.menuHud["background"].height - 8));
-
-            if(self.MenuStyle == "Zodiac")
-                hudY = (self.menuY + 220);
-            else if(self.MenuStyle == "Quick Menu")
-            {
-                hudX = self.menuHud["background"].x;
-                hudY = (self.menuHud["title"].y + 215);
-            }
+            hudX = (self.MenuStyle == "Quick Menu") ? self.menuHud["background"].x : self.menuX;
+            hudY = (self.MenuStyle == "Quick Menu") ? (self.menuHud["title"].y + 215) : (self.MenuStyle == "Zodiac") ? (self.menuY + 220) : (self.menuY + (self.menuHud["background"].height - 8));
 
             self.credits["MenuCreditsHud"][a] = self createText("objective", fontScale, 3, "", "CENTER", "CENTER", hudX, hudY, 0, (1, 1, 1));
             self thread CreditsFadeIn(self.credits["MenuCreditsHud"][a], creditArray[a], moveTime, 0.5);
@@ -1581,11 +1475,7 @@ CreditsFadeIn(hud, text, moveTime, fadeTime)
     hud SetTextString(text);
     hud thread hudFade(1, fadeTime);
 
-    hudY = self.menuY;
-
-    if(self.MenuStyle == "Quick Menu")
-        hudY = (self.menuHud["title"].y + 15);
-    
+    hudY = (self.MenuStyle == "Quick Menu") ? (self.menuHud["title"].y + 15) : self.menuY;
     hud thread hudMoveY(hudY, moveTime);
 
     if(self.MenuStyle == "Nautaremake")
