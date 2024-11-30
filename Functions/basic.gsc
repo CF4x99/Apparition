@@ -620,7 +620,7 @@ GetVisualEffectState(effect)
     if(!isDefined(state.players[self GetEntityNumber()]))
         return false;
     
-	return isDefined(state.players[self GetEntityNumber()].active) && state.players[self GetEntityNumber()].active == 1;
+    return isDefined(state.players[self GetEntityNumber()].active) && state.players[self GetEntityNumber()].active == 1;
 }
 
 SetClientVisualEffects(effect, player)

@@ -130,3 +130,9 @@ MapCompleteChallenge(challenge, player)
 
     self RefreshMenu(menu, curs);
 }
+
+ReturnMapChallengeIString(challenge)
+{
+    challengeTok = StrTok(challenge, "_");
+    return ToUpper(level.script) + "_CHALLENGE_" + challengeTok[2] + "_" + challengeTok[3];
+}

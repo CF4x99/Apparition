@@ -1,4 +1,3 @@
-
 runMenuIndex(menu)
 {
     switch(menu)
@@ -173,6 +172,7 @@ runMenuIndex(menu)
             break;
         
         case "Der Eisendrache Scripts":
+        case "Castle Side Easter Eggs":
         case "Bow Quests":
         case "Fire Bow":
         case "Lightning Bow":
@@ -193,6 +193,12 @@ runMenuIndex(menu)
         case "Revelations Scripts":
         case "Revelations Keeper Companion":
             self PopulateRevelationsScripts(menu);
+            break;
+        
+        case "Mob Of The Dead Scripts":
+        case "Modify After Life Lives":
+        case "MOTD Power Generators":
+            self PopulateMOTDScripts(menu);
             break;
         
         case "Server Modifications":

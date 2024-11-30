@@ -1,7 +1,7 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.0.7
+    Version:              1.5.0.8
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -88,38 +88,38 @@
 #include scripts\zm\_zm_powerup_weapon_minigun;
 #include scripts\zm\gametypes\_globallogic_score;
 
+#include scripts\shared\ai_shared;
+#include scripts\shared\bots\_bot;
 #include scripts\shared\hud_shared;
+#include scripts\shared\lui_shared;
+#include scripts\shared\aat_shared;
 #include scripts\shared\util_shared;
 #include scripts\codescripts\struct;
 #include scripts\shared\math_shared;
-#include scripts\shared\callbacks_shared;
-#include scripts\shared\clientfield_shared;
-#include scripts\shared\system_shared;
-#include scripts\shared\hud_util_shared;
-#include scripts\shared\array_shared;
-#include scripts\shared\aat_shared;
-#include scripts\shared\rank_shared;
-#include scripts\shared\ai\zombie_death;
-#include scripts\shared\ai\zombie_utility;
-#include scripts\shared\ai\zombie_shared;
-#include scripts\shared\ai\systems\gib;
-#include scripts\shared\tweakables_shared;
-#include scripts\shared\ai\systems\shared;
 #include scripts\shared\flag_shared;
-#include scripts\shared\scoreevents_shared;
-#include scripts\shared\lui_shared;
+#include scripts\shared\rank_shared;
+#include scripts\shared\_burnplayer;
 #include scripts\shared\scene_shared;
-#include scripts\shared\vehicle_ai_shared;
+#include scripts\shared\array_shared;
+#include scripts\shared\system_shared;
+#include scripts\shared\ai\systems\gib;
+#include scripts\shared\spawner_shared;
 #include scripts\shared\vehicle_shared;
+#include scripts\shared\ai\zombie_death;
+#include scripts\shared\hud_util_shared;
 #include scripts\shared\exploder_shared;
-#include scripts\shared\ai_shared;
 #include scripts\shared\gameskill_shared;
 #include scripts\shared\laststand_shared;
-#include scripts\shared\spawner_shared;
+#include scripts\shared\ai\zombie_shared;
+#include scripts\shared\callbacks_shared;
+#include scripts\shared\ai\zombie_utility;
+#include scripts\shared\tweakables_shared;
+#include scripts\shared\ai\systems\shared;
+#include scripts\shared\vehicle_ai_shared;
+#include scripts\shared\scoreevents_shared;
+#include scripts\shared\clientfield_shared;
 #include scripts\shared\visionset_mgr_shared;
 #include scripts\shared\damagefeedback_shared;
-#include scripts\shared\bots\_bot;
-#include scripts\shared\_burnplayer;
 #include scripts\shared\abilities\_ability_power;
 
 #namespace duplicate_render;
@@ -175,7 +175,7 @@ onPlayerSpawned()
     if(Is_True(self.runningSpawned))
         return;
     self.runningSpawned = true;
-
+    
     if(self IsHost() && !isDefined(self.playerSpawned))
     {
         if(!Is_True(level.AntiEndGame))
@@ -227,7 +227,7 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName    = "Apparition";
-    level.menuVersion = "1.5.0.7";
+    level.menuVersion = "1.5.0.8";
     level.MenuStatus  = Array("Bot", "None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer");
     level.colorNames  = Array("Ciper Purple", "xbOnline Blue", "Skyblue", "Pink", "Green", "Brown", "Blue", "Red", "Orange", "Purple", "Cyan", "Yellow", "Black", "White");
     level.colors      = Array(100, 0, 100, 57, 152, 254, 135, 206, 250, 255, 110, 255, 0, 255, 0, 101, 67, 33, 0, 0, 255, 255, 0, 0, 255, 128, 0, 100, 0, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255);

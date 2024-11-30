@@ -1,11 +1,10 @@
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.0.7
+    Version:              1.5.0.8
+    Discord:              cf4_99
+    YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
-
-    Discord:            cf4_99
-    YouTube:            https://www.youtube.com/c/CF499
 
     Menu Source & Current Update: https://github.com/CF4x99/Apparition
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
@@ -64,6 +63,31 @@
 
 
 ## Changelog
+<details>
+    <summary>
+        Version 1.5.0.8
+    </summary>
+
+    - While I Have Added Scripts For The New Mob Of The Dead Custom Map, It Is Still A Custom Map. Not Everything(i.e. Weaponry) Will Be Working 100% As It Does On Base Maps.
+    - NOTE: On The New MOTD Map, If You Open All Doors & Debris, It Will Activate All Of The Perk Power Generators As Well(That's Just The Way The Map Devs Have It Set Up In Their Scripts)
+
+    - Added: Mob Of The Dead -- Feed Devil Dogs
+    - Added: Mob Of The Dead -- Activate Power Generators(Labeled By Location)
+    - Added: Mob Of The Dead -- Modify After Life Lives(Modify The Amount Of After Life Lives Each Player Has -- Shows A Live Counter Of Their Lives With Their Name)
+    - Added: Der Eisendrache -- Activate Pack 'a' Punch
+    - Added: Der Eisendrache Side Quest -- Claw Hat
+    - Added: Der Eisendrache Side Quest -- Disco Inferno
+    - Added: 'RELOADING...' Display For AC130(Displays While Using The 105mm & 40mm Only)
+
+    - Changed: Updated A Few Hash Names
+    - Changed: Debug Menu Prints Position Will Now Auto-Adjust Based On The Amount Of Players -- To Avoid The Prints And Player Scores Overlapping
+
+    - Fixed: Bug With No Target Not Getting Disabled When Exiting 'Controllable Zombie'
+    - Fixed: Issue With Not Being Able To Switch AC130 Weapons While Using Keyboard & Mouse
+    - Fixed: Scripts Using Indentions, Instead Of Tabs -- VSC Settings Issue
+
+</details>
+
 <details>
     <summary>
         Version 1.5.0.7

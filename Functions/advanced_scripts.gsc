@@ -129,6 +129,7 @@ AC130(type)
         c130 LinkTo(linker);
         linker thread AC130Rotate();
 
+        self AllowCrouch(false);
         self SetOrigin(c130.origin);
         self PlayerLinkToDelta(c130, "tag_origin", 0, 50, 50, 15, 15);
         self Hide();
@@ -152,7 +153,7 @@ AC130(type)
             if(!Is_True(self.AC130DisableFire[ammoType]))
                 self thread FireAC130(ammoType);
         }
-        else if(self ChangeSeatButtonPressed())
+        else if(self GamepadUsedLast() && self WeaponSwitchButtonPressed() || !self GamepadUsedLast() && self UseButtonPressed())
         {
             ammoType = AC130NextWeapon(ammoType);
             self RefreshAC130HUD(ammoType);
@@ -162,12 +163,29 @@ AC130(type)
 
         if(self MeleeButtonPressed())
             break;
+        
+        if(Is_True(self.AC130DisableFire[ammoType]) && ammoType != GetWeapon("minigun"))
+        {
+            if(!isDefined(self.AC130Reloading))
+            {
+                self.AC130Reloading = self createText("default", 1.4, 1, "RELOADING...", "CENTER", "CENTER", 0, 100, 1, (1, 1, 1));
+                self.AC130Reloading thread AC130FlashingHud();
+            }
+        }
+        else
+        {
+            if(isDefined(self.AC130Reloading))
+                self.AC130Reloading DestroyHud();
+        }
 
         wait 0.01;
     }
     
     if(isDefined(self.AC130HUD))
         destroyAll(self.AC130HUD);
+    
+    if(isDefined(self.AC130Reloading))
+        self.AC130Reloading DestroyHud();
     
     self EnableWeapons();
     self EnableOffhandWeapons();
@@ -178,6 +196,7 @@ AC130(type)
         linker delete();
         c130 delete();
 
+        self AllowCrouch(true);
         self SetOrigin(self.ACSavedOrigin);
         self SetPlayerAngles(self.ACSavedAngles);
 
@@ -192,6 +211,24 @@ AC130(type)
         self.AC130 = BoolVar(self.AC130);
 }
 
+AC130FlashingHud()
+{
+    if(!isDefined(self))
+        return;
+    
+    self endon("death");
+
+    while(isDefined(self))
+    {
+        self hudFade(0.2, 0.35);
+
+        if(isDefined(self))
+            self hudFade(1, 0.35);
+        
+        wait 0.01;
+    }
+}
+
 AC130NextWeapon(current)
 {
     return (current == GetWeapon("minigun")) ? zm_weapons::get_upgrade_weapon(level.start_weapon) : (current == zm_weapons::get_upgrade_weapon(level.start_weapon)) ? GetWeapon("hunter_rocket_turret_player") : GetWeapon("minigun");
@@ -199,7 +236,7 @@ AC130NextWeapon(current)
 
 AC130FireRate(ammo)
 {
-    return (ammo == GetWeapon("minigun")) ? 0.01 : (ammo == zm_weapons::get_upgrade_weapon(level.start_weapon)) ? 0.8 : 5;
+    return (ammo == GetWeapon("minigun")) ? 0.01 : (ammo == zm_weapons::get_upgrade_weapon(level.start_weapon)) ? 1 : 5;
 }
 
 FireAC130(ammoType)
@@ -217,7 +254,7 @@ FireAC130(ammoType)
         for(a = 0; a < 6; a++)
             MagicBullet(ammoType, fire_origin, BulletTrace(fire_origin, fire_origin + self GetWeaponForwardDir() * 100, 0, undefined)["position"] + (Cos(a * 60) * 3, Sin(a * 60) * 3, 0), self);
     else
-        MagicBullet(ammoType, fire_origin, self TraceBullet(), self);
+        MagicBullet((ReturnMapName(level.script) == "Origins" && ammoType == zm_weapons::get_upgrade_weapon(level.start_weapon)) ? GetWeapon("hunter_rocket_turret_player") : ammoType, fire_origin, self TraceBullet(), self);
     
     wait AC130FireRate(ammoType);
 
@@ -262,7 +299,8 @@ RefreshAC130HUD(ammo)
     for(a = 0; a < AC130HudValues.size; a++)
         self.AC130HUD[self.AC130HUD.size] = self createRectangle("CENTER", "CENTER", Int(StrTok(AC130HudValues[a], ",")[0]), Int(StrTok(AC130HudValues[a], ",")[1]), Int(StrTok(AC130HudValues[a], ",")[2]), Int(StrTok(AC130HudValues[a], ",")[3]), (1, 1, 1), 1, 1, "white");
     
-    self.AC130HUD[self.AC130HUD.size] = self createText("default", 1.2, 1, text + "\n^3[{+switchseat}] ^7To Change Weapon", "LEFT", "CENTER", -400, 0, 1, (1, 1, 1));
+    button = self GamepadUsedLast() ? "[{+weapnext_inventory}]" : "[{+activate}]";
+    self.AC130HUD[self.AC130HUD.size] = self createText("default", 1.2, 1, text + "\n^3" + button + " ^7To Change Weapon", "LEFT", "CENTER", -400, 0, 1, (1, 1, 1));
 }
 
 RainPowerups()
@@ -299,7 +337,7 @@ CustomPowerupSpawn(powerup_name, drop_spot)
         powerup thread zm_powerups::powerup_wobble_fx();
 
         return powerup;
-	}
+    }
 }
 
 custom_powerup_timeout()
@@ -1055,7 +1093,7 @@ ControllableZombie(team)
     if(Is_True(self.ControllableZombie))
         self.ControllableZombie = BoolVar(self.ControllableZombie);
 
-    if(Is_True(self.ignoreme))
+    if(Is_True(self.playerIgnoreMe) && Is_True(self.ignoreme))
         self.ignoreme = BoolVar(self.ignoreme);
 }
 
@@ -1355,18 +1393,14 @@ SpiralStaircase(size)
         if(!isDefined(level.SpiralStaircase))
             level.SpiralStaircase = [];
         
-        startAngles = (-28, self.angles[1], 90);
-        level.SpiralStaircase[0] = SpawnScriptModel(origin, model, startAngles);
+        level.SpiralStaircase[0] = SpawnScriptModel(origin, model, (-28, self.angles[1], 90));
         
         for(a = 1; a < size; a++)
         {
             if(!isDefined(level.SpiralStaircase[(level.SpiralStaircase.size - 1)]))
                 continue;
             
-            origin = level.SpiralStaircase[(level.SpiralStaircase.size - 1)].origin;
-            angles = level.SpiralStaircase[(level.SpiralStaircase.size - 1)].angles;
-            
-            level.SpiralStaircase[level.SpiralStaircase.size] = SpawnScriptModel((origin + (AnglesToForward(angles) * 10) + (0, 0, 8)), model, (startAngles[0], (angles[1] + 12), startAngles[2]), 0.01);
+            level.SpiralStaircase[level.SpiralStaircase.size] = SpawnScriptModel((level.SpiralStaircase[(level.SpiralStaircase.size - 1)].origin + (AnglesToForward(level.SpiralStaircase[(level.SpiralStaircase.size - 1)].angles) * 10) + (0, 0, 8)), model, (level.SpiralStaircase[0].angles[0], (level.SpiralStaircase[(level.SpiralStaircase.size - 1)].angles[1] + 12), level.SpiralStaircase[0].angles[2]), 0.01);
         }
 
         if(Is_True(level.SpiralStaircaseSpawning))

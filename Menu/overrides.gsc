@@ -1,4 +1,3 @@
-
 override_player_damage(einflictor, eattacker, idamage, idflags, smeansofdeath, weapon, vpoint, vdir, shitloc, psoffsettime)
 {
     if(Is_True(self.PlayerDemiGod) || Is_True(self.NoExplosiveDamage) && zm_utility::is_explosive_damage(smeansofdeath) || Is_True(level.AllPlayersTeleporting) && !self IsHost() && !self isDeveloper() || Is_True(self.ControllableZombie) || Is_True(self.AC130) || Is_True(self.lander))
@@ -56,9 +55,8 @@ CommonDamageOverride(mod, hit_location, hit_origin, player, amount, team, weapon
             if(isDefined(player.PlayerInstaKill) && (player.PlayerInstaKill == "All" || player.PlayerInstaKill == "Melee" && mod == "MOD_MELEE"))
             {
                 self.health = 1;
-                modname = zm_utility::remove_mod_from_methodofdeath(mod);
 
-                self DoDamage((self.health + 666), self.origin, player, self, hit_location, modname);
+                self DoDamage((self.health + 666), self.origin, player, self, hit_location, zm_utility::remove_mod_from_methodofdeath(mod));
                 player notify("zombie_killed");
             }
         }

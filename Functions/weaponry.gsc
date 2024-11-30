@@ -170,12 +170,12 @@ PackCurrentWeapon(player, buildKit = true)
 
     if(!isDefined(originalWeapon))
         return self iPrintlnBold("^1ERROR: ^7Invalid Weapon");
-    
+
     newWeapon = !zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()) ? zm_weapons::get_upgrade_weapon(player GetCurrentWeapon()) : zm_weapons::get_base_weapon(player GetCurrentWeapon());
-    
+
     if(!isDefined(newWeapon))
         return;
-    
+
     base_weapon = newWeapon;
     upgraded = 0;
 
@@ -186,28 +186,28 @@ PackCurrentWeapon(player, buildKit = true)
     }
 
     if(zm_weapons::is_weapon_included(base_weapon))
-		force_attachments = zm_weapons::get_force_attachments(base_weapon.rootweapon);
-    
+        force_attachments = zm_weapons::get_force_attachments(base_weapon.rootweapon);
+
     camo = (!upgraded && isDefined(originalWeapon.savedCamo) && originalWeapon.savedCamo != level.pack_a_punch_camo_index) ? originalWeapon.savedCamo : upgraded ? level.pack_a_punch_camo_index : undefined;
 
-	if(isDefined(force_attachments) && force_attachments.size)
-	{
-		if(upgraded)
-		{
-			packed_attachments = [];
+    if(isDefined(force_attachments) && force_attachments.size)
+    {
+        if(upgraded)
+        {
+            packed_attachments = [];
 
-			packed_attachments[packed_attachments.size] = "extclip";
-			packed_attachments[packed_attachments.size] = "fmj";
+            packed_attachments[packed_attachments.size] = "extclip";
+            packed_attachments[packed_attachments.size] = "fmj";
 
-			force_attachments = ArrayCombine(force_attachments, packed_attachments, 0, 0);
-		}
-        
+            force_attachments = ArrayCombine(force_attachments, packed_attachments, 0, 0);
+        }
+
         acvi = 0;
-		newWeapon = GetWeapon(newWeapon.rootweapon.name, force_attachments);
-		weapon_options = player CalcWeaponOptions(camo, 0, 0);
-	}
-	else
-	{
+        newWeapon = GetWeapon(newWeapon.rootweapon.name, force_attachments);
+        weapon_options = player CalcWeaponOptions(camo, 0, 0);
+    }
+    else
+    {
         if(buildKit)
         {
             newWeapon = player GetBuildKitWeapon(newWeapon, upgraded);
@@ -219,11 +219,11 @@ PackCurrentWeapon(player, buildKit = true)
             acvi = 0;
             weapon_options = player CalcWeaponOptions(camo, 0, 0);
         }
-	}
+    }
 
     if(!isDefined(newWeapon))
         return;
-    
+
     newWeapon.savedCamo = camo;
 
     player TakeWeapon(player GetCurrentWeapon());

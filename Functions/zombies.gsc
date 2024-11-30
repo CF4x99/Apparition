@@ -323,15 +323,15 @@ ZombieHeadGib()
 {
     if(!isDefined(self) || !IsAlive(self))
         return;
-    
+
     self endon("death");
 
-	self clientfield::set("zm_bgb_mind_ray_fx", 1);
-	wait RandomFloatRange(0.65, 2.5);
+    self clientfield::set("zm_bgb_mind_ray_fx", 1);
+    wait RandomFloatRange(0.65, 2.5);
 
-	self clientfield::set("zm_bgb_mind_pop_fx", 1);
-	self PlaySoundOnTag("zmb_bgb_mindblown_pop", "tag_eye");
-	self zombie_utility::zombie_head_gib();
+    self clientfield::set("zm_bgb_mind_pop_fx", 1);
+    self PlaySoundOnTag("zmb_bgb_mindblown_pop", "tag_eye");
+    self zombie_utility::zombie_head_gib();
     wait 0.1;
 
     if(isDefined(self) && IsAlive(self))

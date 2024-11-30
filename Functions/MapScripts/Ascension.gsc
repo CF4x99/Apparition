@@ -200,22 +200,18 @@ lander_takeoff_wobble()
 
 open_lander_gate()
 {
-	lander = GetEnt("lander", "targetname");
-	north_pos = GetEnt("zipline_door_n_pos", "script_noteworthy");
-	south_pos = GetEnt("zipline_door_s_pos", "script_noteworthy");
+    lander = GetEnt("lander", "targetname");
 
-	lander.door_north thread move_gate(north_pos, 1);
-	lander.door_south thread move_gate(south_pos, 1);
+    lander.door_north thread move_gate(GetEnt("zipline_door_n_pos", "script_noteworthy"), 1);
+    lander.door_south thread move_gate(GetEnt("zipline_door_s_pos", "script_noteworthy"), 1);
 }
 
 close_lander_gate(time)
 {
-	lander = GetEnt("lander", "targetname");
-	north_pos = GetEnt("zipline_door_n_pos", "script_noteworthy");
-	south_pos = GetEnt("zipline_door_s_pos", "script_noteworthy");
+    lander = GetEnt("lander", "targetname");
 
-	lander.door_north thread move_gate(north_pos, 0, time);
-	lander.door_south thread move_gate(south_pos, 0, time);
+    lander.door_north thread move_gate(GetEnt("zipline_door_n_pos", "script_noteworthy"), 0, time);
+    lander.door_south thread move_gate(GetEnt("zipline_door_s_pos", "script_noteworthy"), 0, time);
 }
 
 move_gate(pos, lower, time = 1)
@@ -344,7 +340,7 @@ player_blocking_lander()
                 PlayFX(level._effect["zomb_gib"], zombies[i].origin);
 
                 if(isDefined(zombies[i].lander_death))
-                zombies[i] [[ zombies[i].lander_death ]]();
+                    zombies[i] [[ zombies[i].lander_death ]]();
 
                 zombies[i] delete();
             }

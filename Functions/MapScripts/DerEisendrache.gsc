@@ -6,18 +6,29 @@ PopulateDerEisendracheScripts(menu)
             self addMenu("Der Eisendrache Scripts");
                 self addOptBool(level flag::get("power_on"), "Turn On Power", ::ActivatePower);
                 self addOptBool(level flag::get("soul_catchers_charged"), "Feed Dragons", ::FeedDragons);
+                self addOptBool(level flag::get("pap_reform_available"), "Activate Pack 'a' Punch Machine", ::CastleActivatePAP);
                 self addOptBool(AreLandingPadsEnabled(), "Enable All Landing Pads", ::EnableAllLandingPads);
-
-                if(level flag::get("soul_catchers_charged"))
-                    self addOpt("Bow Quests", ::newMenu, "Bow Quests");
+                self addOpt("Side Easter Eggs", ::newMenu, "Castle Side Easter Eggs");
+                self addOpt("Bow Quests", ::newMenu, "Bow Quests");
+            break;
+        
+        case "Castle Side Easter Eggs":
+            self addMenu("Side Easter Eggs");
+                self addOptBool(level flag::get("ee_disco_inferno"), "Disco Inferno", ::DiscoInferno);
+                self addOptBool(level flag::get("ee_claw_hat"), "Claw Hat", ::ClawHat);
             break;
 
         case "Bow Quests":
             self addMenu("Bow Quests");
-                self addOpt("Fire", ::newMenu, "Fire Bow");
-                self addOpt("Lightning", ::newMenu, "Lightning Bow");
-                self addOpt("Void", ::newMenu, "Void Bow");
-                self addOpt("Wolf", ::newMenu, "Wolf Bow");
+                if(level flag::get("soul_catchers_charged"))
+                {
+                    self addOpt("Fire", ::newMenu, "Fire Bow");
+                    self addOpt("Lightning", ::newMenu, "Lightning Bow");
+                    self addOpt("Void", ::newMenu, "Void Bow");
+                    self addOpt("Wolf", ::newMenu, "Wolf Bow");
+                }
+                else
+                    self addOpt("Feed The Dragons First");
             break;
 
         case "Fire Bow":
@@ -158,6 +169,35 @@ FeedDragon(player)
     }
 }
 
+CastleActivatePAP()
+{
+    if(level flag::get("pap_reform_available"))
+        return self iPrintlnBold("^1ERROR: ^7The Pack 'a' Punch Has Already Been Activated");
+    
+    if(Is_True(level.CastleActivatePAP))
+        return self iPrintlnBold("^1ERROR: ^7The Pack 'a' Punch Is Currently Being Activated");
+    
+    level.CastleActivatePAP = true;
+    menu = self getCurrent();
+    curs = self getCursor();
+    
+    foreach(trigger in level._unitriggers.trigger_stubs)
+    {
+        foreach(pap in struct::get_array("s_pap_tp"))
+        {
+            if(trigger.origin != pap.origin + (0, 0, 30) || Is_True(trigger.parent_struct.activated))
+                continue;
+            
+            trigger notify("trigger", self);
+        }
+    }
+
+    while(!level flag::get("pap_reform_available"))
+        wait 0.1;
+    
+    self RefreshMenu(menu, curs);
+}
+
 EnableAllLandingPads()
 {
     if(AreLandingPadsEnabled())
@@ -165,6 +205,50 @@ EnableAllLandingPads()
     
     foreach(pad in GrabPadUniTriggers())
         pad notify("trigger");
+}
+
+DiscoInferno()
+{
+    if(level flag::get("ee_disco_inferno"))
+        return self iPrintlnBold("^1ERROR: ^7The Disco Inferno Side EE Is Already Enabled");
+    
+    level flag::set("ee_disco_inferno");
+}
+
+ClawHat()
+{
+    if(level flag::get("ee_claw_hat"))
+        return self iPrintlnBold("^1ERROR: ^7The Claw Hat Side EE Has Already Been Completed");
+    
+    if(Is_True(level.ClawHat))
+        return self iPrintlnBold("^1ERROR: ^7The Claw Hat Side EE Is Already Being Completed");
+    
+    level.ClawHat = true;
+
+    foreach(claw in level.var_23825200)
+    {
+        if(!isDefined(claw) || isDefined(claw) && claw flag::get("mechz_claw_revealed"))
+            continue;
+        
+        MagicBullet(level.start_weapon, claw.origin, claw.origin + (0, 0, -5), self);
+        wait 0.1;
+    }
+
+    wait 1;
+    
+    foreach(claw in level.var_23825200)
+    {
+        if(!isDefined(claw))
+            continue;
+        
+        mechz = ServerSpawnMechz(claw.origin + (AnglesToForward(claw.angles) * 255));
+        wait 0.1;
+
+        if(!isDefined(mechz))
+            continue;
+
+        MagicBullet(level.start_weapon, claw.origin, claw.origin + (0, 0, 5), self);
+    }
 }
 
 AreLandingPadsEnabled()
@@ -286,7 +370,7 @@ RunicCircles()
     menu = self getCurrent();
     curs = self getCursor();
 
-    level.var_c62829c7.var_122a2dda = true;
+    level.var_c62829c7.is_flung = true;
     wait 1;
 
     circles = GetEntArray("aq_rp_runic_circle_volume", "script_noteworthy");
@@ -308,7 +392,7 @@ RunicCircles()
     }
 
     wait 1;
-    level.var_c62829c7.var_122a2dda = false;
+    level.var_c62829c7.is_flung = false;
     array::thread_all(circles, ::ChargeRunicCircle);
 
     while(!AllRunicCirclesCharged())
@@ -652,7 +736,7 @@ LightningChargeBeacons()
 
     for(a = 0; a < bTrigs.size; a++)
     {
-        if(!isDefined(bTrigs[a]) || isDefined(bTrigs[a].var_d5d05f50) && bTrigs[a].var_d5d05f50)
+        if(!isDefined(bTrigs[a]) || isDefined(bTrigs[a].b_charged) && bTrigs[a].b_charged)
             continue;
         
         MagicBullet(GetWeapon("elemental_bow"), bTrigs[a].origin + (0, 0, 500), bTrigs[a].origin, level.var_f8d1dc16);
@@ -968,9 +1052,8 @@ InscribeDemonName()
     }
 
     wait 1;
-    icons = struct::get_array("aq_dg_rune_sequence_struct", "script_noteworthy");
 
-    foreach(icon in icons)
+    foreach(icon in struct::get_array("aq_dg_rune_sequence_struct", "script_noteworthy"))
     {
         foreach(trig in GetEntArray("aq_dg_circle_rune_trig", "targetname"))
         {
@@ -1071,7 +1154,7 @@ InitWolfBow()
     curs = self getCursor();
 
     paintings = Array("p7_zm_ctl_kings_painting_01", "p7_zm_ctl_kings_painting_02", "p7_zm_ctl_kings_painting_03", "p7_zm_ctl_kings_painting_04");
-	paintStruct = struct::get_array("aq_wh_painting_struct", "script_noteworthy");
+    paintStruct = struct::get_array("aq_wh_painting_struct", "script_noteworthy");
 
     for(a = 0; a < paintings.size; a++)
     {
@@ -1184,7 +1267,7 @@ CollectWolfSouls()
     while(!level flag::get("wolf_howl_escort"))
     {
         /*
-            This notify, will end the script checking if the player lost the wolf.
+            This notify will end the script checking if the player loses the wolf.
             Usually, if the player loses the wolf(wolf isn't in sight of the player for too long) it will end the quest step, and it will have to be started again by the player
         */
         level notify("player_found_skadi");
@@ -1208,8 +1291,8 @@ CollectWolfSouls()
             }
 
             wait 10;
-            var_f7d860a2 = GetEnt("aq_wh_bones_" + targetToks[(targetToks.size - 1)], "targetname");
-            var_f7d860a2.var_67b5dd94 notify("trigger", level.var_52978d72);
+            bonePile = GetEnt("aq_wh_bones_" + targetToks[(targetToks.size - 1)], "targetname");
+            bonePile.var_67b5dd94 notify("trigger", level.var_52978d72);
         }
 
         wait 1;

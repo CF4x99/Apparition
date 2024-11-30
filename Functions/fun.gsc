@@ -777,14 +777,14 @@ ForgeMode(player)
 
         while(Is_True(player.ForgeMode))
         {
-            if(isDefined(grabEnt) && (IsPlayer(grabEnt) && !Is_Alive(grabEnt) || grabEnt isZombie() && !IsAlive(grabEnt)))
+            if(isDefined(grabEnt) && (IsPlayer(grabEnt) && !Is_Alive(grabEnt) || Is_True(grabEnt.is_zombie) && !IsAlive(grabEnt)))
                 grabEnt = undefined;
             
             if(isDefined(grabEnt))
             {
                 if(IsPlayer(grabEnt))
                     grabEnt SetOrigin((player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 250)));
-                else if(grabEnt isZombie())
+                else if(Is_True(grabEnt.is_zombie))
                     grabEnt ForceTeleport((player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 250)));
                 else
                     grabEnt.origin = (player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 250));
@@ -1263,14 +1263,14 @@ GravityGun(player)
         
         while(Is_True(player.GravityGun))
         {
-            if(isDefined(grabEnt) && (IsPlayer(grabEnt) && !Is_Alive(grabEnt) || grabEnt isZombie() && !IsAlive(grabEnt)))
+            if(isDefined(grabEnt) && (IsPlayer(grabEnt) && !Is_Alive(grabEnt) || Is_True(grabEnt.is_zombie) && !IsAlive(grabEnt)))
                 grabEnt = undefined;
             
             if(isDefined(grabEnt))
             {
                 if(IsPlayer(grabEnt))
                     grabEnt SetOrigin((player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 250)));
-                else if(grabEnt isZombie())
+                else if(Is_True(grabEnt.is_zombie))
                     grabEnt ForceTeleport((player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 250)));
                 else
                     grabEnt.origin = (player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 250));
@@ -1427,7 +1427,6 @@ PowerUpMagnet(player)
                 {
                     powerup.movingtoplayer = true;
                     powerup MoveTo(player GetTagOrigin("j_mainroot"), CalcDistance(1100, powerup.origin, player GetTagOrigin("j_mainroot")));
-
                     wait 0.05;
 
                     if(isDefined(powerup) && Is_True(powerup.movingtoplayer)) //making sure the powerup still exists

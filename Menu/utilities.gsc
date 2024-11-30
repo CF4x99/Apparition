@@ -1032,11 +1032,6 @@ Is_Alive(player)
     return (IsAlive(player) && player.sessionstate != "spectator");
 }
 
-isZombie()
-{
-    return (isDefined(self.is_zombie) && self.is_zombie);
-}
-
 isPlayerLinked(exclude)
 {
     ents = GetEntArray("script_model", "classname");
@@ -1141,6 +1136,11 @@ ReturnMapName(map)
         
         case "zm_tomb":
             return "Origins";
+        
+
+        //suppoerted custom maps
+        case "zm_prison":
+            return "Mob Of The Dead";
         
         default:
             return "Unknown";
@@ -1525,7 +1525,7 @@ DebugiPrint(message)
         if(isDefined(self.PrintMessageQueue[a]))
             self SetLUIMenuData(self.PrintMessageQueue[a], "y", (self GetLUIMenuData(self.PrintMessageQueue[a], "y") - 22));
     
-    self.PrintMessageQueue[self.PrintMessageInt] = self LUI_createText(message, 0, 20, 500, 1000, (1, 1, 1));
+    self.PrintMessageQueue[self.PrintMessageInt] = self LUI_createText(message, 0, 20, 500 - ((GetPlayers().size - 1) * 22), 1000, (1, 1, 1));
     self thread iPrintMessageDestroy(self.PrintMessageInt);
 
     self.PrintMessageInt++;

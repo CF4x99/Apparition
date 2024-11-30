@@ -9,6 +9,3 @@ PopulateGorodKroviScripts(menu)
             break;
     }
 }
-
-//Nothing yet.
-//This map is bad anyways :)

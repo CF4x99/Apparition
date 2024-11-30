@@ -20,7 +20,7 @@ PopulateSpawnables(menu)
 
                 if(isDefined(level.spawnable["Merry Go Round_Spawned"]))
                     self addOptIncSlider("Merry Go Round Speed", ::SetMerryGoRoundSpeed, 1, 1, 10, 1);
-                break;
+            break;
     }
 }
 

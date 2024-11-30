@@ -16,10 +16,7 @@ NachtUndoneSong()
         return self iPrintlnBold("^1ERROR: ^7Undone Song Already Activated");
 
     level.NachtUndoneSong = true;
-
-    a_barrels = GetEntArray("explodable_barrel", "targetname");
-    b_barrels = GetEntArray("explodable_barrel", "script_noteworthy");
-    arry = ArrayCombine(a_barrels, b_barrels, 0, 1);
+    arry = ArrayCombine(GetEntArray("explodable_barrel", "targetname"), GetEntArray("explodable_barrel", "script_noteworthy"), 0, 1);
 
     foreach(index, barrel in arry)
         barrel DoDamage(barrel.health + 666, barrel.origin, self);
