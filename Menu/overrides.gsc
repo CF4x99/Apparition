@@ -98,8 +98,11 @@ override_actor_killed(einflictor, attacker, idamage, smeansofdeath, weapon, vdir
 
 override_player_points(damage_weapon, player_points)
 {
+    if(isDefined(level.saved_player_score_override)) //Der Eisendrache and some custom maps use this override as well
+        self [[ level.saved_player_score_override ]](damage_weapon, player_points);
+    
     if(isDefined(self.DamagePointsMultiplier) || Is_True(self.DisableEarningPoints))
-        player_points = isDefined(self.DamagePointsMultiplier) ? (player_points * self.DamagePointsMultiplier) : 0;
+        player_points = (isDefined(self.DamagePointsMultiplier) && self.DamagePointsMultiplier > 1) ? (player_points * self.DamagePointsMultiplier) : 0;
     
     return player_points;
 }
@@ -269,4 +272,37 @@ WatchForMaxAmmo()
 wallbuy_should_upgrade_weapon_override()
 {
     return true;
+}
+
+override_player_disconnect()
+{
+    foreach(player in level.players)
+    {
+        if(!player hasMenu() || !isDefined(player) || player == self)
+            continue;
+        
+        //If a player is navigating another players options, and that player disconnects, it will kick them back to the player menu
+        if(isDefined(player.menuParent) && isInArray(player.menuParent, "Players") && player.SelectedPlayer == self)
+        {
+            openMenu = player isInMenu(false);
+
+            if(openMenu)
+                player thread closeMenu1();
+            
+            player.menuParent = [];
+            player.currentMenu = "Players";
+            player.menuParent[player.menuParent.size] = "Main";
+
+            if(openMenu)
+            {
+                player thread openMenu1();
+                player iPrintlnBold("^1ERROR: ^7Player Has Disconnected");
+            }
+        }
+        else if(player isInMenu() && player getCurrent() == "Players") //If a player is viewing the player menu when a player disconnects, it will refresh the player list
+            player RefreshMenu();
+    }
+
+    if(isDefined(level.saved_callbackplayerdisconnect))
+        self [[ level.saved_callbackplayerdisconnect ]]();
 }

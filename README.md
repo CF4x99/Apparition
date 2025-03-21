@@ -1,6 +1,6 @@
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.0.8
+    Version:              1.5.0.9
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -63,6 +63,37 @@
 
 
 ## Changelog
+<details>
+    <summary>
+        Version 1.5.0.9
+    </summary>
+
+    - While I Have Added Scripts For The New Die Rise Custom Map, It Is Still A Custom Map. Not Everything(i.e. Weaponry) Will Be Working 100% As It Does On Base Maps.
+    
+    - Added: AIO menu design
+    - Added: Die Rise -- Collect elevator keys for any selected player
+    - Added: Die Rise -- Turn On Power
+    - Added: Die Rise -- Edit any selected players bank cash( Max / Reset )
+    - Added: Origins -- 'Enable All' option for generators
+    - Added: Der Eisendrache -- Teleport Location 'Pyramid'
+    - Added: 'Show Origin' option in host menu -- Used to easily get teleport locations
+
+    - Fixed: An overlooked issue with the numberpad -- the user was able to continuously input 0, or input 0, then other numbers following
+    - Fixed: Keyboard numberpad display issue for Nautaremake
+    - Fixed: Issue with player score override(used for disable points and points multiplier) not working on Der Eisendrache and some custom maps
+    - Fixed: Debug print array('self.PrintMessageQueue') not being pre-defined as an array
+    - Fixed: Possible crash when dismantling the skybase
+    - Fixed: Major issues with adding/removing weapons from the box -- Everything including adding/removing pack 'a' punched weapons SHOULD work flawlessly now
+    - Fixed: Issue with 'Disable Powerups' not working
+    - Fixed: Origins Player Challenges -- You can now complete challenges for any selected player(controlled by slider)
+    - Fixed: Remaining issues with Der Eisendrache Easter Egg options -- Ones that I have found(not to say there aren't more)
+    - Fixed: No target not disabling for some scripts that uses it
+    - Fixed: Issue with the common map script that triggers zombie traps
+
+    - Changed: Added actionslot displays to menu instructions for scrolling
+
+</details>
+
 <details>
     <summary>
         Version 1.5.0.8

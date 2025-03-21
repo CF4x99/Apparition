@@ -107,13 +107,25 @@ PopulateServerModifications(menu)
         case "Mystery Box Normal Weapons":
         case "Mystery Box Upgraded Weapons":
             arr = [];
-            type = (menu == "Mystery Box Normal Weapons") ? level.zombie_weapons : level.zombie_weapons_upgraded;
+
+            if(menu == "Mystery Box Normal Weapons")
+            {
+                upgraded = false;
+                titleString = "Normal Weapons";
+                type = level.zombie_weapons;
+            }
+            else
+            {
+                upgraded = true;
+                titleString = "Upgraded Weapons";
+                type = level.zombie_weapons_upgraded;
+            }
+
             weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
             weaps = GetArrayKeys(type);
-            titleString = (menu == "Mystery Box Normal Weapons") ? "Normal Weapons" : "Upgraded Weapons";
 
             self addMenu(titleString);
-                self addOptBool(IsAllWeaponsInBox(type), "Enable All", ::EnableAllWeaponsInBox, type);
+                self addOptBool(IsAllWeaponsInBox(upgraded), "Enable All", ::EnableAllWeaponsInBox, upgraded);
 
                 if(isDefined(weaps) && weaps.size)
                 {
@@ -155,6 +167,7 @@ PopulateServerModifications(menu)
         case "Joker Model":
             self addMenu("Joker Model");
                 self addOptBool((level.chest_joker_model == level.savedJokerModel), "Reset", ::SetBoxJokerModel, level.savedJokerModel);
+                self addOpt("");
 
                 for(a = 0; a < level.MenuModels.size; a++)
                     self addOptBool((level.chest_joker_model == level.MenuModels[a]), CleanString(level.MenuModels[a]), ::SetBoxJokerModel, level.MenuModels[a]);
@@ -834,7 +847,7 @@ IsWeaponInBox(weapon)
     return isInArray(level.customBoxWeapons, weapon);
 }
 
-SetBoxWeaponState(weapon, upgraded)
+SetBoxWeaponState(weapon)
 {
     if(!isDefined(level.customBoxWeapons))
         return;
@@ -847,22 +860,19 @@ SetBoxWeaponState(weapon, upgraded)
     level.CustomRandomWeaponWeights = ::CustomBoxWeight;
 }
 
-IsAllWeaponsInBox(type)
+IsAllWeaponsInBox(upgraded = false)
 {
-    weaps = GetArrayKeys(type);
+    weaps = upgraded ? GetArrayKeys(level.zombie_weapons_upgraded) : GetArrayKeys(level.zombie_weapons);
     weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
-    typeArry = GetArrayKeys(level.zombie_weapons_upgraded);
     
     for(a = 0; a < weaps.size; a++)
     {
-        classWeapons = (weaps[0] == typeArry[0]) ? zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a])) : zm_utility::GetWeaponClassZM(weaps[a]);
-
-        if(IsInArray(weaponsVar, ToLower(CleanString(classWeapons))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
+        if(IsInArray(weaponsVar, ToLower(CleanString(upgraded ? zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a])) : zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
             if(!IsWeaponInBox(weaps[a]))
                 return false;
     }
     
-    if(weaps[0] != typeArry[0])
+    if(!upgraded)
     {
         equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
         equipmentCombined = GetArrayKeys(equipment);
@@ -883,26 +893,36 @@ IsAllWeaponsInBox(type)
     return true;
 }
 
-EnableAllWeaponsInBox(type)
+EnableAllWeaponsInBox(upgraded = false)
 {
-    if(IsAllWeaponsInBox(type))
-        level.customBoxWeapons = [];
-    else
+    weaps = upgraded ? GetArrayKeys(level.zombie_weapons_upgraded) : GetArrayKeys(level.zombie_weapons);
+
+    if(IsAllWeaponsInBox(upgraded))
     {
-        weaps = GetArrayKeys(type);
-        weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
-        typeArry = GetArrayKeys(level.zombie_weapons_upgraded);
+        if(isInArray(level.customBoxWeapons, GetWeapon("minigun")))
+            level.customBoxWeapons = ArrayRemove(level.customBoxWeapons, GetWeapon("minigun"));
+        
+        if(isInArray(level.customBoxWeapons, GetWeapon("defaultweapon")))
+            level.customBoxWeapons = ArrayRemove(level.customBoxWeapons, GetWeapon("defaultweapon"));
         
         for(a = 0; a < weaps.size; a++)
         {
-            classWeapons = (weaps[0] == typeArry[0]) ? zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a])) : zm_utility::GetWeaponClassZM(weaps[a]);
-
-            if(IsInArray(weaponsVar, ToLower(CleanString(classWeapons))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
+            if(isInArray(level.customBoxWeapons, weaps[a]))
+                level.customBoxWeapons = ArrayRemove(level.customBoxWeapons, weaps[a]);
+        }
+    }
+    else
+    {
+        weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
+        
+        for(a = 0; a < weaps.size; a++)
+        {
+            if(IsInArray(weaponsVar, ToLower(CleanString(upgraded ? zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a])) : zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
                 if(!IsWeaponInBox(weaps[a]))
                     level.customBoxWeapons[level.customBoxWeapons.size] = weaps[a];
         }
         
-        if(weaps[0] != typeArry[0])
+        if(!upgraded)
         {
             equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
             keys = GetArrayKeys(equipment);
@@ -919,6 +939,8 @@ EnableAllWeaponsInBox(type)
                         level.customBoxWeapons[level.customBoxWeapons.size] = weaps[a];
         }
     }
+
+    level.CustomRandomWeaponWeights = ::CustomBoxWeight;
 }
 
 CustomBoxWeight(keys)
@@ -988,7 +1010,7 @@ PlayerShootToRevive()
         
         /*
             For less of a hassle for the player, I'm running two traces.
-            The first one is the case where you didn't shoot directly at the downed player, but you got within 50m of them.
+            The first one is the case where you didn't shoot directly at the downed player, but shot near them
             The second one is the case that you shot them directly
         */
 
@@ -1059,7 +1081,7 @@ GetPlayerPerkLimit(player)
 
 IncreasedDropRate()
 {
-    if(Is_True(level.no_powerups) && !Is_True(level.IncreasedDropRate))
+    if(Is_True(level.DisablePowerups) && !Is_True(level.IncreasedDropRate))
         level DisablePowerups();
     
     level.IncreasedDropRate = BoolVar(level.IncreasedDropRate);
@@ -1082,7 +1104,7 @@ IncreasedDropRate()
             for(a = 0; a < zombies.size; a++)
             {
                 if(isDefined(zombies[a]) && (!isDefined(zombies[a].no_powerup) || zombies[a].no_powerup))
-                    zombies[a].no_powerups = false;
+                    zombies[a].no_powerup = false;
             }
 
             wait 0.01;
@@ -1112,12 +1134,17 @@ DisablePowerups()
 
     if(Is_True(level.DisablePowerups))
     {
-        foreach(powerup in level.active_powerups)
-        {
-            powerup notify("powerup_timedout");
-            powerup zm_powerups::powerup_delete();
+        powerups = zm_powerups::get_powerups(self.origin, 46340); //active powerups array is being weird and not returning all of the active powerups? -- distancesquared(origin, powerup.origin) < (radius * radius) -- 46340.50 is sqrt of int max
 
-            wait 0.01;
+        if(isDefined(powerups) && powerups.size)
+        {
+            foreach(index, powerup in powerups)
+            {
+                powerup notify("powerup_timedout");
+                powerup zm_powerups::powerup_delete();
+
+                wait 0.01;
+            }
         }
         
         while(Is_True(level.DisablePowerups))

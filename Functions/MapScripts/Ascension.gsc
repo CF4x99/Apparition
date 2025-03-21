@@ -610,7 +610,7 @@ CompleteLanderPassword()
     if(level flag::get("passkey_confirmed"))
         return self iPrintlnBold("^1ERROR: ^7Lander Password Has Already Been Completed");
 
-    level.passkey_progress = level.passkey.size;
+    level.passkey_progress = 4;
     level flag::set("passkey_confirmed");
 }
 

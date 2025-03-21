@@ -14,6 +14,9 @@ ActivateZombieTrap(index)
 {
     traps = level.MenuZombieTraps;
 
+    if(!isDefined(traps[index]))
+        return;
+
     if(!level flag::get(traps[index].script_flag_wait))
         level flag::set(traps[index].script_flag_wait);
 
@@ -23,8 +26,11 @@ ActivateZombieTrap(index)
     traps[index].zombie_cost = 0; //This doesn't work on all maps. Too lazy to add support for the rest.
 
     if(isDefined(traps[index]._trap_use_trigs))
+    {
         for(a = 0; a < traps[index]._trap_use_trigs.size; a++)
-            traps[index]._trap_use_trigs[a] notify("trigger", self);
+            if(isDefined(traps[index]._trap_use_trigs[a]))
+                traps[index]._trap_use_trigs[a] notify("trigger", self);
+    }
     else
         traps[index] notify("trigger", self);
 
@@ -34,8 +40,6 @@ ActivateZombieTrap(index)
 
 ActivateAllZombieTraps()
 {
-    traps = GetEntArray("zombie_trap", "targetname");
-
     if(isDefined(level.MenuZombieTraps) && level.MenuZombieTraps.size)
         for(a = 0; a < level.MenuZombieTraps.size; a++)
             self thread ActivateZombieTrap(a);

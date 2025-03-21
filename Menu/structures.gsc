@@ -37,9 +37,9 @@ addOptBool(boolVar, name, fnc = ::EmptyFunction, input1, input2, input3, input4)
 
 addOptIncSlider(name, fnc = ::EmptyFunction, min = 0, start = 0, max = 1, increment = 1, input1, input2, input3, input4)
 {
-    menu = self isInQuickMenu() ? self.currentMenuQM : self.currentMenu;
-    index = self.menuStructure.size;
     option = SpawnStruct();
+    index = self.menuStructure.size;
+    menu = self isInQuickMenu() ? self.currentMenuQM : self.currentMenu;
     
     option.name      = name;
     option.func      = fnc;
@@ -67,10 +67,9 @@ addOptIncSlider(name, fnc = ::EmptyFunction, min = 0, start = 0, max = 1, increm
 
 addOptSlider(name, fnc = ::EmptyFunction, values, input1, input2, input3, input4)
 {
-    menu = self isInQuickMenu() ? self.currentMenuQM : self.currentMenu;
-    
-    index = self.menuStructure.size;
     option = SpawnStruct();
+    index = self.menuStructure.size;
+    menu = self isInQuickMenu() ? self.currentMenuQM : self.currentMenu;
 
     option.name         = name;
     option.func         = fnc;

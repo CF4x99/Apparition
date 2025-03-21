@@ -1,4 +1,4 @@
-PopulateOriginsScripts(menu, player)
+PopulateOriginsScripts(menu)
 {
     switch(menu)
     {
@@ -19,6 +19,7 @@ PopulateOriginsScripts(menu, player)
             generators = struct::get_array("s_generator", "targetname");
 
             self addMenu("Generators");
+                self addOptBool(AllOriginsGensActive(), "Enable All", ::EnableAllOriginsGens);
 
                 for(a = 0; a < generators.size; a++)
                 {
@@ -67,10 +68,19 @@ PopulateOriginsScripts(menu, player)
             break;
 
         case "Origins Challenges":
-            self addMenu("Challenges");
+            if(!isDefined(self.originsPlayer))
+                self.originsPlayer = level.players[0];
 
-                foreach(player in level.players)
-                    self addOpt(CleanName(player getName()), ::newMenu, "Origins Challenges Player");
+            playerArray = [];
+
+            foreach(player in level.players)
+                playerArray[playerArray.size] = CleanName(player getName()) + " [" + player GetEntityNumber() + "]";
+
+            self addMenu("Challenges");
+                self addOptSlider("Player", ::SetOriginsPlayer, playerArray);
+
+                foreach(challenge in level._challenges.a_stats)
+                    self addOptBool(get_stat(challenge.str_name, self.originsPlayer).b_medal_awarded, ReturnOriginsIString(challenge.str_name), ::CompleteOriginChallenge, challenge.str_name, self.originsPlayer);
             break;
 
         case "Origins Puzzles":
@@ -105,13 +115,6 @@ PopulateOriginsScripts(menu, player)
             self addMenu("Lightning");
                 self addOptBool(level flag::get("electric_puzzle_1_complete"), "Song", ::CompleteLightningSong);
                 self addOptBool(level flag::get("electric_puzzle_2_complete"), "Turn Dials", ::CompleteLightningDials);
-            break;
-
-        case "Origins Challenges Player":
-            self addMenu("Challenges");
-
-                foreach(challenge in level._challenges.a_stats)
-                    self addOptBool(get_stat(challenge.str_name, player).b_medal_awarded, ReturnOriginsIString(challenge.str_name), ::CompleteOriginChallenge, challenge.str_name, player);
             break;
     }
 }
@@ -169,24 +172,18 @@ OriginsSetWeather(weather)
             level.weather_snow = 0;
             level.weather_rain = RandomIntRange(1, 5);
             level.weather_vision = 1;
-
-            level util::set_lighting_state(1);
             break;
 
         case "Snow":
             level.weather_snow = RandomIntRange(1, 5);
             level.weather_rain = 0;
             level.weather_vision = 2;
-
-            level util::set_lighting_state(0);
             break;
 
         case "None":
             level.weather_snow = 0;
             level.weather_rain = 0;
             level.weather_vision = 3;
-
-            level util::set_lighting_state(0);
             break;
 
         default:
@@ -196,9 +193,31 @@ OriginsSetWeather(weather)
     level clientfield::set("rain_level", level.weather_rain);
     level clientfield::set("snow_level", level.weather_snow);
 
+    level util::set_lighting_state(weather == "Rain");
+
     foreach(player in level.players)
         if(zombie_utility::is_player_valid(player, 0, 1))
             player clientfield::set_to_player("player_weather_visionset", level.weather_vision);
+}
+
+EnableAllOriginsGens()
+{
+    allActive = AllOriginsGensActive();
+
+    foreach(index, generator in struct::get_array("s_generator", "targetname"))
+    {
+        if(!allActive && !generator flag::get("player_controlled") || allActive && generator flag::get("player_controlled"))
+            thread SetGeneratorState(index);
+    }
+}
+
+AllOriginsGensActive()
+{
+    foreach(index, generator in struct::get_array("s_generator", "targetname"))
+        if(!generator flag::get("player_controlled"))
+            return false;
+
+    return true;
 }
 
 SetGeneratorState(generator)
@@ -514,6 +533,17 @@ ReturnGatewayName(targetname)
 MudSlowdown()
 {
     level.a_e_slow_areas = isDefined(level.a_e_slow_areas) ? undefined : GetEntArray("player_slow_area", "targetname");
+}
+
+SetOriginsPlayer(playerName)
+{
+    foreach(player in level.players)
+    {
+        if(CleanName(player getName()) + " [" + player GetEntityNumber() + "]" == playerName) //I included the players entity number for the case two players have the same name
+            level.originsPlayer = player;
+    }
+
+    self RefreshMenu(self getCurrent(), self getCursor());
 }
 
 ReturnOriginsIString(stat)

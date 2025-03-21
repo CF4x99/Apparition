@@ -5,7 +5,7 @@ PopulateMenuCustomization(menu)
         case "Menu Customization":
             self addMenu("Menu Customization");
                 self addOpt("Menu Credits", ::MenuCredits);
-                self addOptSlider("Menu Style", ::MenuStyle, level.menuName + ";Zodiac;Nautaremake;Native;Quick Menu");
+                self addOptSlider("Menu Style", ::MenuStyle, level.menuName + ";Zodiac;Nautaremake;AIO;Native;Quick Menu");
                 self addOpt("Design Preferences", ::newMenu, "Design Preferences");
                 self addOpt("Main Design Color", ::newMenu, "Main Design Color");
                 self addOpt("Title Color", ::newMenu, "Title Color");
@@ -112,10 +112,7 @@ MenuTheme(color)
             self.menuHud[hud[a]] hudFadeColor(color, 1);
     }
     
-    wHud = "BoolOpt";
-
-    if(self.MenuStyle == "Nautaremake")
-        wHud = "BoolBack";
+    wHud = (self.MenuStyle == "Nautaremake") ? "BoolBack" : "BoolOpt";
     
     if(isDefined(self.menuStructure) && self.menuStructure.size)
         for(a = 0; a < self.menuStructure.size; a++)
@@ -176,10 +173,7 @@ SmoothRainbowTheme()
                 self.menuHud[hud[a]].color = level.RGBFadeColor;
         }
 
-        wHud = "BoolOpt";
-
-        if(self.MenuStyle == "Nautaremake")
-            wHud = "BoolBack";
+        wHud = (self.MenuStyle == "Nautaremake") ? "BoolBack" : "BoolOpt";
         
         if(isDefined(self.menuStructure) && self.menuStructure.size)
             for(a = 0; a < self.menuStructure.size; a++)
@@ -231,20 +225,22 @@ ElementSmoothRainbow(element)
                     if(self isInQuickMenu() && !isDefined(textToggled))
                         continue;
                     
-                    if(element == "text" && isDefined(textToggled) && (!isDefined(self.menuStructure[index].bool) || !self.menuStructure[index].bool || self.ToggleStyle != "Text Color"))
-                        continue;
-                    
-                    if(element == "text" && !isDefined(textScrolling) && !isDefined(textToggled) && index == self getCursor())
-                        continue;
-                    
-                    if(element == "text" && isDefined(textScrolling) && (index != self getCursor() || isDefined(self.menuStructure[index].bool) && self.menuStructure[index].bool && self.ToggleStyle == "Text Color"))
-                        continue;
-                    
-                    if(element == "text" && !isDefined(textToggled) && isDefined(self.menuStructure[index].bool) && self.menuStructure[index].bool && self.ToggleStyle == "Text Color")
-                        continue;
+                    if(element == "text")
+                    {
+                        if(isDefined(textToggled) && (!isDefined(self.menuStructure[index].bool) || !self.menuStructure[index].bool || self.ToggleStyle != "Text Color"))
+                            continue;
+                        
+                        if(!isDefined(textScrolling) && !isDefined(textToggled) && index == self getCursor())
+                            continue;
+                        
+                        if(isDefined(textScrolling) && (index != self getCursor() || isDefined(self.menuStructure[index].bool) && self.menuStructure[index].bool && self.ToggleStyle == "Text Color"))
+                            continue;
+                        
+                        if(!isDefined(textToggled) && isDefined(self.menuStructure[index].bool) && self.menuStructure[index].bool && self.ToggleStyle == "Text Color")
+                            continue;
+                    }
 
                     elem.color = level.RGBFadeColor;
-
                     hudElems = Array("BoolOpt", "subMenu", "IntSlider", "StringSlider");
 
                     for(a = 0; a < hudElems.size; a++)
@@ -255,7 +251,12 @@ ElementSmoothRainbow(element)
             else
             {
                 if(isDefined(self.menuHud[element]) && (element != "title" || element == "title" && self.MenuStyle != "Zodiac" && !self isInQuickMenu()))
+                {
                     self.menuHud[element].color = level.RGBFadeColor;
+
+                    if(element == "title" && self.MenuStyle == "AIO" && isDefined(self.menuHud["MenuName"]))
+                        self.menuHud["MenuName"].color = level.RGBFadeColor;
+                }
             }
         }
 
@@ -517,7 +518,7 @@ GetSavedVariable(variable)
 
 LoadMenuVars()
 {
-    self.MenuStyle          = level.menuName; //Current Choices: level.menuName, Zodiac, Nautaremake, Native, Quick Menu
+    self.MenuStyle          = level.menuName; //Current Choices: level.menuName, Zodiac, Nautaremake, AIO, Native, Quick Menu
     self.menuX              = (self.MenuStyle == "Zodiac") ? 298 : (self.MenuStyle == "Quick Menu") ? 0 : -81;
     self.menuY              = (self.MenuStyle == "Quick Menu") ? -230 : -185;
     self.MaxOptions         = (self.MenuStyle == "Zodiac") ? 12 : (self.MenuStyle == "Quick Menu") ? 25 : 10;

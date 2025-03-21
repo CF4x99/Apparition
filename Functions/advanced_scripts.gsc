@@ -1093,8 +1093,8 @@ ControllableZombie(team)
     if(Is_True(self.ControllableZombie))
         self.ControllableZombie = BoolVar(self.ControllableZombie);
 
-    if(Is_True(self.playerIgnoreMe) && Is_True(self.ignoreme))
-        self.ignoreme = BoolVar(self.ignoreme);
+    if(Is_True(self.ignoreme))
+        self.ignoreme = false;
 }
 
 CanControl()

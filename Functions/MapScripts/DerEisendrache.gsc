@@ -41,7 +41,7 @@ PopulateDerEisendracheScripts(menu)
                 {
                     if(isDefined(level.var_c62829c7))
                     {
-                        self addOptBool((level flag::get("rune_prison_obelisk") && !isDefined(level.MagmaRock)), "Shoot Magma Rock", ::MagmaRock);
+                        self addOptBool((level flag::get("rune_prison_obelisk") && !Is_True(level.MagmaRock)), "Shoot Magma Rock", ::MagmaRock);
                         self addOptBool(AllRunicCirclesCharged(), "Activate & Charge Runic Circles", ::RunicCircles);
                         self addOptBool(IsClockFireplaceComplete(), "Shoot Fireplace", ::ClockFireplaceStep);
                         self addOptBool(level flag::get("rune_prison_repaired"), "Collect Repaired Arrows", ::CollectRepairedFireArrows);
@@ -105,27 +105,27 @@ PopulateDerEisendracheScripts(menu)
                 }
                 break;
 
-                case "Wolf Bow":
-                    //level.var_52978d72 <- player bound to the wolf quest
+        case "Wolf Bow":
+            //level.var_52978d72 <- player bound to the wolf quest
 
-                    self addMenu("Wolf");
-                        self addOptBool(level flag::get("wolf_howl_paintings"), "Initiate Quest", ::InitWolfBow);
-                        
-                        if(level flag::get("wolf_howl_paintings"))
-                        {
-                            if(isDefined(level.var_52978d72))
-                            {
-                                self addOptBool((level clientfield::get("quest_state_wolf") >= 2), "Collect Skull Shrine", ::CollectSkullShrine);
-                                self addOptBool((level clientfield::get("quest_state_wolf") >= 3), "Attach Skull To Skeleton", ::WolfAttachSkull);
-                                self addOptBool(level flag::get("wolf_howl_escort"), "Escort & Collect Wolf Souls", ::CollectWolfSouls);
-                                self addOptBool(level flag::get("wolf_howl_repaired"), "Collect Reforged Arrows", ::CollectReforgedArrows);
-                            }
-                            else
-                            {
-                                self addOpt("");
-                                self addOpt("Quest Hasn't Been Bound Yet");
-                            }
-                        }
+            self addMenu("Wolf");
+                self addOptBool(level flag::get("wolf_howl_paintings"), "Initiate Quest", ::InitWolfBow);
+                
+                if(level flag::get("wolf_howl_paintings"))
+                {
+                    if(isDefined(level.var_52978d72))
+                    {
+                        self addOptBool((level clientfield::get("quest_state_wolf") >= 2), "Collect Skull Shrine", ::CollectSkullShrine);
+                        self addOptBool((level clientfield::get("quest_state_wolf") >= 3), "Attach Skull To Skeleton", ::WolfAttachSkull);
+                        self addOptBool(level flag::get("wolf_howl_escort"), "Escort & Collect Wolf Souls", ::CollectWolfSouls);
+                        self addOptBool(level flag::get("wolf_howl_repaired"), "Collect Reforged Arrows", ::CollectReforgedArrows);
+                    }
+                    else
+                    {
+                        self addOpt("");
+                        self addOpt("Quest Hasn't Been Bound Yet");
+                    }
+                }
             break;
     }
 }
@@ -164,6 +164,8 @@ FeedDragon(player)
     {
         if(isDefined(self.var_98730ffa))
             self.var_98730ffa++;
+        else
+            self.var_98730ffa = 0;
         
         wait 0.01;
     }
@@ -207,50 +209,6 @@ EnableAllLandingPads()
         pad notify("trigger");
 }
 
-DiscoInferno()
-{
-    if(level flag::get("ee_disco_inferno"))
-        return self iPrintlnBold("^1ERROR: ^7The Disco Inferno Side EE Is Already Enabled");
-    
-    level flag::set("ee_disco_inferno");
-}
-
-ClawHat()
-{
-    if(level flag::get("ee_claw_hat"))
-        return self iPrintlnBold("^1ERROR: ^7The Claw Hat Side EE Has Already Been Completed");
-    
-    if(Is_True(level.ClawHat))
-        return self iPrintlnBold("^1ERROR: ^7The Claw Hat Side EE Is Already Being Completed");
-    
-    level.ClawHat = true;
-
-    foreach(claw in level.var_23825200)
-    {
-        if(!isDefined(claw) || isDefined(claw) && claw flag::get("mechz_claw_revealed"))
-            continue;
-        
-        MagicBullet(level.start_weapon, claw.origin, claw.origin + (0, 0, -5), self);
-        wait 0.1;
-    }
-
-    wait 1;
-    
-    foreach(claw in level.var_23825200)
-    {
-        if(!isDefined(claw))
-            continue;
-        
-        mechz = ServerSpawnMechz(claw.origin + (AnglesToForward(claw.angles) * 255));
-        wait 0.1;
-
-        if(!isDefined(mechz))
-            continue;
-
-        MagicBullet(level.start_weapon, claw.origin, claw.origin + (0, 0, 5), self);
-    }
-}
-
 AreLandingPadsEnabled()
 {
     pads = GrabPadUniTriggers();
@@ -281,6 +239,57 @@ GrabPadUniTriggers()
     }
 
     return pads;
+}
+
+DiscoInferno()
+{
+    if(level flag::get("ee_disco_inferno"))
+        return self iPrintlnBold("^1ERROR: ^7The Disco Inferno Side EE Is Already Enabled");
+    
+    level flag::set("ee_disco_inferno");
+}
+
+ClawHat()
+{
+    if(level flag::get("ee_claw_hat"))
+        return self iPrintlnBold("^1ERROR: ^7The Claw Hat Side EE Has Already Been Completed");
+    
+    if(Is_True(level.ClawHat))
+        return self iPrintlnBold("^1ERROR: ^7The Claw Hat Side EE Is Already Being Completed");
+    
+    menu = self getCurrent();
+    curs = self getCursor();
+    level.ClawHat = true;
+
+    foreach(claw in level.var_23825200)
+    {
+        if(!isDefined(claw) || isDefined(claw) && claw flag::get("mechz_claw_revealed"))
+            continue;
+        
+        MagicBullet(level.start_weapon, claw.origin, claw.origin + (0, 0, -5), self);
+        wait 0.1;
+    }
+
+    wait 1;
+    
+    foreach(claw in level.var_23825200)
+    {
+        if(!isDefined(claw))
+            continue;
+        
+        mechz = ServerSpawnMechz(claw.origin + (AnglesToForward(claw.angles) * 255));
+        wait 0.1;
+
+        if(!isDefined(mechz))
+            continue;
+
+        MagicBullet(level.start_weapon, claw.origin, claw.origin + (0, 0, 5), self);
+    }
+
+    while(!level flag::get("ee_claw_hat"))
+        wait 0.1;
+    
+    self RefreshMenu(menu, curs);
 }
 
 
@@ -466,7 +475,6 @@ ClockFireplaceStep()
 
     level.var_c62829c7 FreezeControls(1);
     level.var_2e55cb98.origin = level.var_c62829c7.origin;
-    level.var_2e55cb98 LinkTo(level.var_c62829c7);
     wait 1;
 
     target = GetEnt(level.var_2e55cb98.var_336f1366.target, "targetname");
@@ -516,7 +524,7 @@ IsClockFireplaceComplete()
 {
     magmaBall = GetEnt("aq_rp_magma_ball_tag", "targetname");
 
-    if(level flag::get("rune_prison_golf") && magmaBall flag::get("magma_ball_move_done"))
+    if(level flag::exists("rune_prison_golf") && level flag::get("rune_prison_golf") && (isDefined(magmaBall) && magmaBall flag::exists("magma_ball_move_done") && magmaBall flag::get("magma_ball_move_done") || !isDefined(magmaBall)))
         return true;
 
     if(!isDefined(magmaBall))
@@ -549,8 +557,7 @@ CollectRepairedFireArrows()
     if(isDefined(MagmaBall))
         MagmaBall.var_67b5dd94 notify("trigger", level.var_c62829c7);
 
-    level waittill(#"hash_79d94608");
-    wait 3;
+    wait 9;
 
     if(isDefined(MagmaBall))
         MagmaBall.var_67b5dd94 notify("trigger", level.var_c62829c7);
@@ -649,8 +656,8 @@ AreBeaconsLit()
             continue;
         
         s_beacon = struct::get(beacons[a].target);
-        
-        if(!s_beacon.var_41f52afd clientfield::get("beacon_fx"))
+
+        if(!isDefined(s_beacon) || !isDefined(s_beacon.var_41f52afd) || !s_beacon.var_41f52afd clientfield::get("beacon_fx"))
             return false;
     }
 
@@ -679,7 +686,7 @@ LightningWallrun()
 
     for(a = 0; a < trigs.size; a++)
     {
-        if(!isDefined(trigs[a]) || level.var_f8d1dc16.var_a4f04654 >= 4)
+        if(!isDefined(trigs[a]) || isDefined(level.var_f8d1dc16.var_a4f04654) && level.var_f8d1dc16.var_a4f04654 >= 4)
             continue;
         
         trigs[a] notify("trigger", level.var_f8d1dc16);
@@ -1200,7 +1207,7 @@ CollectSkullShrine()
 
     skull = GetEnt("wolf_skull_roll_down", "targetname");
     skull.var_67b5dd94 notify("trigger", level.var_52978d72);
-    level waittill(#"hash_88b82583");
+    wait 3;
 
     while(1)
     {
@@ -1238,7 +1245,7 @@ WolfAttachSkull()
     skull = GetEnt("aq_wh_skadi_skull", "targetname");
     skull.var_67b5dd94 notify("trigger", level.var_52978d72);
 
-    while(level flag::get("quest_state_wolf") < 2)
+    while(level clientfield::get("quest_state_wolf") < 2)
         wait 0.1;
     
     self RefreshMenu(menu, curs);

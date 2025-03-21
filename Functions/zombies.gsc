@@ -521,7 +521,7 @@ DisableZombieSpawning()
 
 TeleportZombies(loc)
 {
-    origin = (loc == "Crosshairs") ? self TraceBullet() : self.origin;
+    origin = (IsString(loc) && loc == "Crosshairs") ? self TraceBullet() : self.origin;
     zombies = GetAITeamArray(level.zombie_team);
 
     for(a = 0; a < zombies.size; a++)

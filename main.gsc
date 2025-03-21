@@ -1,7 +1,7 @@
 /*
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.0.8
+    Version:              1.5.0.9
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -138,34 +138,6 @@ __init__()
 init()
 {
     level DefineOnce();
-
-    if(isDefined(level.overrideplayerdamage))
-        level.saved_overrideplayerdamage = level.overrideplayerdamage;
-
-    level.overrideplayerdamage = ::override_player_damage;
-
-    if(isDefined(level.global_damage_func))
-        level.saved_global_damage_func = level.global_damage_func;
-    
-    level.global_damage_func = ::override_zombie_damage;
-
-    if(isDefined(level.global_damage_func_ads))
-        level.saved_global_damage_func_ads = level.global_damage_func_ads;
-    
-    level.global_damage_func_ads = ::override_zombie_damage_ads;
-
-    if(isDefined(level.callbackactorkilled))
-        level.saved_callbackactorkilled = level.callbackactorkilled;
-    
-    level.callbackactorkilled = ::override_actor_killed;
-
-    if(isDefined(level.callbackplayerdisconnect))
-        level.saved_callbackplayerdisconnect = level.callbackplayerdisconnect;
-    
-    level.callbackplayerdisconnect = ::override_player_disconnect;
-    
-    level.custom_game_over_hud_elem = ::override_game_over_hud_elem;
-    level.player_score_override = ::override_player_points;
 }
 
 onPlayerSpawned()
@@ -186,10 +158,40 @@ onPlayerSpawned()
         
         level.player_out_of_playable_area_monitor = 0;
         level.player_out_of_playable_area_monitor_callback = ::player_out_of_playable_area_monitor;
+
+        if(isDefined(level.overrideplayerdamage))
+            level.saved_overrideplayerdamage = level.overrideplayerdamage;
+
+        level.overrideplayerdamage = ::override_player_damage;
+
+        if(isDefined(level.global_damage_func))
+            level.saved_global_damage_func = level.global_damage_func;
+        
+        level.global_damage_func = ::override_zombie_damage;
+
+        if(isDefined(level.global_damage_func_ads))
+            level.saved_global_damage_func_ads = level.global_damage_func_ads;
+        
+        level.global_damage_func_ads = ::override_zombie_damage_ads;
+
+        if(isDefined(level.callbackactorkilled))
+            level.saved_callbackactorkilled = level.callbackactorkilled;
+        
+        level.callbackactorkilled = ::override_actor_killed;
+
+        if(isDefined(level.callbackplayerdisconnect))
+            level.saved_callbackplayerdisconnect = level.callbackplayerdisconnect;
+        
+        level.callbackplayerdisconnect = ::override_player_disconnect;
+        level.custom_game_over_hud_elem = ::override_game_over_hud_elem;
+
+        if(isDefined(level.player_score_override))
+            level.saved_player_score_override = level.player_score_override;
+        
+        level.player_score_override = ::override_player_points;
     }
 
     self thread GivePlayerLoadout();
-
     level flag::wait_till("initial_blackscreen_passed");
 
     self AllowWallRun(0);
@@ -203,7 +205,7 @@ onPlayerSpawned()
     
     self.runningSpawned = BoolVar(self.runningSpawned);
 
-    //Anthing Above This Is Ran Every Time The Player Spawns
+    //Anything Above This Is Ran Every Time The Player Spawns
     if(isDefined(self.playerSpawned))
         return;
     self.playerSpawned = true;
@@ -227,7 +229,7 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName    = "Apparition";
-    level.menuVersion = "1.5.0.8";
+    level.menuVersion = "1.5.0.9";
     level.MenuStatus  = Array("Bot", "None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer");
     level.colorNames  = Array("Ciper Purple", "xbOnline Blue", "Skyblue", "Pink", "Green", "Brown", "Blue", "Red", "Orange", "Purple", "Cyan", "Yellow", "Black", "White");
     level.colors      = Array(100, 0, 100, 57, 152, 254, 135, 206, 250, 255, 110, 255, 0, 255, 0, 101, 67, 33, 0, 0, 255, 255, 0, 0, 255, 128, 0, 100, 0, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255);
@@ -279,7 +281,7 @@ DefineMenuArrays()
                 break;
             
             case "Der Eisendrache":
-                locations = Array("Spawn", (421.786, 559.05, -47.875), "Power", (-27.8228, 2784.15, 848.125), "Boss Fight Room", (-3182.63, 6962.58, -252.375), "Time Travel Room", (-278.407, 5001.93, 152.125), "Prison", (917.821, 912.26, 144.125));
+                locations = Array("Spawn", (421.786, 559.05, -47.875), "Power", (-27.8228, 2784.15, 848.125), "Pyramid", (-1476.97, 2253.83, 200.2), "Boss Fight Room", (-3182.63, 6962.58, -252.375), "Time Travel Room", (-278.407, 5001.93, 152.125), "Prison", (917.821, 912.26, 144.125));
                 break;
             
             case "Zetsubou No Shima":
@@ -324,9 +326,6 @@ DefineMenuArrays()
             
             case "Origins":
                 locations = Array("Spawn", (2698.43, 5290.48, -346.219), "Staff Chamber", (-2.4956, -2.693, -751.875), "The Crazy Place", (10334.5, -7891.93, -411.875), "Lightning Tunnel", (-3234, -372, -188), "Wind Tunnel", (3330, 1227, -343), "Fire Tunnel", (3064, 4395, -599), "Ice Tunnel", (1431, -1728, -121), "Robot Head: Odin", (-6759.17, -6541.72, 159.375), "Robot Head: Thor", (-6223.59, -6547.65, 159.375), "Robot Head: Freya", (-5699.83, -6540.03, 159.375), "Prison", (-3142.11, 1125.09, -63.875));
-                break;
-            
-            default:
                 break;
         }
 
@@ -534,18 +533,13 @@ MenuInstructionsDisplay()
                             str += "\n[{+speed_throw}] & [{+smoke}]: Open Quick Menu";
                     }
                     else
-                        str = "[{+attack}]/[{+speed_throw}]: Scroll\n[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right\n[{+activate}]: Select\n[{+melee}]: Go Back/Exit";
+                        str = "[{+attack}]/[{+speed_throw}]/[{+actionslot 1}]/[{+actionslot 2}]: Scroll\n[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right\n[{+activate}]: Select\n[{+melee}]: Go Back/Exit";
                 }
                 else
                     str = self.MenuInstructionsString;
             }
             else
-            {
-                str = "[{+speed_throw}] & [{+gostand}]: Open Quick Menu";
-
-                if(self isInMenu(true))
-                    str = "[{+attack}]/[{+speed_throw}]: Scroll\n[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right\n[{+activate}]: Select\n[{+gostand}]: Exit";
-            }
+                str = self isInMenu(true) ? "[{+attack}]/[{+speed_throw}]: Scroll\n[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right\n[{+activate}]: Select\n[{+gostand}]: Exit" : "[{+speed_throw}] & [{+gostand}]: Open Quick Menu";
             
             if(self.MenuInstructions.text != str)
                 self.MenuInstructions SetTextString(str);
@@ -574,37 +568,4 @@ MenuInstructionsDisplay()
 SetMenuInstructions(text)
 {
     self.MenuInstructionsString = (!isDefined(text) || text == "") ? undefined : text;
-}
-
-override_player_disconnect()
-{
-    foreach(player in level.players)
-    {
-        if(!player hasMenu() || !isDefined(player) || player == self)
-            continue;
-        
-        //If a player is navigating another players options, and that player disconnects, it will kick them back to the player menu
-        if(isDefined(player.menuParent) && isInArray(player.menuParent, "Players") && player.SelectedPlayer == self)
-        {
-            openMenu = player isInMenu(false);
-
-            if(openMenu)
-                player thread closeMenu1();
-            
-            player.menuParent = [];
-            player.currentMenu = "Players";
-            player.menuParent[player.menuParent.size] = "Main";
-
-            if(openMenu)
-            {
-                player thread openMenu1();
-                player iPrintlnBold("^1ERROR: ^7Player Has Disconnected");
-            }
-        }
-        else if(player isInMenu() && player getCurrent() == "Players") //If a player is viewing the player menu when a player disconnects, it will refresh the options
-            player RefreshMenu();
-    }
-
-    if(isDefined(level.saved_callbackplayerdisconnect))
-        self [[ level.saved_callbackplayerdisconnect ]]();
 }

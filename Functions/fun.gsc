@@ -110,14 +110,7 @@ PopulateFunScripts(menu, player)
                         continue;
                     
                     foreach(subcategory, vox in level.sndplayervox[category])
-                    {
-                        if(IsSubStr(subcategory, "specialty"))
-                            voxDisplay = ReturnPerkName(CleanString(subcategory));
-                        else
-                            voxDisplay = CleanString(subcategory, true);
-                        
-                        self addOpt(voxDisplay, ::create_and_play_dialog, category, subcategory, player);
-                    }
+                        self addOpt(IsSubStr(subcategory, "specialty") ? ReturnPerkName(CleanString(subcategory)) : CleanString(subcategory, true), ::create_and_play_dialog, category, subcategory, player);
                 }
             }
             break;
@@ -267,7 +260,7 @@ electric_fire_cherry_cooldown_timer(current_weapon)
     self endon("disconnect");
 
     reloadTime = self HasPerk("specialty_fastreload") ? (0.25 * GetDvarFloat("perk_weapReloadMultiplier")) : 0.25;
-    waitTime = reloadTime + 3;
+    waitTime = (reloadTime + 3);
 
     wait waitTime;
     self.consecutive_electric_fire_cherry_attacks = 0;
@@ -853,7 +846,7 @@ SpecNade(player) //Credit to Extinct for his spec-nade
             player.nadelinker delete();
 
             if(Is_True(player.ignoreme))
-                player.ignoreme = BoolVar(player.ignoreme);
+                player.ignoreme = false;
             
             if(!Is_True(player.Invisibility))
                 player Show();
@@ -871,7 +864,7 @@ SpecNade(player) //Credit to Extinct for his spec-nade
         }
 
         if(Is_True(player.ignoreme))
-            player.ignoreme = BoolVar(player.ignoreme);
+            player.ignoreme = false;
         
         player notify("EndSpecNade");
     }
@@ -1223,7 +1216,6 @@ GrapplingGun(player)
 
             player PlayerLinkTo(player.grapplingent);
             player.grapplingent MoveTo(origin, 1);
-
             player.grapplingent waittill("movedone");
 
             if(!isDefined(player.grapplingent))
@@ -1286,9 +1278,9 @@ GravityGun(player)
                     
                     grabEnt.GravityGunLaunched = true;
                     shootEnt.GravityGunLaunched = true;
+
                     shootEnt thread deleteAfter(5);
                     grabEnt thread GravityGunUnlinkAfter(5);
-                    
                     shootEnt Launch(VectorScale(AnglesToForward(player GetPlayerAngles()), 2500));
                     wait 0.1;
 

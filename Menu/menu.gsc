@@ -201,6 +201,12 @@ runMenuIndex(menu)
             self PopulateMOTDScripts(menu);
             break;
         
+        case "Die Rise Scripts":
+        case "Elevator Keys":
+        case "Bank Cash":
+            self PopulateDieRiseScripts(menu);
+            break;
+        
         case "Server Modifications":
         case "Doheart Options":
         case "Lobby Timer Options":
@@ -235,6 +241,7 @@ runMenuIndex(menu)
                 self addOpt("Disconnect", ::disconnect);
                 self addOpt("Player Info", ::newMenu, "Player Info");
                 self addOpt("Custom Map Spawns", ::newMenu, "Custom Map Spawns");
+                self addOptBool(self.ShowOrigin, "Show Origin", ::ShowOrigin);
                 self addOptBool(level.AntiEndGame, "Anti-End Game", ::AntiEndGame);
                 self addOptBool((GetDvarInt("migration_forceHost") == 1), "Force Host", ::ForceHost);
                 self addOptBool(level.GSpawnProtection, "G_Spawn Crash Protection", ::GSpawnProtection);
@@ -392,10 +399,6 @@ MenuOptionsPlayer(menu, player)
         
         case "Map Challenges Player":
             self PopulateMapChallenges(player);
-            break;
-        
-        case "Origins Challenges Player":
-            self PopulateOriginsScripts(menu, player);
             break;
         
         case "Options":

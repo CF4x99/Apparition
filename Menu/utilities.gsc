@@ -485,7 +485,7 @@ CleanString(strn, onlyReplace)
     for(a = 0; a < strn.size; a++)
     {
         //List of strings what will be removed from the final string output
-        strings = Array("specialty", "zombie", "zm", "t7", "t6", "p7", "zmb", "zod", "ai", "g", "bg", "perk", "player", "weapon", "wpn", "aat", "bgb", "visionset", "equip", "craft", "der", "viewmodel", "mod", "fxanim", "moo", "moon", "zmhd", "fb", "bc", "asc", "vending", "part", "camo", "placeholder", "zmu", "hat");
+        strings = Array("specialty", "zombie", "zm", "t7", "t6", "p7", "zmb", "zod", "ai", "g", "bg", "perk", "player", "weapon", "wpn", "aat", "bgb", "visionset", "equip", "craft", "der", "viewmodel", "mod", "fxanim", "moo", "moon", "zmhd", "fb", "bc", "asc", "vending", "part", "camo", "placeholder", "zmu", "hat", "ctl");
         
         //This will replace any '_' found in the string
         replacement = " ";
@@ -493,10 +493,7 @@ CleanString(strn, onlyReplace)
         if(!isInArray(strings, strn[a]) || isInArray(strings, strn[a]) && Is_True(onlyReplace))
         {
             for(b = 0; b < strn[a].size; b++)
-                if(b != 0)
-                    str += strn[a][b];
-                else
-                    str += ToUpper(strn[a][b]);
+                str += (b != 0) ? strn[a][b] : ToUpper(strn[a][b]);
             
             if(a != (strn.size - 1))
                 str += replacement;
@@ -742,7 +739,7 @@ Keyboard(func, player)
     }
 
     valueX = (self.MenuStyle == "Quick Menu") ? self.menuX : self.menuHud["background"].x;
-    valueY = (self.MenuStyle == "Quick Menu") ? self.menuY : self.menuHud["title"].y;
+    valueY = (self.MenuStyle == "AIO") ? (self.menuHud["title"].y + 10) : (self.MenuStyle == "Nautaremake") ? (self.menuHud["nautaicon"].y + 50) : self.menuHud["title"].y;
 
     self.keyboard["string"] = self createText("objective", 1.1, 5, "", "CENTER", "CENTER", valueX, (valueY + 15), 1, (1, 1, 1));
 
@@ -892,7 +889,7 @@ NumberPad(func, player, param)
         letters[a] = a;
     
     valueX = (self.MenuStyle == "Quick Menu") ? self.menuX : self.menuHud["background"].x;
-    valueY = (self.MenuStyle == "Quick Menu") ? self.menuY : self.menuHud["title"].y;
+    valueY = (self.MenuStyle == "AIO") ? (self.menuHud["title"].y + 10) : (self.MenuStyle == "Nautaremake") ? (self.menuHud["nautaicon"].y + 50) : self.menuHud["title"].y;
     
     self.keyboard["string"] = self createText("objective", 1.2, 5, 0, "CENTER", "CENTER", valueX, (valueY + 15), 1, (1, 1, 1));
 
@@ -907,7 +904,7 @@ NumberPad(func, player, param)
     
     cursX = 0;
     stringLimit = 10;
-    strng = "";
+    strng = "0";
 
     self SetMenuInstructions("[{+actionslot 3}]/[{+actionslot 4}] - Scroll\n[{+activate}] - Select\n[{+gostand}] - Confirm\n[{+melee}] - Backspace/Cancel");
     wait 0.5;
@@ -936,18 +933,19 @@ NumberPad(func, player, param)
         {
             if(strng.size < stringLimit)
             {
+                if(strng == "0")
+                    strng = "";
+                
                 strng += letters[cursX];
                 self.keyboard["string"] SetValue(Int(strng));
             }
-            else
-                self iPrintlnBold("^1ERROR: ^7Max String Size Reached");
 
             wait 0.15;
         }
         else if(self JumpButtonPressed())
         {
             if(!strng.size)
-                break;
+                strng = "0";
             
             if(isDefined(func))
             {
@@ -963,16 +961,21 @@ NumberPad(func, player, param)
         }
         else if(self MeleeButtonPressed())
         {
-            if(strng.size)
+            if(strng.size && strng != "0" && strng != "")
             {
                 backspace = "";
 
-                for(a = 0; a < (strng.size - 1); a++)
-                    backspace += strng[a];
+                if(strng.size > 1)
+                {
+                    for(a = 0; a < (strng.size - 1); a++)
+                        backspace += strng[a];
+                    
+                    strng = backspace;
+                }
+                else
+                    strng = "0";
                 
-                strng = backspace;
                 self.keyboard["string"] SetValue(Int(strng));
-
                 wait 0.1;
             }
             else
@@ -1138,9 +1141,12 @@ ReturnMapName(map)
             return "Origins";
         
 
-        //suppoerted custom maps
+        //supported custom maps
         case "zm_prison":
             return "Mob Of The Dead";
+        
+        case "zm_die":
+            return "Die Rise";
         
         default:
             return "Unknown";
@@ -1406,7 +1412,6 @@ MenuCredits()
         self.menuHud["scroller"].alpha = 0;
     
     self SoftLockMenu(220);
-    
     MenuTextStartCredits = Array("^1" + level.menuName, "The Biggest & Best Menu For ^1Black Ops 3 Zombies", "Developed By: ^1CF4_99", "Start Date: ^16/10/21", "Version: ^1" + level.menuVersion, " ", "^1Extinct", "Ideas", "Suggestions", "Constructive Criticism", "His Spec-Nade", " ", "^1ItsFebiven", "Some Ideas And Suggestions", "Nautaremake Style", " ", "^1CraftyCritter", "BO3 GSC Compiler", " ", "^1Joel", "Bug Reporting", "Testing", "Breaking Shit", " ", "^1Thanks For Choosing " + level.menuName, "YouTube: ^1CF4_99", "Discord: ^1cf4_99");
     
     self thread MenuCreditsStart(MenuTextStartCredits);
@@ -1510,6 +1515,9 @@ DebugiPrint(message)
         return;
     }
     
+    if(!isDefined(self.PrintMessageQueue))
+        self.PrintMessageQueue = [];
+    
     if(!isDefined(self.PrintMessageInt) || (isDefined(self.PrintMessageInt) && self.PrintMessageInt > 4))
         self.PrintMessageInt = 0;
     
@@ -1586,7 +1594,6 @@ GetTextWidth3arc(player, widthScale)
         width += widthScale;
     
     buttonToks = StrTok(nlToks[longest], "[{");
-    compilerfix = "}"; //NOT USED -- The mod tools compiler is fucked, and when a curly brace is used in a string('{') it needs to have an open and close brace
     
     if(buttonToks.size > 1)
         width += (widthScale * buttonToks.size);
@@ -1674,6 +1681,40 @@ GetDvarVector1(vecVar)
         vals[a] = Float(toks[a]);
     
     return (vals[0], vals[1], vals[2]);
+}
+
+//I made this to get teleport locations
+ShowOrigin()
+{
+    self.ShowOrigin = BoolVar(self.ShowOrigin);
+
+    if(Is_True(self.ShowOrigin))
+    {
+        self endon("disconnect");
+
+        //each value in the players origin vector(x, y, z) needs to be its own element to avoid creating a massive amount of unique strings
+        //SetValue(int / float) doesn't count towards unique strings since they're numbers
+        
+        self.originHud = [];
+
+        for(a = 0; a < 3; a++)
+            self.originHud[self.originHud.size] = self createText("default", 1, 1, 0, "CENTER", "CENTER", 0, 75 + (a * 16), 1, (1, 1, 1));
+
+        while(Is_True(self.ShowOrigin))
+        {
+            for(a = 0; a < self.originHud.size; a++)
+                if(isDefined(self.originHud[a]))
+                    self.originHud[a] SetValue(self.origin[a]);
+            
+            wait 0.01;
+        }
+    }
+    else
+    {
+        for(a = 0; a < self.originHud.size; a++)
+            if(isDefined(self.originHud[a]))
+                self.originHud[a] DestroyHud();
+    }
 }
 
 Is_True(boolVar)

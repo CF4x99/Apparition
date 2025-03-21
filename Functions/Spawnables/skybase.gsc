@@ -93,7 +93,9 @@ SpawnSkybase()
     array::thread_all(corners, ::SpawnableArray, "Skybase");
 
     bottle = SpawnGlowingPerk(origin + (10, (55 * (y + 1)), 55));
-    bottle SpawnableArray("Skybase");
+
+    if(isDefined(bottle))
+        bottle SpawnableArray("Skybase");
 }
 
 SpawnGlowingPerk(origin)
@@ -102,6 +104,10 @@ SpawnGlowingPerk(origin)
         origin = self.origin + (0, 0, 55);
 
     bottle = SpawnScriptModel(origin, GetSpawnableBottle());
+
+    if(!isDefined(bottle))
+        return;
+    
     PlayFXOnTag(level._effect["powerup_on"], bottle, "tag_origin");
     PlayFXOnTag(level._effect["tesla_bolt"], bottle, "tag_origin");
 
