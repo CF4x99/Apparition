@@ -20,8 +20,6 @@ PopulateRevelationsScripts(menu)
     }
 }
 
- 
-
 RevelationsKeeperCraftable(craftable)
 {
     if(!isDefined(craftable) || !level flag::exists("keeper_callbox_" + craftable + "_found") || level flag::get("keeper_callbox_" + craftable + "_found"))

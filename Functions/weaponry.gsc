@@ -6,16 +6,36 @@ PopulateWeaponry(menu, player)
             weapons = Array("Assault Rifles", "Sub Machine Guns", "Light Machine Guns", "Sniper Rifles", "Shotguns", "Pistols", "Launchers", "Specials");
 
             self addMenu("Weaponry");
-                self addOpt("Options", ::newMenu, "Weapon Options");
-                self addOpt("Attachments", ::newMenu, "Weapon Attachments");
-                self addOpt("Loadout", ::newMenu, "Weapon Loadout");
-                self addOpt("Camo", ::newMenu, "Weapon Camo");
-                self addOpt("AAT", ::newMenu, "Weapon AAT");
+
+                if(!IsVerkoMap())
+                {
+                    self addOpt("Options", ::newMenu, "Weapon Options");
+                    self addOpt("Attachments", ::newMenu, "Weapon Attachments");
+                    self addOpt("Loadout", ::newMenu, "Weapon Loadout");
+                    self addOpt("Camo", ::newMenu, "Weapon Camo");
+                    self addOpt("AAT", ::newMenu, "Weapon AAT");
+                }
+                else
+                {
+                    self addOpt("Take Current Weapon", ::TakeCurrentWeapon, player);
+                    self addOpt("Take All Weapons", ::TakePlayerWeapons, player);
+                    self addOptSlider("Drop Current Weapon", ::DropCurrentWeapon, "Take;Don't Take", player);
+                    self addOptSlider("Pack 'a' Punch Current Weapon", ::VerkoPackCurrentWeapon, "None;Upgrade;Mastery", player);
+                }
+
                 self addOpt("");
                 self addOpt("Equipment", ::newMenu, "Equipment Menu");
 
-                for(a = 0; a < weapons.size; a++)
-                    self addOpt(weapons[a], ::newMenu, weapons[a]);
+                if(!IsVerkoMap())
+                {
+                    for(a = 0; a < weapons.size; a++)
+                        self addOpt(weapons[a], ::newMenu, weapons[a]);
+                }
+                else
+                {
+                    for(a = 0; a < level.var_21b77150.size; a++)
+                        self addOptBool(player HasWeapon1(GetWeapon(level.var_21b77150[a])), level.var_7df703ba[a], ::GivePlayerWeapon, GetWeapon(level.var_21b77150[a]), player);
+                }
             break;
         
         case "Weapon Options":
@@ -24,7 +44,11 @@ PopulateWeaponry(menu, player)
                 self addOpt("Take All Weapons", ::TakePlayerWeapons, player);
                 self addOptSlider("Drop Current Weapon", ::DropCurrentWeapon, "Take;Don't Take", player);
                 self addOpt("");
-                self addOptBool(player zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()), "Pack 'a' Punch Current Weapon", ::PackCurrentWeapon, player);
+
+                if(!IsVerkoMap())
+                    self addOptBool(player zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()), "Pack 'a' Punch Current Weapon", ::PackCurrentWeapon, player);
+                else
+                    self addOptSlider("Pack 'a' Punch Current Weapon", ::VerkoPackCurrentWeapon, "None;Upgrade;Mastery", player);
             break;
         
         case "Weapon Loadout":
@@ -90,12 +114,12 @@ PopulateWeaponry(menu, player)
             break;
         
         case "Equipment Menu":
-             if(isDefined(level.zombie_include_equipment))
+            if(isDefined(level.zombie_include_equipment))
                 include_equipment = GetArrayKeys(level.zombie_include_equipment);
-            
+
             equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
             keys = GetArrayKeys(equipment);
-            
+
             self addMenu("Equipment");
 
                 if(isDefined(keys) && keys.size || isDefined(include_equipment) && include_equipment.size)
@@ -103,7 +127,7 @@ PopulateWeaponry(menu, player)
                     foreach(index, weapon in GetArrayKeys(level.zombie_weapons))
                         if(isInArray(equipment, weapon))
                             self addOptBool(player HasWeapon(weapon), weapon.displayname, ::GivePlayerEquipment, weapon, player);
-                    
+
                     if(isDefined(include_equipment) && include_equipment.size)
                         foreach(weapon in include_equipment)
                             self addOptBool(player HasWeapon(weapon), weapon.displayname, ::GivePlayerEquipment, weapon, player);
@@ -230,6 +254,92 @@ PackCurrentWeapon(player, buildKit = true)
     player GiveWeapon(newWeapon, weapon_options, acvi);
     player GiveStartAmmo(newWeapon);
     player SetSpawnWeapon(newWeapon, true);
+}
+
+VerkoPackCurrentWeapon(type, player)
+{
+    currentWeapon = player GetCurrentWeapon();
+
+    if(!isDefined(currentWeapon) || currentWeapon == level.weaponnone)
+        return self iPrintlnBold("^1ERROR: ^7Not A Valid Weapon");
+    
+    if(isInArray(level.var_21b77150, currentWeapon.name))
+    {
+        currentArray = level.var_21b77150;
+
+        if(type == "None")
+            return;
+    }
+    else if(isInArray(level.var_2b893b73, currentWeapon.name))
+    {
+        currentArray = level.var_2b893b73;
+
+        if(type == "Upgrade")
+            return;
+    }
+    else if(isInArray(level.var_23af580e, currentWeapon.name))
+    {
+        currentArray = level.var_23af580e;
+
+        if(type == "Mastery")
+            return;
+    }
+    else
+        return self iPrintlnBold("^1ERROR: Not A Valid Weapon");
+    
+    weaponIndex = 0;
+
+    for(a = 0; a < currentArray.size; a++)
+        if(currentArray[a] == currentWeapon.name)
+            weaponIndex = a;
+    
+    switch(type)
+    {
+        case "None":
+            newWeapon = GetWeapon(level.var_21b77150[weaponIndex]);
+            break;
+        
+        case "Upgrade":
+            newWeapon = GetWeapon(level.var_2b893b73[weaponIndex]);
+            break;
+        
+        case "Mastery":
+            newWeapon = GetWeapon(level.var_23af580e[weaponIndex]);
+            break;
+    }
+    
+    player TakeWeapon(currentWeapon);
+    player GiveWeapon(newWeapon);
+    player GiveStartAmmo(newWeapon);
+    player SetSpawnWeapon(newWeapon, true);
+    wait 0.05;
+
+    if(type == "Mastery")
+        player thread aat::acquire(newWeapon, VerkoGetAAT(level.var_fc480cef[weaponIndex]));
+}
+
+VerkoGetAAT(aat)
+{
+    switch(aat)
+    {
+        case "deadwire":
+            return "zm_aat_dead_wire";
+        
+        case "blastfurnace":
+            return "zm_aat_blast_furnace";
+        
+        case "thunderwall":
+            return "zm_aat_thunder_wall";
+        
+        case "turned":
+            return "zm_aat_turned";
+        
+        case "fireworks":
+            return "zm_aat_fire_works";
+        
+        case "aethercollapse":
+            return "zm_aat_aethercollapse";
+    }
 }
 
 SaveCurrentLoadout(type, player)
@@ -526,9 +636,18 @@ GivePlayerWeapon(weapon, player)
     {
         weapons = player GetWeaponsList(true);
 
-        for(a = 0; a < weapons.size; a++)
-            if(zm_weapons::get_base_weapon(weapons[a]) == zm_weapons::get_base_weapon(weapon))
-                weapon = weapons[a];
+        if(!IsVerkoMap())
+        {
+            for(a = 0; a < weapons.size; a++)
+                if(zm_weapons::get_base_weapon(weapons[a]) == zm_weapons::get_base_weapon(weapon))
+                    weapon = weapons[a];
+        }
+        else
+        {
+            for(a = 0; a < weapons.size; a++)
+                if(VerkoGetBaseWeapon(weapons[a]) == VerkoGetBaseWeapon(weapon))
+                    weapon = weapons[a];
+        }
 
         player TakeWeapon(weapon);
         return;
@@ -553,11 +672,38 @@ HasWeapon1(weapon)
     if(!isDefined(weapons) || !weapons.size)
         return false;
 
-    for(a = 0; a < weapons.size; a++)
-        if(zm_weapons::get_base_weapon(weapons[a]) == zm_weapons::get_base_weapon(weapon))
-            return true;
+    if(!IsVerkoMap())
+    {
+        for(a = 0; a < weapons.size; a++)
+            if(zm_weapons::get_base_weapon(weapons[a]) == zm_weapons::get_base_weapon(weapon))
+                return true;
+    }
+    else
+    {
+        for(a = 0; a < weapons.size; a++)
+            if(VerkoGetBaseWeapon(weapons[a]) == VerkoGetBaseWeapon(weapon))
+                return true;
+    }
 
     return false;
+}
+
+VerkoGetBaseWeapon(weapon)
+{
+    if(!isInArray(level.var_2b893b73, weapon.name) && !isInArray(level.var_23af580e, weapon.name))
+        return weapon;
+    
+    if(isInArray(level.var_2b893b73, weapon.name))
+        currentArray = level.var_2b893b73;
+    else if(isInArray(level.var_23af580e, weapon.name))
+        currentArray = level.var_23af580e;
+    
+    if(!isDefined(currentArray))
+        return weapon;
+    
+    for(a = 0; a < currentArray.size; a++)
+        if(currentArray[a] == weapon.name)
+            return GetWeapon(level.var_21b77150[a]);
 }
 
 GivePlayerEquipment(equipment, player)

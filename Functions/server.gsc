@@ -27,7 +27,9 @@ PopulateServerModifications(menu)
                 if(isDefined(level.MenuZombieTraps) && level.MenuZombieTraps.size)
                     self addOpt("Zombie Traps", ::newMenu, "Zombie Traps");
                 
-                self addOpt("Mystery Box Options", ::newMenu, "Mystery Box Options");
+                if(!IsVerkoMap())
+                    self addOpt("Mystery Box Options", ::newMenu, "Mystery Box Options");
+                
                 self addOpt("Server Tweakables", ::newMenu, "Server Tweakables");
                 self addOpt("Change Map", ::newMenu, "Change Map");
                 self addOpt("Restart Game", ::ServerRestartGame);

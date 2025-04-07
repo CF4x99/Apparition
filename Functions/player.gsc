@@ -57,7 +57,7 @@ PopulatePlayerOptions(menu, player)
                 self addOpt("Launch", ::LaunchPlayer, player);
                 self addOpt("Mortar Strike", ::MortarStrikePlayer, player);
 
-                if(ReturnMapName(level.script) == "Shadows Of Evil" || ReturnMapName(level.script) == "Origins")
+                if(ReturnMapName() == "Shadows Of Evil" || ReturnMapName() == "Origins")
                     self addOptSlider("Jump Scare", ::JumpScarePlayer, "Sound & Picture;Sound Only", player);
                 
                 self addOptBool(player.AutoDown, "Auto-Down", ::AutoDownPlayer, player);
@@ -391,7 +391,7 @@ JumpScarePlayer(type, player)
 
     player endon("disconnect");
 
-    if(ReturnMapName(level.script) == "Shadows Of Evil")
+    if(ReturnMapName() == "Shadows Of Evil")
     {
         player PlaySoundToPlayer("zmb_zod_egg_scream", player);
 

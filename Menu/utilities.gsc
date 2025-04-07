@@ -450,24 +450,6 @@ RemoveDuplicateEntArray(name)
     return savearray;
 }
 
-CorrectNL_BGHeight(str) //Auto-Size Player Info Background Height Based On How Many Strings Are Listed
-{
-    if(!isDefined(str))
-        return;
-    
-    if(!IsSubStr(str, "\n"))
-        return 12;
-
-    multiplier = 0;
-    toks = StrTok(str, "\n");
-
-    if(isDefined(toks) && toks.size)
-        for(a = 0; a < toks.size; a++)
-            multiplier++;
-
-    return 3 + (14 * multiplier);
-}
-
 isConsole()
 {
     return level.console;
@@ -481,15 +463,15 @@ CleanString(strn, onlyReplace)
     
     strn = StrTok(ToLower(strn), "_");
     str = "";
+
+    //List of strings what will be removed from the final string output
+    strings = Array("specialty", "zombie", "zm", "t7", "t6", "p7", "zmb", "zod", "ai", "g", "bg", "perk", "player", "weapon", "wpn", "aat", "bgb", "visionset", "equip", "craft", "der", "viewmodel", "mod", "fxanim", "moo", "moon", "zmhd", "fb", "bc", "asc", "vending", "part", "camo", "placeholder", "zmu", "hat", "ctl");
+
+    //This will replace any '_' found in the string
+    replacement = " ";
     
     for(a = 0; a < strn.size; a++)
     {
-        //List of strings what will be removed from the final string output
-        strings = Array("specialty", "zombie", "zm", "t7", "t6", "p7", "zmb", "zod", "ai", "g", "bg", "perk", "player", "weapon", "wpn", "aat", "bgb", "visionset", "equip", "craft", "der", "viewmodel", "mod", "fxanim", "moo", "moon", "zmhd", "fb", "bc", "asc", "vending", "part", "camo", "placeholder", "zmu", "hat", "ctl");
-        
-        //This will replace any '_' found in the string
-        replacement = " ";
-
         if(!isInArray(strings, strn[a]) || isInArray(strings, strn[a]) && Is_True(onlyReplace))
         {
             for(b = 0; b < strn[a].size; b++)
@@ -509,7 +491,7 @@ CleanName(name)
         return "";
     
     str = "";
-    invalid = Array("^A", "^B", "^F", "^H", "^I", "^0", "^1", "^2", "^3", "^4", "^5", "^6", "^7", "^8", "^9");
+    invalid = Array("^A", "^B", "^F", "^H", "^I", "^0", "^1", "^2", "^3", "^4", "^5", "^6", "^7", "^8", "^9", "j=");
 
     for(a = 0; a < name.size; a++)
     {
@@ -1094,7 +1076,7 @@ ReturnPerkName(perk)
     }
 }
 
-ReturnMapName(map)
+ReturnMapName(map = level.script)
 {
     switch(map)
     {
@@ -1148,9 +1130,36 @@ ReturnMapName(map)
         case "zm_die":
             return "Die Rise";
         
+        case "zm_vk_tra_sur_busdepot":
+            return "Bus Depot";
+        
+        case "zm_vk_tra_sur_tunnel":
+            return "Tunnel";
+        
         default:
             return "Unknown";
     }
+}
+
+IsSupportedCustomMap(map = level.script)
+{
+    switch(map)
+    {
+        case "zm_prison":
+        case "zm_die":
+        case "zm_vk_tra_sur_busdepot":
+        case "zm_vk_tra_sur_tunnel":
+            return true;
+        
+        default:
+            return false;
+    }
+}
+
+IsVerkoMap(map = level.script)
+{
+    vMaps = Array("zm_vk_tra_sur_busdepot", "zm_vk_tra_sur_tunnel");
+    return isInArray(vMaps, map);
 }
 
 TriggerUniTrigger(struct, trigger_notify, time) //For Basic Uni Triggers
@@ -1659,6 +1668,30 @@ StripStringButtons(str)
     }
     
     return newString;
+}
+
+/*
+    Built to auto-size a shader based on the given string
+    It auto-sizes based on every \n(next line) found in a string
+    NOTE: it does not adjust to fontscale
+*/
+
+CorrectNL_BGHeight(str)
+{
+    if(!isDefined(str))
+        return;
+    
+    if(!IsSubStr(str, "\n"))
+        return 12;
+
+    multiplier = 0;
+    toks = StrTok(str, "\n");
+
+    if(isDefined(toks) && toks.size)
+        for(a = 0; a < toks.size; a++)
+            multiplier++;
+
+    return 3 + (14 * multiplier);
 }
 
 //Decided to remake GetDvarVector

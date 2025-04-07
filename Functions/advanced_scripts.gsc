@@ -15,7 +15,7 @@ PopulateAdvancedScripts(menu)
                 if(isDefined(level.zombie_include_powerups) && level.zombie_include_powerups.size)
                     self addOptBool(level.RainPowerups, "Rain Power-Ups", ::RainPowerups);
                 
-                if(ReturnMapName(level.script) != "Moon" && ReturnMapName(level.script) != "Origins")
+                if(ReturnMapName() != "Moon" && ReturnMapName() != "Origins")
                     self addOptBool(level.MoonDoors, "Moon Doors", ::MoonDoors);
                 
                 self addOptBool(self.BodyGuard, "Body Guard", ::BodyGuard);
@@ -48,35 +48,39 @@ PopulateAdvancedScripts(menu)
             break;
         
         case "Rain Projectiles":
-            arr = [];
-            weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
-            weaps = GetArrayKeys(level.zombie_weapons);
-
             self addMenu("Projectiles");
 
-                if(isDefined(weaps) && weaps.size)
+                if(!IsVerkoMap())
                 {
-                    for(a = 0; a < weaps.size; a++)
+                    arr = [];
+                    weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
+                    weaps = GetArrayKeys(level.zombie_weapons);
+
+                    if(isDefined(weaps) && weaps.size)
                     {
-                        if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
+                        for(a = 0; a < weaps.size; a++)
                         {
-                            strn = (MakeLocalizedString(weaps[a].displayname) != "") ? weaps[a].displayname : weaps[a].name;
-                            
-                            if(!IsInArray(arr, strn))
+                            if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
                             {
-                                arr[arr.size] = strn;
-                                self addOpt(strn, ::LobbyRain, "Projectile", weaps[a]);
+                                strn = (MakeLocalizedString(weaps[a].displayname) != "") ? weaps[a].displayname : weaps[a].name;
+                                
+                                if(!IsInArray(arr, strn))
+                                {
+                                    arr[arr.size] = strn;
+                                    self addOpt(strn, ::LobbyRain, "Projectile", weaps[a]);
+                                }
                             }
                         }
                     }
                 }
+                else
+                {
+                    for(a = 0; a < level.var_21b77150.size; a++)
+                        self addOpt(level.var_7df703ba[a], ::LobbyRain, "Projectile", GetWeapon(level.var_21b77150[a]));
+                }
             break;
         
         case "Custom Sentry":
-            arr = [];
-            weaps = GetArrayKeys(level.zombie_weapons);
-            weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
-
             if(!isDefined(self.CustomSentryWeapon))
                 self.CustomSentryWeapon = GetWeapon("minigun");
 
@@ -85,21 +89,33 @@ PopulateAdvancedScripts(menu)
                 self addOpt("");
                 self addOptBool((self.CustomSentryWeapon == GetWeapon("minigun")), "Death Machine", ::SetCustomSentryWeapon, GetWeapon("minigun"));
 
-                if(isDefined(weaps) && weaps.size)
+                if(!IsVerkoMap())
                 {
-                    for(a = 0; a < weaps.size; a++)
+                    arr = [];
+                    weaps = GetArrayKeys(level.zombie_weapons);
+                    weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
+
+                    if(isDefined(weaps) && weaps.size)
                     {
-                        if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
+                        for(a = 0; a < weaps.size; a++)
                         {
-                            strn = (MakeLocalizedString(weaps[a].displayname) != "") ? weaps[a].displayname : weaps[a].name;
-                            
-                            if(!IsInArray(arr, strn))
+                            if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
                             {
-                                arr[arr.size] = strn;
-                                self addOptBool((self.CustomSentryWeapon == weaps[a]), strn, ::SetCustomSentryWeapon, weaps[a]);
+                                strn = (MakeLocalizedString(weaps[a].displayname) != "") ? weaps[a].displayname : weaps[a].name;
+                                
+                                if(!IsInArray(arr, strn))
+                                {
+                                    arr[arr.size] = strn;
+                                    self addOptBool((self.CustomSentryWeapon == weaps[a]), strn, ::SetCustomSentryWeapon, weaps[a]);
+                                }
                             }
                         }
                     }
+                }
+                else
+                {
+                    for(a = 0; a < level.var_21b77150.size; a++)
+                        self addOptBool((self.CustomSentryWeapon == GetWeapon(level.var_7df703ba[a])), level.var_7df703ba[a], ::SetCustomSentryWeapon, GetWeapon(level.var_21b77150[a]));
                 }
             break;
     }
@@ -231,12 +247,14 @@ AC130FlashingHud()
 
 AC130NextWeapon(current)
 {
-    return (current == GetWeapon("minigun")) ? zm_weapons::get_upgrade_weapon(level.start_weapon) : (current == zm_weapons::get_upgrade_weapon(level.start_weapon)) ? GetWeapon("hunter_rocket_turret_player") : GetWeapon("minigun");
+    weapon40MM = IsVerkoMap() ? GetWeapon("vk_tra_pis_t9_1911_rdw_lvl3") : zm_weapons::get_upgrade_weapon(level.start_weapon);
+    return (current == GetWeapon("minigun")) ? weapon40MM : (current == weapon40MM) ? GetWeapon("hunter_rocket_turret_player") : GetWeapon("minigun");
 }
 
 AC130FireRate(ammo)
 {
-    return (ammo == GetWeapon("minigun")) ? 0.01 : (ammo == zm_weapons::get_upgrade_weapon(level.start_weapon)) ? 1 : 5;
+    weapon40MM = IsVerkoMap() ? GetWeapon("vk_tra_pis_t9_1911_rdw_lvl3") : zm_weapons::get_upgrade_weapon(level.start_weapon);
+    return (ammo == GetWeapon("minigun")) ? 0.01 : (ammo == weapon40MM) ? 1 : 5;
 }
 
 FireAC130(ammoType)
@@ -249,12 +267,13 @@ FireAC130(ammoType)
     self.AC130DisableFire[ammoType] = true;
 
     fire_origin = self GetTagOrigin("j_neck") + (AnglesToForward(self GetPlayerAngles()) * 5) + (AnglesToRight(self GetPlayerAngles()) * -5);
+    weapon40MM = IsVerkoMap() ? GetWeapon("vk_tra_pis_t9_1911_rdw_lvl3") : zm_weapons::get_upgrade_weapon(level.start_weapon);
 
     if(ammoType == GetWeapon("hunter_rocket_turret_player"))
         for(a = 0; a < 6; a++)
             MagicBullet(ammoType, fire_origin, BulletTrace(fire_origin, fire_origin + self GetWeaponForwardDir() * 100, 0, undefined)["position"] + (Cos(a * 60) * 3, Sin(a * 60) * 3, 0), self);
     else
-        MagicBullet((ReturnMapName(level.script) == "Origins" && ammoType == zm_weapons::get_upgrade_weapon(level.start_weapon)) ? GetWeapon("hunter_rocket_turret_player") : ammoType, fire_origin, self TraceBullet(), self);
+        MagicBullet((ReturnMapName() == "Origins" && ammoType == weapon40MM) ? GetWeapon("hunter_rocket_turret_player") : ammoType, fire_origin, self TraceBullet(), self);
     
     wait AC130FireRate(ammoType);
 
@@ -279,13 +298,14 @@ RefreshAC130HUD(ammo)
         destroyAll(self.AC130HUD);
 
     self.AC130HUD = [];
+    weapon40MM = IsVerkoMap() ? GetWeapon("vk_tra_pis_t9_1911_rdw_lvl3") : zm_weapons::get_upgrade_weapon(level.start_weapon);
 
     if(ammo == GetWeapon("minigun"))
     {
         text = "25mm";
         AC130HudValues = Array("0,50,2,80", "40,0,60,2", "-40,0,60,2", "-180,151,2,50", "-155,175,50,2", "180,151,2,50", "155,175,50,2", "180,-151,2,50", "155,-175,50,2", "-180,-151,2,50", "-155,-175,50,2");
     }
-    else if(ammo == zm_weapons::get_upgrade_weapon(level.start_weapon))
+    else if(ammo == weapon40MM)
     {
         text = "40mm";
         AC130HudValues = Array("0,80,2,120", "0,-80,2,120", "0,-46,10,1", "0,-92,10,1", "0,-140,14,1", "0,46,10,1", "0,92,10,1", "0,140,14,1", "85,0,130,2", "-85,0,130,2", "37,0,1,10", "75,0,1,10", "112,0,1,10", "150,0,1,14", "-37,0,1,10", "-75,0,1,10", "-112,0,1,10", "-150,0,1,14");

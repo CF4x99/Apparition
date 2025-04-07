@@ -16,11 +16,11 @@ PopulateZombieOptions(menu)
                 self addOptSlider("Movement", ::SetZombieRunSpeed, "Walk;Run;Sprint;Super Sprint");
                 
                 //The only map Knockdown isn't registered on is The Giant
-                if(ReturnMapName(level.script) != "The Giant")
+                if(ReturnMapName() != "The Giant")
                     self addOptSlider("Knockdown", ::KnockdownZombies, "Front;Back");
 
                 //Push is only registered on SOE
-                if(ReturnMapName(level.script) == "Shadows Of Evil")
+                if(ReturnMapName() == "Shadows Of Evil")
                     self addOptSlider("Push", ::PushZombies, "Left;Right");
                 
                 self addOptSlider("Teleport", ::TeleportZombies, "Crosshairs;Self");
@@ -45,7 +45,7 @@ PopulateZombieOptions(menu)
             if(!isDefined(self.AISpawnLocation))
                 self.AISpawnLocation = "Crosshairs";
             
-            map = ReturnMapName(level.script);
+            map = ReturnMapName();
             
             self addMenu("Spawner");
                 self addOptSlider("Spawn Location", ::AISpawnLocation, "Crosshairs;Random;Self");
@@ -129,7 +129,7 @@ PopulateZombieOptions(menu)
             notifies = Array("attack_anim", "attack_anim", "attack_anim", "attack_anim", "taunt_anim");
 
             //These are the animations that are map specific
-            if(ReturnMapName(level.script) == "Origins")
+            if(ReturnMapName() == "Origins")
             {
                 add_anims = Array("ai_zombie_mech_ft_burn_player", "ai_zombie_mech_exit", "ai_zombie_mech_exit_hover", "ai_zombie_mech_arrive");
                 add_notifies = Array("flamethrower_anim", "zm_fly_out", "zm_fly_hover_finished", "zm_fly_in");

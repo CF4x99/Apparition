@@ -26,8 +26,8 @@ runMenuIndex(menu)
                     {
                         self addOpt("Advanced Scripts", ::newMenu, "Advanced Scripts");
 
-                        if(ReturnMapName(level.script) != "Unknown")
-                            self addOpt(ReturnMapName(level.script) + " Scripts", ::newMenu, ReturnMapName(level.script) + " Scripts");
+                        if(ReturnMapName() != "Unknown")
+                            self addOpt(ReturnMapName() + " Scripts", ::newMenu, ReturnMapName() + " Scripts");
 
                         self addOpt("Forge Options", ::newMenu, "Forge Options");
                         
@@ -205,6 +205,14 @@ runMenuIndex(menu)
         case "Elevator Keys":
         case "Bank Cash":
             self PopulateDieRiseScripts(menu);
+            break;
+        
+        case "Bus Depot Scripts":
+            self PopulateBusDepotScripts(menu);
+            break;
+        
+        case "Tunnel Scripts":
+            self PopulateTunnelScripts(menu);
             break;
         
         case "Server Modifications":
@@ -389,7 +397,7 @@ MenuOptionsPlayer(menu, player)
             self PopulateFunScripts(menu, player);
             break;
         
-        case "Model Manipulation":            
+        case "Model Manipulation":
             self PopulateModelManipulation(menu, player);
             break;
         
@@ -441,7 +449,7 @@ MenuOptionsPlayer(menu, player)
                     self addOptBool(player HasWeapon1(GetWeapon("defaultweapon")), "Default Weapon", ::GivePlayerWeapon, GetWeapon("defaultweapon"), player);
                     self addOptBool(player HasWeapon1(GetWeapon("minigun")), GetWeapon("minigun").displayname, ::GivePlayerWeapon, GetWeapon("minigun"), player);
 
-                    if(ReturnMapName(level.script) == "Shadows Of Evil")
+                    if(ReturnMapName() == "Shadows Of Evil")
                         self addOptBool(player HasWeapon1(GetWeapon("tesla_gun")), GetWeapon("tesla_gun").displayname, ::GivePlayerWeapon, GetWeapon("tesla_gun"), player);
                 }
             }
@@ -466,11 +474,11 @@ MenuOptionsPlayer(menu, player)
                     }
                 }
 
-                if(IsSubStr(menu, ReturnMapName(level.script) + " Teleports") || menu == ReturnMapName(level.script) + " Teleports")
+                if(IsSubStr(menu, ReturnMapName() + " Teleports") || menu == ReturnMapName() + " Teleports")
                 {
                     error404 = false;
 
-                    self addMenu(ReturnMapName(level.script) + " Teleports");
+                    self addMenu(ReturnMapName() + " Teleports");
                         
                         if(isDefined(level.menuTeleports) && level.menuTeleports.size)
                             for(a = 0; a < level.menuTeleports.size; a += 2)

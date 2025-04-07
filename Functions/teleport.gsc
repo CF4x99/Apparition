@@ -3,7 +3,7 @@ PopulateTeleportMenu(menu, player)
     switch(menu)
     {
         case "Teleport Menu":
-            mapStr = ReturnMapName(level.script);
+            mapStr = ReturnMapName();
             
             self addMenu("Teleport Menu");
                 self addOptBool(player.DisableTeleportEffect, "Disable Teleport Effect", ::DisableTeleportEffect, player);
@@ -97,7 +97,7 @@ TeleportPlayer(origin, player, angles, name)
     if(!isDefined(newOrigin))
         newOrigin = origin;
     
-    if(isDefined(name) && ReturnMapName(level.script) == "Origins" && IsSubStr(name, "Robot Head") && !isDefined(player.teleport_initial_origin))
+    if(isDefined(name) && ReturnMapName() == "Origins" && IsSubStr(name, "Robot Head") && !isDefined(player.teleport_initial_origin))
         player.teleport_initial_origin = player.origin;
     
     player SetOrigin(newOrigin);

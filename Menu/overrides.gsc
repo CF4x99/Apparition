@@ -274,7 +274,7 @@ wallbuy_should_upgrade_weapon_override()
     return true;
 }
 
-override_player_disconnect()
+onPlayerDisconnect()
 {
     foreach(player in level.players)
     {
@@ -302,7 +302,4 @@ override_player_disconnect()
         else if(player isInMenu() && player getCurrent() == "Players") //If a player is viewing the player menu when a player disconnects, it will refresh the player list
             player RefreshMenu();
     }
-
-    if(isDefined(level.saved_callbackplayerdisconnect))
-        self [[ level.saved_callbackplayerdisconnect ]]();
 }

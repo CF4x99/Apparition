@@ -65,6 +65,28 @@
 ## Changelog
 <details>
     <summary>
+        Version 1.5.1.0
+    </summary>
+
+    - While I Have Added Scripts For The New Bus Depot & Tunnel Custom Maps, They Are Still Custom Maps. Not everything is going to be perfect and working 100% as they should.
+    - NOTE: The changes made for Bus Depot & Tunnel, should work for any upcoming Tranzit related survival maps from Verko
+
+    - Fixed: Weaponry for Bus Depot & Tunnel
+    - Fixed: Custom Sentry For Bus Depot & Tunnel
+    - Fixed: Bullet Menu For Bus Depot & Tunnel
+    - Fixed: Projectile Rain For Bus Depot & Tunnel
+    - Fixed: AC130 For Bus Depot & Tunnel
+
+    - Removed: Mystery Box Options(Applies To Bus Depot & Tunnel Only)
+
+    - Changed: Switched from an override, to a callback for handling players disconnecting
+
+    - Added: Pack 'a' Punch Option Slider For Bus Depot & Tunnel -- None, Upgrade, Mastery
+    - Added: Shangri-La -- Allow Full EE With Less Than 4 Players
+</details>
+
+<details>
+    <summary>
         Version 1.5.0.9
     </summary>
 

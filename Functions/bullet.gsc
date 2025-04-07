@@ -4,7 +4,7 @@ PopulateBulletMenu(menu, player)
     {
         case "Bullet Menu":
             self addMenu("Bullet Menu");
-                self addOpt("Weapon Projectiles", ::newMenu, "Weapon Projectiles");
+                self addOpt("Projectiles", ::newMenu, "Weapon Projectiles");
                 self addOpt("Equipment", ::newMenu, "Equipment Bullets");
                 self addOpt("Effects", ::newMenu, "Bullet Effects");
                 self addOpt("Spawnables", ::newMenu, "Bullet Spawnables");
@@ -19,7 +19,7 @@ PopulateBulletMenu(menu, player)
             if(!isDefined(player.ProjectileSpreadMultiplier))
                 player.ProjectileSpreadMultiplier = 10;
             
-            self addMenu("Weapon Projectiles");
+            self addMenu("Projectiles");
                 self addOpt("Weapon Projectile", ::newMenu, "Weapon Bullets");
                 self addOptIncSlider("Projectile Multiplier", ::ProjectileMultiplier, 1, 1, 5, 1, player);
                 self addOptIncSlider("Spread Multiplier", ::ProjectileSpreadMultiplier, 1, 5, 50, 1, player);
@@ -27,8 +27,16 @@ PopulateBulletMenu(menu, player)
         
         case "Weapon Bullets":
             self addMenu("Weapon Bullets");
-                self addOpt("Normal", ::newMenu, "Normal Weapon Bullets");
-                self addOpt("Upgraded", ::newMenu, "Upgraded Weapon Bullets");
+                if(!IsVerkoMap())
+                {
+                    self addOpt("Normal", ::newMenu, "Normal Weapon Bullets");
+                    self addOpt("Upgraded", ::newMenu, "Upgraded Weapon Bullets");
+                }
+                else
+                {
+                    for(a = 0; a < level.var_21b77150.size; a++)
+                        self addOpt(level.var_7df703ba[a], ::BulletProjectile, GetWeapon(level.var_21b77150[a]), "Projectile", player);
+                }
             break;
         
         case "Normal Weapon Bullets":
@@ -82,6 +90,7 @@ PopulateBulletMenu(menu, player)
             break;
         
         case "Equipment Bullets":
+
             if(isDefined(level.zombie_include_equipment))
                 include_equipment = GetArrayKeys(level.zombie_include_equipment);
             
@@ -116,14 +125,14 @@ PopulateBulletMenu(menu, player)
             break;
         
         case "Bullet Effects":
-            self addMenu("Bullet Effect");
+            self addMenu("Effects");
 
                 for(a = 0; a < level.MenuEffects.size; a++)
                     self addOpt(CleanString(level.MenuEffects[a]), ::BulletProjectile, level.MenuEffects[a], "Effect", player);
             break;
         
         case "Bullet Spawnables":
-            self addMenu("Bullet Spawnables");
+            self addMenu("Spawnables");
 
                 if(isDefined(level.MenuModels) && level.MenuModels.size)
                     for(a = 0; a < level.MenuModels.size; a++)
