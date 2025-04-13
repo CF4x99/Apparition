@@ -9,10 +9,12 @@ PopulateOriginsScripts(menu)
                 self addOpt("Gateways", ::newMenu, "Origins Gateways");
                 self addOpt("Give Shovel", ::newMenu, "Give Shovel Origins");
                 self addOpt("Give Helmet", ::newMenu, "Give Helmet Origins");
-                self addOptBool(isDefined(level.a_e_slow_areas), "Mud Slowdown", ::MudSlowdown);
                 self addOpt("Soul Boxes", ::newMenu, "Soul Boxes");
                 self addOpt("Challenges", ::newMenu, "Origins Challenges");
                 self addOpt("Staff Puzzles", ::newMenu, "Origins Puzzles");
+                self addOptBool(isDefined(level.a_e_slow_areas), "Mud Slowdown", ::MudSlowdown);
+                self addOptBool(level.DisableTankCooldown, "Disable Tank Cooldown", ::DisableTankCooldown);
+                self addOptIncSlider("Tank Speed [Default = 8]", ::OriginsTankSpeed, 1, 8, 25, 1);
             break;
 
         case "Origins Generators":
@@ -530,17 +532,12 @@ ReturnGatewayName(targetname)
     }
 }
 
-MudSlowdown()
-{
-    level.a_e_slow_areas = isDefined(level.a_e_slow_areas) ? undefined : GetEntArray("player_slow_area", "targetname");
-}
-
 SetOriginsPlayer(playerName)
 {
     foreach(player in level.players)
     {
         if(CleanName(player getName()) + " [" + player GetEntityNumber() + "]" == playerName) //I included the players entity number for the case two players have the same name
-            level.originsPlayer = player;
+            self.originsPlayer = player;
     }
 
     self RefreshMenu(self getCurrent(), self getCursor());
@@ -1137,4 +1134,47 @@ rumble_nearby_players(v_center, n_range, n_rumble_enum)
 
     foreach(e_player in a_rumbled_players)
         e_player clientfield::set_to_player("player_rumble_and_shake", 0);
+}
+
+MudSlowdown()
+{
+    level.a_e_slow_areas = isDefined(level.a_e_slow_areas) ? undefined : GetEntArray("player_slow_area", "targetname");
+}
+
+OriginsTankSpeed(speed)
+{
+    level notify("EndTankSpeed");
+    level endon("EndTankSpeed");
+
+    if(speed != 8)
+    {
+        while(1)
+        {
+            while(level.vh_tank flag::get("tank_moving"))
+            {
+                level.vh_tank SetSpeedImmediate(speed);
+                wait 0.5;
+            }
+
+            level.vh_tank flag::wait_till("tank_moving");
+        }
+    }
+    else
+    {
+        if(level.vh_tank flag::get("tank_moving"))
+            level.vh_tank SetSpeedImmediate(8);
+        
+        level notify("EndTankSpeed");
+    }
+}
+
+DisableTankCooldown()
+{
+    level.DisableTankCooldown = BoolVar(level.DisableTankCooldown);
+
+    while(isDefined(level.DisableTankCooldown))
+    {
+        level.vh_tank.n_cooldown_timer = 2; //2 seconds is the minimum cooldown time(if it's anything less than 2, then it gets reset to 2)
+        level.vh_tank waittill("tank_stop");
+    }
 }

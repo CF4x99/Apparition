@@ -24,13 +24,14 @@ addOptBool(boolVar, name, fnc = ::EmptyFunction, input1, input2, input3, input4)
 {
     option = SpawnStruct();
     
-    option.name   = name;
-    option.func   = fnc;
-    option.input1 = input1;
-    option.input2 = input2;
-    option.input3 = input3;
-    option.input4 = input4;
-    option.bool   = Is_True(boolVar);
+    option.name    = name;
+    option.func    = fnc;
+    option.input1  = input1;
+    option.input2  = input2;
+    option.input3  = input3;
+    option.input4  = input4;
+    option.bool    = Is_True(boolVar);
+    option.boolOpt = true;
     
     self.menuStructure[self.menuStructure.size] = option;
 }

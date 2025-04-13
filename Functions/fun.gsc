@@ -527,7 +527,6 @@ LightProtectorMoveToTarget(target)
 GetLightProtectorTarget(distance)
 {
     zombies = GetAITeamArray(level.zombie_team);
-    enemy = undefined;
 
     for(a = 0; a < zombies.size; a++)
     {
@@ -987,6 +986,8 @@ CodJumper(player)
     if(Is_True(player.CodJumper))
     {
         player.codboxes = [];
+
+        player iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7Shoot To Spawn Cod Jumper At Your Crosshairs");
 
         while(Is_True(player.CodJumper))
         {

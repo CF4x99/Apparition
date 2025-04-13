@@ -525,13 +525,12 @@ TraceBullet()
 
 AngleNormalize180(angle)
 {
+    if(!isDefined(angle))
+        return (0, 0, 0);
+    
     v3 = Floor((angle * 0.0027777778));
     result = (((angle * 0.0027777778) - v3) * 360.0);
-
-    v2 = (result - 360.0);
-
-    if((result - 360.0) < 0.0)
-        v2 = (((angle * 0.0027777778) - v3) * 360.0);
+    angle = ((result - 360.0) < 0.0) ? (((angle * 0.0027777778) - v3) * 360.0) : (result - 360.0);
 
     if(angle > 180)
         angle -= 360;
@@ -546,9 +545,7 @@ SpawnScriptModel(origin, model, angles, time)
 
     ent = Spawn("script_model", origin);
     ent SetModel(model);
-
-    if(isDefined(angles))
-        ent.angles = angles;
+    ent.angles = isDefined(angles) ? angles : (0, 0, 0);
 
     return ent;
 }
@@ -561,24 +558,21 @@ deleteAfter(time)
         self delete();
 }
 
-SetTextFX(text, time)
+SetTextFX(text, time = 3)
 {
     if(!isDefined(text) || !isDefined(self))
         return;
     
-    if(!isDefined(time))
-        time = 3;
-
     self SetTextString(text);
     self thread hudFade(1, 0.5);
     self SetTypeWriterFX(38, Int((time * 1000)), 1000);
     wait time;
 
     if(isDefined(self))
-    {
         self hudFade(0, 0.5);
+
+    if(isDefined(self))
         self DestroyHud();
-    }
 }
 
 PulseFXText(text, hud)
@@ -1023,16 +1017,8 @@ isPlayerLinked(exclude)
 
     for(a = 0; a < ents.size; a++)
     {
-        if(isDefined(exclude))
-        {
-            if(ents[a] != exclude && self isLinkedTo(ents[a]))
-                return true;
-        }
-        else
-        {
-            if(self isLinkedTo(ents[a]))
-                return true;
-        }
+        if(isDefined(exclude) && ents[a] != exclude && self isLinkedTo(ents[a]) || !isDefined(exclude) && self isLinkedTo(ents[a]))
+            return true;
     }
 
     return false;

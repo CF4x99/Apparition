@@ -116,7 +116,7 @@ MenuTheme(color)
     
     if(isDefined(self.menuStructure) && self.menuStructure.size)
         for(a = 0; a < self.menuStructure.size; a++)
-            if(isDefined(self.menuHud[wHud][a]) && (isDefined(self.menuStructure[a].bool) && self.menuStructure[a].bool || self.MenuStyle == "Nautaremake") && self.ToggleStyle != "Text")
+            if(isDefined(self.menuHud[wHud][a]) && (Is_True(self.menuStructure[a].bool) || self.MenuStyle == "Nautaremake") && self.ToggleStyle != "Text")
                 self.menuHud[wHud][a] hudFadeColor(color, 1);
     
     if(isDefined(self.MenuInstructionsBGOuter))
@@ -177,7 +177,7 @@ SmoothRainbowTheme()
         
         if(isDefined(self.menuStructure) && self.menuStructure.size)
             for(a = 0; a < self.menuStructure.size; a++)
-                if(isDefined(self.menuHud[wHud][a]) && (isDefined(self.menuStructure[a].bool) && self.menuStructure[a].bool || self.MenuStyle == "Nautaremake") && self.ToggleStyle != "Text")
+                if(isDefined(self.menuHud[wHud][a]) && (Is_True(self.menuStructure[a].bool) || self.MenuStyle == "Nautaremake") && self.ToggleStyle != "Text")
                     self.menuHud[wHud][a].color = level.RGBFadeColor;
         
         if(isDefined(self.MenuInstructionsBGOuter))
@@ -227,16 +227,16 @@ ElementSmoothRainbow(element)
                     
                     if(element == "text")
                     {
-                        if(isDefined(textToggled) && (!isDefined(self.menuStructure[index].bool) || !self.menuStructure[index].bool || self.ToggleStyle != "Text Color"))
+                        if(isDefined(textToggled) && (!isDefined(self.menuStructure[index].boolOpt) || !Is_True(self.menuStructure[index].bool) || self.ToggleStyle != "Text Color"))
                             continue;
                         
                         if(!isDefined(textScrolling) && !isDefined(textToggled) && index == self getCursor())
                             continue;
                         
-                        if(isDefined(textScrolling) && (index != self getCursor() || isDefined(self.menuStructure[index].bool) && self.menuStructure[index].bool && self.ToggleStyle == "Text Color"))
+                        if(isDefined(textScrolling) && (index != self getCursor() || Is_True(self.menuStructure[index].bool) && self.ToggleStyle == "Text Color"))
                             continue;
                         
-                        if(!isDefined(textToggled) && isDefined(self.menuStructure[index].bool) && self.menuStructure[index].bool && self.ToggleStyle == "Text Color")
+                        if(!isDefined(textToggled) && Is_True(self.menuStructure[index].bool) && self.ToggleStyle == "Text Color")
                             continue;
                     }
 
@@ -354,7 +354,7 @@ RepositionMenu()
     {
         if(self.MenuStyle != "Zodiac" && (self ActionSlotOneButtonPressed() || self ActionSlotTwoButtonPressed()))
         {
-            incValue = self ActionSlotTwoButtonPressed() ? 8 : (8 * -1);
+            incValue = self ActionSlotTwoButtonPressed() ? 8 : -8;
             
             foreach(key in GetArrayKeys(self.menuHud))
             {
@@ -375,7 +375,7 @@ RepositionMenu()
         }
         else if(self ActionSlotThreeButtonPressed() || self ActionSlotFourButtonPressed())
         {
-            incValue = self ActionSlotFourButtonPressed() ? 8 : (8 * -1);
+            incValue = self ActionSlotFourButtonPressed() ? 8 : -8;
             
             foreach(key in GetArrayKeys(self.menuHud))
             {

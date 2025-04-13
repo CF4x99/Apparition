@@ -353,8 +353,6 @@ SaveCurrentLoadout(type, player)
         if(!isDefined(weapon) || weapon == level.weaponnone || weapon == level.weaponbasemelee || IsSubStr(weapon.name, "_knife"))
             return self iPrintlnBold("^1ERROR: ^7Invalid Weapon");
 
-        aat = isDefined(player.aat[player aat::get_nonalternate_weapon(weapon)]) ? player.aat[player aat::get_nonalternate_weapon(weapon)] : "none";
-        
         if(isDefined(weapon.attachments) && weapon.attachments.size)
         {
             attachments = "";
@@ -365,14 +363,11 @@ SaveCurrentLoadout(type, player)
         else
             attachments = "none";
         
-        savedCamo = isDefined(weapon.savedCamo) ? weapon.savedCamo : 0;
-        
-        SetDvar("Apparition_Loadout_" + userID, 1);
         SetDvar("Loadout_" + type + "_" + userID, zm_weapons::get_base_weapon(weapon).name);
         SetDvar("Loadout_" + type + "_Attachments_" + userID, attachments);
-        SetDvar("Loadout_" + type + "_Camo_" + userID, savedCamo);
+        SetDvar("Loadout_" + type + "_Camo_" + userID, isDefined(weapon.savedCamo) ? weapon.savedCamo : 0);
         SetDvar("Loadout_" + type + "_Upgraded_" + userID, zm_weapons::is_weapon_upgraded(weapon));
-        SetDvar("Loadout_" + type + "_AAT_" + userID, aat);
+        SetDvar("Loadout_" + type + "_AAT_" + userID, isDefined(player.aat[player aat::get_nonalternate_weapon(weapon)]) ? player.aat[player aat::get_nonalternate_weapon(weapon)] : "none");
     }
     else
     {
@@ -382,15 +377,20 @@ SaveCurrentLoadout(type, player)
         if(!isDefined(weapon) || weapon == level.weaponnone)
             return self iPrintlnBold("^1ERROR: ^7Invalid Offhand");
         
-        SetDvar("Apparition_Loadout_" + userID, 1);
         SetDvar("Loadout_" + saveType + "_" + userID, weapon.name);
     }
-
+    
+    SetDvar("Apparition_Loadout_" + userID, 1);
     self iPrintlnBold(type + " ^2Saved");
 }
 
 ClearLoadout(player)
 {
+    saved = GetDvarInt("Apparition_Loadout_" + userID);
+
+    if(!isDefined(saved) || !saved)
+        return;
+    
     userID = player GetXUID();
     types = Array("Primary", "Secondary");
 
@@ -542,11 +542,7 @@ GivePlayerAttachment(attachment, player, override = false)
     }
 
     newWeapon = GetWeapon(weapon.rootweapon.name, attachments);
-    camo = 0;
-
-    if(isDefined(weapon.savedCamo))
-        camo = weapon.savedCamo;
-    
+    camo = isDefined(weapon.savedCamo) ? weapon.savedCamo : 0;
     weapon_options = player CalcWeaponOptions(camo, 0, 0);
     newWeapon.savedCamo = camo;
     
@@ -662,6 +658,14 @@ GivePlayerWeapon(weapon, player)
     return newWeapon;
 }
 
+GivePlayerEquipment(equipment, player)
+{
+    if(player HasWeapon(equipment))
+        player TakeWeapon(equipment);
+    else
+        player zm_weapons::weapon_give(equipment, false, false, true);
+}
+
 HasWeapon1(weapon)
 {
     if(!isDefined(weapon))
@@ -704,12 +708,4 @@ VerkoGetBaseWeapon(weapon)
     for(a = 0; a < currentArray.size; a++)
         if(currentArray[a] == weapon.name)
             return GetWeapon(level.var_21b77150[a]);
-}
-
-GivePlayerEquipment(equipment, player)
-{
-    if(player HasWeapon(equipment))
-        player TakeWeapon(equipment);
-    else
-        player zm_weapons::weapon_give(equipment, false, false, true);
 }

@@ -26,8 +26,8 @@ PopulateZombieOptions(menu)
                 self addOptSlider("Teleport", ::TeleportZombies, "Crosshairs;Self");
                 self addOptIncSlider("Animation Speed", ::SetZombieAnimationSpeed, 1, 1, 2, 0.5);
                 self addOptBool(level.ZombiesToCrosshairsLoop, "Teleport To Crosshairs", ::ZombiesToCrosshairsLoop);
-                self addOptBool((GetDvarString("ai_disableSpawn") == "1"), "Disable Spawning", ::DisableZombieSpawning);
                 self addOptBool(level.DisableZombieCollision, "Disable Player Collision", ::DisableZombieCollision);
+                self addOptBool((GetDvarString("ai_disableSpawn") == "1"), "Disable Spawning", ::DisableZombieSpawning);
                 self addOptBool(level.DisableZombiePush, "Disable Push", ::DisableZombiePush);
                 self addOptBool(level.ZombiesInvisibility, "Invisibility", ::ZombiesInvisibility);
                 self addOptBool((GetDvarString("g_ai") == "0"), "Freeze", ::FreezeZombies);
@@ -283,7 +283,7 @@ SetZombieHealth1(health)
     }
 }
 
-KillZombies(type)
+KillZombies(type = "Death")
 {
     zombies = GetAITeamArray(level.zombie_team);
 
@@ -460,38 +460,43 @@ ZombieGibBone(bone)
 
 SetZombieModel(model)
 {
-    level notify("EndZombieModel");
-    level endon("EndZombieModel");
-
     if(isDefined(level.ZombieModel) && model != level.ZombieModel || !isDefined(level.ZombieModel))
     {
         level.ZombieModel = model;
+        zombies = GetAITeamArray(level.zombie_team);
 
-        while(isDefined(level.ZombieModel))
+        for(a = 0; a < zombies.size; a++)
         {
-            zombies = GetAITeamArray(level.zombie_team);
-
-            for(a = 0; a < zombies.size; a++)
-                if(isDefined(zombies[a]) && IsAlive(zombies[a]) && zombies[a].model != level.ZombieModel)
-                {
-                    if(!isDefined(zombies[a].savedModel))
-                        zombies[a].savedModel = zombies[a].model;
-                    
-                    zombies[a] SetModel(level.ZombieModel);
-                }
-            
-            wait 0.1;
+            if(isDefined(zombies[a]) && IsAlive(zombies[a]) && zombies[a].model != level.ZombieModel)
+            {
+                if(!isDefined(zombies[a].savedModel))
+                    zombies[a].savedModel = zombies[a].model;
+                
+                zombies[a] SetModel(level.ZombieModel);
+            }
         }
+
+        spawner::add_archetype_spawn_function("zombie", ::SetZombieSpawnModel);
     }
     else
-        level DisableZombieModel();
+        DisableZombieModel();
+}
+
+SetZombieSpawnModel()
+{
+    while(!IsAlive(self))
+        wait 0.1;
+    
+    self.savedModel = self.model;
+
+    if(isDefined(level.ZombieModel))
+        self SetModel(level.ZombieModel);
 }
 
 DisableZombieModel()
 {
-    level notify("EndZombieModel");
-    
     level.ZombieModel = undefined;
+    spawner::remove_global_spawn_function("zombie", ::SetZombieSpawnModel);
     zombies = GetAITeamArray(level.zombie_team);
 
     for(a = 0; a < zombies.size; a++)
@@ -516,7 +521,7 @@ ZombieAnimScript(anm, ntfy)
 DisableZombieSpawning()
 {
     SetDvar("ai_disableSpawn", (GetDvarString("ai_disableSpawn") == "0") ? "1" : "0");
-    KillZombies();
+    KillZombies("Head Gib");
 }
 
 TeleportZombies(loc)
@@ -564,40 +569,26 @@ ZombiesToCrosshairsLoop()
 DisableZombieCollision()
 {
     level.DisableZombieCollision = BoolVar(level.DisableZombieCollision);
+    zombies = GetAITeamArray(level.zombie_team);
 
     if(Is_True(level.DisableZombieCollision))
-    {
-        while(Is_True(level.DisableZombieCollision))
-        {
-            zombies = GetAITeamArray(level.zombie_team);
-
-            for(a = 0; a < zombies.size; a++)
-            {
-                if(!isDefined(zombies[a]) || !IsAlive(zombies[a]) || Is_True(zombies[a].DisableCollision))
-                    continue;
-                
-                zombies[a] SetPlayerCollision(0);
-                zombies[a].DisableCollision = true;
-            }
-
-            wait 0.1;
-        }
-    }
+        spawner::add_archetype_spawn_function("zombie", ::DisableZombieSpawnCollision);
     else
+        spawner::remove_global_spawn_function("zombie", ::DisableZombieSpawnCollision);
+
+    for(a = 0; a < zombies.size; a++)
     {
-        zombies = GetAITeamArray(level.zombie_team);
-
-        for(a = 0; a < zombies.size; a++)
-        {
-            if(!isDefined(zombies[a]) || !IsAlive(zombies[a]))
-                continue;
-            
-            zombies[a] SetPlayerCollision(1);
-
-            if(Is_True(zombies[a].DisableCollision))
-                zombies[a].DisableCollision = BoolVar(zombies[a].DisableCollision);
-        }
+        if(isDefined(zombies[a]) && IsAlive(zombies[a]))
+            zombies[a] SetPlayerCollision(!Is_True(level.DisableZombieCollision));
     }
+}
+
+DisableZombieSpawnCollision()
+{
+    while(!IsAlive(self))
+        wait 0.1;
+    
+    self SetPlayerCollision(0);
 }
 
 DisableZombiePush()
@@ -691,48 +682,50 @@ FreezeZombies()
 DisappearingZombies()
 {
     level.DisappearingZombies = BoolVar(level.DisappearingZombies);
+    zombies = GetAITeamArray(level.zombie_team);
 
     if(Is_True(level.DisappearingZombies))
-    {
-        while(Is_True(level.DisappearingZombies))
-        {
-            zombies = GetAITeamArray(level.zombie_team);
-
-            for(a = 0; a < zombies.size; a++)
-            {
-                if(!IsAlive(zombies[a]) || Is_True(zombies[a].disappearing))
-                    continue;
-                
-                zombies[a].disappearing = true;
-                zombies[a] thread DisappearingZombie();
-            }
-
-            wait 0.01;
-        }
-    }
+        spawner::add_archetype_spawn_function("zombie", ::ZombieSpawnDisappearingZombie);
     else
     {
+        spawner::remove_global_spawn_function("zombie", ::ZombieSpawnDisappearingZombie);
         level notify("EndDisappearingZombies");
-        zombies = GetAITeamArray(level.zombie_team);
+    }
 
-        for(a = 0; a < zombies.size; a++)
+    for(a = 0; a < zombies.size; a++)
+    {
+        if(isDefined(zombies[a]) && IsAlive(zombies[a]))
         {
-            if(!isDefined(zombies[a]) || !IsAlive(zombies[a]))
-                continue;
-            
-            if(Is_True(zombies[a].disappearing))
-                zombies[a].disappearing = BoolVar(zombies[a].disappearing);
-
-            if(!Is_True(level.ZombiesInvisibility))
-                zombies[a] Show();
+            if(Is_True(level.DisappearingZombies))
+                zombies[a] thread DisappearingZombie();
             else
-                zombies[a] Hide();
+            {
+                if(Is_True(zombies[a].disappearing))
+                    zombies[a].disappearing = BoolVar(zombies[a].disappearing);
+
+                if(!Is_True(level.ZombiesInvisibility))
+                    zombies[a] Show();
+                else
+                    zombies[a] Hide();
+            }
         }
     }
 }
 
+ZombieSpawnDisappearingZombie()
+{
+    while(!IsAlive(self))
+        wait 0.1;
+    
+    self thread DisappearingZombie();
+}
+
 DisappearingZombie()
 {
+    if(Is_True(self.disappearing))
+        return;
+    self.disappearing = true;
+
     if(!isDefined(self) || !IsAlive(self))
         return;
     
@@ -740,9 +733,7 @@ DisappearingZombie()
     
     while(isDefined(self) && IsAlive(self))
     {
-        if(isDefined(self) && IsAlive(self))
-            self Hide();
-        
+        self Hide();
         wait RandomFloatRange(1, 5);
 
         if(isDefined(self) && IsAlive(self))
@@ -803,9 +794,10 @@ ZombieBurnPlayers()
     while(IsAlive(self) && Is_True(level.ExplodingZombies))
     {
         foreach(player in GetPlayers())
-            if(DistanceSquared(player.origin, self.origin) <= 9216)
-                if(!(isDefined(player.is_burning) && player.is_burning) && zombie_utility::is_player_valid(player, 0))
-                    player function_3389e2f3(self);
+        {
+            if(DistanceSquared(player.origin, self.origin) <= 9216 && !Is_True(player.is_burning) && zombie_utility::is_player_valid(player, 0))
+                player function_3389e2f3(self);
+        }
 
         wait 0.1;
     }
@@ -1002,7 +994,9 @@ ServerClearCorpses()
     corpse_array = GetCorpseArray();
 
     if(isDefined(corpse_array) && corpse_array.size)
+    {
         for(a = 0; a < corpse_array.size; a++)
             if(isDefined(corpse_array[a]))
                 corpse_array[a] delete();
+    }
 }

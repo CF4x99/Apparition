@@ -1,4 +1,4 @@
-runMenuIndex(menu)
+RunMenuOptions(menu)
 {
     switch(menu)
     {
@@ -160,6 +160,7 @@ runMenuIndex(menu)
             break;
         
         case "Zetsubou No Shima Scripts":
+        case "Pack 'a' Punch Quest Parts":
         case "Zetsubou No Shima KT-4 Parts":
         case "Map Challenges":
         case "Skulltar Teleports":
@@ -202,8 +203,9 @@ runMenuIndex(menu)
             break;
         
         case "Die Rise Scripts":
-        case "Elevator Keys":
-        case "Bank Cash":
+        case "Die Rise Elevator Keys":
+        case "Die Rise Bank Cash":
+        case "Die Rise Player Ranks":
             self PopulateDieRiseScripts(menu);
             break;
         
@@ -419,10 +421,10 @@ MenuOptionsPlayer(menu, player)
         
         default:
             weapons = Array("Assault Rifles", "Sub Machine Guns", "Light Machine Guns", "Sniper Rifles", "Shotguns", "Pistols", "Launchers", "Specials");
-            weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
-
+            
             if(isInArray(weapons, menu))
             {
+                weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
                 pistols = Array("pistol_standard", "pistol_burst", "pistol_fullauto", "pistol_m1911", "pistol_revolver38", "pistol_c96");
                 
                 foreach(index, weapon_category in weapons)

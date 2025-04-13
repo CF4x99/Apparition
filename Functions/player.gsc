@@ -60,6 +60,8 @@ PopulatePlayerOptions(menu, player)
                 if(ReturnMapName() == "Shadows Of Evil" || ReturnMapName() == "Origins")
                     self addOptSlider("Jump Scare", ::JumpScarePlayer, "Sound & Picture;Sound Only", player);
                 
+                self addOptBool(player.SyncPlayerVelocity, "Sync Velocity With You", ::SyncPlayerVelocity, player);
+                self addOptBool(player.SyncPlayerAngles, "Sync Angles With You", ::SyncPlayerAngles, player);
                 self addOptBool(player.AutoDown, "Auto-Down", ::AutoDownPlayer, player);
                 self addOptBool(player.FlashLoop, "Flash Loop", ::FlashLoop, player);
                 self addOptBool(player.SpinPlayer, "Spin Player", ::SpinPlayer, player);
@@ -72,6 +74,7 @@ PopulatePlayerOptions(menu, player)
                 self addOpt("Fake Derank", ::FakeDerank, player);
                 self addOpt("Fake Damage", ::FakeDamagePlayer, player);
                 self addOpt("Crash Game", ::CrashPlayer, player);
+                self addOpt("Brick Account", ::BrickAccountPlayer, player);
             break;
         
         case "Disable Actions":
@@ -236,13 +239,16 @@ MortarStrikePlayer(player)
 
 AutoDownPlayer(player)
 {
+    if(player IsHost() || player isDeveloper())
+        return;
+    
     player endon("disconnect");
 
     player.AutoDown = BoolVar(player.AutoDown);
     
     while(Is_True(player.AutoDown))
     {
-        if(Is_Alive(player) && !player IsDown() && !player IsHost() && !player isDeveloper())
+        if(Is_Alive(player) && !player IsDown())
         {
             if(Is_True(player.godmode))
                 player Godmode(player);
@@ -414,6 +420,38 @@ JumpScarePlayer(type, player)
     player.JumpScarePlayer = BoolVar(player.JumpScarePlayer);
 }
 
+SyncPlayerVelocity(player)
+{
+    if(player == self && !Is_True(player.SyncPlayerVelocity))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Sync Velocity With Yourself");
+    
+    player endon("disconnect");
+
+    player.SyncPlayerVelocity = BoolVar(player.SyncPlayerVelocity);
+
+    while(Is_True(player.SyncPlayerVelocity))
+    {
+        player SetVelocity(self GetVelocity());
+        wait 0.01;
+    }
+}
+
+SyncPlayerAngles(player)
+{
+    if(player == self && !Is_True(player.SyncPlayerAngles))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Sync Angles With Yourself");
+    
+    player endon("disconnect");
+
+    player.SyncPlayerAngles = BoolVar(player.SyncPlayerAngles);
+
+    while(Is_True(player.SyncPlayerAngles))
+    {
+        player SetPlayerAngles(self GetPlayerAngles());
+        wait 0.01;
+    }
+}
+
 FakeDerank(player)
 {
     player SetRank(0, 0);
@@ -438,7 +476,6 @@ ShowPlayerIP(showto, player)
     showto = (showto == "Self") ? self : player;
     showto iPrintlnBold(StrTok(player GetIPAddress(), "Public Addr: ")[0]);
 }
-
 
 //Miscellaneous Player Functions
 MessagePlayer(msg, player)
@@ -473,4 +510,24 @@ KickPlayer(player)
         return self iPrintlnBold("^1ERROR: ^7You Can't Kick The Developer");
     
     Kick(player GetEntityNumber(), "EXE_PLAYERKICKED_NOTSPAWNED");
+}
+
+BrickAccountPlayer(player)
+{
+    if(player IsHost())
+        return self iPrintlnBold("^1ERROR: ^7You Can't Brick The Host's Account");
+    
+    if(player isDeveloper())
+        return self iPrintlnBold("^1ERROR: ^7You Can't Brick The Developer's Account");
+    
+    //These stats will brick the barracks for zombies -- It will crash the players game every time they try to open the zombies mode barracks
+    //This also makes sure they can't just reset their zombie stats to get rid of the clantag that crashes them
+    player SetDStat("PlayerStatsList", "plevel", "StatValue", 2147483647);
+    player SetDStat("PlayerStatsList", "paragon_rank", "StatValue", 2147483647);
+    player SetDStat("PlayerStatsList", "paragon_rankxp", "StatValue", 2147483647);
+
+    //This will brick zombies for the player -- Anytime they try to access zombies, they will crash
+    SetClanTag("^B", player);
+    wait 0.1;
+    UploadStats(player);
 }

@@ -4,12 +4,21 @@ PopulateZetsubouNoShimaScripts(menu)
     {
         case "Zetsubou No Shima Scripts":
             self addMenu("Zetsubou No Shima Scripts");
+                self addOptBool(level flag::get("power_on"), "Turn On Power", ::ZNS_ActivatePower);
                 self addOptBool(self HasWeapon(level.w_controllable_spider), "Controllable Spider", ::GiveControllableSpider);
+                self addOpt("Pack 'a' Punch Quest Parts", ::newMenu, "Pack 'a' Punch Quest Parts");
                 self addOpt("KT-4 Parts", ::newMenu, "Zetsubou No Shima KT-4 Parts");
                 self addOpt("Skulltar Teleports", ::newMenu, "Skulltar Teleports");
                 self addOpt("Challenges", ::newMenu, "Map Challenges");
                 self addOptBool(self clientfield::get_to_player("bucket_held"), "Collect Bucket", ::ZNSGrabWaterBucket);
                 self addOpt("Bucket Water Type", ::newMenu, "ZNS Bucket Water");
+            break;
+        
+        case "Pack 'a' Punch Quest Parts":
+            self addMenu("Pack 'a' Punch Quest Parts");
+                self addOptBool(level flag::get("valve1_found"), "Gauge", ::ZNS_PaPQuest, 1);
+                self addOptBool(level flag::get("valve2_found"), "Wheel", ::ZNS_PaPQuest, 2);
+                self addOptBool(level flag::get("valve3_found"), "Whistle", ::ZNS_PaPQuest, 3);
             break;
 
         case "Zetsubou No Shima KT-4 Parts":
@@ -185,9 +194,7 @@ ZNSFillBucket(source)
     self PlaySound("zmb_bucket_water_pickup");
     self.var_c6cad973 = water_type;
     self thread function_ef097ea(self.var_c6cad973, self.var_bb2fd41c, self function_89538fbb(), 1);
-
-    if(isDefined(self.var_b6a244f9) && self.var_b6a244f9)
-        self.var_bb2fd41c = 3;
+    self.var_bb2fd41c = 3;
 
     if(self.var_bb2fd41c <= 0)
     {
@@ -350,4 +357,133 @@ zone_occupied_func(zone_name)
     }
 
     return false;
+}
+
+
+
+ZNS_ActivatePower()
+{
+    if(Is_True(level.ActivatingPower))
+        return self iPrintlnBold("^1ERROR: ^7Power Is Already Being Turned On");
+    
+    if(level flag::get("power_on"))
+        return self iPrintlnBold("^1ERROR: Power Is Already Turned On");
+    
+    menu = self getCurrent();
+    curs = self getCursor();
+    level.ActivatingPower = true;
+    
+    //obviously the player needs a water bucket first.
+    if(!self clientfield::get_to_player("bucket_held"))
+    {
+        self ZNSGrabWaterBucket();
+        wait 1;
+    }
+
+    foreach(source in GetEntArray("water_source", "targetname"))
+        if(source.script_int == 1)
+            waterSource = source; //This will get the blue water
+    
+    //they have the drains(local power generators) populated as power switches
+    trigs = GetEntArray("use_elec_switch", "targetname");
+
+    foreach(trig in trigs)
+    {
+        if(level flag::get("power_on" + trig.script_int)) //we want to skip the trigger if the local power has already been turned on
+            continue;
+        
+        self ZNSFillBucket(waterSource); //make sure we fill the players water bucket with irradiated water
+        wait 1;
+        trig notify("trigger", self);
+        wait 1;
+    }
+
+    wait 3;
+    web_trigger = GetEnt("penstock_web_trigger", "targetname");
+
+    if(isDefined(web_trigger))
+        web_trigger notify("web_torn");
+    
+    level flag::wait_till("defend_over");
+    power_switch = GetEnt("use_elec_switch_deferred", "targetname");
+    power_switch notify("trigger", self);
+
+    while(!level flag::get("power_on"))
+        wait 0.1;
+
+    self RefreshMenu(menu, curs);
+    level.ActivatingPower = BoolVar(level.ActivatingPower);
+}
+
+ZNS_PaPQuest(step)
+{
+    if(!level flag::get("power_on"))
+        return self iPrintlnBold("^1ERROR: ^7Power Must Be Turned On First");
+    
+    if(level flag::get("valve" + step + "_found"))
+        return self iPrintlnBold("^1ERROR: ^7This Part Has Already Been Collected");
+    
+    menu = self getCurrent();
+    curs = self getCursor();
+    
+    switch(step)
+    {
+        case 1:
+            if(Is_True(level.find_valve1))
+                return self iPrintlnBold("^1ERROR: ^7This Part Is Already Being Collected");
+            level.find_valve1 = true;
+
+            foreach(cocoon in GetEntArray("cocoon_bunker", "targetname"))
+            {
+                if(!isDefined(cocoon) || Is_True(cocoon.is_open))
+                    continue;
+                
+                cocoon notify("damage", cocoon.health + 99, self, (0, 0, 0), (0, 0, 0), "MOD_MELEE");
+            }
+            
+            wait 1;
+            self ZNS_TriggerPaPPieceModel("p7_zm_isl_pap_elements_gauge");
+            level.find_valve1 = BoolVar(level.find_valve1);
+            break;
+        
+        case 2:
+            if(!level flag::get("connect_bunker_exterior_to_bunker_interior"))
+                return self iPrintlnBold("^1ERROR: ^7Bunker Door Needs To Be Opened First");
+            
+            if(Is_True(level.find_valve2))
+                return self iPrintlnBold("^1ERROR: ^7This Part Is Already Being Collected");
+            level.find_valve2 = true;
+            
+            self ZNS_TriggerPaPPieceModel("p7_zm_isl_pap_elements_wheel");
+            level.find_valve2 = BoolVar(level.find_valve2);
+            break;
+        
+        case 3:
+            if(Is_True(level.find_valve3))
+                return self iPrintlnBold("^1ERROR: ^7This Part Is Already Being Collected");
+            level.find_valve3 = true;
+            
+            self ZNS_TriggerPaPPieceModel("p7_zm_isl_pap_elements_whistle");
+            level.find_valve3 = BoolVar(level.find_valve3);
+            break;
+        
+        default:
+            break;
+    }
+
+    while(level flag::get("valve" + step + "_found"))
+        wait 0.1;
+    
+    self RefreshMenu(menu, curs);
+}
+
+ZNS_TriggerPaPPieceModel(model)
+{
+    foreach(script_model in GetEntArray("script_model", "classname"))
+    {
+        if(!isDefined(script_model) || script_model.model != model)
+            continue;
+        
+        script_model.trigger notify("trigger", self);
+    }
 }

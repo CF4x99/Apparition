@@ -1,3 +1,12 @@
+/*
+    TODO:
+        - Rank / Tallies
+        - Stored Weapon
+        - Disable Bank Withdrawl Fee
+        - Stop elevators from moving while using pack
+        - Golden elevator keys? idk about this one though -- there is a reason I didn't add it the first time around(impossible to do it like it's supposed to be done)
+*/
+
 PopulateDieRiseScripts(menu)
 {
     switch(menu)
@@ -5,22 +14,41 @@ PopulateDieRiseScripts(menu)
         case "Die Rise Scripts":
             self addMenu(menu);
                 self addOptBool(level flag::get("power_on"), "Turn On Power", ::ActivatePower);
-                self addOpt("Elevator Keys", ::newMenu, "Elevator Keys");
-                self addOpt("Bank Cash", ::newMenu, "Bank Cash");
+                self addOpt("Elevator Keys", ::newMenu, "Die Rise Elevator Keys");
+                self addOpt("Bank Cash", ::newMenu, "Die Rise Bank Cash");
+                self addOpt("Player Ranks", ::newMenu, "Die Rise Player Ranks");
             break;
         
-        case "Elevator Keys":
+        case "Die Rise Elevator Keys":
             self addMenu(menu);
                 
                 foreach(player in level.players)
                     self addOptBool(player.var_7e6e237, CleanName(player getName()), ::CollectElevatorKey, player);
             break;
         
-        case "Bank Cash":
+        case "Die Rise Bank Cash":
             self addMenu(menu);
 
                 foreach(player in level.players)
                     self addOptSlider(CleanName(player getName()), ::SetPlayerBank, "Max;Reset", player);
+            break;
+        
+        case "Die Rise Player Ranks":
+            if(!isDefined(self.DieRiseRankPlayer))
+                self.DieRiseRankPlayer = level.players[0];
+
+            playerArray = [];
+
+            foreach(player in level.players)
+                playerArray[playerArray.size] = CleanName(player getName()) + " [" + player GetEntityNumber() + "]";
+            
+            self addMenu(menu);
+                self addOptSlider("Player", ::SetDieRiseRankPlayer, playerArray);
+                self addOpt("");
+                self addOptIncSlider("Rank", ::SetDieRisePlayerRank, 1, 1, 5, 1, self.DieRiseRankPlayer);
+                //self addOptIncSlider("Tallies", ::DieRiseTallyMarks, 0, 0, 5, 1, self.DieRiseRankPlayer);
+                //The tally mark system hasn't been fully implemented into Die Rise yet.
+                //I made a script that will work for it when it gets implemented(script has been removed until the system is implemented)
             break;
     }
 }
@@ -49,6 +77,14 @@ SetClientDieRiseStat(stat_name, stat_value)
     self ForceSaveStatsDieRise();
 }
 
+GetClientDieRiseStat(stat_name)
+{
+    if(!IsDefined(self.var_37f38876) || !IsDefined(self.var_37f38876[stat_name]))
+        return 0;
+
+    return self.var_37f38876[stat_name].value;
+}
+
 ForceSaveStatsDieRise()
 {
     self.var_977970a0 = 1;
@@ -70,7 +106,7 @@ function_56809df9()
             if(!IsInt(stat) && stat.set == var_2f24aac7 && (isDefined(stat.var_f82847be) && stat.var_f82847be))
                 data = (((data + stat.name) + ".") + stat.value) + ",";
 
-        data = data + "|";
+        data += "|";
         function_4e89efbc(self, "UpdateDataSet", data);
         util::wait_network_frame();
         wait 0.05;
@@ -81,4 +117,80 @@ function_4e89efbc(player, type, msg)
 {
     if(isPlayer(player))
         level util::setClientSysState("dbSendClientMsg", type + "-**" + msg, player);
+}
+
+SetDieRiseRankPlayer(playerName)
+{
+    foreach(player in level.players)
+    {
+        if(CleanName(player getName()) + " [" + player GetEntityNumber() + "]" == playerName) //I included the players entity number for the case two players have the same name
+            self.DieRiseRankPlayer = player;
+    }
+
+    self RefreshMenu(self getCurrent(), self getCursor());
+}
+
+SetDieRisePlayerRank(rank, player)
+{
+    time_played = player GetClientDieRiseStat("total_time_played");
+	rounds = player GetClientDieRiseStat("weighted_rounds");
+	downs = player GetClientDieRiseStat("weighted_downs");
+
+    if(rank > 1)
+    {
+        if(!downs)
+        {
+            player SetClientDieRiseStat("weighted_downs", 1);
+            downs = player GetClientDieRiseStat("weighted_downs");
+        }
+        
+        if(!rounds)
+        {
+            player SetClientDieRiseStat("weighted_rounds", 1);
+            rounds = player GetClientDieRiseStat("weighted_rounds");
+        }
+    }
+
+    newRatio = false;
+    ratio = (rounds / downs);
+
+    switch(rank)
+    {
+        case 1:
+            player SetClientDieRiseStat("total_time_played", 0); //the ratio doesn't matter for rank 1
+            break;
+        
+        case 2:
+            if(time_played < 3600 || time_played >= 18000)
+                player SetClientDieRiseStat("total_time_played", 3600);
+            
+            newRatio = (ratio < 0.005);
+            break;
+        
+        case 3:
+            if(time_played < 18000 || time_played >= 54000)
+                player SetClientDieRiseStat("total_time_played", 18000);
+            
+            newRatio = (ratio < 0.013);
+            break;
+        
+        case 4:
+            if(time_played < 54000 || time_played >= 108000)
+                player SetClientDieRiseStat("total_time_played", 54000);
+            
+            newRatio = (ratio < 0.054);
+            break;
+        
+        case 5:
+            if(time_played < 108000)
+                player SetClientDieRiseStat("total_time_played", 108000);
+            
+            newRatio = (ratio < 0.13);
+            break;
+    }
+
+    if(newRatio)
+        player SetClientDieRiseStat("weighted_rounds", player GetClientDieRiseStat("weighted_downs")); //this will make the new ratio 1(which will allow the player to meet the standard for any rank)
+
+    level notify("force_player_rank_update");
 }

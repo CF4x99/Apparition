@@ -140,8 +140,11 @@ AC130(type)
         
         linker = SpawnScriptModel(self.ACSavedOrigin, "tag_origin", (0, SetAngles[1], 0));
         c130 = SpawnScriptModel(((linker.origin + (AnglesToRight(linker.angles) * 1800)) + (0, 0, ((self.StartOrigin[2] + 1500) - linker.origin[2]))), "tag_origin");
-        c130.angles = VectorToAngles(linker.origin - c130.origin);
 
+        if(!isDefined(linker) || !isDefined(c130))
+            return;
+        
+        c130.angles = VectorToAngles(linker.origin - c130.origin);
         c130 LinkTo(linker);
         linker thread AC130Rotate();
 
@@ -209,8 +212,11 @@ AC130(type)
 
     if(type == "Fly")
     {
-        linker delete();
-        c130 delete();
+        if(isDefined(linker))
+            linker delete();
+        
+        if(isDefined(c130))
+            c130 delete();
 
         self AllowCrouch(true);
         self SetOrigin(self.ACSavedOrigin);
@@ -283,7 +289,8 @@ FireAC130(ammoType)
 
 AC130Rotate()
 {
-    self endon("disconnect");
+    if(!isDefined(self))
+        return;
     
     while(isDefined(self))
     {
@@ -298,23 +305,10 @@ RefreshAC130HUD(ammo)
         destroyAll(self.AC130HUD);
 
     self.AC130HUD = [];
-    weapon40MM = IsVerkoMap() ? GetWeapon("vk_tra_pis_t9_1911_rdw_lvl3") : zm_weapons::get_upgrade_weapon(level.start_weapon);
 
-    if(ammo == GetWeapon("minigun"))
-    {
-        text = "25mm";
-        AC130HudValues = Array("0,50,2,80", "40,0,60,2", "-40,0,60,2", "-180,151,2,50", "-155,175,50,2", "180,151,2,50", "155,175,50,2", "180,-151,2,50", "155,-175,50,2", "-180,-151,2,50", "-155,-175,50,2");
-    }
-    else if(ammo == weapon40MM)
-    {
-        text = "40mm";
-        AC130HudValues = Array("0,80,2,120", "0,-80,2,120", "0,-46,10,1", "0,-92,10,1", "0,-140,14,1", "0,46,10,1", "0,92,10,1", "0,140,14,1", "85,0,130,2", "-85,0,130,2", "37,0,1,10", "75,0,1,10", "112,0,1,10", "150,0,1,14", "-37,0,1,10", "-75,0,1,10", "-112,0,1,10", "-150,0,1,14");
-    }
-    else if(ammo == GetWeapon("hunter_rocket_turret_player"))
-    {
-        text = "105mm";
-        AC130HudValues = Array("0,25,51,2", "0,-25,51,2", "25,0,2,51", "-25,0,2,52", "0,50,2,51", "0,-50,2,51", "50,0,51,2", "-50,0,51,2", "225,161,2,30", "210,175,30,2", "-225,161,2,30", "-210,175,30,2", "-225,-161,2,30", "-210,-175,30,2", "225,-161,2,30", "210,-175,30,2");
-    }
+    weapon40MM = IsVerkoMap() ? GetWeapon("vk_tra_pis_t9_1911_rdw_lvl3") : zm_weapons::get_upgrade_weapon(level.start_weapon);
+    AC130HudValues = (ammo == GetWeapon("minigun")) ? Array("0,50,2,80", "40,0,60,2", "-40,0,60,2", "-180,151,2,50", "-155,175,50,2", "180,151,2,50", "155,175,50,2", "180,-151,2,50", "155,-175,50,2", "-180,-151,2,50", "-155,-175,50,2") : (ammo == weapon40MM) ? Array("0,80,2,120", "0,-80,2,120", "0,-46,10,1", "0,-92,10,1", "0,-140,14,1", "0,46,10,1", "0,92,10,1", "0,140,14,1", "85,0,130,2", "-85,0,130,2", "37,0,1,10", "75,0,1,10", "112,0,1,10", "150,0,1,14", "-37,0,1,10", "-75,0,1,10", "-112,0,1,10", "-150,0,1,14") : Array("0,25,51,2", "0,-25,51,2", "25,0,2,51", "-25,0,2,52", "0,50,2,51", "0,-50,2,51", "50,0,51,2", "-50,0,51,2", "225,161,2,30", "210,175,30,2", "-225,161,2,30", "-210,175,30,2", "-225,-161,2,30", "-210,-175,30,2", "225,-161,2,30", "210,-175,30,2");
+    text = (ammo == GetWeapon("minigun")) ? "25mm" : (ammo == weapon40MM) ? "40mm" : "105mm";
 
     for(a = 0; a < AC130HudValues.size; a++)
         self.AC130HUD[self.AC130HUD.size] = self createRectangle("CENTER", "CENTER", Int(StrTok(AC130HudValues[a], ",")[0]), Int(StrTok(AC130HudValues[a], ",")[1]), Int(StrTok(AC130HudValues[a], ",")[2]), Int(StrTok(AC130HudValues[a], ",")[3]), (1, 1, 1), 1, 1, "white");
@@ -454,23 +448,16 @@ CustomSentry(origin)
         while(Is_True(self.CustomSentry))
         {
             zombie = self.sentrygun_weapon CustomSentryGetTarget();
+            v_target_pos = !isDefined(zombie) ? (self.sentrygun_weapon.origin + VectorScale(AnglesToForward((0, RandomIntRange(0, 360), 0)), 40)) : zombie GetTagOrigin("j_head");
 
-            if(!isDefined(zombie))
-                v_target_pos = self.sentrygun_weapon.origin + VectorScale(AnglesToForward((0, RandomIntRange(0, 360), 0)), 40);
-            else
-            {
-                v_target_pos = zombie GetTagOrigin("j_head");
-
-                if(!isDefined(v_target_pos)) //Needed for AI that don't have the targeted bone tag(i.e. Spiders)
-                    v_target_pos = zombie GetTagOrigin("tag_body");
-            }
+            if(isDefined(zombie) && !isDefined(v_target_pos)) //Needed for AI that don't have the targeted bone tag(i.e. Spiders)
+                v_target_pos = zombie GetTagOrigin("tag_body");
             
             self.sentrygun_weapon.angles = VectorToAngles(v_target_pos - self.sentrygun_weapon.origin);
-            v_flash_pos = self.sentrygun_weapon GetTagOrigin("tag_flash");
             self.sentrygun_weapon DontInterpolate();
 
             if(isDefined(zombie))
-                MagicBullet(sentrygun, v_flash_pos, v_target_pos, self.sentrygun_weapon);
+                MagicBullet(sentrygun, self.sentrygun_weapon GetTagOrigin("tag_flash"), v_target_pos, self.sentrygun_weapon);
 
             util::wait_network_frame();
         }
@@ -490,7 +477,6 @@ CustomSentry(origin)
 CustomSentryGetTarget()
 {
     zombies = GetAITeamArray(level.zombie_team);
-    enemy = undefined;
 
     for(a = 0; a < zombies.size; a++)
     {
@@ -988,7 +974,7 @@ SetMoonDoorState(door, open)
 AnyoneNearDoor(door)
 {
     foreach(ai in GetAITeamArray(level.zombie_team))
-        if(Distance(ai.origin, door.origin) <= 255)
+        if(isDefined(ai) && IsAlive(ai) && Distance(ai.origin, door.origin) <= 255)
             return true;
 
     foreach(player in level.players)

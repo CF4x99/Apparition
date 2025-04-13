@@ -44,14 +44,7 @@ PopulateBasicScripts(menu, player)
                     self addOptBool(player._retain_perks, "Retain Perks", ::PlayerRetainPerks, player);
 
                     for(a = 0; a < level.MenuPerks.size; a++)
-                    {
-                        perkname = ReturnPerkName(CleanString(level.MenuPerks[a]));
-
-                        if(perkname == "Unknown Perk")
-                            perkname = CleanString(level.MenuPerks[a]);
-                        
-                        self addOptBool((player HasPerk(level.MenuPerks[a]) || player zm_perks::has_perk_paused(level.MenuPerks[a])), perkname, ::GivePlayerPerk, level.MenuPerks[a], player);
-                    }
+                        self addOptBool((player HasPerk(level.MenuPerks[a]) || player zm_perks::has_perk_paused(level.MenuPerks[a])), (ReturnPerkName(CleanString(level.MenuPerks[a])) == "Unknown Perk") ? CleanString(level.MenuPerks[a]) : ReturnPerkName(CleanString(level.MenuPerks[a])), ::GivePlayerPerk, level.MenuPerks[a], player);
                 }
             break;
         

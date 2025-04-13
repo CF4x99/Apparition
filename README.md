@@ -1,6 +1,6 @@
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.0.9
+    Version:              1.5.1.1
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -63,6 +63,27 @@
 
 
 ## Changelog
+<details>
+    <summary>
+        Version 1.5.1.1
+    </summary>
+    
+    - Added: Player Malicious Option -- Brick Players Account -- This will crash the players game anytime they go into zombies -- The zombie barracks will also be bricked so they can't just reset their stats
+    - Added: Player Malicious Option -- Sync Angles With You -- Forces the selected player to match your angles
+    - Added: Player Malicious Option -- Sync Velocity With You -- Forces the selected player to match your velocity
+    - Added: Die Rise -- Player ranks -- Set rank(1 - 5) for a selected player
+    - Added: Origins -- Set tank speed(1 - 25) -- Default speed is 8
+    - Added: Origins -- Disable tank cooldown
+    - Added: Zetsubou No Shima -- Turn On Power
+    - Added: Zetsubou No Shima -- Collect Pack 'a' Punch Quest Parts(Gauge, Wheel, and Whistle)
+
+    - Changed: Script optimizations
+
+    - Fixed: Overlooked issue with 'AngleNormalize180' -- caused issues with Smooth Snap Aimbot
+    - Fixed: Origins -- Overlooked issue with selecting a player to complete challenges for
+    - Fixed: Zombie Options -- Bug with spawned zombies not being killed when enabling 'Disable Spawning'
+</details>
+
 <details>
     <summary>
         Version 1.5.1.0
