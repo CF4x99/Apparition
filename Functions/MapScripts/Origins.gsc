@@ -99,24 +99,28 @@ PopulateOriginsScripts(menu)
             self addMenu("Ice");
                 self addOptBool(level flag::get("ice_puzzle_1_complete"), "Tiles", ::CompleteIceTiles);
                 self addOptBool(level flag::get("ice_puzzle_2_complete"), "Tombstones", ::CompleteIceTombstones);
+                self addOptBool(level flag::get("staff_water_upgrade_unlocked"), "Damage Orb", ::OriginsDamageOrb, "ice");
             break;
 
         case "Wind Puzzles":
             self addMenu("Wind");
                 self addOptBool(level flag::get("air_puzzle_1_complete"), "Rings", ::CompleteWindRings);
                 self addOptBool(level flag::get("air_puzzle_2_complete"), "Smoke", ::CompleteWindSmoke);
+                self addOptBool(level flag::get("staff_air_upgrade_unlocked"), "Damage Orb", ::OriginsDamageOrb, "air");
             break;
 
         case "Fire Puzzles":
             self addMenu("Fire");
                 self addOptBool(level flag::get("fire_puzzle_1_complete"), "Fill Cauldrons", ::ComepleteFireCauldrons);
                 self addOptBool(level flag::get("fire_puzzle_2_complete"), "Light Torches", ::CompleteFireTorches);
+                self addOptBool(level flag::get("staff_fire_upgrade_unlocked"), "Damage Orb", ::OriginsDamageOrb, "fire");
             break;
 
         case "Lightning Puzzles":
             self addMenu("Lightning");
                 self addOptBool(level flag::get("electric_puzzle_1_complete"), "Song", ::CompleteLightningSong);
                 self addOptBool(level flag::get("electric_puzzle_2_complete"), "Turn Dials", ::CompleteLightningDials);
+                self addOptBool(level flag::get("staff_lightning_upgrade_unlocked"), "Damage Orb", ::OriginsDamageOrb, "lightning");
             break;
     }
 }
@@ -867,16 +871,17 @@ ComepleteFireCauldrons()
 {
     if(level flag::get("fire_puzzle_1_complete"))
         return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+    
+    if(Is_True(level.FireCauldrons))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
 
     if(!is_chamber_occupied())
         return self iPrintlnBold("^1ERROR: ^7A Player Must Be In The Crazy Place To Complete This Step");
 
-    if(Is_True(level.FireCauldrons))
-        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
-
     level.FireCauldrons = true;
     curs = self getCursor();
     menu = self getCurrent();
+    self iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7A Player Must Stay In The Crazy Place While This Step Is Being Completed");
 
     if(!isDefined(level.sacrifice_volumes))
         level.sacrifice_volumes = GetEntArray("fire_sacrifice_volume", "targetname");
@@ -885,6 +890,12 @@ ComepleteFireCauldrons()
     {
         foreach(vols in level.sacrifice_volumes)
         {
+            if(!is_chamber_occupied())
+            {
+                level.FireCauldrons = undefined;
+                return self iPrintlnBold("^1ERROR: ^7Fire Cauldrons Reset -- A Player Must Remain In The Crazy Place While The Step Is Being Completed");
+            }
+
             if(vols.b_gods_pleased || vols.num_sacrifices_received >= 32)
                 continue;
 
@@ -985,25 +996,37 @@ CompleteLightningSong()
 {
     if(level flag::get("electric_puzzle_1_complete"))
         return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+    
+    if(Is_True(level.LightningSong))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
 
     if(!is_chamber_occupied())
         return self iPrintlnBold("^1ERROR: ^7A Player Must Be In The Crazy Place To Complete This Step");
 
-    if(Is_True(level.LightningSong))
-        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
-
     level.LightningSong = true;
     curs = self getCursor();
     menu = self getCurrent();
+    self iPrintlnBold("^1" + ToUpper(level.menuName) + ": ^7A Player Must Stay In The Crazy Place While This Step Is Being Completed");
 
     order = Array(11, 7, 3, 7, 4, 2, 9, 5, 3); //The order is always the same
 
+    level notify(#"piano_keys_stop");
+	level.a_piano_keys_playing = [];
+    wait 4;
+
     for(a = 0; a < 3; a++)
     {
+        if(!is_chamber_occupied())
+        {
+            level.LightningSong = undefined;
+            return self iPrintlnBold("^1ERROR: ^7Lightning Song Reset -- A Player Must Remain In The Crazy Place While The Step Is Being Completed");
+        }
+
         for(b = (0 + (3 * a)); b < (3 + (3 * a)); b++)
         {
             self notify("projectile_impact", GetWeapon("staff_lightning"), struct::get_array("piano_key", "script_noteworthy")[order[b]].origin);
             wait 0.5;
+            self iPrintlnBold("Impact: " + level.a_piano_keys_playing.size);
         }
 
         wait 5;
@@ -1053,29 +1076,86 @@ CompleteLightningDials()
 //End Staff Puzzles
 
 
+//This script was thrown together in the matter of a few minutes. So it is a little sloppy and not fully tested :P
+// Suggested by: aesthet_ic
+OriginsDamageOrb(type)
+{
+    fixType = (type == "ice") ? "water" : type;
+
+    if(level flag::get("staff_" + fixType + "_upgrade_unlocked"))
+        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+    
+    menu = self getCurrent();
+    curs = self getCursor();
+
+    gems = GetEntArray("crypt_gem", "script_noteworthy");
+    gemType = (type == "lightning") ? "elec" : type;
+
+    foreach(gem in gems)
+    {
+        if(!isDefined(gem) || gem.targetname != "crypt_gem_" + gemType)
+            continue;
+        
+        targetGem = gem;
+    }
+
+    if(isDefined(targetGem)) //based on the code, if the gem still exists, then we aren't ready for this step yet.
+        return self iPrintlnBold("^1ERROR: ^7This Step Can't Be Completed Yet");
+
+    if(!isDefined(level.damageOrb))
+        level.damageOrb = [];
+    
+    if(Is_True(level.damageOrb[type]))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    level.damageOrb[type] = true;
+    rings = Align115Rings((type == "air") ? "wind" : type);
+
+    if(!Is_True(rings))
+    {
+        level.damageOrb[type] = undefined;
+        return self iPrintlnBold("^1ERROR: ^7Couldn't Align Rings For Orb");
+    }
+
+    foreach(ent in GetEntArray("script_model", "classname"))
+    {
+        if(!isDefined(ent) || ent.model != struct::get(type + "_orb_exit_path", "targetname").model)
+            continue;
+        
+        ent notify("damage", 99, self, (0, 0, 0), ent.origin, undefined, undefined, undefined, undefined, GetWeapon("staff_" + fixType));
+    }
+
+    while(!level flag::get("staff_" + fixType + "_upgrade_unlocked"))
+        wait 0.1;
+    
+    self RefreshMenu(menu, curs);
+    level.damageOrb[type] = undefined;
+}
 
 
 
 Align115Rings(type)
 {
+    type = ToLower(type);
+
     if(level flag::get("disc_rotation_active"))
         return self iPrintlnBold("^1ERROR: ^7Rings Are Currently Rotating");
 
     switch(type)
     {
-        case "Ice":
+        case "ice":
             num = 0;
             break;
 
-        case "Lightning":
+        case "lightning":
             num = 1;
             break;
 
-        case "Fire":
+        case "fire":
             num = 2;
             break;
 
-        case "Wind":
+        case "wind":
             num = 3;
             break;
 
@@ -1115,6 +1195,7 @@ Align115Rings(type)
     }
 
     level flag::clear("disc_rotation_active");
+    return true;
 }
 
 rumble_nearby_players(v_center, n_range, n_rumble_enum)
@@ -1163,13 +1244,14 @@ OriginsTankSpeed(speed)
     {
         if(level.vh_tank flag::get("tank_moving"))
             level.vh_tank SetSpeedImmediate(8);
-        
-        level notify("EndTankSpeed");
     }
 }
 
 DisableTankCooldown()
 {
+    level notify("EndDisableCooldown");
+    level endon("EndDisableCooldown");
+
     level.DisableTankCooldown = BoolVar(level.DisableTankCooldown);
 
     while(isDefined(level.DisableTankCooldown))

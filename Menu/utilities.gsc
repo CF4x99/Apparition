@@ -6,6 +6,7 @@ createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
     textElem.archived = self ShouldArchive();
     textElem.foreground = true;
     textElem.player = self;
+    textElem.hidden = false;
 
     textElem.sort = sort;
     textElem.alpha = alpha;
@@ -47,6 +48,7 @@ createServerText(font, fontSize, sort, text, align, relative, x, y, alpha, color
     textElem.hidewheninmenu = true;
     textElem.archived = true;
     textElem.foreground = true;
+    textElem.hidden = false;
 
     textElem.sort = sort;
     textElem.alpha = alpha;
@@ -544,7 +546,10 @@ SpawnScriptModel(origin, model, angles, time)
         wait time;
 
     ent = Spawn("script_model", origin);
-    ent SetModel(model);
+
+    if(isDefined(model))
+        ent SetModel(model);
+    
     ent.angles = isDefined(angles) ? angles : (0, 0, 0);
 
     return ent;
@@ -1057,8 +1062,130 @@ ReturnPerkName(perk)
         case "electriccherry":
             return "Electric Cherry";
         
+        case "gpsjammer":
+            return "Snail's Pace Slurpee";
+        
+        case "vultureaid":
+            return "Vulture Aid";
+        
+        case "directionalfire":
+            return "Vigor Rush";
+        
+        case "phdflopper":
+            return "P.H.D Flopper";
+        
+        case "jetquiet":
+            return "Fighter's Fizz";
+        
+        case "immunecounteruav":
+            return "I.C.U.";
+        
+        case "combat efficiency":
+            return "Elemental Pop";
+        
         default:
             return "Unknown Perk";
+    }
+}
+
+ReturnPowerupName(name)
+{
+    name = ToLower(name);
+    
+    switch(name)
+    {
+        case "code_cylinder_red":
+            return "Red Cylinder";
+        
+        case "code_cylinder_yellow":
+            return "Yellow Cylinder";
+        
+        case "code_cylinder_blue":
+            return "Blue Cylinder";
+        
+        case "monkey_swarm":
+            return "Monkey Swarm";
+        
+        case "insta_kill_ug":
+            return "Insta-Kill UG";
+        
+        case "beast_mana":
+            return "Beast Mana";
+        
+        case "bonfire_sale":
+            return "Bonfire Sale";
+        
+        case "bonus_points_player":
+            return "Bonus Points Player";
+        
+        case "bonus_points_team":
+            return "Bonus Points Team";
+        
+        case "carpenter":
+            return "Carpenter";
+        
+        case "demonic_rune_lor":
+            return "Runic: Lor";
+        
+        case "demonic_rune_ulla":
+            return "Runic: Ulla";
+        
+        case "demonic_rune_oth":
+            return "Runic: Oth";
+        
+        case "demonic_rune_zor":
+            return "Runic: Zor";
+        
+        case "demonic_rune_mar":
+            return "Runic: Mar";
+        
+        case "demonic_rune_uja":
+            return "Runic: Uja";
+        
+        case "castle_tram_token":
+            return "Tram Token";
+        
+        case "double_points":
+            return "Double Points";
+        
+        case "free_perk":
+            return "Free Perk";
+        
+        case "empty_perk":
+            return "Empty Perk";
+        
+        case "fire_sale":
+            return "Fire Sale";
+        
+        case "full_ammo":
+            return "Max Ammo";
+        
+        case "genesis_random_weapon":
+            return "Random Weapon";
+        
+        case "insta_kill":
+            return "Insta-Kill";
+        
+        case "island_seed":
+            return "Seed";
+        
+        case "nuke":
+            return "Nuke";
+        
+        case "shield_charge":
+            return "Shield Charge";
+        
+        case "minigun":
+            return "Death Machine";
+        
+        case "ww_grenade":
+            return "Widow's Wine Grenades";
+        
+        case "zombie_blood":
+            return "Zombie Blood";
+        
+        default:
+            return CleanString(name);
     }
 }
 

@@ -14,18 +14,19 @@ PopulateBasicScripts(menu, player)
                 self addOptSlider("Modify Score", ::ModifyScore, "1000000;100000;10000;1000;100;10;0;-10;-100;-1000;-10000;-100000;-1000000", player);
                 self addOpt("Perk Menu", ::newMenu, "Perk Menu");
                 self addOpt("Gobblegum Menu", ::newMenu, "Gobblegum Menu");
-                self addOptBool(player.ThirdPerson, "Third Person", ::ThirdPerson, player);
                 self addOptIncSlider("Movement Speed", ::SetMovementSpeed, 0, 1, 3, 0.5, player);
-                self addOptSlider("Clone", ::PlayerClone, "Clone;Dead", player);
+                self addOptBool(player.ThirdPerson, "Third Person", ::ThirdPerson, player);
                 self addOptBool(player.Invisibility, "Invisibility", ::Invisibility, player);
+                self addOptSlider("Clone", ::PlayerClone, "Clone;Dead", player);
                 self addOptBool(player.playerIgnoreMe, "No Target", ::NoTarget, player);
                 self addOptBool(player.ReducedSpread, "Reduced Spread", ::ReducedSpread, player);
                 self addOptBool(player.MultiJump, "Multi-Jump", ::MultiJump, player);
                 self addOptBool(player.DisablePlayerHUD, "Disable HUD", ::DisablePlayerHUD, player);
                 self addOpt("Visual Effects", ::newMenu, "Visual Effects");
-                self addOptBool(player.NoExplosiveDamage, "No Explosive Damage", ::NoExplosiveDamage, player);
                 self addOptSlider("Set Vision", ::PlayerSetVision, "Default;zombie_last_stand;zombie_death", player);
                 self addOptSlider("Zombie Charms", ::ZombieCharms, "None;Orange;Green;Purple;Blue", player);
+                self addOptSlider("Custom Crosshairs", ::CustomCrosshairs, "Disable;+;@;x;o;> <;CF4_99;Extinct;ItsFebiven;Apparition;" + CleanName(player getName()), player);
+                self addOptBool(player.NoExplosiveDamage, "No Explosive Damage", ::NoExplosiveDamage, player);
                 self addOptIncSlider("Character Model Index", ::SetCharacterModelIndex, 0, player.characterIndex, 8, 1, player);
                 self addOptBool(player.LoopCharacterModelIndex, "Random Character Model Index", ::LoopCharacterModelIndex, player);
                 self addOptBool(player.ShootWhileSprinting, "Shoot While Sprinting", ::ShootWhileSprinting, player);
@@ -697,6 +698,51 @@ ZombieCharms(color, player)
     }
 
     player thread clientfield::set_to_player("eye_candy_render", color);
+}
+
+CustomCrosshairs(text, player)
+{
+    if(text == "Disable" && !Is_True(player.CustomCrosshairs))
+        return;
+    
+    if(text == "Disable" && Is_True(player.CustomCrosshairs))
+    {
+        if(isDefined(player.CustomCrosshairsUI))
+            player.CustomCrosshairsUI DestroyHud();
+        
+        player.CustomCrosshairs = BoolVar(player.CustomCrosshairs);
+        return;
+    }
+
+    player.CustomCrosshairsText = text;
+
+    if(Is_True(player.CustomCrosshairs))
+    {
+        if(isDefined(player.CustomCrosshairsUI))
+            player.CustomCrosshairsUI SetTextString(text);
+        
+        return;
+    }
+
+    player.CustomCrosshairs = true;
+    player thread CustomCrosshairsHandler();
+}
+
+CustomCrosshairsHandler()
+{
+    self endon("disconnect");
+
+    //The custom crosshairs needs to be hidden when the menu is open to conserve hud
+
+    while(Is_True(self.CustomCrosshairs))
+    {
+        if(!self isInMenu(true) && !isDefined(self.CustomCrosshairsUI))
+            self.CustomCrosshairsUI = self createText("default", 1.2, 1, self.CustomCrosshairsText, "CENTER", "CENTER", 0, 0, 1, level.RGBFadeColor);
+        else if(self isInMenu(true) && isDefined(self.CustomCrosshairsUI))
+            self.CustomCrosshairsUI DestroyHud();
+        
+        wait 0.1;
+    }
 }
 
 NoExplosiveDamage(player)

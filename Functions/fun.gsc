@@ -13,6 +13,7 @@ PopulateFunScripts(menu, player)
                 self addOpt("Audio Quotes", ::newMenu, "Sound/Music");
                 self addOpt("Hit Markers", ::newMenu, "Hit Markers");
                 self addOptSlider("Insta-Kill", ::PlayerInstaKill, "Disable;All;Melee", player);
+                self addOptSlider("Death Skull", ::SpawnDeathSkull, "Spawn;Delete All", player);
                 self addOptSlider("Mount Camera", ::PlayerMountCamera, "Disable;j_head;j_neck;j_spine4;j_spinelower;j_mainroot;pelvis;j_ankle_le;j_ankle_ri", player);
                 self addOptBool(player.DropCamera, "Drop Camera", ::PlayerDropCamera, player);
                 self addOptBool(player.DeadOpsView, "Dead Ops View", ::DeadOpsView, player);
@@ -26,6 +27,7 @@ PopulateFunScripts(menu, player)
                 self addOptBool(player.NukeNades, "Nuke Nades", ::NukeNades, player);
                 self addOptBool(player.CodJumper, "Cod Jumper", ::CodJumper, player);
                 self addOptBool(player.Jetpack, "Jetpack", ::Jetpack, player);
+                self addOptBool(player.HealthBar, "Health Bar", ::HealthBar, player);
                 self addOptBool(player.ClusterGrenades, "Cluster Grenades", ::ClusterGrenades, player);
                 self addOptBool(player.UnlimitedSpecialist, "Unlimited Specialist", ::UnlimitedSpecialist, player);
                 self addOptBool(player.ElectricFireCherry, "Electric Fire Cherry", ::ElectricFireCherry, player);
@@ -94,9 +96,13 @@ PopulateFunScripts(menu, player)
             if(!isDefined(player.ForceFieldSize))
                 player.ForceFieldSize = 250;
             
+            if(!isDefined(player.ForceFieldType))
+                player.ForceFieldType = "Invisible";
+            
             self addMenu("Force Field Options");
                 self addOptBool(player.ForceField, "Force Field", ::ForceField, player);
-                self addOptIncSlider("Force Field Size", ::ForceFieldSize, 250, player.ForceFieldSize, 500, 25, player);
+                self addOptIncSlider("Size", ::ForceFieldSize, 250, player.ForceFieldSize, 500, 25, player);
+                self addOptSlider("Type", ::ForceFieldType, "Invisible;Death Skulls;Light", player);
             break;
         
         default:
@@ -325,28 +331,122 @@ create_and_play_dialog(category, subcategory, player)
 
 ForceField(player)
 {
-    player endon("disconnect");
-
     player.ForceField = BoolVar(player.ForceField);
 
-    while(Is_True(player.ForceField))
+    if(Is_True(player.ForceField))
     {
-        zombies = GetAITeamArray(level.zombie_team);
+        player endon("disconnect");
 
-        for(a = 0; a < zombies.size; a++)
-            if(isDefined(zombies[a]) && Distance(player.origin, zombies[a].origin) <= player.ForceFieldSize && IsAlive(zombies[a]) && zombies[a] DamageConeTrace(player GetEye(), player) > 0.1)
+        if(!isDefined(player.ForceFieldEnts))
+            player.ForceFieldEnts = [];
+        
+        if(!player.ForceFieldEnts.size)
+        {
+            color = Pow(2, RandomInt(3));
+
+            if(!isDefined(player.ForceFieldLinker))
+                player.ForceFieldLinker = SpawnScriptModel(player.origin);
+            
+            player.ForceFieldLinker thread ForceFieldLinker();
+            player.ForceFieldLinker LinkTo(player);
+            
+            for(a = 0; a < 4; a++)
             {
-                zombies[a].ZombieFling = true;
-                zombies[a] DoDamage((zombies[a].health + 666), player.origin);
+                player.ForceFieldEnts[player.ForceFieldEnts.size] = SpawnScriptModel(player.origin + (Cos(a * 90) * 90, Sin(a * 90) * 90, 30), (player.ForceFieldType == "Death Skulls") ? level.zombie_powerups["insta_kill"].model_name : "tag_origin", (0, (a * 90), 0));
+                player.ForceFieldEnts[(player.ForceFieldEnts.size - 1)] clientfield::set("powerup_fx", Int(color));
+                player.ForceFieldEnts[(player.ForceFieldEnts.size - 1)] LinkTo(player.ForceFieldLinker);
+
+                if(player.ForceFieldType == "Invisible")
+                    player.ForceFieldEnts[(player.ForceFieldEnts.size - 1)] SetInvisibleToAll();
+            }
+        }
+
+        while(Is_True(player.ForceField))
+        {
+            radius = (player.ForceFieldType == "Invisible") ? player.ForceFieldSize : 90;
+            zombies = GetAITeamArray(level.zombie_team);
+
+            for(a = 0; a < zombies.size; a++)
+            {
+                if(!isDefined(zombies[a]) || !IsAlive(zombies[a]))
+                    continue;
+                
+                kill = false;
+
+                for(b = 0; b < player.ForceFieldEnts.size; b++)
+                {
+                    if(zombies[a] IsTouching(player.ForceFieldEnts[b]))
+                        kill = true;
+                }
+
+                if(Distance(player.origin, zombies[a].origin) <= radius && zombies[a] DamageConeTrace(player GetEye(), player) > 0.1 || kill)
+                {
+                    zombies[a].ZombieFling = true;
+                    zombies[a] DoDamage((zombies[a].health + 666), player.origin);
+                }
             }
 
-        wait 0.05;
+            wait 0.01;
+        }
+
+        if(isDefined(player.ForceFieldLinker))
+            player.ForceFieldLinker delete();
+        
+        if(isDefined(player.ForceFieldEnts) && player.ForceFieldEnts.size)
+        {
+            for(a = 0; a < player.ForceFieldEnts.size; a++)
+            {
+                if(isDefined(player.ForceFieldEnts[a]))
+                    player.ForceFieldEnts[a] delete();
+            }
+
+            player.ForceFieldEnts = [];
+        }
+    }
+}
+
+ForceFieldLinker()
+{
+    if(!isDefined(self))
+        return;
+    
+    while(isDefined(self))
+    {
+        self RotateYaw(360, 1.5);
+        wait 1.5;
     }
 }
 
 ForceFieldSize(num, player)
 {
+    if(player.ForceFieldType != "Invisible")
+        return self iPrintlnBold("^1ERROR: ^7This Force Field Type Doesn't Support Custom Sizes");
+    
     player.ForceFieldSize = num;
+}
+
+ForceFieldType(type, player)
+{
+    if(player.ForceFieldType == type)
+        return;
+    
+    player.ForceFieldType = type;
+
+    if(Is_True(player.ForceField) && isDefined(player.ForceFieldEnts) && player.ForceFieldEnts.size)
+    {
+        for(a = 0; a < player.ForceFieldEnts.size; a++)
+        {
+            if(isDefined(player.ForceFieldEnts[a]))
+            {
+                player.ForceFieldEnts[a] SetModel((player.ForceFieldType == "Death Skulls") ? level.zombie_powerups["insta_kill"].model_name : "tag_origin");
+                
+                if(type == "Invisible") //This will hide the power up fx that is applied to the spawned model
+                    player.ForceFieldEnts[a] SetInvisibleToAll();
+                else
+                    player.ForceFieldEnts[a] SetVisibleToAll();
+            }
+        }
+    }
 }
 
 Jetpack(player)
@@ -379,6 +479,67 @@ Jetpack(player)
             }
 
             wait 0.05;
+        }
+    }
+}
+
+HealthBar(player)
+{
+    player.HealthBar = BoolVar(player.HealthBar);
+
+    if(Is_True(player.HealthBar))
+    {
+        player endon("disconnect");
+
+        while(is_True(player.HealthBar))
+        {
+            if(!player isInMenu(true))
+            {
+                color = (player.health >= 35) ? divideColor((0 + ((player.maxHealth - player.health) * 8.5)), 255, 0) : divideColor(255, (player.health * 5), 0);
+                healthWidth = (player.health >= 200) ? 200 : player.health;
+                maxHealthWidth = (player.maxhealth >= 200) ? 200 : player.maxhealth;
+
+                if(!isDefined(player.HealthBarUI) || !player.HealthBarUI.size)
+                {
+                    health = player.health;
+                    player.HealthBarUI = [];
+
+                    player.HealthBarUI[0] = player createRectangle("LEFT", "CENTER", -407, 0, maxHealthWidth + 4, 19, (0, 0, 0), 1, 0.8, "white");
+                    player.HealthBarUI[1] = player createRectangle("LEFT", "CENTER", -405, 0, healthWidth, 17, color, 2, 1, "white");
+                    player.HealthBarUI[2] = player createText("default", 1, 3, healthWidth, "CENTER", "CENTER", (player.HealthBarUI[0].x + ((player.maxhealth + 4) / 2)), 0, 1, (1, 1, 1));
+                }
+                else
+                {
+                    if(player.HealthBarUI[0].width != maxHealthWidth)
+                        player.HealthBarUI[0] SetShaderValues(undefined, maxHealthWidth);
+                    
+                    if(player.HealthBarUI[1].color != color)
+                        player.HealthBarUI[1].color = color;
+                    
+                    if(player.HealthBarUI[1].width != healthWidth)
+                        player.HealthBarUI[1] SetShaderValues(undefined, healthWidth);
+
+                    player.HealthBarUI[2] SetValue(player.health);
+                }
+            }
+            else
+            {
+                if(isDefined(player.HealthBarUI) && player.HealthBarUI.size)
+                {
+                    destroyAll(player.HealthBarUI);
+                    player.HealthBarUI = [];
+                }
+            }
+
+            wait 0.01;
+        }
+    }
+    else
+    {
+        if(isDefined(player.HealthBarUI) && player.HealthBarUI.size)
+        {
+            destroyAll(player.HealthBarUI);
+            player.HealthBarUI = [];
         }
     }
 }
@@ -1435,6 +1596,97 @@ PowerUpMagnet(player)
 PlayerInstaKill(type, player)
 {
     player.PlayerInstaKill = (type != "Disable") ? type : undefined;
+}
+
+SpawnDeathSkull(action, player)
+{
+    switch(action)
+    {
+        case "Spawn":
+            if(!isDefined(player.DeathSkullEnts))
+                player.DeathSkullEnts = [];
+
+            linkedSkulls = [];
+            color = Pow(2, RandomInt(3));
+            linkerIndex = player.DeathSkullEnts.size;
+            player.DeathSkullEnts[player.DeathSkullEnts.size] = SpawnScriptModel(player.origin);
+            
+            for(a = 0; a < 4; a++)
+            {
+                player.DeathSkullEnts[player.DeathSkullEnts.size] = SpawnScriptModel(player.origin + (Cos(a * 90) * 35, Sin(a * 90) * 35, 45), level.zombie_powerups["insta_kill"].model_name, (0, (a * 90), 0));
+                player.DeathSkullEnts[(player.DeathSkullEnts.size - 1)] clientfield::set("powerup_fx", Int(color));
+                player.DeathSkullEnts[(player.DeathSkullEnts.size - 1)] LinkTo(player.DeathSkullEnts[linkerIndex]);
+                PlayFXOnTag(level._effect["tesla_bolt"], player.DeathSkullEnts[(player.DeathSkullEnts.size - 1)], "tag_origin");
+
+                linkedSkulls[linkedSkulls.size] = player.DeathSkullEnts[(player.DeathSkullEnts.size - 1)];
+            }
+
+            player.DeathSkullEnts[linkerIndex] thread DeathSkullLinker(linkedSkulls, player);
+            break;
+        
+        case "Delete All":
+            if(!isDefined(player.DeathSkullEnts) || !player.DeathSkullEnts.size)
+                return;
+            
+            for(a = 0; a < player.DeathSkullEnts.size; a++)
+                if(isDefined(player.DeathSkullEnts[a]))
+                    player.DeathSkullEnts[a] delete();
+            
+            player.DeathSkullEnts = [];
+            break;
+        
+        default:
+            break;
+    }
+}
+
+DeathSkullLinker(skulls, player)
+{
+    if(!isDefined(self))
+        return;
+    
+    self endon("death");
+    
+    while(isDefined(self))
+    {
+        self MoveZ(25, 5);
+        for(a = 0; a < 20; a++)
+        {
+            self RotateYaw(360, 0.25);
+            wait 0.25;
+        }
+        
+        for(a = 0; a < 5; a++)
+        {
+            foreach(skull in skulls)
+                skull SetInvisibleToAll();
+            
+            wait 0.1;
+
+            foreach(skull in skulls)
+                skull SetVisibleToAll();
+            
+            wait 0.1;
+        }
+
+        wait 0.5;
+        self MoveZ(-25, 0.1);
+
+        wait 0.1;
+        Earthquake(0.75, 2, self.origin, 255);
+        RadiusDamage(self.origin, 350, 999, 999, player);
+
+        if(isDefined(level._effect["raps_impact"]))
+            PlayFX(level._effect["raps_impact"], self.origin);
+        else if(isDefined(level._effect["dog_gib"]))
+            PlayFX(level._effect["dog_gib"], self.origin);
+        
+        PlayFX(level._effect["grenade_samantha_steal"], self.origin);
+        PlayFX(level._effect["poltergeist"], self.origin);
+        PlayFX("zombie/fx_powerup_nuke_zmb", self.origin);
+        
+        wait 1;
+    }
 }
 
 DisableEarningPoints(player)

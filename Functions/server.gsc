@@ -30,7 +30,6 @@ PopulateServerModifications(menu)
                 if(!IsVerkoMap())
                     self addOpt("Mystery Box Options", ::newMenu, "Mystery Box Options");
                 
-                self addOpt("Server Tweakables", ::newMenu, "Server Tweakables");
                 self addOpt("Change Map", ::newMenu, "Change Map");
                 self addOpt("Restart Game", ::ServerRestartGame);
             break;
@@ -183,6 +182,7 @@ PopulateServerModifications(menu)
                 self addOptIncSlider("Clip Size Multiplier", ::ServerSetClipSizeMultiplier, 1, 1, 10, 1);
                 self addOptIncSlider("Revive Trigger Radius", ::ServerSetReviveRadius, 0, GetDvarInt("revive_trigger_radius"), 1000, 25);
                 self addOptIncSlider("Last Stand Bleedout Time", ::ServerSetLastandTime, 0, GetDvarInt("player_lastStandBleedoutTime"), 1000, 1);
+                self addOptBool((level.zombie_vars["zombie_between_round_time"] == 0.1), "Fast Round Intermission", ::FastRoundIntermission);
                 self addOptBool(level.UpgradeWeaponWallbuys, "Upgrade Weapon Wallbuys", ::ServerUpgradeWeaponWallbuys);
                 self addOptBool(level.ServerMaxAmmoClips, "Max Ammo Powerups Fill Clips", ::ServerMaxAmmoClips);
                 self addOptBool(level.IncreasedDropRate, "Increased Power-Up Drop Rate", ::IncreasedDropRate);
@@ -1182,6 +1182,11 @@ ServerSetReviveRadius(radius)
 ServerSetLastandTime(time)
 {
     SetDvar("player_lastStandBleedoutTime", time);
+}
+
+FastRoundIntermission()
+{
+    level.zombie_vars["zombie_between_round_time"] = (level.zombie_vars["zombie_between_round_time"] == 0.1 ? level.roundIntermissionTime : 0.1);
 }
 
 EditPackAPunchPrice(price)

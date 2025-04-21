@@ -1,6 +1,6 @@
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.1.1
+    Version:              1.5.1.2
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -63,6 +63,33 @@
 
 
 ## Changelog
+<details>
+    <summary>
+        Version 1.5.1.2
+    </summary>
+    
+    - Added: Basic Scripts -- Custom Crosshairs has been added back
+    - Added: Fun Scripts -- Force Field Option -> Force Field Type ( Light / Death Skulls )
+    - Added: Fun Scripts -- Health Bar has been added back
+    - Added: Fun Scripts -- Death Skull ( Spawn / Delete All )
+    - Added: Zombie Options -- Zombie Death Sounds
+    - Added: Zombie Options -- Bodies Float -- All Dead Bodies Will Float Up
+    - Added: Server Tweakables -- Fast Round Intermission
+    - Added: Origins Script -- Damage orb as an option for staff quests
+    - Added: Labeled More Perk Names For Custom Maps / Perk Mods
+    - Added: Labeled Power-Ups With Proper Names
+
+    - Changed: Lowered scroller opacity for Native design
+    - Changed: Lowered banner opacity for Native design
+    - Changed: Reorganized some options
+    - Changed: Server Tweakables sub menu was moved from Server Modifications to Main Menu
+
+    - Fixed: Issue with Zodiac menu style scroller having a low opacity
+    - Fixed: Origins -- Lightning song quest -- if there was already any keys hit by players, they will be cleared before trying to complete the step
+    - Fixed: Origins -- If all players leave the crazy place while Apparition is completing the Lightning song step, it will stop running and reset
+    - Fixed: Origins -- If all players leave the crazy place while Apparition is completing the Fire cauldrons step, it will stop running and reset
+</details>
+
 <details>
     <summary>
         Version 1.5.1.1

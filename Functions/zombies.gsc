@@ -31,11 +31,13 @@ PopulateZombieOptions(menu)
                 self addOptBool(level.DisableZombiePush, "Disable Push", ::DisableZombiePush);
                 self addOptBool(level.ZombiesInvisibility, "Invisibility", ::ZombiesInvisibility);
                 self addOptBool((GetDvarString("g_ai") == "0"), "Freeze", ::FreezeZombies);
+                self addOptBool(level.ZombieDeathSounds, "Death Sounds", ::ZombieDeathSounds);
                 self addOptBool(level.ZombieProjectileVomiting, "Projectile Vomit", ::ZombieProjectileVomiting);
                 self addOptBool(level.DisappearingZombies, "Disappearing Zombies", ::DisappearingZombies);
                 self addOptBool(level.ExplodingZombies, "Exploding Zombies", ::ExplodingZombies);
                 self addOptBool(level.ZombieRagdoll, "Ragdoll After Death", ::ZombieRagdoll);
                 self addOptBool(level.StackZombies, "Stack Zombies", ::StackZombies);
+                self addOptBool((GetDvarVector("phys_gravity_dir") == (0, 0, -1)), "Bodies Float", ::BodiesFloat);
                 self addOpt("Make Crawlers", ::ForceZombieCrawlers);
                 self addOpt("Detach Heads", ::DetachZombieHeads);
                 self addOpt("Clear All Corpses", ::ServerClearCorpses);
@@ -679,6 +681,29 @@ FreezeZombies()
     SetDvar("g_ai", (GetDvarString("g_ai") == "1") ? "0" : "1");
 }
 
+ZombieDeathSounds()
+{
+    level.ZombieDeathSounds = BoolVar(level.ZombieDeathSounds);
+    zombies = GetAITeamArray(level.zombie_team);
+
+    if(Is_True(level.ZombieDeathSounds))
+        spawner::add_archetype_spawn_function("zombie", ::ZombieSpawnDisappearingZombie);
+    else
+        spawner::remove_global_spawn_function("zombie", ::ZombieSpawnDisappearingZombie);
+    
+    for(a = 0; a < zombies.size; a++)
+        if(isDefined(zombies[a]) && IsAlive(zombies[a]))
+            zombies[a].bgb_tone_death = Is_True(level.ZombieDeathSounds) ? true : undefined;
+}
+
+ZombieDeathSound()
+{
+    if(!isDefined(self))
+        return;
+    
+    self.bgb_tone_death = true;
+}
+
 DisappearingZombies()
 {
     level.DisappearingZombies = BoolVar(level.DisappearingZombies);
@@ -897,6 +922,11 @@ StackedZombieWatcher(top)
         if(Is_True(top.stacked))
             top.stacked = BoolVar(top.stacked);
     }
+}
+
+BodiesFloat()
+{
+    SetDvar("phys_gravity_dir", ((GetDvarVector("phys_gravity_dir") == (0, 0, -1)) ? (0, 0, 1) : (0, 0, -1)));
 }
 
 ZombiesDeathEffect()

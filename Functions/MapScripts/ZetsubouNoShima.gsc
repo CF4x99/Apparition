@@ -359,8 +359,6 @@ zone_occupied_func(zone_name)
     return false;
 }
 
-
-
 ZNS_ActivatePower()
 {
     if(Is_True(level.ActivatingPower))
@@ -373,7 +371,6 @@ ZNS_ActivatePower()
     curs = self getCursor();
     level.ActivatingPower = true;
     
-    //obviously the player needs a water bucket first.
     if(!self clientfield::get_to_player("bucket_held"))
     {
         self ZNSGrabWaterBucket();
@@ -382,18 +379,18 @@ ZNS_ActivatePower()
 
     foreach(source in GetEntArray("water_source", "targetname"))
         if(source.script_int == 1)
-            waterSource = source; //This will get the blue water
+            waterSource = source;
     
-    //they have the drains(local power generators) populated as power switches
     trigs = GetEntArray("use_elec_switch", "targetname");
 
     foreach(trig in trigs)
     {
-        if(level flag::get("power_on" + trig.script_int)) //we want to skip the trigger if the local power has already been turned on
+        if(level flag::get("power_on" + trig.script_int))
             continue;
         
-        self ZNSFillBucket(waterSource); //make sure we fill the players water bucket with irradiated water
+        self ZNSFillBucket(waterSource);
         wait 1;
+
         trig notify("trigger", self);
         wait 1;
     }

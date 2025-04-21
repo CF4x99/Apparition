@@ -1,12 +1,3 @@
-/*
-    TODO:
-        - Rank / Tallies
-        - Stored Weapon
-        - Disable Bank Withdrawl Fee
-        - Stop elevators from moving while using pack
-        - Golden elevator keys? idk about this one though -- there is a reason I didn't add it the first time around(impossible to do it like it's supposed to be done)
-*/
-
 PopulateDieRiseScripts(menu)
 {
     switch(menu)

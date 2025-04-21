@@ -16,24 +16,25 @@ RunMenuOptions(menu)
                     if(SessionModeIsOnlineGame())
                         self addOpt("Profile Management", ::newMenu, "Profile Management");
                     
+                    self addOpt("Model Manipulation", ::newMenu, "Model Manipulation");
                     self addOpt("Weaponry", ::newMenu, "Weaponry");
                     self addOpt("Bullet Menu", ::newMenu, "Bullet Menu");
                     self addOpt("Fun Scripts", ::newMenu, "Fun Scripts");
-                    self addOpt("Model Manipulation", ::newMenu, "Model Manipulation");
+                    
                     self addOpt("Aimbot Menu", ::newMenu, "Aimbot Menu");
 
                     if(self getVerification() > 3) //Admin
                     {
+                        self addOpt("Forge Options", ::newMenu, "Forge Options");
                         self addOpt("Advanced Scripts", ::newMenu, "Advanced Scripts");
 
                         if(ReturnMapName() != "Unknown")
                             self addOpt(ReturnMapName() + " Scripts", ::newMenu, ReturnMapName() + " Scripts");
-
-                        self addOpt("Forge Options", ::newMenu, "Forge Options");
                         
                         if(self getVerification() > 4) //Co-Host
                         {
                             self addOpt("Server Modifications", ::newMenu, "Server Modifications");
+                            self addOpt("Server Tweakables", ::newMenu, "Server Tweakables");
                             self addOpt("Zombie Options", ::newMenu, "Zombie Options");
                             self addOpt("Spawnables", ::newMenu, "Spawnables");
 
