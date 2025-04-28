@@ -43,6 +43,7 @@ RunMenuOptions(menu)
                             
                             self addOpt("Players Menu", ::newMenu, "Players");
                             self addOpt("All Players Menu", ::newMenu, "All Players");
+                            self addOpt("Game Modes", ::newMenu, "Game Modes");
                         }
                     }
                 }
@@ -78,6 +79,7 @@ RunMenuOptions(menu)
             break;
         
         case "Menu Customization":
+        case "Open Controls":
         case "Design Preferences":
         case "Main Design Color":
         case "Title Color":
@@ -275,15 +277,6 @@ RunMenuOptions(menu)
                 self addOptSlider("Clear Map Spawn Location", ::SetMapSpawn, "Player 1;Player 2;Player 3;Player 4", "Clear");
             break;
         
-        case "All Players":
-        case "All Players Verification":
-        case "All Players Profile Management":
-        case "Clan Tag Options All Players":
-        case "All Players Model Manipulation":
-        case "All Players Malicious Options":
-            self PopulateAllPlayerOptions(menu);
-            break;
-        
         case "Players":
             self addMenu("Players");
 
@@ -294,6 +287,21 @@ RunMenuOptions(menu)
                     
                     self addOpt("[^2" + player.verification + "^7]" + CleanName(player getName()), ::newMenu, "Options");
                 }
+            break;
+        
+        case "All Players":
+        case "All Players Verification":
+        case "All Players Profile Management":
+        case "Clan Tag Options All Players":
+        case "All Players Model Manipulation":
+        case "All Players Malicious Options":
+            self PopulateAllPlayerOptions(menu);
+            break;
+        
+        case "Game Modes":
+            self addMenu("Game Modes");
+                self addOptSlider("Sharpshooter", ::initSharpshooter, "Base Weapons;Upgraded Weapons;Both");
+                self addOptSlider("All The Weapons", ::initAllTheWeapons, "Base Weapons;Upgraded Weapons;Both");
             break;
         
         default:
@@ -395,6 +403,7 @@ MenuOptionsPlayer(menu, player)
         case "Fun Scripts":
         case "Sound/Music":
         case "Perk Jingles & Quotes":
+        case "Effects Man Options":
         case "Hit Markers":
         case "Force Field Options":
             self PopulateFunScripts(menu, player);

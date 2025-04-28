@@ -83,6 +83,20 @@ override_actor_killed(einflictor, attacker, idamage, smeansofdeath, weapon, vdir
 
         if(isDefined(attacker.hud_damagefeedback) && Is_True(attacker.ShowHitmarkers))
             attacker thread DamageFeedBack();
+        
+        if(Is_True(level.initAllTheWeapons))
+        {
+            baseWeapon = !IsVerkoMap() ? zm_weapons::get_base_weapon(weapon) : weapon;
+
+            if(baseWeapon == level.currentWeaponAllTheWeapons)
+                level.killsAllTheWeapons++;
+            
+            if(level.killsAllTheWeapons >= level.killGoalAllTheWeapons)
+            {
+                level.indexAllTheWeapons++;
+                level.killsAllTheWeapons = 0;
+            }
+        }
     }
     
     if(Is_True(self.explodingzombie) || Is_True(self.ZombieFling) || Is_True(level.ZombieRagdoll))

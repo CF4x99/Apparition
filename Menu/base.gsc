@@ -13,7 +13,7 @@ menuMonitor()
         {
             if(!self isInMenu(true))
             {
-                if(self AdsButtonPressed() && self MeleeButtonPressed() && Is_Alive(self))
+                if(self AreButtonsPressed(self.OpenControls) && Is_Alive(self))
                 {
                     self openMenu1(!Is_True(self.DisableMenuAnimations));
 
@@ -221,7 +221,7 @@ openMenu1(showAnim)
         self thread PlayerInfoHandler();
 }
 
-closeMenu1(showAnim)
+closeMenu1(showAnim = false)
 {
     self endon("disconnect");
 
@@ -864,9 +864,6 @@ BackMenu()
 
 isInMenu(iqm)
 {
-    if(!self hasMenu())
-        return false;
-    
     return Is_True(self.isInMenu) || isDefined(iqm) && iqm && Is_True(self.isInQuickMenu);
 }
 
@@ -1132,4 +1129,108 @@ BuildInfoString()
     //Make sure you add \n before every new string you add
 
     return strng;
+}
+
+AreButtonsPressed(btnArray)
+{
+    pressed = false;
+
+    foreach(buttonString in btnArray)
+    {
+        switch(buttonString)
+        {
+            case "+actionslot 1":
+                pressed = self ActionSlotOneButtonPressed();
+                break;
+            
+            case "+actionslot 2":
+                pressed = self ActionSlotTwoButtonPressed();
+                break;
+            
+            case "+actionslot 3":
+                pressed = self ActionSlotThreeButtonPressed();
+                break;
+            
+            case "+actionslot 4":
+                pressed = self ActionslotFourButtonPressed();
+                break;
+            
+            case "+melee":
+                pressed = self MeleeButtonPressed();
+                break;
+            
+            case "+speed_throw":
+                pressed = self AdsButtonPressed();
+                break;
+            
+            case "+attack":
+                pressed = self AttackButtonPressed();
+                break;
+            
+            case "+breath_sprint":
+                pressed = self SprintButtonPressed();
+                break;
+            
+            case "+activate":
+                pressed = self UseButtonPressed();
+                break;
+            
+            case "+frag":
+                pressed = self FragButtonPressed();
+                break;
+            
+            case "+stance":
+                pressed = self StanceButtonPressed();
+                break;
+            
+            default:
+                pressed = true;
+                break;
+        }
+
+        if(!pressed) //After checking either button, if this variable is still false, then the player didn't press the opening bind(s)
+            return false;
+    }
+
+    return true;
+}
+
+SetOpenButtons(buttonString)
+{
+    buttonIndex = (self.OpenControlIndex - 1);
+
+    if(!buttonIndex && buttonString == "None")
+        return self iPrintlnBold("^1ERROR: ^7Button 1 Can't Be Set To None");
+    
+    if(isInArray(self.OpenControls, buttonString) && buttonString != "None")
+        return self iPrintlnBold("^1ERROR: ^7This Button Is Already Being Used");
+    
+    if(buttonIndex && !isDefined(self.OpenControls[(buttonIndex - 1)])) //Makes sure the player has selected slots in the correct order
+        return self iPrintlnBold("^1ERROR: ^7You Need To Fill Bind Slot " + buttonIndex + " First");
+    
+    if(buttonString == "None") //If the player clears a slot, then we want to clear the following slots as well
+    {
+        saved = [];
+
+        for(a = 0; a < buttonIndex; a++)
+        {
+            if(a == buttonIndex)
+                break;
+            
+            saved[saved.size] = self.OpenControls[a];
+        }
+
+        self.OpenControls = saved;
+        self SaveMenuTheme();
+        return;
+    }
+    
+    self.OpenControls[buttonIndex] = buttonString;
+    self SaveMenuTheme();
+}
+
+OpenControlIndex(index)
+{
+    self.OpenControlIndex = index;
+    self RefreshMenu(self getCurrent(), self getCursor());
 }

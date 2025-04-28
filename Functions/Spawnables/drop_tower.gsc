@@ -21,7 +21,7 @@ SpawnDropTower()
 
     for(a = 0; a < 8; a++)
     {
-        towerSeats[towerSeats.size] = SpawnScriptModel(origin + (Cos(a * 4.5) * 75, Sin(a * 4.5) * 75, 5), seatModel, (0, (4.5 * a), 0), 0.01);
+        towerSeats[towerSeats.size] = SpawnScriptModel(origin + (Cos(a * (360 / 8)) * 75, Sin(a * (360 / 8)) * 75, 5), seatModel, (0, ((360 / 8) * a), 0), 0.01);
 
         if(isDefined(towerSeats[(towerSeats.size - 1)]) && seatModel != "defaultactor")
             towerSeats[(towerSeats.size - 1)] SetScale(6);

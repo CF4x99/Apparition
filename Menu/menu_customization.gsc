@@ -6,12 +6,36 @@ PopulateMenuCustomization(menu)
             self addMenu("Menu Customization");
                 self addOpt("Menu Credits", ::MenuCredits);
                 self addOptSlider("Menu Style", ::MenuStyle, level.menuName + ";Zodiac;Nautaremake;AIO;Native;Quick Menu");
+                self addOpt("Open Controls", ::newMenu, "Open Controls");
                 self addOpt("Design Preferences", ::newMenu, "Design Preferences");
                 self addOpt("Main Design Color", ::newMenu, "Main Design Color");
                 self addOpt("Title Color", ::newMenu, "Title Color");
                 self addOpt("Options Color", ::newMenu, "Options Color");
                 self addOpt("Scrolling Option Color", ::newMenu, "Scrolling Option Color");
                 self addOpt("Toggled Option Color", ::newMenu, "Toggled Option Color");
+            break;
+        
+        case "Open Controls":
+            if(!isDefined(self.OpenControlIndex))
+                self.OpenControlIndex = 1;
+            
+            buttons = Array("+actionslot 1", "+actionslot 2", "+actionslot 3", "+actionslot 4", "+melee", "+speed_throw", "+attack", "+breath_sprint", "+activate", "+frag", "+stance");
+
+            /*
+                I made this system allow any amount of buttons to be used to open Apparition(I limited it to 3 buttons)
+                No matter how many buttons you allow to be chosen, the players selection will save through games, and will show on the menu instructions as well.
+                Also, no button can be selected more than once, and Bind Slot 1 can never be set to 'None'
+            */
+
+            self addMenu("Open Controls");
+                self addOptIncSlider("Bind Slot", ::OpenControlIndex, 1, 1, 3, 1); //If you want to allow more buttons to be chosen, change the '3' to whatever number you want.
+                self addOpt("");
+
+                if(self.OpenControlIndex != 1)
+                    self addOptBool(!isDefined(self.OpenControls[(self.OpenControlIndex - 1)]), "None", ::SetOpenButtons, "None");
+
+                foreach(button in buttons)
+                    self addOptBool((isDefined(self.OpenControls[(self.OpenControlIndex - 1)]) && self.OpenControls[(self.OpenControlIndex - 1)] == button), "[{" + button + "}]", ::SetOpenButtons, button);
             break;
 
         case "Design Preferences":
@@ -476,7 +500,7 @@ MenuStyle(style)
             break;
         
         default:
-            self.menuX = -71;
+            self.menuX = -101;
             self.menuY = -185;
             self.TitleFontScale = (self.MenuStyle == "Native") ? 2 : 1.4;
             
@@ -496,11 +520,25 @@ MenuStyle(style)
 
 SaveMenuTheme()
 {
-    variables = Array("MenuStyle", "ToggleStyle", "MaxOptions", "menuX", "menuY", "ScrollingBuffer", "DisableMenuInstructions", "LargeCursor", "DisableQM", "DisableMenuAnimations", "DisableMenuSounds", "MainColor", "OptionsColor", "TitleColor", "ToggleTextColor", "ScrollingTextColor");
-    values    = Array(self.MenuStyle, self.ToggleStyle, self.MaxOptions, self.menuX, self.menuY, self.ScrollingBuffer, self.DisableMenuInstructions, self.LargeCursor, self.DisableQM, self.DisableMenuAnimations, self.DisableMenuSounds, self.MainColor, self.OptionsColor, self.TitleColor, self.ToggleTextColor, self.ScrollingTextColor);
+    variables = Array("MenuStyle", "ToggleStyle", "MaxOptions", "menuX", "menuY", "ScrollingBuffer", "DisableMenuInstructions", "LargeCursor", "DisableQM", "DisableMenuAnimations", "DisableMenuSounds", "MainColor", "OptionsColor", "TitleColor", "ToggleTextColor", "ScrollingTextColor", "OpenControls");
+    values    = Array(self.MenuStyle, self.ToggleStyle, self.MaxOptions, self.menuX, self.menuY, self.ScrollingBuffer, self.DisableMenuInstructions, self.LargeCursor, self.DisableQM, self.DisableMenuAnimations, self.DisableMenuSounds, self.MainColor, self.OptionsColor, self.TitleColor, self.ToggleTextColor, self.ScrollingTextColor, self.OpenControls);
     
     foreach(index, variable in variables)
-        self SetSavedVariable(variable, (variable == "MainColor" && Is_True(self.SmoothRainbowTheme)) ? "Rainbow" : isDefined(values[index]) ? values[index] : 0);
+    {
+        value = isDefined(values[index]) ? values[index] : 0;
+
+        if(variable == "OpenControls")
+        {
+            str = "";
+
+            foreach(indx, btn in self.OpenControls)
+                str += (indx < (self.OpenControls.size - 1)) ? btn + "," : btn;
+            
+            value = str;
+        }
+
+        self SetSavedVariable(variable, (variable == "MainColor" && Is_True(self.SmoothRainbowTheme)) ? "Rainbow" : value);
+    }
 }
 
 SetSavedVariable(variable, value)
@@ -519,7 +557,7 @@ GetSavedVariable(variable)
 LoadMenuVars()
 {
     self.MenuStyle          = level.menuName; //Current Choices: level.menuName, Zodiac, Nautaremake, AIO, Native, Quick Menu
-    self.menuX              = (self.MenuStyle == "Zodiac") ? 298 : (self.MenuStyle == "Quick Menu") ? 0 : -81;
+    self.menuX              = (self.MenuStyle == "Zodiac") ? 298 : (self.MenuStyle == "Quick Menu") ? 0 : -101; //Keep in mind that the position is close to the center to ensure the menu is visible on any resolution(use the menu position editor to place it where it best fits your liking)
     self.menuY              = (self.MenuStyle == "Quick Menu") ? -230 : -185;
     self.MaxOptions         = (self.MenuStyle == "Zodiac") ? 12 : (self.MenuStyle == "Quick Menu") ? 25 : 10;
     self.ScrollingBuffer    = 10;
@@ -529,6 +567,8 @@ LoadMenuVars()
     self.TitleColor         = (1, 1, 1);
     self.ToggleTextColor    = (0, 1, 0);
     self.ScrollingTextColor = (1, 1, 1);
+
+    self.OpenControls = Array("+speed_throw", "+melee");
     
     if(self.MenuStyle == "Zodiac" || self.MenuStyle == "Quick Menu")
         self.LargeCursor = true;
@@ -548,6 +588,12 @@ LoadMenuVars()
         self.DisableQM               = Int(self GetSavedVariable("DisableQM"));
         self.DisableMenuAnimations   = Int(self GetSavedVariable("DisableMenuAnimations"));
         self.DisableMenuSounds       = Int(self GetSavedVariable("DisableMenuSounds"));
+
+        self.OpenControls = [];
+        btnToks = StrTok(self GetSavedVariable("OpenControls"), ",");
+
+        foreach(btn in btnToks)
+            self.OpenControls[self.OpenControls.size] = btn;
 
         if(self GetSavedVariable("OptionsColor") == "Rainbow")
         {

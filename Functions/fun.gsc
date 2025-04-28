@@ -10,6 +10,7 @@ PopulateFunScripts(menu, player)
                 self addOpt("Earthquake", ::SendEarthquake, player);
                 self addOpt("Adventure Time", ::AdventureTime, player);
                 self addOpt("Force Field Options", ::newMenu, "Force Field Options");
+                self addOpt("Effects Man Options", ::newMenu, "Effects Man Options");
                 self addOpt("Audio Quotes", ::newMenu, "Sound/Music");
                 self addOpt("Hit Markers", ::newMenu, "Hit Markers");
                 self addOptSlider("Insta-Kill", ::PlayerInstaKill, "Disable;All;Melee", player);
@@ -41,6 +42,19 @@ PopulateFunScripts(menu, player)
                 self addOptBool(player.PowerUpMagnet, "Power-Up Magnet", ::PowerUpMagnet, player);
                 self addOptBool(player.DisableEarningPoints, "Disable Earning Points", ::DisableEarningPoints, player);
                 self addOptIncSlider("Points Multiplier", ::DamagePointsMultiplier, 1, 1, 10, 0.5, player);
+            break;
+        
+        case "Effects Man Options":
+            if(!isDefined(player.EffectManTag))
+                player.EffectManTag = "j_head";
+
+            self addMenu("Effects Man Options");
+                self addOptBool(!isDefined(player.EffectMan), "Disable", ::DisableEffectMan, player);
+                self addOptSlider("Tag", ::SetEffectManTag, "j_head;j_neck;j_spine4;j_spinelower;j_mainroot;pelvis;j_ankle_ri;j_ankle_le", player);
+                self addOpt("");
+
+                for(a = 0; a < level.MenuEffects.size; a++)
+                    self addOptBool((isDefined(player.SavedFX) && player.SavedFX == level._effect[level.MenuEffects[a]]), CleanString(level.MenuEffects[a]), ::EffectMan, level._effect[level.MenuEffects[a]], player);
             break;
         
         case "Hit Markers":
@@ -121,6 +135,57 @@ PopulateFunScripts(menu, player)
             }
             break;
     }
+}
+
+EffectMan(fx, player)
+{
+    player notify("EndEffectMan");
+    player endon("EndEffectMan");
+    player endon("disconnect");
+
+    player.EffectMan = true;
+
+    if(isDefined(player.fxent))
+        player.fxent delete();
+
+    wait 0.05;
+    player.SavedFX = fx;
+    player.SavedFXTag = player.EffectManTag;
+
+    while(isDefined(player.EffectMan))
+    {
+        player.fxent = SpawnFX(player.SavedFX, player GetTagOrigin(player.SavedFXTag));
+
+        if(isDefined(player.fxent))
+            TriggerFX(player.fxent);
+        wait 0.1;
+
+        if(isDefined(player.fxent))
+            player.fxent delete();
+
+        wait 0.2;
+    }
+}
+
+SetEffectManTag(tag, player)
+{
+    player.EffectManTag = tag;
+    player.EffectMan = undefined;
+
+    if(isDefined(player.SavedFX))
+        player thread EffectMan(player.SavedFX, player);
+}
+
+DisableEffectMan(player)
+{
+    player notify("EndEffectMan");
+    player.EffectMan = undefined;
+
+    if(isDefined(player.fxent))
+        player.fxent delete();
+
+    wait 0.05;
+    player.SavedFX = undefined;
 }
 
 ElectricFireCherry(player)

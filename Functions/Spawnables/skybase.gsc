@@ -158,6 +158,8 @@ GetSpawnableBottle()
     for(a = 0; a < level.MenuModels.size; a++)
         if(IsSubStr(level.MenuModels[a], "perk_bottle"))
             return level.MenuModels[a];
+    
+    return level.zombie_powerups["insta_kill"].model_name; //If there is no perk bottle found on the map, then we will just use the insta-kill model
 }
 
 SpawnSkybaseTeleporter()

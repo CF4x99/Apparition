@@ -50,7 +50,7 @@ addOptIncSlider(name, fnc = ::EmptyFunction, min = 0, start = 0, max = 1, increm
     option.input4    = input4;
     option.incslider = true;
     option.min       = min;
-    option.max       = max;
+    option.max       = (max < min) ? min : max;
 
     option.start = (start > max || start < min) ? (start > max) ? max : min : start;
     option.increment = increment;

@@ -1010,7 +1010,7 @@ CompleteLightningSong()
 
     order = Array(11, 7, 3, 7, 4, 2, 9, 5, 3); //The order is always the same
 
-    level notify(#"piano_keys_stop");
+    level notify("piano_keys_stop");
 	level.a_piano_keys_playing = [];
     wait 4;
 

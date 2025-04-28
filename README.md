@@ -1,6 +1,13 @@
+    ░█████╗░██████╗░██████╗░░█████╗░██████╗░██╗████████╗██╗░█████╗░███╗░░██╗
+    ██╔══██╗██╔══██╗██╔══██╗██╔══██╗██╔══██╗██║╚══██╔══╝██║██╔══██╗████╗░██║
+    ███████║██████╔╝██████╔╝███████║██████╔╝██║░░░██║░░░██║██║░░██║██╔██╗██║
+    ██╔══██║██╔═══╝░██╔═══╝░██╔══██║██╔══██╗██║░░░██║░░░██║██║░░██║██║╚████║
+    ██║░░██║██║░░░░░██║░░░░░██║░░██║██║░░██║██║░░░██║░░░██║╚█████╔╝██║░╚███║
+    ╚═╝░░╚═╝╚═╝░░░░░╚═╝░░░░░╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░░░╚═╝░░░╚═╝░╚════╝░╚═╝░░╚══╝
+
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.1.2
+    Version:              1.5.1.3
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -8,6 +15,10 @@
 
     Menu Source & Current Update: https://github.com/CF4x99/Apparition
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
+
+    PLEASE KEEP IN MIND THE MENU IS CLOSE TO THE CENTER TO MAKE SURE IT IS VISIBLE FOR ANY SCREEN RESOLUTION
+    YOU CAN ALWAYS CHANGE IT IN 'menu_customization.gsc' WHERE ALL OF THE DEFAULT MENU VARIABLES ARE SET
+    OR YOU CAN JUST USE THE MENU POSITION EDITOR WHILE IN GAME TO SET A CUSTOM POSITION THAT YOU LIKE
 
     NOTE:
         I Can Without A Doubt Say Apparition Will Be Unmatched In Every Possible Way.
@@ -42,7 +53,7 @@
     Map EE Options:
         I have created scripts to complete the EE's for the classic maps that have smaller EE's.
         As for the bigger maps that have bigger and more complex EE's, I have made scripts to make completing the EE's, a lot easier.
-        The EE scripts will complete steps properly, not just set flags/variables tricking the game into thinking the step is completed, when it actually hasn't(unlike other "developers")
+        The EE scripts will complete steps properly, not just set flags/variables tricking the game into thinking the step has been completed, when it actually hasn't(unlike other "developers")
         This will prevent any issues with crashes/conflictions later on while continuing regular gameplay/playing through other parts of the EE.
 
         Where to find options that help completing EE's:
@@ -63,6 +74,27 @@
 
 
 ## Changelog
+<details>
+    <summary>
+        Version 1.5.1.3
+    </summary>
+    
+    - Added: Option to change the controls to open Apparition -- You can select up to 3(My system allows any amount..Decided to limit to 3 though) -- This will save between games and show in the menu instructions too
+    - Added: Pre-Set teleport locations for Mob Of The Dead, Tunnel Survivel, Bus Depot Survival, and Die Rise
+    - Added: Game Mode -- Sharpshooter -- All players will be given a new weapon every 30 seconds -- Try to survive as long as you can(Should work on any custom map as well)
+    - Added: Game Mode -- All The Weapons -- All players must work together to kill 15 zombies with each given weapon(you will be given a new weapon every 15 kills)
+    - Added: Fun Scripts -- Effect Man Options
+
+    - Fixed: Verification -- Setting the players verification to None while they're in the menu wouldn't destroy the menu hud -- Issue stems from isInMenu returning false if the players verification is none
+    - Fixed: Effect Lists -- Removed duplicate effects -- Some effects get added to the global effect array with different array key names, but the same effect
+    - Fixed: Drop Tower -- The math for spawning the seats was not correct
+    - Fixed: Spawnables -- Issue with a notify when deleting/dismantling spawnables
+    
+    - Changed: Default menu X position to -101(was -81) -- Keep in mind that the position is close to the center to ensure the menu is visible on any resolution(use the menu position editor to place it where it best fits your liking)
+    - Changed: Skybase -- If the perk bottle model can't be found on the map, then it will use the insta-kill model as a fall back
+    - Changed: Spawnables -- Spawnables should be usable on most maps that have perk machines -- it won't be visually appealing on all maps, but it should be able to find a usable model on maps it couldn't before
+</details>
+
 <details>
     <summary>
         Version 1.5.1.2

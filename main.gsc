@@ -1,7 +1,14 @@
 /*
+    ░█████╗░██████╗░██████╗░░█████╗░██████╗░██╗████████╗██╗░█████╗░███╗░░██╗
+    ██╔══██╗██╔══██╗██╔══██╗██╔══██╗██╔══██╗██║╚══██╔══╝██║██╔══██╗████╗░██║
+    ███████║██████╔╝██████╔╝███████║██████╔╝██║░░░██║░░░██║██║░░██║██╔██╗██║
+    ██╔══██║██╔═══╝░██╔═══╝░██╔══██║██╔══██╗██║░░░██║░░░██║██║░░██║██║╚████║
+    ██║░░██║██║░░░░░██║░░░░░██║░░██║██║░░██║██║░░░██║░░░██║╚█████╔╝██║░╚███║
+    ╚═╝░░╚═╝╚═╝░░░░░╚═╝░░░░░╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░░░╚═╝░░░╚═╝░╚════╝░╚═╝░░╚══╝
+
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.1.2
+    Version:              1.5.1.3
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -9,6 +16,10 @@
 
     Menu Source & Current Update: https://github.com/CF4x99/Apparition
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
+
+    PLEASE KEEP IN MIND THE MENU IS CLOSE TO THE CENTER TO MAKE SURE IT IS VISIBLE FOR ANY SCREEN RESOLUTION
+    YOU CAN ALWAYS CHANGE IT IN 'menu_customization.gsc' WHERE ALL OF THE DEFAULT MENU VARIABLES ARE SET
+    OR YOU CAN JUST USE THE MENU POSITION EDITOR WHILE IN GAME TO SET A CUSTOM POSITION THAT YOU LIKE
 
     NOTE:
         I Can Without A Doubt Say Apparition Will Be Unmatched In Every Possible Way.
@@ -43,7 +54,7 @@
     Map EE Options:
         I have created scripts to complete the EE's for the classic maps that have smaller EE's.
         As for the bigger maps that have bigger and more complex EE's, I have made scripts to make completing the EE's, a lot easier.
-        The EE scripts will complete steps properly, not just set flags/variables tricking the game into thinking the step is completed, when it actually hasn't(unlike other "developers")
+        The EE scripts will complete steps properly, not just set flags/variables tricking the game into thinking the step has been completed, when it actually hasn't(unlike other "developers")
         This will prevent any issues with crashes/conflictions later on while continuing regular gameplay/playing through other parts of the EE.
 
         Where to find options that help completing EE's:
@@ -225,7 +236,7 @@ DefineOnce()
     level.DefineOnce = true;
     
     level.menuName    = "Apparition";
-    level.menuVersion = "1.5.1.2";
+    level.menuVersion = "1.5.1.3";
     level.MenuStatus  = Array("Bot", "None", "Verified", "VIP", "Admin", "Co-Host", "Host", "Developer");
     level.colorNames  = Array("Ciper Purple", "xbOnline Blue", "Skyblue", "Pink", "Green", "Brown", "Blue", "Red", "Orange", "Purple", "Cyan", "Yellow", "Black", "White");
     level.colors      = Array(100, 0, 100, 57, 152, 254, 135, 206, 250, 255, 110, 255, 0, 255, 0, 101, 67, 33, 0, 0, 255, 255, 0, 0, 255, 128, 0, 100, 0, 255, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255);
@@ -326,19 +337,19 @@ DefineMenuArrays()
                 break;
             
             case "Mob Of The Dead":
-                locations = [];
+                locations = ["Spawn", (-2185.649, 5548.136, 2688.125), "Pack 'a' Punch(Bridge)", (-10931.269, 31045.974, 3800.125), "Roof", (115.627, 4876.537, 3052.125), "Prison", (-2744.295, 3911.298, 2792.125)];
                 break;
             
             case "Die Rise":
-                locations = [];
+                locations = ["Spawn", (-880.691, 362.408, 1808.125), "Power", (460.962, -1024.275, -287.875), "Bank Showers", (0.08, -394.350, -287.875), "Prison", (-200.960, -1127.386, 944.125)];
                 break;
             
             case "Bus Depot":
-                locations = [];
+                locations = ["Spawn", (1444.05, 4467.5, 0.125), "Power", (1272.86, 4339.175, -151.625), "Pack 'a' Punch", (3121.84, 1892.9, 21.812), "Prison", (-484.175, 260.947, 0.125)];
                 break;
             
             case "Tunnel":
-                locations = [];
+                locations = ["Spawn", (1490.38, -2368.4, 275.8), "Power", (3952.9, -1431.5, 72.125), "Pack 'a' Punch", (1444.7, -449.98, 103.19), "Prison", (2175, -2836.6, 320.125)];
                 break;
         }
 
@@ -353,6 +364,7 @@ DefineMenuArrays()
         if(ents[a].model != "tag_origin" && ents[a].model != "" && !IsSubStr(ents[a].model, "collision_"))
             array::add(level.MenuModels, ents[a].model, 0);
     
+    tempEffects = [];
     level.MenuEffects = [];
     fxs = GetArrayKeys(level._effect);
 
@@ -361,10 +373,11 @@ DefineMenuArrays()
         if(!isDefined(fxs[a]))
             continue;
         
-        if(IsSubStr(fxs[a], "step_") || IsSubStr(fxs[a], "fall_") || IsSubStr(fxs[a], "tesla_viewmodel") || isInArray(level.MenuEffects, fxs[a]))
+        if(IsSubStr(fxs[a], "step_") || IsSubStr(fxs[a], "fall_") || IsSubStr(fxs[a], "tesla_viewmodel") || isInArray(level.MenuEffects, fxs[a]) || isInArray(tempEffects, level._effect[fxs[a]]))
             continue;
         
         level.MenuEffects[level.MenuEffects.size] = fxs[a];
+        tempEffects[tempEffects.size] = level._effect[fxs[a]];
     }
     
     level.customBoxWeapons = [];
@@ -540,7 +553,12 @@ MenuInstructionsDisplay()
                 {
                     if(!self isInMenu(true))
                     {
-                        str = "[{+speed_throw}] & [{+melee}]: Open " + level.menuName;
+                        str = "";
+
+                        foreach(index, btn in self.OpenControls)
+                            str += (index < (self.OpenControls.size - 1)) ? "[{" + btn + "}] & " : "[{" + btn + "}]";
+                        
+                        str +=": Open " + level.menuName;
 
                         if(!Is_True(self.DisableQM))
                             str += "\n[{+speed_throw}] & [{+smoke}]: Open Quick Menu";

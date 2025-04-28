@@ -2,7 +2,7 @@ setVerification(a, player, msg)
 {
     if(player isHost() || player isDeveloper() || player getVerification() == a || player == self || player util::is_bot())
     {
-        if(isDefined(msg) && msg)
+        if(Is_True(msg))
         {
             if(player util::is_bot())
                 return self iPrintlnBold("^1ERROR: ^7You Can't Change The Verification Of A Bot");
@@ -25,13 +25,13 @@ setVerification(a, player, msg)
     
     player.verification = level.MenuStatus[a];
     player iPrintlnBold("Your Status Has Been Set To ^2" + player.verification);
-    player.menuParent = [];
     
     if(player isInMenu(true))
         player closeMenu1();
     
     player.currentMenu = "";
     player.menuCurs["Main"] = 0;
+    player.menuParent = [];
     
     player notify("endMenuMonitor");
 

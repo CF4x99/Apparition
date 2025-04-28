@@ -136,7 +136,7 @@ SpawnSystem(action, type, func)
 
 DeleteSpawnable(spawn, type)
 {
-    level notify(type + "_Stop");
+    level notify(spawn + "_Stop");
 
     if(isLargeSpawnable(spawn))
         foreach(player in level.players)
@@ -271,7 +271,13 @@ StopRidingSpawnable(type, seat)
 
 GetSpawnableBaseModel(favor)
 {
+    //This will be a fallback for maps that don't have the favored models for spawnables
     for(a = 0; a < level.MenuModels.size; a++)
+        if(isDefined(level.MenuModels[a]) && IsSubStr(level.MenuModels[a], "vending_") && !IsSubStr(level.MenuModels[a], "upgrade") && !IsSubStr(level.MenuModels[a], "packapunch"))
+            model = level.MenuModels[a];
+    
+    for(a = 0; a < level.MenuModels.size; a++)
+    {
         if(IsSubStr(level.MenuModels[a], "vending_doubletap") || IsSubStr(level.MenuModels[a], "vending_sleight") || IsSubStr(level.MenuModels[a], "vending_three_gun"))
         {
             model = level.MenuModels[a];
@@ -279,6 +285,12 @@ GetSpawnableBaseModel(favor)
             if(isDefined(favor) && isDefined(model) && (model == favor || IsSubStr(model, favor)))
                 return model;
         }
+    }
+
+    if(!isDefined(model)) //If a model still isn't found after this, then spawnbales won't be available for the map
+        for(a = 0; a < level.MenuModels.size; a++)
+            if(isDefined(level.MenuModels[a]) && IsSubStr(level.MenuModels[a], "machine"))
+                model = level.MenuModels[a];
 
     return model;
 }
