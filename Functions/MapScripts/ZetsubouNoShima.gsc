@@ -317,17 +317,33 @@ ZNSReturnWaterType(sourceint)
 //Luckily the rest of the Controllable Spider logic is handled in the _zm_weap_controllable_spider.gsc scripts. So these are the only scripts that needed to be ripped from the files.
 GiveControllableSpider()
 {
-    if(!self HasWeapon(level.w_controllable_spider))
+    w_weapon = GetWeapon("controllable_spider");
+
+    if(!self HasWeapon(w_weapon))
     {
-        self thread zm_placeable_mine::setup_for_player(level.w_controllable_spider, "hudItems.showDpadRight_Spider");
-        self GiveMaxAmmo(level.w_controllable_spider);
+        self thread zm_placeable_mine::setup_for_player(w_weapon, "hudItems.showDpadRight_Spider");
+        self GiveMaxAmmo(w_weapon);
 
         if(!level flag::get("controllable_spider_equipped"))
         {
             level flag::set("controllable_spider_equipped");
             level.zone_occupied_func = ::zone_occupied_func;
+
+            level.closest_player_targets_override = ::closest_player_targets_override;
+            level.get_closest_valid_player_override = ::closest_player_targets_override;
         }
     }
+}
+
+closest_player_targets_override()
+{
+    a_targets = GetPlayers();
+
+    for(a = 0; a < a_targets.size; a++)
+        if(isDefined(a_targets[a].var_59bd3c5a))
+            a_targets[a] = a_targets[a].var_59bd3c5a;
+
+    return a_targets;
 }
 
 zone_occupied_func(zone_name)
@@ -345,13 +361,13 @@ zone_occupied_func(zone_name)
         {
             if(isDefined(players[j].var_59bd3c5a))
             {
-                if(players[j].var_59bd3c5a IsTouching(zone.volumes[i]) && !players[j].var_59bd3c5a.sessionstate == "spectator")
+                if(players[j].var_59bd3c5a IsTouching(zone.volumes[i]) && players[j].var_59bd3c5a.sessionstate != "spectator")
                     return true;
 
                 continue;
             }
 
-            if(players[j] IsTouching(zone.volumes[i]) && !players[j].sessionstate == "spectator")
+            if(players[j] IsTouching(zone.volumes[i]) && players[j].sessionstate != "spectator")
                 return true;
         }
     }
@@ -468,7 +484,7 @@ ZNS_PaPQuest(step)
             break;
     }
 
-    while(level flag::get("valve" + step + "_found"))
+    while(!level flag::get("valve" + step + "_found"))
         wait 0.1;
     
     self RefreshMenu(menu, curs);

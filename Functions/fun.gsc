@@ -32,6 +32,7 @@ PopulateFunScripts(menu, player)
                 self addOptBool(player.ClusterGrenades, "Cluster Grenades", ::ClusterGrenades, player);
                 self addOptBool(player.UnlimitedSpecialist, "Unlimited Specialist", ::UnlimitedSpecialist, player);
                 self addOptBool(player.ElectricFireCherry, "Electric Fire Cherry", ::ElectricFireCherry, player);
+                self addOptBool(player.HumanCentipede, "Human Centipede", ::HumanCentipede, player);    
                 self addOptBool(player.ShootPowerUps, "Shoot Power-Ups", ::ShootPowerUps, player);
                 self addOptBool(player.RocketRiding, "Rocket Riding", ::RocketRiding, player);
                 self addOptBool(player.GrapplingGun, "Grappling Gun", ::GrapplingGun, player);
@@ -70,9 +71,9 @@ PopulateFunScripts(menu, player)
                 self addOpt("");
 
                 for(a = 0; a < level.colorNames.size; a++)
-                    self addOptBool((IsVec(self.HitMarkerColor) && self.HitMarkerColor == divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)])), level.colorNames[a], ::HitMarkerColor, divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)]), player);
+                    self addOptBoolPreview((IsVec(self.HitMarkerColor) && self.HitMarkerColor == divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)])), "white", divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)]), level.colorNames[a], ::HitMarkerColor, divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)]), player);
                 
-                self addOptBool((IsString(self.HitMarkerColor) && self.HitMarkerColor == "Rainbow"), "Smooth Rainbow", ::HitMarkerColor, "Rainbow", player);
+                self addOptBoolPreview((IsString(self.HitMarkerColor) && self.HitMarkerColor == "Rainbow"), "white", "Rainbow", "Smooth Rainbow", ::HitMarkerColor, "Rainbow", player);
             break;
         
         case "Sound/Music":
@@ -383,6 +384,54 @@ weapon_replaced_monitor(weapon)
     }
 }
 
+HumanCentipede(player)
+{
+    player.HumanCentipede = BoolVar(player.HumanCentipede);
+
+    if(Is_True(player.HumanCentipede))
+    {
+        player.HumanCentipedeArray = [];
+        player.HumanCentipedeClone = 0;
+        
+        while(Is_True(player.HumanCentipede))
+        {
+            if(IsAlive(player))
+            {
+                player.HumanCentipedeArray[player.HumanCentipedeClone] = player ClonePlayer(999999, player GetCurrentWeapon(), player);
+                player.HumanCentipedeArray[player.HumanCentipedeClone] StartRagDoll(1);
+                
+                player.HumanCentipedeClone++;
+                
+                if(player.HumanCentipedeArray.size >= 8)
+                {
+                    if(player.HumanCentipedeClone >= 8)
+                        player.HumanCentipedeClone = 0;
+                    
+                    if(isDefined(player.HumanCentipedeArray[player.HumanCentipedeClone]))
+                        player.HumanCentipedeArray[player.HumanCentipedeClone] delete();
+                }
+            }
+            else
+            {
+                if(player.HumanCentipedeArray.size)
+                {
+                    foreach(clone in player.HumanCentipedeArray)
+                        if(isDefined(clone))
+                            clone delete();
+                }
+            }
+            
+            wait 0.01;
+        }
+    }
+    else
+    {
+        foreach(clone in player.HumanCentipedeArray)
+            if(isDefined(clone))
+                clone delete();
+    }
+}
+
 PlayPerkMachineSound(sound, player)
 {
     player notify("sndDone");
@@ -569,20 +618,23 @@ HealthBar(player)
                     health = player.health;
                     player.HealthBarUI = [];
 
-                    player.HealthBarUI[0] = player createRectangle("LEFT", "CENTER", -407, 0, maxHealthWidth + 4, 19, (0, 0, 0), 1, 0.8, "white");
-                    player.HealthBarUI[1] = player createRectangle("LEFT", "CENTER", -405, 0, healthWidth, 17, color, 2, 1, "white");
-                    player.HealthBarUI[2] = player createText("default", 1, 3, healthWidth, "CENTER", "CENTER", (player.HealthBarUI[0].x + ((player.maxhealth + 4) / 2)), 0, 1, (1, 1, 1));
+                    player.HealthBarUI[0] = player createRectangle("LEFT", "CENTER", -100, -200, (maxHealthWidth + 4), 19, (0, 0, 0), 1, 0.8, "white");
+                    player.HealthBarUI[1] = player createRectangle("LEFT", "CENTER", (player.HealthBarUI[0].x + 2), player.HealthBarUI[0].y, healthWidth, 17, color, 2, 1, "white");
+                    player.HealthBarUI[2] = player createText("default", 1.2, 3, healthWidth, "CENTER", "CENTER", (player.HealthBarUI[0].x + ((player.maxhealth + 4) / 2)), player.HealthBarUI[0].y, 1, (1, 1, 1));
                 }
                 else
                 {
                     if(player.HealthBarUI[0].width != maxHealthWidth)
-                        player.HealthBarUI[0] SetShaderValues(undefined, maxHealthWidth);
+                        player.HealthBarUI[0] SetShaderValues(undefined, maxHealthWidth + 4);
                     
                     if(player.HealthBarUI[1].color != color)
                         player.HealthBarUI[1].color = color;
                     
                     if(player.HealthBarUI[1].width != healthWidth)
                         player.HealthBarUI[1] SetShaderValues(undefined, healthWidth);
+                    
+                    if(player.HealthBarUI[2].x != (player.HealthBarUI[0].x + ((player.maxhealth + 4) / 2)))
+                        player.HealthBarUI[2].x = (player.HealthBarUI[0].x + ((player.maxhealth + 4) / 2));
 
                     player.HealthBarUI[2] SetValue(player.health);
                 }

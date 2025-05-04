@@ -981,6 +981,7 @@ RGBFade()
     
     RGBValues = [];
     level.RGBFadeColor = ((RandomInt(250) / 255), 0, 0);
+    rate = 1;
     
     while(1)
     {
@@ -988,11 +989,21 @@ RGBFade()
         {
             while((level.RGBFadeColor[a] * 255) < 255)
             {
-                RGBValues[a] = ((level.RGBFadeColor[a] * 255) + 1);
+                RGBValues[a] = ((level.RGBFadeColor[a] * 255) + rate);
+
+                if(RGBValues[a] > 255)
+                    RGBValues[a] = 255;
 
                 for(b = 0; b < 3; b++)
+                {
                     if(b != a)
-                        RGBValues[b] = (level.RGBFadeColor[b] > 0) ? ((level.RGBFadeColor[b] * 255) - 1) : 0;
+                    {
+                        RGBValues[b] = (level.RGBFadeColor[b] > 0) ? ((level.RGBFadeColor[b] * 255) - rate) : 0;
+
+                        if(RGBValues[b] < 0)
+                            RGBValues[b] = 0;
+                    }
+                }
                 
                 level.RGBFadeColor = divideColor(RGBValues[0], RGBValues[1], RGBValues[2]);
                 wait 0.01;

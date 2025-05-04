@@ -7,7 +7,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.1.3
+    Version:              1.5.1.4
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -74,6 +74,27 @@
 
 
 ## Changelog
+<details>
+    <summary>
+        Version 1.5.1.4
+    </summary>
+
+    - Added: Menu Structure -- Option Shader Previews -- Shows a preview of the color/shader based on the option
+    - Added: Fun Scripts -- Human Centipede
+    - Added: Server Tweakables -- 'Enabled Power-Ups' lists all the included power-ups and allows you to enable/disable them
+    - Added: Zombie Options -- Remove zombie eyes
+
+    - Fixed: Fun Scripts -- Entering Fun Scripts Would Disable Earning Points lol
+    - Fixed: Zetsubou No Shima Scripts -- Controllable Spider -- Bad checks  in the 'zone_occupied_func' override would completely disable usables
+    - Fixed: Zetsubou No Shima Scripts -- Bug with the menu not refreshing when grabbing Pack 'a' Punch Quest Parts -- Caused by a bad flag check
+    - Fixed: Fun Scripts -- Health Bar width and positioning issues
+
+    - Improved: Mode Common Scripts -- Improved weapon monitoring for game modes
+    
+    - Changed: Game Mode Common Scripts -- ModeWeaponMonitor while loop now uses a waittill instead of constantly looping with no trigger(Don't know why I didn't do this originally)
+    - Changed: Fun Scripts -- Health Bar position to top center
+</details>
+
 <details>
     <summary>
         Version 1.5.1.3

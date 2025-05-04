@@ -8,17 +8,22 @@ ModeWeaponMonitor(weaponArray)
 
     while(1)
     {
+        self waittill("weapon_change", newWeapon);
+        wait 0.1; //this buffer should help avoid the death machine powerup icon from sticking
+
         keepWeapon = Is_True(level.initSharpshooter) ? weaponArray[level.indexSharpshooter] : level.currentWeaponAllTheWeapons;
 
-        foreach(weapon in self GetWeaponsList(1))
+        if(newWeapon != keepWeapon)
         {
-            if(!isDefined(weapon) || weapon == level.weaponnone || weapon == keepWeapon)
-                continue;
-            
-            wait 1; //This should fix the issue with the death machine powerup icon sticking
-            self TakeWeapon(weapon);
-        }
+            self TakeWeapon(newWeapon);
 
-        wait 0.1;
+            if(!self HasWeapon(keepWeapon))
+            {
+                keepWeapon = self zm_weapons::weapon_give(keepWeapon, false, false, true);
+                self GiveStartAmmo(newWeapon);
+            }
+            
+            self SwitchToWeapon(keepWeapon);
+        }
     }
 }

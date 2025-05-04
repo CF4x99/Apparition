@@ -20,6 +20,23 @@ addOpt(name, fnc = ::EmptyFunction, input1, input2, input3, input4)
     self.menuStructure[self.menuStructure.size] = option;
 }
 
+addOptPreview(shader = "white", color = (0, 0, 0), name, fnc = ::EmptyFunction, input1, input2, input3, input4)
+{
+    option = SpawnStruct();
+    
+    option.name   = name;
+    option.func   = fnc;
+    option.shader = shader;
+    option.color  = color;
+    option.input1 = input1;
+    option.input2 = input2;
+    option.input3 = input3;
+    option.input4 = input4;
+    
+    option.preview = true;
+    self.menuStructure[self.menuStructure.size] = option;
+}
+
 addOptBool(boolVar, name, fnc = ::EmptyFunction, input1, input2, input3, input4)
 {
     option = SpawnStruct();
@@ -33,6 +50,25 @@ addOptBool(boolVar, name, fnc = ::EmptyFunction, input1, input2, input3, input4)
     option.bool    = Is_True(boolVar);
     option.boolOpt = true;
     
+    self.menuStructure[self.menuStructure.size] = option;
+}
+
+addOptBoolPreview(boolVar, shader = "white", color = (0, 0, 0), name, fnc = ::EmptyFunction, input1, input2, input3, input4)
+{
+    option = SpawnStruct();
+    
+    option.name    = name;
+    option.func    = fnc;
+    option.shader  = shader;
+    option.color   = color;
+    option.input1  = input1;
+    option.input2  = input2;
+    option.input3  = input3;
+    option.input4  = input4;
+    option.bool    = Is_True(boolVar);
+    option.boolOpt = true;
+    
+    option.preview = true;
     self.menuStructure[self.menuStructure.size] = option;
 }
 

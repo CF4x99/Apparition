@@ -116,7 +116,7 @@ override_player_points(damage_weapon, player_points)
         self [[ level.saved_player_score_override ]](damage_weapon, player_points);
     
     if(isDefined(self.DamagePointsMultiplier) || Is_True(self.DisableEarningPoints))
-        player_points = (isDefined(self.DamagePointsMultiplier) && self.DamagePointsMultiplier > 1) ? (player_points * self.DamagePointsMultiplier) : 0;
+        player_points = (isDefined(self.DamagePointsMultiplier) && !Is_True(self.DisableEarningPoints)) ? (player_points * self.DamagePointsMultiplier) : 0;
     
     return player_points;
 }

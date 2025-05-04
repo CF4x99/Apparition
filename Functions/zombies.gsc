@@ -37,6 +37,7 @@ PopulateZombieOptions(menu)
                 self addOptBool(level.ExplodingZombies, "Exploding Zombies", ::ExplodingZombies);
                 self addOptBool(level.ZombieRagdoll, "Ragdoll After Death", ::ZombieRagdoll);
                 self addOptBool(level.StackZombies, "Stack Zombies", ::StackZombies);
+                self addOptBool(level.RemoveZombieEyes, "Remove Eyes", ::RemoveZombieEyes);
                 self addOptBool((GetDvarVector("phys_gravity_dir") == (0, 0, -1)), "Bodies Float", ::BodiesFloat);
                 self addOpt("Make Crawlers", ::ForceZombieCrawlers);
                 self addOpt("Detach Heads", ::DetachZombieHeads);
@@ -922,6 +923,48 @@ StackedZombieWatcher(top)
         if(Is_True(top.stacked))
             top.stacked = BoolVar(top.stacked);
     }
+}
+
+RemoveZombieEyes()
+{
+    level.RemoveZombieEyes = BoolVar(level.RemoveZombieEyes);
+    zombies = GetAITeamArray(level.zombie_team);
+
+    if(Is_True(level.RemoveZombieEyes))
+    {
+        spawner::add_archetype_spawn_function("zombie", ::ZombieSpawnNoEyes);
+
+        foreach(zombie in zombies)
+        {
+            if(!isDefined(zombie) || !IsAlive(zombie) || Is_True(zombie.no_eye_glow))
+                continue;
+            
+            zombie clientfield::set("zombie_has_eyes", 0);
+            zombie.no_eye_glow = true;
+        }
+    }
+    else
+    {
+        spawner::remove_global_spawn_function("zombie", ::ZombieSpawnNoEyes);
+
+        foreach(zombie in zombies)
+        {
+            if(!isDefined(zombie) || !IsAlive(zombie) || !Is_True(zombie.no_eye_glow))
+                continue;
+            
+            zombie clientfield::set("zombie_has_eyes", 1);
+            zombie.no_eye_glow = false;
+        }
+    }
+}
+
+ZombieSpawnNoEyes()
+{
+    if(Is_True(self.no_eye_glow))
+        return;
+    
+    self clientfield::set("zombie_has_eyes", 0);
+    self.no_eye_glow = true;
 }
 
 BodiesFloat()

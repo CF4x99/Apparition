@@ -231,6 +231,7 @@ RunMenuOptions(menu)
         case "Mystery Box Upgraded Weapons":
         case "Joker Model":
         case "Server Tweakables":
+        case "Enabled Power-Ups":
         case "Change Map":
             self PopulateServerModifications(menu);
             break;

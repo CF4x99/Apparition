@@ -55,45 +55,45 @@ PopulateMenuCustomization(menu)
             self addMenu("Main Design Color");
                 
                 for(a = 0; a < level.colorNames.size; a++)
-                    self addOptBool((!Is_True(self.SmoothRainbowTheme) && self.MainColor == divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)])), level.colorNames[a], ::MenuTheme, divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)]));
+                    self addOptBoolPreview((!Is_True(self.SmoothRainbowTheme) && self.MainColor == divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)])), "white", divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)]), level.colorNames[a], ::MenuTheme, divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)]));
                 
-                self addOptBool(self.SmoothRainbowTheme, "Smooth Rainbow", ::SmoothRainbowTheme);
+                self addOptBoolPreview(self.SmoothRainbowTheme, "white", "Rainbow", "Smooth Rainbow", ::SmoothRainbowTheme);
             break;
         
         case "Title Color":
             self addMenu("Title Color");
                 
                 for(a = 0; a < level.colorNames.size; a++)
-                    self addOptBool((IsVec(self.TitleColor) && self.TitleColor == divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)])), level.colorNames[a], ::SetTitleColor, divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)]));
+                    self addOptBoolPreview((IsVec(self.TitleColor) && self.TitleColor == divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)])), "white", divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)]), level.colorNames[a], ::SetTitleColor, divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)]));
                 
-                self addOptBool((IsString(self.TitleColor) && self.TitleColor == "Rainbow"), "Smooth Rainbow", ::SetTitleColor, "Rainbow");
+                self addOptBoolPreview((IsString(self.TitleColor) && self.TitleColor == "Rainbow"), "white", "Rainbow", "Smooth Rainbow", ::SetTitleColor, "Rainbow");
             break;
         
         case "Options Color":
             self addMenu("Options Color");
                 
                 for(a = 0; a < level.colorNames.size; a++)
-                    self addOptBool((IsVec(self.OptionsColor) && self.OptionsColor == divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)])), level.colorNames[a], ::SetOptionsColor, divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)]));
+                    self addOptBoolPreview((IsVec(self.OptionsColor) && self.OptionsColor == divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)])), "white", divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)]), level.colorNames[a], ::SetOptionsColor, divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)]));
 
-                self addOptBool((IsString(self.OptionsColor) && self.OptionsColor == "Rainbow"), "Smooth Rainbow", ::SetOptionsColor, "Rainbow");
+                self addOptBoolPreview((IsString(self.OptionsColor) && self.OptionsColor == "Rainbow"), "white", "Rainbow", "Smooth Rainbow", ::SetOptionsColor, "Rainbow");
             break;
         
         case "Toggled Option Color":
             self addMenu("Toggled Option Color");
                 
                 for(a = 0; a < level.colorNames.size; a++)
-                    self addOptBool((IsVec(self.ToggleTextColor) && self.ToggleTextColor == divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)])), level.colorNames[a], ::SetToggleTextColor, divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)]));
+                    self addOptBoolPreview((IsVec(self.ToggleTextColor) && self.ToggleTextColor == divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)])), "white", divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)]), level.colorNames[a], ::SetToggleTextColor, divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)]));
 
-                self addOptBool((IsString(self.ToggleTextColor) && self.ToggleTextColor == "Rainbow"), "Smooth Rainbow", ::SetToggleTextColor, "Rainbow");
+                self addOptBoolPreview((IsString(self.ToggleTextColor) && self.ToggleTextColor == "Rainbow"), "white", "Rainbow", "Smooth Rainbow", ::SetToggleTextColor, "Rainbow");
             break;
         
         case "Scrolling Option Color":
             self addMenu("Scrolling Option Color");
 
                 for(a = 0; a < level.colorNames.size; a++)
-                    self addOptBool((IsVec(self.ScrollingTextColor) && self.ScrollingTextColor == divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)])), level.colorNames[a], ::SetScrollingTextColor, divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)]));
+                    self addOptBoolPreview((IsVec(self.ScrollingTextColor) && self.ScrollingTextColor == divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)])), "white", divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)]), level.colorNames[a], ::SetScrollingTextColor, divideColor(level.colors[(3 * a)], level.colors[((3 * a) + 1)], level.colors[((3 * a) + 2)]));
             
-                self addOptBool((IsString(self.ScrollingTextColor) && self.ScrollingTextColor == "Rainbow"), "Smooth Rainbow", ::SetScrollingTextColor, "Rainbow");
+                self addOptBoolPreview((IsString(self.ScrollingTextColor) && self.ScrollingTextColor == "Rainbow"), "white", "Rainbow", "Smooth Rainbow", ::SetScrollingTextColor, "Rainbow");
             break;
     }
 }

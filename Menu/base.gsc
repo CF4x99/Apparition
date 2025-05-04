@@ -383,7 +383,7 @@ closeQuickMenu()
         self.isInQuickMenu = BoolVar(self.isInQuickMenu);
 }
 
-drawText(showAnim)
+drawText(showAnim = false)
 {
     self endon("menuClosed");
     self endon("disconnect");
@@ -452,7 +452,7 @@ drawText(showAnim)
 
             if(isDefined(self.menuStructure[(start + a)].slider) && self.menuStructure[(start + a)].slider)
                 self.menuHud["StringSlider"][(a + start)] = self createText("default", ((a + start) == self getCursor() && Is_True(self.LargeCursor)) ? 1.2 : 1, 5, "< " + self.menuStructure[(start + a)].sliderValues[self.menuSS[self getCurrent() + "_" + (start + a)]] + " > [" + (self.menuSS[self getCurrent() + "_" + (start + a)] + 1) + "/" + self.menuStructure[(start + a)].sliderValues.size + "]", "RIGHT", "CENTER", (self.menuX + 126), (self.menuY + 14) + (a * 20), 0, ((start + a) == self getCursor()) ? self.ScrollingTextColor : self.OptionsColor);
-            
+
             self.menuHud["text"][(a + start)] = self createText("default", ((a + start) == self getCursor() && Is_True(self.LargeCursor)) ? 1.2 : 1, 5, self.menuStructure[(start + a)].name, "LEFT", "CENTER", (self.menuX - 126), (self.menuY + 14) + (a * 20), 0, (Is_True(self.menuStructure[(start + a)].bool) && self.ToggleStyle == "Text Color") ? (IsVec(self.ToggleTextColor)) ? self.ToggleTextColor : IsString(self.ToggleTextColor) ? level.RGBFadeColor : (0, 0, 0) : ((start + a) == self getCursor()) ? self.ScrollingTextColor : self.OptionsColor);
             elems = Array(self.menuHud["BoolBack"][(a + start)], self.menuHud["BoolOpt"][(a + start)], self.menuHud["subMenu"][(a + start)], self.menuHud["IntSlider"][(a + start)], self.menuHud["StringSlider"][(a + start)], self.menuHud["text"][(a + start)]);
 
@@ -535,6 +535,8 @@ drawText(showAnim)
             }
         }
     }
+
+    self CreateOptionPreview();
 }
 
 ScrollingSystem(dir)
@@ -589,6 +591,28 @@ ScrollingSystem(dir)
 
         if(isDefined(self.menuHud["scroller"]) && isDefined(self.menuHud["text"][self getCursor()]))
             self.menuHud["scroller"].y = (self.menuHud["text"][self getCursor()].y - 6);
+        
+        self CreateOptionPreview();
+    }
+}
+
+CreateOptionPreview()
+{
+    if(Is_True(self.menuStructure[self getCursor()].preview))
+    {
+        if(isDefined(self.optionPreview))
+            self.optionPreview DestroyHud();
+        
+        previewWidth = 100;
+        self.optionPreview = self createRectangle("TOP_LEFT", "CENTER", (self.menuX > 97) ? ((self.menuX - 135) - previewWidth) : ((self.menuX + (self.menuHud["background"].width / 2)) + 15), self.menuHud["scroller"].y, previewWidth, 15, (IsString(self.menuStructure[self getCursor()].color) && self.menuStructure[self getCursor()].color == "Rainbow") ? level.RGBFadeColor : self.menuStructure[self getCursor()].color, 2, 1, self.menuStructure[self getCursor()].shader);
+        
+        if(IsString(self.menuStructure[self getCursor()].color) && self.menuStructure[self getCursor()].color == "Rainbow")
+            self.optionPreview thread HudRGBFade();
+    }
+    else
+    {
+        if(isDefined(self.optionPreview))
+            self.optionPreview DestroyHud();
     }
 }
 
@@ -834,6 +858,9 @@ DestroyOpts()
         
         self.menuHud[hud[a]] = [];
     }
+
+    if(isDefined(self.optionPreview))
+        self.optionPreview DestroyHud();
 }
 
 IsInvalidOption(text)

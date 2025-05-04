@@ -174,8 +174,18 @@ PopulateServerModifications(menu)
                     self addOptBool((level.chest_joker_model == level.MenuModels[a]), CleanString(level.MenuModels[a]), ::SetBoxJokerModel, level.MenuModels[a]);
             break;
         
+        case "Change Map":
+            mapNames = Array("zm_zod", "zm_factory", "zm_castle", "zm_island", "zm_stalingrad", "zm_genesis", "zm_prototype", "zm_asylum", "zm_sumpf", "zm_theater", "zm_cosmodrome", "zm_temple", "zm_moon", "zm_tomb");
+
+            self addMenu("Change Map");
+
+                for(a = 0; a < mapNames.size; a++)
+                    self addOptBool((level.script == mapNames[a]), ReturnMapName(mapNames[a]), ::ServerChangeMap, mapNames[a]);
+            break;
+        
         case "Server Tweakables":
             self addMenu("Server Tweakables");
+                self addOpt("Enabled Power-Ups", ::newMenu, "Enabled Power-Ups");
                 self addOptIncSlider("Pack 'a' Punch Camo Index", ::SetPackCamoIndex, 0, level.pack_a_punch_camo_index, 138, 1);
                 self addOptIncSlider("Player Weapon Limit", ::SetPlayerWeaponLimit, 0, 0, 15, 1);
                 self addOptIncSlider("Player Perk Limit", ::SetPlayerPerkLimit, 0, 0, level.MenuPerks.size, 1);
@@ -194,13 +204,18 @@ PopulateServerModifications(menu)
                 self addOpt("Repack 'a' Punch Price", ::NumberPad, ::EditRepackAPunchPrice);
             break;
         
-        case "Change Map":
-            mapNames = Array("zm_zod", "zm_factory", "zm_castle", "zm_island", "zm_stalingrad", "zm_genesis", "zm_prototype", "zm_asylum", "zm_sumpf", "zm_theater", "zm_cosmodrome", "zm_temple", "zm_moon", "zm_tomb");
+        case "Enabled Power-Ups":
+            powerups = GetArrayKeys(level.zombie_include_powerups);
 
-            self addMenu("Change Map");
+            self addMenu("Enabled Power-Ups");
 
-                for(a = 0; a < mapNames.size; a++)
-                    self addOptBool((level.script == mapNames[a]), ReturnMapName(mapNames[a]), ::ServerChangeMap, mapNames[a]);
+                for(a = 0; a < powerups.size; a++)
+                {
+                    if(!isDefined(powerups[a]) || !isDefined(level.zombie_powerups[powerups[a]].func_should_drop_with_regular_powerups) || !IsFunctionPtr(level.zombie_powerups[powerups[a]].func_should_drop_with_regular_powerups))
+                        continue;
+                    
+                    self addOptBool([[ level.zombie_powerups[powerups[a]].func_should_drop_with_regular_powerups ]](), ReturnPowerupName(powerups[a]), ::SetPowerUpState, powerups[a]);
+                }
             break;
     }
 }
@@ -869,9 +884,8 @@ IsAllWeaponsInBox(upgraded = false)
     
     for(a = 0; a < weaps.size; a++)
     {
-        if(IsInArray(weaponsVar, ToLower(CleanString(upgraded ? zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a])) : zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
-            if(!IsWeaponInBox(weaps[a]))
-                return false;
+        if(IsInArray(weaponsVar, ToLower(CleanString(upgraded ? zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a])) : zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none" && !IsWeaponInBox(weaps[a]))
+            return false;
     }
     
     if(!upgraded)
@@ -879,17 +893,17 @@ IsAllWeaponsInBox(upgraded = false)
         equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
         equipmentCombined = GetArrayKeys(equipment);
 
-        if(!IsWeaponInBox(GetWeapon("minigun")))
-            return false;
-        
-        if(!IsWeaponInBox(GetWeapon("defaultweapon")))
+        if(!IsWeaponInBox(GetWeapon("minigun")) || !IsWeaponInBox(GetWeapon("defaultweapon")))
             return false;
 
         if(isDefined(equipmentCombined) && equipmentCombined.size)
+        {
             for(a = 0; a < weaps.size; a++)
-                if(isInArray(equipment, weaps[a]))
-                    if(!IsWeaponInBox(weaps[a]))
-                        return false;
+            {
+                if(isInArray(equipment, weaps[a]) && !IsWeaponInBox(weaps[a]))
+                    return false;
+            }
+        }
     }
     
     return true;
@@ -919,9 +933,8 @@ EnableAllWeaponsInBox(upgraded = false)
         
         for(a = 0; a < weaps.size; a++)
         {
-            if(IsInArray(weaponsVar, ToLower(CleanString(upgraded ? zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a])) : zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
-                if(!IsWeaponInBox(weaps[a]))
-                    level.customBoxWeapons[level.customBoxWeapons.size] = weaps[a];
+            if(IsInArray(weaponsVar, ToLower(CleanString(upgraded ? zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a])) : zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none" && !IsWeaponInBox(weaps[a]))
+                level.customBoxWeapons[level.customBoxWeapons.size] = weaps[a];
         }
         
         if(!upgraded)
@@ -936,9 +949,13 @@ EnableAllWeaponsInBox(upgraded = false)
                 level.customBoxWeapons[level.customBoxWeapons.size] = GetWeapon("defaultweapon");
 
             if(isDefined(keys) && keys.size)
+            {
                 for(a = 0; a < weaps.size; a++)
+                {
                     if(isInArray(equipment, weaps[a]) && !IsWeaponInBox(weaps[a]))
                         level.customBoxWeapons[level.customBoxWeapons.size] = weaps[a];
+                }
+            }
         }
     }
 
@@ -1045,6 +1062,34 @@ PlayerShootRevive(player)
         self zombie_utility::show_hit_marker();
 
     self PlayerRevive(player);
+}
+
+SetPowerUpState(powerup)
+{
+    if(!isDefined(powerup) || !isDefined(level.zombie_powerups[powerup].func_should_drop_with_regular_powerups) || !IsFunctionPtr(level.zombie_powerups[powerup].func_should_drop_with_regular_powerups))
+        return;
+    
+    if(GetActivePowerUpCount() < 2 && Is_True([[ level.zombie_powerups[powerup].func_should_drop_with_regular_powerups ]]()))
+        return self iPrintlnBold("^1ERROR: ^7At Least One Power-Up Must Be Enabled");
+    
+    level.zombie_powerups[powerup].func_should_drop_with_regular_powerups = Is_True([[ level.zombie_powerups[powerup].func_should_drop_with_regular_powerups ]]()) ? zm_powerups::func_should_never_drop : zm_powerups::func_should_always_drop;
+}
+
+GetActivePowerUpCount()
+{
+    index = 0;
+    powerups = GetArrayKeys(level.zombie_include_powerups);
+
+    for(a = 0; a < powerups.size; a++)
+    {
+        if(!isDefined(powerups[a]))
+            continue;
+        
+        if(Is_True([[ level.zombie_powerups[powerups[a]].func_should_drop_with_regular_powerups ]]()))
+            index++;
+    }
+
+    return index;
 }
 
 SetPackCamoIndex(index)

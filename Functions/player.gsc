@@ -397,20 +397,10 @@ JumpScarePlayer(type, player)
 
     player endon("disconnect");
 
-    if(ReturnMapName() == "Shadows Of Evil")
-    {
-        player PlaySoundToPlayer("zmb_zod_egg_scream", player);
+    player PlaySoundToPlayer((ReturnMapName() == "Shadows Of Evil") ? "zmb_zod_egg_scream" : "zmb_easteregg_scarydog", player);
 
-        if(type == "Sound & Picture")
-            player.var_92fcfed8 = player OpenLUIMenu("JumpScare");
-    }
-    else
-    {
-        player PlaySoundToPlayer("zmb_easteregg_scarydog", player);
-
-        if(type == "Sound & Picture")
-            player.var_92fcfed8 = player OpenLUIMenu("JumpScare-Tomb");
-    }
+    if(type == "Sound & Picture")
+        player.var_92fcfed8 = player OpenLUIMenu((ReturnMapName() == "Shadows Of Evil") ? "JumpScare" : "JumpScare-Tomb");
 
     wait 0.55;
 
