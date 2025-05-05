@@ -32,57 +32,48 @@ PopulateMOTDScripts(menu)
     }
 }
 
-GetMOTDGeneratorName(index)
+FeedDevilDogs()
 {
-    switch(index)
+    if(level.soul_catchers_charged >= level.soul_catchers.size)
+        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+    
+    if(Is_True(level.FeedDevilDogs))
+        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
+    
+    level.FeedDevilDogs = true;
+    
+    menu = self getCurrent();
+    curs = self getCursor();
+
+    foreach(catcher in level.soul_catchers)
     {
-        case 0:
-            return "Generator: Spawn(Power-Up)";
+        if(!isDefined(catcher) || Is_True(catcher.is_charged))
+            continue;
         
-        case 1:
-            return "Generator: Broadway";
-        
-        case 2:
-            return "Generator: Broadway Tunnel(In The Wall)";
-        
-        case 3:
-            return "Generator: Deadshot Daiquiri";
-        
-        case 4:
-            return "Generator: Stamin-Up";
-        
-        case 5:
-            return "Generator: Roof";
-        
-        case 6:
-            return "Generator: Electric Cherry";
-        
-        case 7:
-            return "Generator: Michigan(Power-Up)";
-        
-        case 8:
-            return "Generator: Warden's Office Stairs";
-        
-        case 9:
-            return "Generator: Speed Cola";
-        
-        case 10:
-            return "Generator: Double Tap";
-        
-        case 11:
-            return "Generator: Laundry Room";
-        
-        case 12:
-            return "Generator: Jugger-Nog";
-        
-        case 13:
-            return "Generator: Docks Tower";
-        
-        case 14:
-            return "Generator: Zipline To Docks";
-        
-        case 15:
-            return "Generator: Zipline From Docks";
+        catcher thread FeedDevilDog(self);
+    }
+    
+    while(level.soul_catchers_charged < level.soul_catchers.size)
+        wait 0.1;
+
+    self RefreshMenu(menu, curs);
+
+    if(Is_True(level.FeedDevilDogs))
+        level.FeedDevilDogs = BoolVar(level.FeedDevilDogs);
+}
+
+FeedDevilDog(player)
+{
+    if(!self.souls_received)
+    {
+        self notify("first_zombie_killed_in_zone", player);
+        wait GetAnimLength("xanim_wolf_dreamcatcher_intro");
+    }
+    
+    while(self.souls_received < 6)
+    {
+        self.souls_received++;
+        wait 0.1;
     }
 }
 
@@ -137,47 +128,56 @@ ModifyPlayerAfterLives(amount, player)
     self RefreshMenu(menu, curs);
 }
 
-FeedDevilDogs()
+GetMOTDGeneratorName(index)
 {
-    if(level.soul_catchers_charged >= level.soul_catchers.size)
-        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
-    
-    if(Is_True(level.FeedDevilDogs))
-        return self iPrintlnBold("^1ERROR: ^7This Step Is Currently Being Completed");
-    
-    level.FeedDevilDogs = true;
-    
-    menu = self getCurrent();
-    curs = self getCursor();
-
-    foreach(catcher in level.soul_catchers)
+    switch(index)
     {
-        if(!isDefined(catcher) || Is_True(catcher.is_charged))
-            continue;
+        case 0:
+            return "Generator: Spawn(Power-Up)";
         
-        catcher thread FeedDevilDog(self);
-    }
-    
-    while(level.soul_catchers_charged < level.soul_catchers.size)
-        wait 0.1;
-
-    self RefreshMenu(menu, curs);
-
-    if(Is_True(level.FeedDevilDogs))
-        level.FeedDevilDogs = BoolVar(level.FeedDevilDogs);
-}
-
-FeedDevilDog(player)
-{
-    if(!self.souls_received)
-    {
-        self notify("first_zombie_killed_in_zone", player);
-        wait GetAnimLength("xanim_wolf_dreamcatcher_intro");
-    }
-    
-    while(self.souls_received < 6)
-    {
-        self.souls_received++;
-        wait 0.1;
+        case 1:
+            return "Generator: Broadway";
+        
+        case 2:
+            return "Generator: Broadway Tunnel(In The Wall)";
+        
+        case 3:
+            return "Generator: Deadshot Daiquiri";
+        
+        case 4:
+            return "Generator: Stamin-Up";
+        
+        case 5:
+            return "Generator: Roof";
+        
+        case 6:
+            return "Generator: Electric Cherry";
+        
+        case 7:
+            return "Generator: Michigan(Power-Up)";
+        
+        case 8:
+            return "Generator: Warden's Office Stairs";
+        
+        case 9:
+            return "Generator: Speed Cola";
+        
+        case 10:
+            return "Generator: Double Tap";
+        
+        case 11:
+            return "Generator: Laundry Room";
+        
+        case 12:
+            return "Generator: Jugger-Nog";
+        
+        case 13:
+            return "Generator: Docks Tower";
+        
+        case 14:
+            return "Generator: Zipline To Docks";
+        
+        case 15:
+            return "Generator: Zipline From Docks";
     }
 }

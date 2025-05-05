@@ -239,6 +239,23 @@ function_d97ca744(name, trigger)
     self bgb::resume_weapon_cycling();
 }
 
+SOEGrabFumigator(player)
+{
+    if(player clientfield::get_to_player("pod_sprayer_held"))
+        return;
+
+    a_sprayers = array::randomize(struct::get_array("pod_sprayer_location", "targetname"));
+
+    foreach(spray in a_sprayers)
+    {
+        if(isDefined(spray) && isDefined(spray.trigger))
+        {
+            spray.trigger notify("trigger", player);
+            break;
+        }
+    }
+}
+
 TriggerSOESmashable(smashable)
 {
     target = GetEnt(smashable.target, "targetname");
@@ -475,21 +492,4 @@ SOE_RailStayElectrified(index)
 SOEShowCode()
 {
     self iPrintlnBold("Left To Right -- " + (level.o_canal_beastcode.m_a_codes[0][0] + 1) + " " + (level.o_canal_beastcode.m_a_codes[0][1] + 1) + " " + (level.o_canal_beastcode.m_a_codes[0][2] + 1));
-}
-
-SOEGrabFumigator(player)
-{
-    if(player clientfield::get_to_player("pod_sprayer_held"))
-        return;
-
-    a_sprayers = array::randomize(struct::get_array("pod_sprayer_location", "targetname"));
-
-    foreach(spray in a_sprayers)
-    {
-        if(isDefined(spray) && isDefined(spray.trigger))
-        {
-            spray.trigger notify("trigger", player);
-            break;
-        }
-    }
 }

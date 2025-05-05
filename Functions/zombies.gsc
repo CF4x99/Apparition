@@ -112,17 +112,30 @@ PopulateZombieOptions(menu)
                     self addOptBool(player.AIPrioritizePlayer, CleanName(player getName()), ::AIPrioritizePlayer, player);
             break;
         
-        case "Zombie Model Manipulation":
-            self addMenu("Model Manipulation");
-                
-                if(isDefined(level.MenuModels) && level.MenuModels.size)
-                {
-                    self addOptBool(!isDefined(level.ZombieModel), "Disable", ::DisableZombieModel);
-                    self addOpt("");
+        case "Zombie Death Effect":
+            
+            if(!isDefined(level.ZombiesDeathFX))
+                level.ZombiesDeathFX = level.MenuEffects[0];
+            
+            self addMenu("Death Effect");
+                self addOptBool(level.ZombiesDeathEffect, "Death Effect", ::ZombiesDeathEffect);
+                self addOpt("");
 
-                    for(a = 0; a < level.MenuModels.size; a++)
-                        self addOptBool((isDefined(level.ZombieModel) && level.ZombieModel == level.MenuModels[a]), CleanString(level.MenuModels[a]), ::SetZombieModel, level.MenuModels[a]);
-                }
+                for(a = 0; a < level.MenuEffects.size; a++)
+                    self addOptBool((level.ZombiesDeathFX == level.MenuEffects[a]), CleanString(level.MenuEffects[a]), ::SetZombiesDeathEffect, level.MenuEffects[a]);
+            break;
+
+        case "Zombie Damage Effect":
+
+            if(!isDefined(level.ZombiesDamageFX))
+                level.ZombiesDamageFX = level.MenuEffects[0];
+            
+            self addMenu("Damage Effect");
+                self addOptBool(level.ZombiesDamageEffect, "Damage Effect", ::ZombiesDamageEffect);
+                self addOpt("");
+
+                for(a = 0; a < level.MenuEffects.size; a++)
+                    self addOptBool((level.ZombiesDamageFX == level.MenuEffects[a]), CleanString(level.MenuEffects[a]), ::SetZombiesDamageEffect, level.MenuEffects[a]);
             break;
         
         case "Zombie Animations":
@@ -150,30 +163,17 @@ PopulateZombieOptions(menu)
                     self addOpt(CleanString(anims[a]), ::ZombieAnimScript, anims[a], notifies[a]);
             break;
         
-        case "Zombie Death Effect":
-            
-            if(!isDefined(level.ZombiesDeathFX))
-                level.ZombiesDeathFX = level.MenuEffects[0];
-            
-            self addMenu("Death Effect");
-                self addOptBool(level.ZombiesDeathEffect, "Death Effect", ::ZombiesDeathEffect);
-                self addOpt("");
+        case "Zombie Model Manipulation":
+            self addMenu("Model Manipulation");
+                
+                if(isDefined(level.MenuModels) && level.MenuModels.size)
+                {
+                    self addOptBool(!isDefined(level.ZombieModel), "Disable", ::DisableZombieModel);
+                    self addOpt("");
 
-                for(a = 0; a < level.MenuEffects.size; a++)
-                    self addOptBool((level.ZombiesDeathFX == level.MenuEffects[a]), CleanString(level.MenuEffects[a]), ::SetZombiesDeathEffect, level.MenuEffects[a]);
-            break;
-
-        case "Zombie Damage Effect":
-
-            if(!isDefined(level.ZombiesDamageFX))
-                level.ZombiesDamageFX = level.MenuEffects[0];
-            
-            self addMenu("Damage Effect");
-                self addOptBool(level.ZombiesDamageEffect, "Damage Effect", ::ZombiesDamageEffect);
-                self addOpt("");
-
-                for(a = 0; a < level.MenuEffects.size; a++)
-                    self addOptBool((level.ZombiesDamageFX == level.MenuEffects[a]), CleanString(level.MenuEffects[a]), ::SetZombiesDamageEffect, level.MenuEffects[a]);
+                    for(a = 0; a < level.MenuModels.size; a++)
+                        self addOptBool((isDefined(level.ZombieModel) && level.ZombieModel == level.MenuModels[a]), CleanString(level.MenuModels[a]), ::SetZombieModel, level.MenuModels[a]);
+                }
             break;
     }
 }
@@ -199,6 +199,208 @@ AIPrioritizePlayer(player)
     }
     else
         player.b_is_designated_target = false;
+}
+
+ZombiesDeathEffect()
+{
+    level.ZombiesDeathEffect = BoolVar(level.ZombiesDeathEffect);
+}
+
+SetZombiesDeathEffect(effect)
+{
+    level.ZombiesDeathFX = effect;
+}
+
+ZombiesDamageEffect()
+{
+    level.ZombiesDamageEffect = BoolVar(level.ZombiesDamageEffect);
+}
+
+SetZombiesDamageEffect(effect)
+{
+    level.ZombiesDamageFX = effect;
+}
+
+ZombieAnimScript(anm, ntfy)
+{
+    zombies = GetAITeamArray(level.zombie_team);
+
+    for(a = 0; a < zombies.size; a++)
+    {
+        if(!isDefined(zombies[a]) || !IsAlive(zombies[a]))
+            continue;
+        
+        zombies[a] StopAnimScripted(0);
+        zombies[a] AnimScripted(ntfy, zombies[a].origin, zombies[a].angles, anm);
+    }
+}
+
+SetZombieModel(model)
+{
+    if(isDefined(level.ZombieModel) && model != level.ZombieModel || !isDefined(level.ZombieModel))
+    {
+        level.ZombieModel = model;
+        zombies = GetAITeamArray(level.zombie_team);
+
+        for(a = 0; a < zombies.size; a++)
+        {
+            if(isDefined(zombies[a]) && IsAlive(zombies[a]) && zombies[a].model != level.ZombieModel)
+            {
+                if(!isDefined(zombies[a].savedModel))
+                    zombies[a].savedModel = zombies[a].model;
+                
+                zombies[a] SetModel(level.ZombieModel);
+            }
+        }
+
+        spawner::add_archetype_spawn_function("zombie", ::SetZombieSpawnModel);
+    }
+    else
+        DisableZombieModel();
+}
+
+SetZombieSpawnModel()
+{
+    while(!IsAlive(self))
+        wait 0.1;
+    
+    self.savedModel = self.model;
+
+    if(isDefined(level.ZombieModel))
+        self SetModel(level.ZombieModel);
+}
+
+DisableZombieModel()
+{
+    level.ZombieModel = undefined;
+    spawner::remove_global_spawn_function("zombie", ::SetZombieSpawnModel);
+    zombies = GetAITeamArray(level.zombie_team);
+
+    for(a = 0; a < zombies.size; a++)
+        if(isDefined(zombies[a]) && IsAlive(zombies[a]) && isDefined(zombies[a].savedModel))
+            zombies[a] SetModel(zombies[a].savedModel);
+}
+
+ZombieGibBone(bone)
+{
+    zombies = GetAITeamArray(level.zombie_team);
+
+    for(a = 0; a < zombies.size; a++)
+    {
+        if(!isDefined(zombies[a]) || !IsAlive(zombies[a]))
+            continue;
+        
+        switch(bone)
+        {
+            case "Random":
+                switch(RandomInt(5))
+                {
+                    case 0:
+                        zombies[a] thread zombie_utility::zombie_head_gib();
+                        break;
+                    
+                    case 1:
+                        thread gibserverutils::gibrightleg(zombies[a]);
+                        break;
+                    
+                    case 2:
+                        thread gibserverutils::gibleftleg(zombies[a]);
+                        break;
+                    
+                    case 3:
+                        thread gibserverutils::gibrightarm(zombies[a]);
+                        break;
+                    
+                    case 4:
+                        thread gibserverutils::gibleftarm(zombies[a]);
+                        break;
+                    
+                    default:
+                        zombies[a] thread zombie_utility::zombie_head_gib();
+                        break;
+                }
+                break;
+            
+            case "Head":
+                zombies[a] thread zombie_utility::zombie_head_gib();
+                break;
+            
+            case "Right Leg":
+                thread gibserverutils::gibrightleg(zombies[a]);
+                break;
+            
+            case "Left Leg":
+                thread gibserverutils::gibleftleg(zombies[a]);
+                break;
+            
+            case "Right Arm":
+                thread gibserverutils::gibrightarm(zombies[a]);
+                break;
+            
+            case "Left Arm":
+                thread gibserverutils::gibleftarm(zombies[a]);
+                break;
+            
+            default:
+                zombies[a] thread zombie_utility::zombie_head_gib();
+                break;
+        }
+    }
+}
+
+KillZombies(type = "Death")
+{
+    zombies = GetAITeamArray(level.zombie_team);
+
+    for(a = 0; a < zombies.size; a++)
+    {
+        if(!isDefined(zombies[a]) || !IsAlive(zombies[a]))
+            continue;
+        
+        switch(type)
+        {
+            case "Death":
+                zombies[a] DoDamage((zombies[a].health + 666), zombies[a].origin);
+                break;
+            
+            case "Head Gib":
+                zombies[a] thread ZombieHeadGib();
+                break;
+            
+            case "Flame":
+                zombies[a] thread zombie_death::flame_death_fx();
+
+                if(isDefined(zombies[a]) && IsAlive(zombies[a]))
+                    zombies[a] DoDamage((zombies[a].health + 666), zombies[a].origin);
+                break;
+            
+            case "Delete":
+                zombies[a] delete();
+                break;
+            
+            default:
+                break;
+        }
+    }
+}
+
+ZombieHeadGib()
+{
+    if(!isDefined(self) || !IsAlive(self))
+        return;
+
+    self endon("death");
+
+    self clientfield::set("zm_bgb_mind_ray_fx", 1);
+    wait RandomFloatRange(0.65, 2.5);
+
+    self clientfield::set("zm_bgb_mind_pop_fx", 1);
+    self PlaySoundOnTag("zmb_bgb_mindblown_pop", "tag_eye");
+    self zombie_utility::zombie_head_gib();
+    wait 0.1;
+
+    if(isDefined(self) && IsAlive(self))
+        self DoDamage((self.health + 666), self.origin);
 }
 
 SetZombieHealth(type)
@@ -286,61 +488,6 @@ SetZombieHealth1(health)
     }
 }
 
-KillZombies(type = "Death")
-{
-    zombies = GetAITeamArray(level.zombie_team);
-
-    for(a = 0; a < zombies.size; a++)
-    {
-        if(!isDefined(zombies[a]) || !IsAlive(zombies[a]))
-            continue;
-        
-        switch(type)
-        {
-            case "Death":
-                zombies[a] DoDamage((zombies[a].health + 666), zombies[a].origin);
-                break;
-            
-            case "Head Gib":
-                zombies[a] thread ZombieHeadGib();
-                break;
-            
-            case "Flame":
-                zombies[a] thread zombie_death::flame_death_fx();
-
-                if(isDefined(zombies[a]) && IsAlive(zombies[a]))
-                    zombies[a] DoDamage((zombies[a].health + 666), zombies[a].origin);
-                break;
-            
-            case "Delete":
-                zombies[a] delete();
-                break;
-            
-            default:
-                break;
-        }
-    }
-}
-
-ZombieHeadGib()
-{
-    if(!isDefined(self) || !IsAlive(self))
-        return;
-
-    self endon("death");
-
-    self clientfield::set("zm_bgb_mind_ray_fx", 1);
-    wait RandomFloatRange(0.65, 2.5);
-
-    self clientfield::set("zm_bgb_mind_pop_fx", 1);
-    self PlaySoundOnTag("zmb_bgb_mindblown_pop", "tag_eye");
-    self zombie_utility::zombie_head_gib();
-    wait 0.1;
-
-    if(isDefined(self) && IsAlive(self))
-        self DoDamage((self.health + 666), self.origin);
-}
-
 SetZombieRunSpeed(speed)
 {
     speed = ToLower(speed);
@@ -353,6 +500,85 @@ SetZombieRunSpeed(speed)
     for(a = 0; a < zombies.size; a++)
         if(isDefined(zombies[a]) && IsAlive(zombies[a]))
             zombies[a] zombie_utility::set_zombie_run_cycle(speed);
+}
+
+KnockdownZombies(dir)
+{
+    switch(dir)
+    {
+        case "Back":
+            knockDir = "front";
+            upDir = "getup_back";
+            break;
+        
+        case "Front":
+            knockDir = "back";
+            upDir = "getup_belly";
+            break;
+    }
+
+    if(!isDefined(knockDir) || !isDefined(upDir))
+        return;
+
+    zombies = GetAITeamArray(level.zombie_team);
+    
+    foreach(zombie in zombies)
+    {
+        if(!isDefined(zombie) || !IsAlive(zombie) || zombie.missinglegs || Is_True(zombie.knockdown))
+            continue;
+        
+        zombie.knockdown = 1;
+        zombie.knockdown_direction = knockDir;
+        zombie.getup_direction = upDir;
+        zombie.knockdown_type = "knockdown_shoved";
+
+        BlackBoardAttribute(zombie, "_knockdown_direction", zombie.knockdown_direction);
+        BlackBoardAttribute(zombie, "_knockdown_type", zombie.knockdown_type);
+        BlackBoardAttribute(zombie, "_getup_direction", zombie.getup_direction);
+    }
+}
+
+PushZombies(dir)
+{
+    zombies = GetAITeamArray(level.zombie_team);
+    
+    foreach(zombie in zombies)
+    {
+        if(!isDefined(zombie) || !IsAlive(zombie) || zombie.missinglegs || Is_True(zombie.pushed))
+            continue;
+        
+        zombie.pushed = 1;
+        zombie.push_direction = ToLower(dir);
+
+        BlackBoardAttribute(zombie, "_push_direction", zombie.push_direction);
+    }
+}
+
+BlackBoardAttribute(entity, attributename, attributevalue)
+{
+    if(isDefined(entity.__blackboard[attributename]))
+        if(!isDefined(attributevalue) && IsFunctionPtr(entity.__blackboard[attributename]))
+            return;
+
+    entity.__blackboard[attributename] = attributevalue;
+}
+
+TeleportZombies(loc)
+{
+    origin = (IsString(loc) && loc == "Crosshairs") ? self TraceBullet() : self.origin;
+    zombies = GetAITeamArray(level.zombie_team);
+
+    for(a = 0; a < zombies.size; a++)
+    {
+        if(isDefined(zombies[a]) && IsAlive(zombies[a]))
+        {
+            zombies[a] StopAnimScripted(0);
+            zombies[a] ForceTeleport(origin);
+            zombies[a].find_flesh_struct_string = "find_flesh";
+            zombies[a].ai_state = "find_flesh";
+            zombies[a] notify("zombie_custom_think_done", "find_flesh");
+        }
+    }
 }
 
 SetZombieAnimationSpeed(rate)
@@ -383,166 +609,6 @@ ZombieAnimationWait(rate)
     
     if(IsAlive(self))
         self ASMSetAnimationRate(rate);
-}
-
-ForceZombieCrawlers()
-{
-    zombies = GetAITeamArray(level.zombie_team);
-
-    for(a = 0; a < zombies.size; a++)
-        if(isDefined(zombies[a]) && IsAlive(zombies[a]))
-            zombies[a] zombie_utility::makezombiecrawler(true);
-}
-
-ZombieGibBone(bone)
-{
-    zombies = GetAITeamArray(level.zombie_team);
-
-    for(a = 0; a < zombies.size; a++)
-    {
-        if(!isDefined(zombies[a]) || !IsAlive(zombies[a]))
-            continue;
-        
-        switch(bone)
-        {
-            case "Random":
-                switch(RandomInt(5))
-                {
-                    case 0:
-                        zombies[a] thread zombie_utility::zombie_head_gib();
-                        break;
-                    
-                    case 1:
-                        thread gibserverutils::gibrightleg(zombies[a]);
-                        break;
-                    
-                    case 2:
-                        thread gibserverutils::gibleftleg(zombies[a]);
-                        break;
-                    
-                    case 3:
-                        thread gibserverutils::gibrightarm(zombies[a]);
-                        break;
-                    
-                    case 4:
-                        thread gibserverutils::gibleftarm(zombies[a]);
-                        break;
-                    
-                    default:
-                        zombies[a] thread zombie_utility::zombie_head_gib();
-                        break;
-                }
-                break;
-            
-            case "Head":
-                zombies[a] thread zombie_utility::zombie_head_gib();
-                break;
-            
-            case "Right Leg":
-                thread gibserverutils::gibrightleg(zombies[a]);
-                break;
-            
-            case "Left Leg":
-                thread gibserverutils::gibleftleg(zombies[a]);
-                break;
-            
-            case "Right Arm":
-                thread gibserverutils::gibrightarm(zombies[a]);
-                break;
-            
-            case "Left Arm":
-                thread gibserverutils::gibleftarm(zombies[a]);
-                break;
-            
-            default:
-                zombies[a] thread zombie_utility::zombie_head_gib();
-                break;
-        }
-    }
-}
-
-SetZombieModel(model)
-{
-    if(isDefined(level.ZombieModel) && model != level.ZombieModel || !isDefined(level.ZombieModel))
-    {
-        level.ZombieModel = model;
-        zombies = GetAITeamArray(level.zombie_team);
-
-        for(a = 0; a < zombies.size; a++)
-        {
-            if(isDefined(zombies[a]) && IsAlive(zombies[a]) && zombies[a].model != level.ZombieModel)
-            {
-                if(!isDefined(zombies[a].savedModel))
-                    zombies[a].savedModel = zombies[a].model;
-                
-                zombies[a] SetModel(level.ZombieModel);
-            }
-        }
-
-        spawner::add_archetype_spawn_function("zombie", ::SetZombieSpawnModel);
-    }
-    else
-        DisableZombieModel();
-}
-
-SetZombieSpawnModel()
-{
-    while(!IsAlive(self))
-        wait 0.1;
-    
-    self.savedModel = self.model;
-
-    if(isDefined(level.ZombieModel))
-        self SetModel(level.ZombieModel);
-}
-
-DisableZombieModel()
-{
-    level.ZombieModel = undefined;
-    spawner::remove_global_spawn_function("zombie", ::SetZombieSpawnModel);
-    zombies = GetAITeamArray(level.zombie_team);
-
-    for(a = 0; a < zombies.size; a++)
-        if(isDefined(zombies[a]) && IsAlive(zombies[a]) && isDefined(zombies[a].savedModel))
-            zombies[a] SetModel(zombies[a].savedModel);
-}
-
-ZombieAnimScript(anm, ntfy)
-{
-    zombies = GetAITeamArray(level.zombie_team);
-
-    for(a = 0; a < zombies.size; a++)
-    {
-        if(!isDefined(zombies[a]) || !IsAlive(zombies[a]))
-            continue;
-        
-        zombies[a] StopAnimScripted(0);
-        zombies[a] AnimScripted(ntfy, zombies[a].origin, zombies[a].angles, anm);
-    }
-}
-
-DisableZombieSpawning()
-{
-    SetDvar("ai_disableSpawn", (GetDvarString("ai_disableSpawn") == "0") ? "1" : "0");
-    KillZombies("Head Gib");
-}
-
-TeleportZombies(loc)
-{
-    origin = (IsString(loc) && loc == "Crosshairs") ? self TraceBullet() : self.origin;
-    zombies = GetAITeamArray(level.zombie_team);
-
-    for(a = 0; a < zombies.size; a++)
-    {
-        if(isDefined(zombies[a]) && IsAlive(zombies[a]))
-        {
-            zombies[a] StopAnimScripted(0);
-            zombies[a] ForceTeleport(origin);
-            zombies[a].find_flesh_struct_string = "find_flesh";
-            zombies[a].ai_state = "find_flesh";
-            zombies[a] notify("zombie_custom_think_done", "find_flesh");
-        }
-    }
 }
 
 ZombiesToCrosshairsLoop()
@@ -594,6 +660,12 @@ DisableZombieSpawnCollision()
     self SetPlayerCollision(0);
 }
 
+DisableZombieSpawning()
+{
+    SetDvar("ai_disableSpawn", (GetDvarString("ai_disableSpawn") == "0") ? "1" : "0");
+    KillZombies("Head Gib");
+}
+
 DisableZombiePush()
 {
     level.DisableZombiePush = BoolVar(level.DisableZombiePush);
@@ -642,6 +714,34 @@ ZombiesInvisibility()
     }
 }
 
+FreezeZombies()
+{
+    SetDvar("g_ai", (GetDvarString("g_ai") == "1") ? "0" : "1");
+}
+
+ZombieDeathSounds()
+{
+    level.ZombieDeathSounds = BoolVar(level.ZombieDeathSounds);
+    zombies = GetAITeamArray(level.zombie_team);
+
+    if(Is_True(level.ZombieDeathSounds))
+        spawner::add_archetype_spawn_function("zombie", ::ZombieSpawnDisappearingZombie);
+    else
+        spawner::remove_global_spawn_function("zombie", ::ZombieSpawnDisappearingZombie);
+    
+    for(a = 0; a < zombies.size; a++)
+        if(isDefined(zombies[a]) && IsAlive(zombies[a]))
+            zombies[a].bgb_tone_death = Is_True(level.ZombieDeathSounds) ? true : undefined;
+}
+
+ZombieDeathSound()
+{
+    if(!isDefined(self))
+        return;
+    
+    self.bgb_tone_death = true;
+}
+
 ZombieProjectileVomiting()
 {
     level.ZombieProjectileVomiting = BoolVar(level.ZombieProjectileVomiting);
@@ -675,34 +775,6 @@ ZombieProjectileVomit()
 
     if(Is_True(self.ProjectileVomit))
         self.ProjectileVomit = BoolVar(self.ProjectileVomit);
-}
-
-FreezeZombies()
-{
-    SetDvar("g_ai", (GetDvarString("g_ai") == "1") ? "0" : "1");
-}
-
-ZombieDeathSounds()
-{
-    level.ZombieDeathSounds = BoolVar(level.ZombieDeathSounds);
-    zombies = GetAITeamArray(level.zombie_team);
-
-    if(Is_True(level.ZombieDeathSounds))
-        spawner::add_archetype_spawn_function("zombie", ::ZombieSpawnDisappearingZombie);
-    else
-        spawner::remove_global_spawn_function("zombie", ::ZombieSpawnDisappearingZombie);
-    
-    for(a = 0; a < zombies.size; a++)
-        if(isDefined(zombies[a]) && IsAlive(zombies[a]))
-            zombies[a].bgb_tone_death = Is_True(level.ZombieDeathSounds) ? true : undefined;
-}
-
-ZombieDeathSound()
-{
-    if(!isDefined(self))
-        return;
-    
-    self.bgb_tone_death = true;
 }
 
 DisappearingZombies()
@@ -972,24 +1044,13 @@ BodiesFloat()
     SetDvar("phys_gravity_dir", ((GetDvarVector("phys_gravity_dir") == (0, 0, -1)) ? (0, 0, 1) : (0, 0, -1)));
 }
 
-ZombiesDeathEffect()
+ForceZombieCrawlers()
 {
-    level.ZombiesDeathEffect = BoolVar(level.ZombiesDeathEffect);
-}
+    zombies = GetAITeamArray(level.zombie_team);
 
-SetZombiesDeathEffect(effect)
-{
-    level.ZombiesDeathFX = effect;
-}
-
-ZombiesDamageEffect()
-{
-    level.ZombiesDamageEffect = BoolVar(level.ZombiesDamageEffect);
-}
-
-SetZombiesDamageEffect(effect)
-{
-    level.ZombiesDamageFX = effect;
+    for(a = 0; a < zombies.size; a++)
+        if(isDefined(zombies[a]) && IsAlive(zombies[a]))
+            zombies[a] zombie_utility::makezombiecrawler(true);
 }
 
 DetachZombieHeads()
@@ -999,67 +1060,6 @@ DetachZombieHeads()
     for(a = 0; a < zombies.size; a++)
         if(isDefined(zombies[a]) && IsAlive(zombies[a]))
             zombies[a] DetachAll();
-}
-
-KnockdownZombies(dir)
-{
-    switch(dir)
-    {
-        case "Back":
-            knockDir = "front";
-            upDir = "getup_back";
-            break;
-        
-        case "Front":
-            knockDir = "back";
-            upDir = "getup_belly";
-            break;
-    }
-
-    if(!isDefined(knockDir) || !isDefined(upDir))
-        return;
-
-    zombies = GetAITeamArray(level.zombie_team);
-    
-    foreach(zombie in zombies)
-    {
-        if(!isDefined(zombie) || !IsAlive(zombie) || zombie.missinglegs || Is_True(zombie.knockdown))
-            continue;
-        
-        zombie.knockdown = 1;
-        zombie.knockdown_direction = knockDir;
-        zombie.getup_direction = upDir;
-        zombie.knockdown_type = "knockdown_shoved";
-
-        BlackBoardAttribute(zombie, "_knockdown_direction", zombie.knockdown_direction);
-        BlackBoardAttribute(zombie, "_knockdown_type", zombie.knockdown_type);
-        BlackBoardAttribute(zombie, "_getup_direction", zombie.getup_direction);
-    }
-}
-
-PushZombies(dir)
-{
-    zombies = GetAITeamArray(level.zombie_team);
-    
-    foreach(zombie in zombies)
-    {
-        if(!isDefined(zombie) || !IsAlive(zombie) || zombie.missinglegs || Is_True(zombie.pushed))
-            continue;
-        
-        zombie.pushed = 1;
-        zombie.push_direction = ToLower(dir);
-
-        BlackBoardAttribute(zombie, "_push_direction", zombie.push_direction);
-    }
-}
-
-BlackBoardAttribute(entity, attributename, attributevalue)
-{
-    if(isDefined(entity.__blackboard[attributename]))
-		if(!isDefined(attributevalue) && IsFunctionPtr(entity.__blackboard[attributename]))
-			return;
-
-    entity.__blackboard[attributename] = attributevalue;
 }
 
 ServerClearCorpses()

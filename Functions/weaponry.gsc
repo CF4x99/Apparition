@@ -43,12 +43,7 @@ PopulateWeaponry(menu, player)
                 self addOpt("Take Current Weapon", ::TakeCurrentWeapon, player);
                 self addOpt("Take All Weapons", ::TakePlayerWeapons, player);
                 self addOptSlider("Drop Current Weapon", ::DropCurrentWeapon, "Take;Don't Take", player);
-                self addOpt("");
-
-                if(!IsVerkoMap())
-                    self addOptBool(player zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()), "Pack 'a' Punch Current Weapon", ::PackCurrentWeapon, player);
-                else
-                    self addOptSlider("Pack 'a' Punch Current Weapon", ::VerkoPackCurrentWeapon, "None;Upgrade;Mastery", player);
+                self addOptBool(player zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()), "Pack 'a' Punch Current Weapon", ::PackCurrentWeapon, player);
             break;
         
         case "Weapon Loadout":
@@ -58,7 +53,7 @@ PopulateWeaponry(menu, player)
                 self addOpt("Save Primary Offhand", ::SaveCurrentLoadout, "Primary Offhand", player);
                 self addOpt("Save Secondary Offhand", ::SaveCurrentLoadout, "Secondary Offhand", player);
                 self addOpt("");
-                self addOpt("Clear Loadout", ::ClearLoadout, player);
+                self addOpt("Reset", ::ClearLoadout, player);
             break;
         
         case "Weapon Camo":
@@ -78,23 +73,31 @@ PopulateWeaponry(menu, player)
             break;
         
         case "Weapon Attachments":
-            self addMenu("Attachments");
-                self addOptBool(player.CorrectInvalidCombo, "Correct Invalid Combinations", ::CorrectInvalidCombo, player);
-                self addOpt("");
+            weapon = player GetCurrentWeapon();
+            attachments = [];
 
-                attachmentFound = 0;
-                weapon = player GetCurrentWeapon();
-
+            if(isDefined(weapon) && weapon != level.weaponnone)
+            {
                 for(a = 0; a < 44; a++)
                 {
                     if(!isInArray(weapon.supportedAttachments, ReturnAttachment(a)) || ReturnAttachment(a) == "none" || ReturnAttachment(a) == "dw")
                         continue;
                     
-                    self addOptBool(isInArray(weapon.attachments, ReturnAttachment(a)), ReturnAttachmentName(ReturnAttachment(a)), ::GivePlayerAttachment, ReturnAttachment(a), player);
-                    attachmentFound++;
+                    attachments[attachments.size] = ReturnAttachment(a);
                 }
+            }
+            
+            self addMenu("Attachments");
 
-                if(!attachmentFound)
+                if(attachments.size)
+                {
+                    self addOptBool(player.CorrectInvalidCombo, "Correct Invalid Combinations", ::CorrectInvalidCombo, player);
+                    self addOpt("");
+
+                    foreach(attachment in attachments)
+                        self addOptBool(isInArray(weapon.attachments, attachment), ReturnAttachmentName(attachment), ::GivePlayerAttachment, attachment, player);
+                }
+                else
                     self addOpt("No Supported Attachments Found");
             break;
         
@@ -342,6 +345,86 @@ VerkoGetAAT(aat)
     }
 }
 
+GivePlayerAttachment(attachment, player, override = false)
+{
+    player endon("disconnect");
+
+    weapon = player GetCurrentWeapon();
+    attachments = weapon.attachments;
+
+    if(isDefined(player.aat[player aat::get_nonalternate_weapon(weapon)]))
+        aat = player.aat[player aat::get_nonalternate_weapon(weapon)];
+    
+    if(isInArray(attachments, attachment)) //If the weapon has the attachment, it will be removed
+    {
+        attachments = ArrayRemove(attachments, attachment);
+    }
+    else //If the weapon doesn't have the attachment, it will be added
+    {
+        if(!IsValidCombination(attachments, attachment))
+        {
+            if(Is_True(player.CorrectInvalidCombo) || override) //Auto-Correct invalid attachment combinations
+            {
+                invalid = GetInvalidAttachments(attachments, attachment);
+
+                if(isDefined(invalid) && invalid.size)
+                    for(a = 0; a < invalid.size; a++)
+                        attachments = ArrayRemove(attachments, invalid[a]);
+            }
+            else
+                return self iPrintlnBold("^1ERROR: ^7Invalid Attachment Combination");
+        }
+        
+        array::add(attachments, attachment, 0);
+
+        if(attachments.size > 8)
+            return self iPrintlnBold("^1ERROR: ^7Attachment Limit Reached");
+    }
+
+    newWeapon = GetWeapon(weapon.rootweapon.name, attachments);
+    camo = isDefined(weapon.savedCamo) ? weapon.savedCamo : 0;
+    weapon_options = player CalcWeaponOptions(camo, 0, 0);
+    newWeapon.savedCamo = camo;
+    
+    player TakeWeapon(weapon);
+    player GiveWeapon(newWeapon, weapon_options);
+    player SetSpawnWeapon(newWeapon, true);
+
+    if(isDefined(aat))
+        player aat::acquire(newWeapon, aat);
+}
+
+IsValidCombination(attachments, attachment)
+{
+    valid = ReturnAttachmentCombinations(attachment);
+    tokens = StrTok(valid, " ");
+
+    for(a = 0; a < attachments.size; a++)
+        if(!isInArray(tokens, attachments[a]))
+            return false;
+    
+    return true;
+}
+
+GetInvalidAttachments(attachments, attachment)
+{
+    valid = ReturnAttachmentCombinations(attachment);
+    tokens = StrTok(valid, " ");
+
+    invalid = [];
+
+    for(a = 0; a < attachments.size; a++)
+        if(!isInArray(tokens, attachments[a]))
+            array::add(invalid, attachments[a], 0);
+    
+    return invalid;
+}
+
+CorrectInvalidCombo(player)
+{
+    player.CorrectInvalidCombo = BoolVar(player.CorrectInvalidCombo);
+}
+
 SaveCurrentLoadout(type, player)
 {
     userID = player GetXUID();
@@ -505,86 +588,6 @@ GivePlayerLoadout()
     }
 }
 
-GivePlayerAttachment(attachment, player, override = false)
-{
-    player endon("disconnect");
-
-    weapon = player GetCurrentWeapon();
-    attachments = weapon.attachments;
-
-    if(isDefined(player.aat[player aat::get_nonalternate_weapon(weapon)]))
-        aat = player.aat[player aat::get_nonalternate_weapon(weapon)];
-    
-    if(isInArray(attachments, attachment)) //If the weapon has the attachment, it will be removed
-    {
-        attachments = ArrayRemove(attachments, attachment);
-    }
-    else //If the weapon doesn't have the attachment, it will be added
-    {
-        if(!IsValidCombination(attachments, attachment))
-        {
-            if(Is_True(player.CorrectInvalidCombo) || override) //Auto-Correct invalid attachment combinations
-            {
-                invalid = GetInvalidAttachments(attachments, attachment);
-
-                if(isDefined(invalid) && invalid.size)
-                    for(a = 0; a < invalid.size; a++)
-                        attachments = ArrayRemove(attachments, invalid[a]);
-            }
-            else
-                return self iPrintlnBold("^1ERROR: ^7Invalid Attachment Combination");
-        }
-        
-        array::add(attachments, attachment, 0);
-
-        if(attachments.size > 8)
-            return self iPrintlnBold("^1ERROR: ^7Attachment Limit Reached");
-    }
-
-    newWeapon = GetWeapon(weapon.rootweapon.name, attachments);
-    camo = isDefined(weapon.savedCamo) ? weapon.savedCamo : 0;
-    weapon_options = player CalcWeaponOptions(camo, 0, 0);
-    newWeapon.savedCamo = camo;
-    
-    player TakeWeapon(weapon);
-    player GiveWeapon(newWeapon, weapon_options);
-    player SetSpawnWeapon(newWeapon, true);
-
-    if(isDefined(aat))
-        player aat::acquire(newWeapon, aat);
-}
-
-IsValidCombination(attachments, attachment)
-{
-    valid = ReturnAttachmentCombinations(attachment);
-    tokens = StrTok(valid, " ");
-
-    for(a = 0; a < attachments.size; a++)
-        if(!isInArray(tokens, attachments[a]))
-            return false;
-    
-    return true;
-}
-
-GetInvalidAttachments(attachments, attachment)
-{
-    valid = ReturnAttachmentCombinations(attachment);
-    tokens = StrTok(valid, " ");
-
-    invalid = [];
-
-    for(a = 0; a < attachments.size; a++)
-        if(!isInArray(tokens, attachments[a]))
-            array::add(invalid, attachments[a], 0);
-    
-    return invalid;
-}
-
-CorrectInvalidCombo(player)
-{
-    player.CorrectInvalidCombo = BoolVar(player.CorrectInvalidCombo);
-}
-
 SetPlayerCamo(camo, player)
 {
     weap = player GetCurrentWeapon();
@@ -626,6 +629,14 @@ GiveWeaponAAT(aat, player)
     }
 }
 
+GivePlayerEquipment(equipment, player)
+{
+    if(player HasWeapon(equipment))
+        player TakeWeapon(equipment);
+    else
+        player zm_weapons::weapon_give(equipment, false, false, true);
+}
+
 GivePlayerWeapon(weapon, player)
 {
     if(player HasWeapon1(weapon))
@@ -658,12 +669,22 @@ GivePlayerWeapon(weapon, player)
     return newWeapon;
 }
 
-GivePlayerEquipment(equipment, player)
+VerkoGetBaseWeapon(weapon)
 {
-    if(player HasWeapon(equipment))
-        player TakeWeapon(equipment);
-    else
-        player zm_weapons::weapon_give(equipment, false, false, true);
+    if(!isInArray(level.var_2b893b73, weapon.name) && !isInArray(level.var_23af580e, weapon.name))
+        return weapon;
+    
+    if(isInArray(level.var_2b893b73, weapon.name))
+        currentArray = level.var_2b893b73;
+    else if(isInArray(level.var_23af580e, weapon.name))
+        currentArray = level.var_23af580e;
+    
+    if(!isDefined(currentArray))
+        return weapon;
+    
+    for(a = 0; a < currentArray.size; a++)
+        if(currentArray[a] == weapon.name)
+            return GetWeapon(level.var_21b77150[a]);
 }
 
 HasWeapon1(weapon)
@@ -690,22 +711,4 @@ HasWeapon1(weapon)
     }
 
     return false;
-}
-
-VerkoGetBaseWeapon(weapon)
-{
-    if(!isInArray(level.var_2b893b73, weapon.name) && !isInArray(level.var_23af580e, weapon.name))
-        return weapon;
-    
-    if(isInArray(level.var_2b893b73, weapon.name))
-        currentArray = level.var_2b893b73;
-    else if(isInArray(level.var_23af580e, weapon.name))
-        currentArray = level.var_23af580e;
-    
-    if(!isDefined(currentArray))
-        return weapon;
-    
-    for(a = 0; a < currentArray.size; a++)
-        if(currentArray[a] == weapon.name)
-            return GetWeapon(level.var_21b77150[a]);
 }

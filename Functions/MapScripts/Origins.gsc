@@ -39,6 +39,8 @@ PopulateOriginsScripts(menu)
             gateways = struct::get_array("trigger_teleport_pad", "targetname");
 
             self addMenu("Gateways");
+                self addOptBool(AreAllGateWaysOpen(), "Enable All", ::OpenAllGateways);
+                self addOpt("");
 
                 for(a = 0; a < gateways.size; a++)
                     self addOptBool(GetGatewayState(gateways[a]), ReturnGatewayName(gateways[a].target), ::SetGatewayState, gateways[a]);
@@ -122,48 +124,6 @@ PopulateOriginsScripts(menu)
                 self addOptBool(level flag::get("electric_puzzle_2_complete"), "Turn Dials", ::CompleteLightningDials);
                 self addOptBool(level flag::get("staff_lightning_upgrade_unlocked"), "Damage Orb", ::OriginsDamageOrb, "lightning");
             break;
-    }
-}
-
-CompleteSoulbox(box)
-{
-    if(!isDefined(box))
-        return;
-
-    if(Is_True(box.fillingBox) || box.n_souls_absorbed >= 30)
-        return self iPrintlnBold("^1ERROR: ^7Soul Box Is Already Being Filled");
-
-    box.fillingBox = BoolVar(box.fillingBox);
-
-    curs = self getCursor();
-    menu = self getCurrent();
-
-    while(isDefined(box))
-    {
-        if(isDefined(box) && box.n_souls_absorbed < 30)
-            box notify("soul_absorbed", self);
-
-        wait 0.01;
-    }
-
-    self RefreshMenu(menu, curs, true);
-}
-
-ReturnSoulBoxName(index)
-{
-    switch(index)
-    {
-        case 0:
-            return "Pack 'a' Punch";
-
-        case 1:
-            return "Generator 4";
-
-        case 2:
-            return "Church";
-
-        case 3:
-            return "Generator 5";
     }
 }
 
@@ -449,6 +409,83 @@ play_pap_anim(b_assemble)
     level clientfield::set("packapunch_anim", get_captured_zone_count());
 }
 
+AreAllGateWaysOpen()
+{
+    gateways = struct::get_array("trigger_teleport_pad", "targetname");
+
+    foreach(gateway in gateways)
+    {
+        if(!isDefined(gateway))
+            continue;
+        
+        if(!GetGatewayState(gateway))
+            return false;
+    }
+
+    return true;
+}
+
+OpenAllGateways()
+{
+    state = !AreAllGateWaysOpen();
+    gateways = struct::get_array("trigger_teleport_pad", "targetname");
+
+    foreach(gateway in gateways)
+    {
+        if(!isDefined(gateway))
+            continue;
+
+        if(GetGateWayState(gateway) != state)
+            SetGateWayState(gateway);
+    }
+}
+
+SetGatewayState(gateway)
+{
+    target = struct::get_array("stargate_gramophone_pos", "targetname")[gateway.script_int];
+
+    if(!GetGatewayState(gateway))
+    {
+        level flag::set("enable_teleporter_" + gateway.script_int);
+
+        if(isDefined(target) && isDefined(target.script_flag))
+            level flag::set(target.script_flag);
+    }
+    else
+    {
+        level flag::clear("enable_teleporter_" + gateway.script_int);
+
+        if(isDefined(target) && isDefined(target.script_flag))
+            level flag::clear(target.script_flag);
+    }
+}
+
+GetGatewayState(gateway)
+{
+    return level flag::get("enable_teleporter_" + gateway.script_int);
+}
+
+ReturnGatewayName(targetname)
+{
+    switch(targetname)
+    {
+        case "fire_teleport_player":
+            return "Fire";
+
+        case "air_teleport_player":
+            return "Wind";
+
+        case "water_teleport_player":
+            return "Ice";
+
+        case "electric_teleport_player":
+            return "Lightning";
+
+        default:
+            return "Unknown";
+    }
+}
+
 GivePlayerShovel(type, player)
 {
     if(!player.dig_vars["has_shovel"])
@@ -490,49 +527,45 @@ GivePlayerHelmet(player)
         player SetCharacterBodyStyle(2);
 }
 
-GetGatewayState(gateway)
+CompleteSoulbox(box)
 {
-    return level flag::get("enable_teleporter_" + gateway.script_int);
+    if(!isDefined(box))
+        return;
+
+    if(Is_True(box.fillingBox) || box.n_souls_absorbed >= 30)
+        return self iPrintlnBold("^1ERROR: ^7Soul Box Is Already Being Filled");
+
+    box.fillingBox = BoolVar(box.fillingBox);
+
+    curs = self getCursor();
+    menu = self getCurrent();
+
+    while(isDefined(box))
+    {
+        if(isDefined(box) && box.n_souls_absorbed < 30)
+            box notify("soul_absorbed", self);
+
+        wait 0.01;
+    }
+
+    self RefreshMenu(menu, curs, true);
 }
 
-SetGatewayState(gateway)
+ReturnSoulBoxName(index)
 {
-    target = struct::get_array("stargate_gramophone_pos", "targetname")[gateway.script_int];
-
-    if(!GetGatewayState(gateway))
+    switch(index)
     {
-        level flag::set("enable_teleporter_" + gateway.script_int);
+        case 0:
+            return "Pack 'a' Punch";
 
-        if(isDefined(target) && isDefined(target.script_flag))
-            level flag::set(target.script_flag);
-    }
-    else
-    {
-        level flag::clear("enable_teleporter_" + gateway.script_int);
+        case 1:
+            return "Generator 4";
 
-        if(isDefined(target) && isDefined(target.script_flag))
-            level flag::clear(target.script_flag);
-    }
-}
+        case 2:
+            return "Church";
 
-ReturnGatewayName(targetname)
-{
-    switch(targetname)
-    {
-        case "fire_teleport_player":
-            return "Fire";
-
-        case "air_teleport_player":
-            return "Wind";
-
-        case "water_teleport_player":
-            return "Ice";
-
-        case "electric_teleport_player":
-            return "Lightning";
-
-        default:
-            return "Unknown";
+        case 3:
+            return "Generator 5";
     }
 }
 
@@ -1222,6 +1255,20 @@ MudSlowdown()
     level.a_e_slow_areas = isDefined(level.a_e_slow_areas) ? undefined : GetEntArray("player_slow_area", "targetname");
 }
 
+DisableTankCooldown()
+{
+    level notify("EndDisableCooldown");
+    level endon("EndDisableCooldown");
+
+    level.DisableTankCooldown = BoolVar(level.DisableTankCooldown);
+
+    while(isDefined(level.DisableTankCooldown))
+    {
+        level.vh_tank.n_cooldown_timer = 2; //2 seconds is the minimum cooldown time(if it's anything less than 2, then it gets reset to 2)
+        level.vh_tank waittill("tank_stop");
+    }
+}
+
 OriginsTankSpeed(speed)
 {
     level notify("EndTankSpeed");
@@ -1244,19 +1291,5 @@ OriginsTankSpeed(speed)
     {
         if(level.vh_tank flag::get("tank_moving"))
             level.vh_tank SetSpeedImmediate(8);
-    }
-}
-
-DisableTankCooldown()
-{
-    level notify("EndDisableCooldown");
-    level endon("EndDisableCooldown");
-
-    level.DisableTankCooldown = BoolVar(level.DisableTankCooldown);
-
-    while(isDefined(level.DisableTankCooldown))
-    {
-        level.vh_tank.n_cooldown_timer = 2; //2 seconds is the minimum cooldown time(if it's anything less than 2, then it gets reset to 2)
-        level.vh_tank waittill("tank_stop");
     }
 }

@@ -121,6 +121,407 @@ PopulateAdvancedScripts(menu)
     }
 }
 
+LobbyRain(type, rain)
+{
+    level notify("EndLobbyRain");
+    level endon("EndLobbyRain");
+    
+    while(1)
+    {
+        origin = (level.players[0].origin + (RandomIntRange(-2500, 2500), RandomIntRange(-2500, 2500), RandomIntRange(750, 3000)));
+
+        switch(type)
+        {
+            case "Projectile":
+                MagicBullet(rain, origin, (origin + (0, 0, -1000)));
+                break;
+            
+            case "Model":
+                RainModel = SpawnScriptModel(origin, rain);
+
+                if(!isDefined(RainModel))
+                    break;
+                
+                RainModel NotSolid();
+                RainModel Launch(VectorScale(AnglesToForward(RainModel.angles), 10));
+                RainModel thread deleteAfter(10);
+                break;
+            
+            case "FX":
+                linker = SpawnScriptModel(origin, "tag_origin");
+
+                if(!isDefined(linker))
+                    break;
+                
+                linker thread RainPlayFXOnTag(level._effect[rain], "tag_origin");
+                linker Launch(VectorScale(AnglesToForward(linker.angles), 10));
+                linker thread deleteAfter(10);
+                break;
+            
+            default:
+                break;
+        }
+        
+        wait (type == "Model") ? 0.1 : 0.05;
+    }
+}
+
+RainPlayFXOnTag(FX, tag)
+{
+    while(isDefined(self))
+    {
+        PlayFXOnTag(FX, self, tag);
+        wait 0.5;
+    }
+}
+
+DisableLobbyRain()
+{
+    level notify("EndLobbyRain");
+}
+
+CustomSentry(origin)
+{
+    self endon("disconnect");
+
+    self.CustomSentry = BoolVar(self.CustomSentry);
+
+    if(Is_True(self.CustomSentry))
+    {
+        if(!isDefined(origin))
+            origin = self.origin;
+
+        self.CustomSentryOrigin = origin;
+        
+        sentrygun = self.CustomSentryWeapon;
+        self.sentrygun_weapon = zm_utility::spawn_weapon_model(sentrygun, undefined, origin, (0, self.angles[1], 0));
+        self.sentrygun_weapon.owner = self;
+
+        self.sentrygun_weapon thread clientfield::set("zm_aat_fire_works", 1);
+        self.sentrygun_weapon MoveTo(origin + (0, 0, 56), 0.5);
+        self.sentrygun_weapon waittill("movedone");
+        
+        while(Is_True(self.CustomSentry))
+        {
+            zombie = self.sentrygun_weapon CustomSentryGetTarget();
+            v_target_pos = !isDefined(zombie) ? (self.sentrygun_weapon.origin + VectorScale(AnglesToForward((0, RandomIntRange(0, 360), 0)), 40)) : zombie GetTagOrigin("j_head");
+
+            if(isDefined(zombie) && !isDefined(v_target_pos)) //Needed for AI that don't have the targeted bone tag(i.e. Spiders)
+                v_target_pos = zombie GetTagOrigin("tag_body");
+            
+            self.sentrygun_weapon.angles = VectorToAngles(v_target_pos - self.sentrygun_weapon.origin);
+            self.sentrygun_weapon DontInterpolate();
+
+            if(isDefined(zombie))
+                MagicBullet(sentrygun, self.sentrygun_weapon GetTagOrigin("tag_flash"), v_target_pos, self.sentrygun_weapon);
+
+            util::wait_network_frame();
+        }
+    }
+    else
+    {
+        if(isDefined(self.sentrygun_weapon))
+        {
+            self.sentrygun_weapon clientfield::set("zm_aat_fire_works", 0);
+            wait 0.01;
+
+            self.sentrygun_weapon delete();
+        }
+    }
+}
+
+CustomSentryGetTarget()
+{
+    zombies = GetAITeamArray(level.zombie_team);
+
+    for(a = 0; a < zombies.size; a++)
+    {
+        if(!isDefined(zombies[a]) || !IsAlive(zombies[a]) || zombies[a] DamageConeTrace(self.origin, self) < 0.1)
+            continue;
+        
+        if(!isDefined(enemy))
+            enemy = zombies[a];
+        
+        if(isDefined(enemy) && enemy != zombies[a])
+            if(Closer(self.origin, zombies[a].origin, enemy.origin) && zombies[a] DamageConeTrace(self.origin, self) >= 0.1)
+                enemy = zombies[a];
+    }
+
+    return enemy;
+}
+
+SetCustomSentryWeapon(weapon)
+{
+    if(self.CustomSentryWeapon == weapon)
+        return;
+    
+    self.CustomSentryWeapon = weapon;
+
+    if(Is_True(self.CustomSentry))
+        for(a = 0; a < 2; a++)
+            self CustomSentry(self.CustomSentryOrigin);
+}
+
+ControllableZombie(team)
+{
+    if(Is_True(self.ControllableZombie))
+        return;
+    
+    if(self isPlayerLinked())
+        return self iPrintlnBold("^1ERROR: ^7Player Is Linked To An Entity");
+    
+    if(Is_True(self.BodyGuard))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use Controllable Zombie While Body Guard Is Enabled");
+    
+    self endon("disconnect");
+    
+    self closeMenu1();
+    self.ControllableZombie = true;
+    self.DisableMenuControls = true;
+    self.ignoreme = true;
+
+    CZSavedOrigin = self.origin;
+    CZSavedAngles = self.angles;
+
+    spawner = ArrayGetClosest(level.zombie_spawners, self.origin);
+    zombie = zombie_utility::spawn_zombie(spawner);
+    
+    self SetStance("stand");
+    wait 0.1;
+    
+    if(isDefined(zombie))
+    {
+        self Hide();
+        zombie.ignoreme = 1;
+
+        viewModel = SpawnScriptModel((zombie.origin + (0, 0, 18)) + (AnglesToForward(zombie.angles) * -40), "tag_origin", zombie.angles);
+        viewModel LinkTo(zombie);
+        
+        self PlayerLinkToDelta(viewModel, "tag_origin", 0, 85, 85, 35, 35, true, true);
+        self FreezeControlsAllowLook(true);
+        self DisableWeapons();
+        self DisableOffhandWeapons();
+        self SetPlayerAngles(zombie.angles);
+        
+        zombie.ignore_find_flesh = 1;
+        zombie.team = (team == "Friendly") ? self.team : level.zombie_team;
+        zombie thread zombie_utility::set_zombie_run_cycle("sprint");
+
+        while(!zombie CanControl() && IsAlive(zombie))
+        {
+            if(self MeleeButtonPressed())
+                zombie DoDamage(zombie.health + 666, zombie GetTagOrigin("j_head"));
+            
+            wait 0.1;
+        }
+        
+        goalPos = SpawnScriptModel(GetGroundPos(self TraceBullet()), "tag_origin");
+        PlayFXOnTag(level._effect["powerup_on"], goalPos, "tag_origin");
+        
+        goalPos SetInvisibleToAll();
+        goalPos SetVisibleToPlayer(self);
+        
+        while(IsAlive(zombie))
+        {
+            zombie.ignore_find_flesh = 1;
+            zombie.ignoreme = 1;
+            goalPos.origin = self TraceBullet();
+            
+            if(isDefined(zombie) && IsAlive(zombie) && zombie CanControl())
+            {
+                if(Distance(zombie.origin, goalPos.origin) >= 100)
+                {
+                    zombie SetGoal(goalPos.origin, true);
+
+                    if(isDefined(zombie.zombie_move_speed) && zombie.zombie_move_speed != "sprint")
+                        zombie thread zombie_utility::set_zombie_run_cycle("sprint");
+                }
+                
+                if(self AttackButtonPressed())
+                    zombie ZombieAttack();
+            }
+            
+            if(self MeleeButtonPressed())
+            {
+                zombie DoDamage((zombie.health + 666), zombie GetTagOrigin("j_head"));
+                wait 0.8;
+
+                break;
+            }
+            
+            wait 0.01;
+        }
+    }
+    else
+        self iPrintlnBold("^1ERROR: ^7Couldn't Spawn Zombie");
+    
+    wait 0.1;
+
+    if(!Is_True(self.Invisibility))
+        self Show();
+    
+    self Unlink();
+    self FreezeControlsAllowLook(false);
+    self EnableWeapons();
+    self EnableOffhandWeapons();
+
+    viewModel delete();
+    goalPos delete();
+    
+    self SetOrigin(CZSavedOrigin);
+    self SetPlayerAngles(CZSavedAngles);
+
+    if(Is_True(self.DisableMenuControls))
+        self.DisableMenuControls = BoolVar(self.DisableMenuControls);
+
+    if(Is_True(self.ControllableZombie))
+        self.ControllableZombie = BoolVar(self.ControllableZombie);
+
+    if(Is_True(self.ignoreme))
+        self.ignoreme = false;
+}
+
+CanControl()
+{
+    if(Is_True(self.is_traversing))
+        return false;
+    
+    if(Is_True(self.is_leaping))
+        return false;
+    
+    if(Is_True(self.barricade_enter))
+        return false;
+    
+    if(!zm_behavior::inplayablearea(self))
+        return false;
+    
+    return true;
+}
+
+ZombieAttack()
+{
+    self endon("death");
+    
+    v_angles = self.angles;
+
+    if(isDefined(self.attacking_point))
+    {
+        v_angles = (self.attacking_point.v_center_pillar - self.origin);
+        v_angles = VectorToAngles((v_angles[0], v_angles[1], 0));
+    }
+    
+    animation = "ai_zombie_base_ad_attack_v1";
+    self AnimScripted("attack_anim", self.origin, v_angles, animation);
+    
+    wait GetAnimLength(animation);
+}
+
+SpawnTeleporter(action = "Spawn", origin, skipLink = false, skipDelete = false)
+{
+    if(isDefined(action) && action == "Delete All")
+    {
+        DeleteTeleporters();
+        return;
+    }
+
+    if(!isDefined(origin))
+    {
+        traceSurface = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["surfacetype"];
+
+        if(traceSurface == "none" || traceSurface == "default")
+            return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
+        
+        origin = self TraceBullet() + (0, 0, 45);
+    }
+
+    linker = SpawnScriptModel(origin, "tag_origin");
+    linker thread AddActiveTeleporter(skipLink, skipDelete);
+
+    return linker;
+}
+
+DeleteTeleporters()
+{
+    if(!isDefined(level.ActiveTeleporters) || !level.ActiveTeleporters.size)
+        return;
+    
+    foreach(teleporter in level.ActiveTeleporters)
+        if(isDefined(teleporter) && !Is_True(teleporter.skipDelete))
+            teleporter delete();
+}
+
+AddActiveTeleporter(skipLink = false, skipDelete = false)
+{
+    if(!isDefined(level.ActiveTeleporters))
+        level.ActiveTeleporters = [];
+    
+    if(isInArray(level.ActiveTeleporters, self))
+        return;
+    
+    if(level.ActiveTeleporters.size && !skipLink)
+    {
+        if(isDefined(level.ActiveTeleporters[(level.ActiveTeleporters.size - 1)]) && !isDefined(level.ActiveTeleporters[(level.ActiveTeleporters.size - 1)].LinkedTeleporter))
+        {
+            self.LinkedTeleporter = level.ActiveTeleporters[(level.ActiveTeleporters.size - 1)];
+            level.ActiveTeleporters[(level.ActiveTeleporters.size - 1)].LinkedTeleporter = self;
+        }
+    }
+
+    self.skipDelete = skipDelete;
+    level.ActiveTeleporters[level.ActiveTeleporters.size] = self;
+
+    self MakeUsable();
+    self SetCursorHint("HINT_NOICON");
+    self SetHintString("Press [{+activate}] To Teleport");
+    self thread ActivateTeleporter();
+
+    while(isDefined(self))
+    {
+        PlayFXOnTag(level._effect["teleport_aoe_kill"], self, "tag_origin");
+        wait 0.25;
+    }
+}
+
+ActivateTeleporter()
+{
+    if(isDefined(self.TeleporterActivated))
+        return;
+    self.TeleporterActivated = true;
+
+    while(isDefined(self))
+    {
+        self waittill("trigger", player);
+        
+        if(Is_True(player.UsingTeleporter) || !isDefined(self))
+            continue;
+        
+        if(!isDefined(self.LinkedTeleporter))
+        {
+            player iPrintlnBold("^1ERROR: ^7No Linked Teleporter Found");
+            continue;
+        }
+        
+        player thread UseTeleporter(self);
+    }
+}
+
+UseTeleporter(teleporter)
+{
+    if(!isDefined(teleporter) || Is_True(self.UsingTeleporter) || !isDefined(teleporter.LinkedTeleporter))
+        return;
+    
+    self.UsingTeleporter = true;
+    PlayFX(level._effect["teleport_splash"], teleporter.origin);
+    wait 0.05;
+
+    self SetOrigin(teleporter.LinkedTeleporter.origin);
+    PlayFX(level._effect["teleport_splash"], teleporter.LinkedTeleporter.origin);
+    wait 1.5;
+
+    if(Is_True(self.UsingTeleporter))
+        self.UsingTeleporter = BoolVar(self.UsingTeleporter);
+}
+
 AC130(type)
 {
     if(Is_True(self.AC130))
@@ -317,6 +718,104 @@ RefreshAC130HUD(ammo)
     self.AC130HUD[self.AC130HUD.size] = self createText("default", 1.2, 1, text + "\n^3" + button + " ^7To Change Weapon", "LEFT", "CENTER", -400, 0, 1, (1, 1, 1));
 }
 
+MexicanWave(size)
+{
+    if(isDefined(self.MexicanWave) && self.MexicanWave.size)
+    {
+        for(a = 0; a < self.MexicanWave.size; a++)
+            self.MexicanWave[a] delete();
+        
+        self.MexicanWave = undefined;
+        return;
+    }
+    
+    self.MexicanWave = [];
+
+    for(a = 0; a < size; a++)
+    {
+        self.MexicanWave[self.MexicanWave.size] = SpawnScriptModel(self.origin + AnglesToRight(self.angles) * (a * 45), "defaultactor", self.angles);
+        self.MexicanWave[(self.MexicanWave.size - 1)] thread MexicanWaveMove(a);
+    }
+}
+
+MexicanWaveMove(index)
+{
+    wait (index * 0.2);
+
+    while(isDefined(self))
+    {
+        self MoveZ(55, 0.75);
+        wait 0.74;
+
+        if(isDefined(self))
+            self MoveZ(-55, 0.75);
+        
+        wait 0.74;
+    }
+}
+
+SpiralStaircase(size)
+{
+    if(Is_True(level.SpiralStaircaseSpawning))
+        return self iPrintlnBold("^1ERROR: ^7Spiral Staircase Is Being Built");
+    
+    if(Is_True(level.SpiralStaircaseDeleting))
+        return self iPrintlnBold("^1ERROR: ^7Spiral Staircase Is Being Deleted");
+    
+    if(isDefined(level.SpiralStaircase) && level.SpiralStaircase.size)
+    {
+        level.SpiralStaircaseDeleting = true;
+
+        for(a = 0; a < level.SpiralStaircase.size; a++)
+            if(isDefined(level.SpiralStaircase[a]))
+            {
+                level.SpiralStaircase[a] Launch(VectorScale(AnglesToForward(level.SpiralStaircase[a].angles), 255));
+                level.SpiralStaircase[a] NotSolid();
+                level.SpiralStaircase[a] thread deleteAfter(5);
+
+                wait 0.01;
+            }
+        
+        wait 5;
+        level.SpiralStaircase = [];
+
+        if(Is_True(level.SpiralStaircaseDeleting))
+            level.SpiralStaircaseDeleting = BoolVar(level.SpiralStaircaseDeleting);
+    }
+    else
+    {
+        model = GetSpawnableBaseModel();
+        trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+
+        if(!isInArray(level.MenuModels, model))
+            return self iPrintlnBold("^1ERROR: ^7Couldn't Find A Valid Base Model For The Spiral Staircase");
+    
+        origin = trace["position"];
+        surface = trace["surfacetype"];
+
+        if(isDefined(surface) && (surface == "none" || surface == "default"))
+            return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
+        
+        level.SpiralStaircaseSpawning = true;
+
+        if(!isDefined(level.SpiralStaircase))
+            level.SpiralStaircase = [];
+        
+        level.SpiralStaircase[0] = SpawnScriptModel(origin, model, (-28, self.angles[1], 90));
+        
+        for(a = 1; a < size; a++)
+        {
+            if(!isDefined(level.SpiralStaircase[(level.SpiralStaircase.size - 1)]))
+                continue;
+            
+            level.SpiralStaircase[level.SpiralStaircase.size] = SpawnScriptModel((level.SpiralStaircase[(level.SpiralStaircase.size - 1)].origin + (AnglesToForward(level.SpiralStaircase[(level.SpiralStaircase.size - 1)].angles) * 10) + (0, 0, 8)), model, (level.SpiralStaircase[0].angles[0], (level.SpiralStaircase[(level.SpiralStaircase.size - 1)].angles[1] + 12), level.SpiralStaircase[0].angles[2]), 0.01);
+        }
+
+        if(Is_True(level.SpiralStaircaseSpawning))
+            level.SpiralStaircaseSpawning = BoolVar(level.SpiralStaircaseSpawning);
+    }
+}
+
 RainPowerups()
 {
     level.RainPowerups = BoolVar(level.RainPowerups);
@@ -365,217 +864,271 @@ custom_powerup_timeout()
     self zm_powerups::powerup_delete();
 }
 
-LobbyRain(type, rain)
+MoonDoors()
 {
-    level notify("EndLobbyRain");
-    level endon("EndLobbyRain");
+    if(!Is_True(level.MoonDoors) && !IsAllDoorsOpen())
+    {
+        menu = self getCurrent();
+        curs = self getCursor();
+
+        self OpenAllDoors();
+    }
+
+    level.MoonDoors = BoolVar(level.MoonDoors);
     
-    while(1)
+    if(Is_True(level.MoonDoors))
+        thread OpenCloseMoonDoors();
+    else
     {
-        origin = (level.players[0].origin + (RandomIntRange(-2500, 2500), RandomIntRange(-2500, 2500), RandomIntRange(750, 3000)));
+        types = Array("zombie_door", "zombie_airlock_buy", "zombie_debris");
 
-        switch(type)
+        for(a = 0; a < types.size; a++)
         {
-            case "Projectile":
-                MagicBullet(rain, origin, (origin + (0, 0, -1000)));
-                break;
-            
-            case "Model":
-                RainModel = SpawnScriptModel(origin, rain);
+            doors = GetEntArray(types[a], "targetname");
 
-                if(!isDefined(RainModel))
-                    break;
-                
-                RainModel NotSolid();
-                RainModel Launch(VectorScale(AnglesToForward(RainModel.angles), 10));
-                RainModel thread deleteAfter(10);
-                break;
-            
-            case "FX":
-                linker = SpawnScriptModel(origin, "tag_origin");
-
-                if(!isDefined(linker))
-                    break;
-                
-                linker thread RainPlayFXOnTag(level._effect[rain], "tag_origin");
-                linker Launch(VectorScale(AnglesToForward(linker.angles), 10));
-                linker thread deleteAfter(10);
-                break;
-            
-            default:
-                break;
+            if(isDefined(doors))
+            {
+                for(b = 0; b < doors.size; b++)
+                {
+                    if(isDefined(doors[b]))
+                    {
+                        script_strings = Array("rotate", "slide_apart", "move");
+                        
+                        if(!doors[b] IsDoorOpen(types[a]))
+                        {
+                            for(c = 0; c < doors[b].doors.size; c++)
+                                if(isDefined(doors[b].doors[c]) && isInArray(script_strings, doors[b].doors[c].script_string))
+                                    doors[b].doors[c] thread SetMoonDoorState(doors[b], true);
+                        }
+                    }
+                }
+            }
         }
-        
-        wait (type == "Model") ? 0.1 : 0.05;
     }
+
+    if(isDefined(menu) && isDefined(curs))
+        self RefreshMenu(menu, curs);
 }
 
-RainPlayFXOnTag(FX, tag)
+OpenCloseMoonDoors()
 {
-    while(isDefined(self))
+    types = Array("zombie_door", "zombie_airlock_buy", "zombie_debris");
+
+    while(Is_True(level.MoonDoors))
     {
-        PlayFXOnTag(FX, self, tag);
-        wait 0.5;
+        for(a = 0; a < types.size; a++)
+        {
+            doors = GetEntArray(types[a], "targetname");
+
+            if(isDefined(doors))
+            {
+                for(b = 0; b < doors.size; b++)
+                {
+                    if(isDefined(doors[b]))
+                    {
+                        script_strings = Array("rotate", "slide_apart", "move");
+                        
+                        if(AnyoneNearDoor(doors[b]) && !doors[b] IsDoorOpen(types[a]))
+                        {
+                            for(c = 0; c < doors[b].doors.size; c++)
+                                if(isDefined(doors[b].doors[c]) && isInArray(script_strings, doors[b].doors[c].script_string))
+                                    doors[b].doors[c] thread SetMoonDoorState(doors[b], true);
+                        }
+                        else if(!AnyoneNearDoor(doors[b]) && doors[b] IsDoorOpen(types[a]))
+                        {
+                            for(c = 0; c < doors[b].doors.size; c++)
+                                if(isDefined(doors[b].doors[c]) && isInArray(script_strings, doors[b].doors[c].script_string))
+                                    doors[b].doors[c] thread SetMoonDoorState(doors[b], false);
+                        }
+                    }
+                }
+            }
+        }
+
+        wait 0.01;
     }
 }
 
-DisableLobbyRain()
+SetMoonDoorState(door, open)
 {
-    level notify("EndLobbyRain");
+    time = isDefined(self.script_transition_time) ? self.script_transition_time : 1;
+    scale = open ? 1 : -1;
+    door.has_been_opened = open;
+    
+    switch(self.script_string)
+    {
+        case "rotate":
+            angles = open ? self.script_angles : self.savedAngles;
+
+            if(isDefined(angles))
+            {
+                self RotateTo(angles, time, 0, 0);
+                self thread zm_blockers::door_solid_thread();
+
+                wait time;
+            }
+            break;
+        
+        case "slide_apart":
+            if(isDefined(self.script_vector))
+            {
+                vector = VectorScale(self.script_vector, scale);
+                goalOrigin = open ? (self.origin + vector) : self.savedOrigin;
+
+                if(time >= 0.5)
+                    self MoveTo(goalOrigin, time, (time * 0.25), (time * 0.25));
+                else
+                    self MoveTo(goalOrigin, time);
+
+                self thread zm_blockers::door_solid_thread();
+                wait time;
+            }
+            break;
+        
+        case "move":
+            if(isDefined(self.script_vector))
+            {
+                vector = VectorScale(self.script_vector, scale);
+                goalOrigin = open ? (self.origin + vector) : self.savedOrigin;
+                
+                if(isDefined(goalOrigin))
+                {
+                    if(time >= 0.5)
+                        self MoveTo(goalOrigin, time, (time * 0.25), (time * 0.25));
+                    else
+                        self MoveTo(goalOrigin, time);
+
+                    self thread zm_blockers::door_solid_thread();
+                }
+
+                wait time;
+            }
+            break;
+        
+        default:
+            break;
+    }
 }
 
-CustomSentry(origin)
+AnyoneNearDoor(door)
+{
+    foreach(ai in GetAITeamArray(level.zombie_team))
+        if(isDefined(ai) && IsAlive(ai) && Distance(ai.origin, door.origin) <= 255)
+            return true;
+
+    foreach(player in level.players)
+        if(Distance(player.origin, door.origin) <= 255)
+            return true;
+
+    return false;
+}
+
+BodyGuard()
 {
     self endon("disconnect");
-
-    self.CustomSentry = BoolVar(self.CustomSentry);
-
-    if(Is_True(self.CustomSentry))
+    
+    if(Is_True(self.ControllableZombie) && !Is_True(self.BodyGuard))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use Body Guard While Controllable Zombie Is Enabled");
+    
+    self.BodyGuard = BoolVar(self.BodyGuard);
+    
+    if(Is_True(self.BodyGuard))
     {
-        if(!isDefined(origin))
-            origin = self.origin;
-
-        self.CustomSentryOrigin = origin;
+        spawner = ArrayGetClosest(level.zombie_spawners, self.origin);
+        self.BodyGuardZombie = zombie_utility::spawn_zombie(spawner);
+        wait 0.1;
         
-        sentrygun = self.CustomSentryWeapon;
-        self.sentrygun_weapon = zm_utility::spawn_weapon_model(sentrygun, undefined, origin, (0, self.angles[1], 0));
-        self.sentrygun_weapon.owner = self;
-
-        self.sentrygun_weapon thread clientfield::set("zm_aat_fire_works", 1);
-        self.sentrygun_weapon MoveTo(origin + (0, 0, 56), 0.5);
-        self.sentrygun_weapon waittill("movedone");
-        
-        while(Is_True(self.CustomSentry))
+        if(Is_True(self.BodyGuard) && isDefined(self.BodyGuardZombie) && IsAlive(self.BodyGuardZombie))
         {
-            zombie = self.sentrygun_weapon CustomSentryGetTarget();
-            v_target_pos = !isDefined(zombie) ? (self.sentrygun_weapon.origin + VectorScale(AnglesToForward((0, RandomIntRange(0, 360), 0)), 40)) : zombie GetTagOrigin("j_head");
+            self.BodyGuardZombieLinker = spawn("script_origin", self.BodyGuardZombie.origin);
 
-            if(isDefined(zombie) && !isDefined(v_target_pos)) //Needed for AI that don't have the targeted bone tag(i.e. Spiders)
-                v_target_pos = zombie GetTagOrigin("tag_body");
+            self.BodyGuardZombieLinker.origin = self.BodyGuardZombie.origin;
+            self.BodyGuardZombieLinker.angles = self.BodyGuardZombie.angles;
+
+            self.BodyGuardZombie LinkTo(self.BodyGuardZombieLinker);
+            self.BodyGuardZombieLinker MoveTo(self.origin, 0.01);
+            self.BodyGuardZombieLinker waittill("movedone");
+
+            self.BodyGuardZombie Unlink();
+            self.BodyGuardZombieLinker delete();
+            self.BodyGuardZombie.find_flesh_struct_string = "find_flesh";
+            self.BodyGuardZombie.ai_state = "find_flesh";
+            self.BodyGuardZombie notify("zombie_custom_think_done", "find_flesh");
             
-            self.sentrygun_weapon.angles = VectorToAngles(v_target_pos - self.sentrygun_weapon.origin);
-            self.sentrygun_weapon DontInterpolate();
+            self.BodyGuardZombie.ignoreme = 1;
+            self.BodyGuardZombie.team = self.team;
+            self.BodyGuardZombie.no_gib = 1;
+            self.BodyGuardZombie.allowdeath = 0;
+            self.BodyGuardZombie.allowpain = 0;
+            self.BodyGuardZombie.aat_turned = 1;
+            self.BodyGuardZombie.n_aat_turned_zombie_kills = 0;
+            self.BodyGuardZombie clientfield::set("zm_aat_turned", 1);
+            
+            while(Is_True(self.BodyGuard))
+            {
+                target = self.BodyGuardZombie GetBodyGuardTarget(self);
 
-            if(isDefined(zombie))
-                MagicBullet(sentrygun, self.sentrygun_weapon GetTagOrigin("tag_flash"), v_target_pos, self.sentrygun_weapon);
+                if(!isDefined(target))
+                    target = self.BodyGuardZombie GetBodyGuardTarget(self.BodyGuardZombie); //Attempt to find a target that is near the body guard, if there isn't one near the player
+                
+                if(!isDefined(target))
+                {
+                    self.BodyGuardZombie ClearForcedGoal();
+                    goalPos = (self.origin + VectorScale(AnglesToForward(self GetPlayerAngles()), 100));
+                    speed = (Distance(goalPos, self.BodyGuardZombie.origin) > 200) ? "super_sprint" : "walk";
 
-            util::wait_network_frame();
+                    if(isDefined(self.BodyGuardZombie.zombie_move_speed) && self.BodyGuardZombie.zombie_move_speed != speed)
+                        self.BodyGuardZombie thread zombie_utility::set_zombie_run_cycle(speed);
+
+                    self.BodyGuardZombie SetGoal(goalPos, true, 255);
+                }
+                else
+                {
+                    if(isDefined(self.BodyGuardZombie.zombie_move_speed) && self.BodyGuardZombie.zombie_move_speed != "super_sprint")
+                        self.BodyGuardZombie thread zombie_utility::set_zombie_run_cycle("super_sprint");
+
+                    self.BodyGuardZombie SetGoal(target.origin, true);
+                }
+                
+                wait 0.01;
+            }
         }
     }
     else
     {
-        if(isDefined(self.sentrygun_weapon))
+        if(isDefined(self.BodyGuardZombie))
         {
-            self.sentrygun_weapon clientfield::set("zm_aat_fire_works", 0);
-            wait 0.01;
+            self.BodyGuardZombie thread clientfield::set("zm_aat_turned", 0);
 
-            self.sentrygun_weapon delete();
+            self.BodyGuardZombie.no_gib = 0;
+            self.BodyGuardZombie.allowdeath = 1;
+            self.BodyGuardZombie.allowpain = 1;
+            
+            self.BodyGuardZombie DoDamage(self.BodyGuardZombie.health + 666, self.BodyGuardZombie GetTagOrigin("j_head"));
         }
+
+        if(isDefined(self.BodyGuardZombieLinker))
+            self.BodyGuardZombieLinker delete();
     }
 }
 
-CustomSentryGetTarget()
+GetBodyGuardTarget(player)
 {
+    zombie = undefined;
     zombies = GetAITeamArray(level.zombie_team);
 
     for(a = 0; a < zombies.size; a++)
     {
-        if(!isDefined(zombies[a]) || !IsAlive(zombies[a]) || zombies[a] DamageConeTrace(self.origin, self) < 0.1)
+        if(!isDefined(zombies[a]) || !IsAlive(zombies[a]) || zombies[a] == self || !zm_behavior::inplayablearea(zombies[a]))
             continue;
         
-        if(!isDefined(enemy))
-            enemy = zombies[a];
+        if(Distance(player.origin, zombies[a].origin) > 500 || !player DamageConeTrace(zombies[a] GetCentroid()) || isDefined(zombie) && Distance(player.origin, zombies[a].origin) > Distance(player.origin, zombie.origin))
+            continue;
         
-        if(isDefined(enemy) && enemy != zombies[a])
-            if(Closer(self.origin, zombies[a].origin, enemy.origin) && zombies[a] DamageConeTrace(self.origin, self) >= 0.1)
-                enemy = zombies[a];
+        zombie = zombies[a];
     }
 
-    return enemy;
-}
-
-SetCustomSentryWeapon(weapon)
-{
-    if(self.CustomSentryWeapon == weapon)
-        return;
-    
-    self.CustomSentryWeapon = weapon;
-
-    if(Is_True(self.CustomSentry))
-        for(a = 0; a < 2; a++)
-            self CustomSentry(self.CustomSentryOrigin);
-}
-
-ArtilleryStrike()
-{
-    if(Is_True(self.ArtilleryStrike))
-        return;
-    self.ArtilleryStrike = true;
-    
-    self endon("disconnect");
-
-    self closeMenu1();
-    wait 0.25;
-    
-    goalPos = SpawnScriptModel(GetGroundPos(self TraceBullet()), "tag_origin");
-    PlayFXOnTag(level._effect["powerup_on"], goalPos, "tag_origin");
-
-    self.DisableMenuControls = true;
-    self SetMenuInstructions("[{+attack}] - Confirm Location\n[{+melee}] - Cancel");
-    
-    while(1)
-    {
-        trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
-        
-        origin = trace["position"];
-        surface = trace["surfacetype"];
-        goalPos.origin = origin;
-
-        if(self UseButtonPressed() || self AttackButtonPressed())
-        {
-            if(surface != "none" && surface != "default")
-            {
-                targetPos = goalPos.origin;
-                break;
-            }
-            else
-                self iPrintlnBold("^1ERROR: ^7Invalid Surface");
-        }
-        
-        if(self MeleeButtonPressed())
-            break;
-
-        wait 0.01;
-    }
-    
-    goalPos delete();
-
-    if(Is_True(self.DisableMenuControls))
-        self.DisableMenuControls = BoolVar(self.DisableMenuControls);
-
-    self SetMenuInstructions();
-    
-    if(isDefined(targetPos))
-    {
-        targetPos = targetPos + (0, 0, 3500);
-
-        for(a = -1; a < 2; a += 2)
-            for(b = 0; b < 5; b++)
-            {
-                MagicBullet(GetWeapon("launcher_standard"), targetPos, targetPos - (0, b * (a * 25), 2500), self);
-                wait 0.25;
-            }
-
-        for(a = -1; a < 2; a += 2)
-            for(b = 0; b < 5; b++)
-            {
-                MagicBullet(GetWeapon("launcher_standard"), targetPos, targetPos - (b * (a * 25), 0, 2500), self);
-                wait 0.25;
-            }
-    }
-    
-    if(Is_True(self.ArtilleryStrike))
-        self.ArtilleryStrike = BoolVar(self.ArtilleryStrike);
+    return zombie;
 }
 
 Tornado()
@@ -825,595 +1378,6 @@ TornadoLaunchEntity(a, TornadoParts)
         self.OnTornado = BoolVar(self.OnTornado);
 }
 
-MoonDoors()
-{
-    if(!Is_True(level.MoonDoors) && !IsAllDoorsOpen())
-    {
-        menu = self getCurrent();
-        curs = self getCursor();
-
-        self OpenAllDoors();
-    }
-
-    level.MoonDoors = BoolVar(level.MoonDoors);
-    
-    if(Is_True(level.MoonDoors))
-        thread OpenCloseMoonDoors();
-    else
-    {
-        types = Array("zombie_door", "zombie_airlock_buy", "zombie_debris");
-
-        for(a = 0; a < types.size; a++)
-        {
-            doors = GetEntArray(types[a], "targetname");
-
-            if(isDefined(doors))
-            {
-                for(b = 0; b < doors.size; b++)
-                {
-                    if(isDefined(doors[b]))
-                    {
-                        script_strings = Array("rotate", "slide_apart", "move");
-                        
-                        if(!doors[b] IsDoorOpen(types[a]))
-                        {
-                            for(c = 0; c < doors[b].doors.size; c++)
-                                if(isDefined(doors[b].doors[c]) && isInArray(script_strings, doors[b].doors[c].script_string))
-                                    doors[b].doors[c] thread SetMoonDoorState(doors[b], true);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    if(isDefined(menu) && isDefined(curs))
-        self RefreshMenu(menu, curs);
-}
-
-OpenCloseMoonDoors()
-{
-    types = Array("zombie_door", "zombie_airlock_buy", "zombie_debris");
-
-    while(Is_True(level.MoonDoors))
-    {
-        for(a = 0; a < types.size; a++)
-        {
-            doors = GetEntArray(types[a], "targetname");
-
-            if(isDefined(doors))
-            {
-                for(b = 0; b < doors.size; b++)
-                {
-                    if(isDefined(doors[b]))
-                    {
-                        script_strings = Array("rotate", "slide_apart", "move");
-                        
-                        if(AnyoneNearDoor(doors[b]) && !doors[b] IsDoorOpen(types[a]))
-                        {
-                            for(c = 0; c < doors[b].doors.size; c++)
-                                if(isDefined(doors[b].doors[c]) && isInArray(script_strings, doors[b].doors[c].script_string))
-                                    doors[b].doors[c] thread SetMoonDoorState(doors[b], true);
-                        }
-                        else if(!AnyoneNearDoor(doors[b]) && doors[b] IsDoorOpen(types[a]))
-                        {
-                            for(c = 0; c < doors[b].doors.size; c++)
-                                if(isDefined(doors[b].doors[c]) && isInArray(script_strings, doors[b].doors[c].script_string))
-                                    doors[b].doors[c] thread SetMoonDoorState(doors[b], false);
-                        }
-                    }
-                }
-            }
-        }
-
-        wait 0.01;
-    }
-}
-
-SetMoonDoorState(door, open)
-{
-    time = isDefined(self.script_transition_time) ? self.script_transition_time : 1;
-    scale = open ? 1 : -1;
-    door.has_been_opened = open;
-    
-    switch(self.script_string)
-    {
-        case "rotate":
-            angles = open ? self.script_angles : self.savedAngles;
-
-            if(isDefined(angles))
-            {
-                self RotateTo(angles, time, 0, 0);
-                self thread zm_blockers::door_solid_thread();
-
-                wait time;
-            }
-            break;
-        
-        case "slide_apart":
-            if(isDefined(self.script_vector))
-            {
-                vector = VectorScale(self.script_vector, scale);
-                goalOrigin = open ? (self.origin + vector) : self.savedOrigin;
-
-                if(time >= 0.5)
-                    self MoveTo(goalOrigin, time, (time * 0.25), (time * 0.25));
-                else
-                    self MoveTo(goalOrigin, time);
-
-                self thread zm_blockers::door_solid_thread();
-                wait time;
-            }
-            break;
-        
-        case "move":
-            if(isDefined(self.script_vector))
-            {
-                vector = VectorScale(self.script_vector, scale);
-                goalOrigin = open ? (self.origin + vector) : self.savedOrigin;
-                
-                if(isDefined(goalOrigin))
-                {
-                    if(time >= 0.5)
-                        self MoveTo(goalOrigin, time, (time * 0.25), (time * 0.25));
-                    else
-                        self MoveTo(goalOrigin, time);
-
-                    self thread zm_blockers::door_solid_thread();
-                }
-
-                wait time;
-            }
-            break;
-        
-        default:
-            break;
-    }
-}
-
-AnyoneNearDoor(door)
-{
-    foreach(ai in GetAITeamArray(level.zombie_team))
-        if(isDefined(ai) && IsAlive(ai) && Distance(ai.origin, door.origin) <= 255)
-            return true;
-
-    foreach(player in level.players)
-        if(Distance(player.origin, door.origin) <= 255)
-            return true;
-
-    return false;
-}
-
-ControllableZombie(team)
-{
-    if(Is_True(self.ControllableZombie))
-        return;
-    
-    if(self isPlayerLinked())
-        return self iPrintlnBold("^1ERROR: ^7Player Is Linked To An Entity");
-    
-    if(Is_True(self.BodyGuard))
-        return self iPrintlnBold("^1ERROR: ^7You Can't Use Controllable Zombie While Body Guard Is Enabled");
-    
-    self endon("disconnect");
-    
-    self closeMenu1();
-    self.ControllableZombie = true;
-    self.DisableMenuControls = true;
-    self.ignoreme = true;
-
-    CZSavedOrigin = self.origin;
-    CZSavedAngles = self.angles;
-
-    spawner = ArrayGetClosest(level.zombie_spawners, self.origin);
-    zombie = zombie_utility::spawn_zombie(spawner);
-    
-    self SetStance("stand");
-    wait 0.1;
-    
-    if(isDefined(zombie))
-    {
-        self Hide();
-        zombie.ignoreme = 1;
-
-        viewModel = SpawnScriptModel((zombie.origin + (0, 0, 18)) + (AnglesToForward(zombie.angles) * -40), "tag_origin", zombie.angles);
-        viewModel LinkTo(zombie);
-        
-        self PlayerLinkToDelta(viewModel, "tag_origin", 0, 85, 85, 35, 35, true, true);
-        self FreezeControlsAllowLook(true);
-        self DisableWeapons();
-        self DisableOffhandWeapons();
-        self SetPlayerAngles(zombie.angles);
-        
-        zombie.ignore_find_flesh = 1;
-        zombie.team = (team == "Friendly") ? self.team : level.zombie_team;
-        zombie thread zombie_utility::set_zombie_run_cycle("sprint");
-
-        while(!zombie CanControl() && IsAlive(zombie))
-        {
-            if(self MeleeButtonPressed())
-                zombie DoDamage(zombie.health + 666, zombie GetTagOrigin("j_head"));
-            
-            wait 0.1;
-        }
-        
-        goalPos = SpawnScriptModel(GetGroundPos(self TraceBullet()), "tag_origin");
-        PlayFXOnTag(level._effect["powerup_on"], goalPos, "tag_origin");
-        
-        goalPos SetInvisibleToAll();
-        goalPos SetVisibleToPlayer(self);
-        
-        while(IsAlive(zombie))
-        {
-            zombie.ignore_find_flesh = 1;
-            zombie.ignoreme = 1;
-            goalPos.origin = self TraceBullet();
-            
-            if(isDefined(zombie) && IsAlive(zombie) && zombie CanControl())
-            {
-                if(Distance(zombie.origin, goalPos.origin) >= 100)
-                {
-                    zombie SetGoal(goalPos.origin, true);
-
-                    if(isDefined(zombie.zombie_move_speed) && zombie.zombie_move_speed != "sprint")
-                        zombie thread zombie_utility::set_zombie_run_cycle("sprint");
-                }
-                
-                if(self AttackButtonPressed())
-                    zombie ZombieAttack();
-            }
-            
-            if(self MeleeButtonPressed())
-            {
-                zombie DoDamage((zombie.health + 666), zombie GetTagOrigin("j_head"));
-                wait 0.8;
-
-                break;
-            }
-            
-            wait 0.01;
-        }
-    }
-    else
-        self iPrintlnBold("^1ERROR: ^7Couldn't Spawn Zombie");
-    
-    wait 0.1;
-
-    if(!Is_True(self.Invisibility))
-        self Show();
-    
-    self Unlink();
-    self FreezeControlsAllowLook(false);
-    self EnableWeapons();
-    self EnableOffhandWeapons();
-
-    viewModel delete();
-    goalPos delete();
-    
-    self SetOrigin(CZSavedOrigin);
-    self SetPlayerAngles(CZSavedAngles);
-
-    if(Is_True(self.DisableMenuControls))
-        self.DisableMenuControls = BoolVar(self.DisableMenuControls);
-
-    if(Is_True(self.ControllableZombie))
-        self.ControllableZombie = BoolVar(self.ControllableZombie);
-
-    if(Is_True(self.ignoreme))
-        self.ignoreme = false;
-}
-
-CanControl()
-{
-    if(Is_True(self.is_traversing))
-        return false;
-    
-    if(Is_True(self.is_leaping))
-        return false;
-    
-    if(Is_True(self.barricade_enter))
-        return false;
-    
-    if(!zm_behavior::inplayablearea(self))
-        return false;
-    
-    return true;
-}
-
-ZombieAttack()
-{
-    self endon("death");
-    
-    v_angles = self.angles;
-
-    if(isDefined(self.attacking_point))
-    {
-        v_angles = (self.attacking_point.v_center_pillar - self.origin);
-        v_angles = VectorToAngles((v_angles[0], v_angles[1], 0));
-    }
-    
-    animation = "ai_zombie_base_ad_attack_v1";
-    self AnimScripted("attack_anim", self.origin, v_angles, animation);
-    
-    wait GetAnimLength(animation);
-}
-
-BodyGuard()
-{
-    self endon("disconnect");
-    
-    if(Is_True(self.ControllableZombie) && !Is_True(self.BodyGuard))
-        return self iPrintlnBold("^1ERROR: ^7You Can't Use Body Guard While Controllable Zombie Is Enabled");
-    
-    self.BodyGuard = BoolVar(self.BodyGuard);
-    
-    if(Is_True(self.BodyGuard))
-    {
-        spawner = ArrayGetClosest(level.zombie_spawners, self.origin);
-        self.BodyGuardZombie = zombie_utility::spawn_zombie(spawner);
-        wait 0.1;
-        
-        if(Is_True(self.BodyGuard) && isDefined(self.BodyGuardZombie) && IsAlive(self.BodyGuardZombie))
-        {
-            self.BodyGuardZombieLinker = spawn("script_origin", self.BodyGuardZombie.origin);
-
-            self.BodyGuardZombieLinker.origin = self.BodyGuardZombie.origin;
-            self.BodyGuardZombieLinker.angles = self.BodyGuardZombie.angles;
-
-            self.BodyGuardZombie LinkTo(self.BodyGuardZombieLinker);
-            self.BodyGuardZombieLinker MoveTo(self.origin, 0.01);
-            self.BodyGuardZombieLinker waittill("movedone");
-
-            self.BodyGuardZombie Unlink();
-            self.BodyGuardZombieLinker delete();
-            self.BodyGuardZombie.find_flesh_struct_string = "find_flesh";
-            self.BodyGuardZombie.ai_state = "find_flesh";
-            self.BodyGuardZombie notify("zombie_custom_think_done", "find_flesh");
-            
-            self.BodyGuardZombie.ignoreme = 1;
-            self.BodyGuardZombie.team = self.team;
-            self.BodyGuardZombie.no_gib = 1;
-            self.BodyGuardZombie.allowdeath = 0;
-            self.BodyGuardZombie.allowpain = 0;
-            self.BodyGuardZombie.aat_turned = 1;
-            self.BodyGuardZombie.n_aat_turned_zombie_kills = 0;
-            self.BodyGuardZombie clientfield::set("zm_aat_turned", 1);
-            
-            while(Is_True(self.BodyGuard))
-            {
-                target = self.BodyGuardZombie GetBodyGuardTarget(self);
-
-                if(!isDefined(target))
-                    target = self.BodyGuardZombie GetBodyGuardTarget(self.BodyGuardZombie); //Attempt to find a target that is near the body guard, if there isn't one near the player
-                
-                if(!isDefined(target))
-                {
-                    self.BodyGuardZombie ClearForcedGoal();
-                    goalPos = (self.origin + VectorScale(AnglesToForward(self GetPlayerAngles()), 100));
-                    speed = (Distance(goalPos, self.BodyGuardZombie.origin) > 200) ? "super_sprint" : "walk";
-
-                    if(isDefined(self.BodyGuardZombie.zombie_move_speed) && self.BodyGuardZombie.zombie_move_speed != speed)
-                        self.BodyGuardZombie thread zombie_utility::set_zombie_run_cycle(speed);
-
-                    self.BodyGuardZombie SetGoal(goalPos, true, 255);
-                }
-                else
-                {
-                    if(isDefined(self.BodyGuardZombie.zombie_move_speed) && self.BodyGuardZombie.zombie_move_speed != "super_sprint")
-                        self.BodyGuardZombie thread zombie_utility::set_zombie_run_cycle("super_sprint");
-
-                    self.BodyGuardZombie SetGoal(target.origin, true);
-                }
-                
-                wait 0.01;
-            }
-        }
-    }
-    else
-    {
-        if(isDefined(self.BodyGuardZombie))
-        {
-            self.BodyGuardZombie thread clientfield::set("zm_aat_turned", 0);
-
-            self.BodyGuardZombie.no_gib = 0;
-            self.BodyGuardZombie.allowdeath = 1;
-            self.BodyGuardZombie.allowpain = 1;
-            
-            self.BodyGuardZombie DoDamage(self.BodyGuardZombie.health + 666, self.BodyGuardZombie GetTagOrigin("j_head"));
-        }
-
-        if(isDefined(self.BodyGuardZombieLinker))
-            self.BodyGuardZombieLinker delete();
-    }
-}
-
-GetBodyGuardTarget(player)
-{
-    zombie = undefined;
-    zombies = GetAITeamArray(level.zombie_team);
-
-    for(a = 0; a < zombies.size; a++)
-    {
-        if(!isDefined(zombies[a]) || !IsAlive(zombies[a]) || zombies[a] == self || !zm_behavior::inplayablearea(zombies[a]))
-            continue;
-        
-        if(Distance(player.origin, zombies[a].origin) > 500 || !player DamageConeTrace(zombies[a] GetCentroid()) || isDefined(zombie) && Distance(player.origin, zombies[a].origin) > Distance(player.origin, zombie.origin))
-            continue;
-        
-        zombie = zombies[a];
-    }
-
-    return zombie;
-}
-
-SpawnTeleporter(action = "Spawn", origin, skipLink = false, skipDelete = false)
-{
-    if(isDefined(action) && action == "Delete All")
-    {
-        DeleteTeleporters();
-        return;
-    }
-
-    if(!isDefined(origin))
-    {
-        traceSurface = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["surfacetype"];
-
-        if(traceSurface == "none" || traceSurface == "default")
-            return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
-        
-        origin = self TraceBullet() + (0, 0, 45);
-    }
-
-    linker = SpawnScriptModel(origin, "tag_origin");
-    linker thread AddActiveTeleporter(skipLink, skipDelete);
-
-    return linker;
-}
-
-DeleteTeleporters()
-{
-    if(!isDefined(level.ActiveTeleporters) || !level.ActiveTeleporters.size)
-        return;
-    
-    foreach(teleporter in level.ActiveTeleporters)
-        if(isDefined(teleporter) && !Is_True(teleporter.skipDelete))
-            teleporter delete();
-}
-
-AddActiveTeleporter(skipLink = false, skipDelete = false)
-{
-    if(!isDefined(level.ActiveTeleporters))
-        level.ActiveTeleporters = [];
-    
-    if(isInArray(level.ActiveTeleporters, self))
-        return;
-    
-    if(level.ActiveTeleporters.size && !skipLink)
-    {
-        if(isDefined(level.ActiveTeleporters[(level.ActiveTeleporters.size - 1)]) && !isDefined(level.ActiveTeleporters[(level.ActiveTeleporters.size - 1)].LinkedTeleporter))
-        {
-            self.LinkedTeleporter = level.ActiveTeleporters[(level.ActiveTeleporters.size - 1)];
-            level.ActiveTeleporters[(level.ActiveTeleporters.size - 1)].LinkedTeleporter = self;
-        }
-    }
-
-    self.skipDelete = skipDelete;
-    level.ActiveTeleporters[level.ActiveTeleporters.size] = self;
-
-    self MakeUsable();
-    self SetCursorHint("HINT_NOICON");
-    self SetHintString("Press [{+activate}] To Teleport");
-    self thread ActivateTeleporter();
-
-    while(isDefined(self))
-    {
-        PlayFXOnTag(level._effect["teleport_aoe_kill"], self, "tag_origin");
-        wait 0.25;
-    }
-}
-
-ActivateTeleporter()
-{
-    if(isDefined(self.TeleporterActivated))
-        return;
-    self.TeleporterActivated = true;
-
-    while(isDefined(self))
-    {
-        self waittill("trigger", player);
-        
-        if(Is_True(player.UsingTeleporter) || !isDefined(self))
-            continue;
-        
-        if(!isDefined(self.LinkedTeleporter))
-        {
-            player iPrintlnBold("^1ERROR: ^7No Linked Teleporter Found");
-            continue;
-        }
-        
-        player thread UseTeleporter(self);
-    }
-}
-
-UseTeleporter(teleporter)
-{
-    if(!isDefined(teleporter) || Is_True(self.UsingTeleporter) || !isDefined(teleporter.LinkedTeleporter))
-        return;
-    
-    self.UsingTeleporter = true;
-    PlayFX(level._effect["teleport_splash"], teleporter.origin);
-    wait 0.05;
-
-    self SetOrigin(teleporter.LinkedTeleporter.origin);
-    PlayFX(level._effect["teleport_splash"], teleporter.LinkedTeleporter.origin);
-    wait 1.5;
-
-    if(Is_True(self.UsingTeleporter))
-        self.UsingTeleporter = BoolVar(self.UsingTeleporter);
-}
-
-SpiralStaircase(size)
-{
-    if(Is_True(level.SpiralStaircaseSpawning))
-        return self iPrintlnBold("^1ERROR: ^7Spiral Staircase Is Being Built");
-    
-    if(Is_True(level.SpiralStaircaseDeleting))
-        return self iPrintlnBold("^1ERROR: ^7Spiral Staircase Is Being Deleted");
-    
-    if(isDefined(level.SpiralStaircase) && level.SpiralStaircase.size)
-    {
-        level.SpiralStaircaseDeleting = true;
-
-        for(a = 0; a < level.SpiralStaircase.size; a++)
-            if(isDefined(level.SpiralStaircase[a]))
-            {
-                level.SpiralStaircase[a] Launch(VectorScale(AnglesToForward(level.SpiralStaircase[a].angles), 255));
-                level.SpiralStaircase[a] NotSolid();
-                level.SpiralStaircase[a] thread deleteAfter(5);
-
-                wait 0.01;
-            }
-        
-        wait 5;
-        level.SpiralStaircase = [];
-
-        if(Is_True(level.SpiralStaircaseDeleting))
-            level.SpiralStaircaseDeleting = BoolVar(level.SpiralStaircaseDeleting);
-    }
-    else
-    {
-        model = GetSpawnableBaseModel();
-        trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
-
-        if(!isInArray(level.MenuModels, model))
-            return self iPrintlnBold("^1ERROR: ^7Couldn't Find A Valid Base Model For The Spiral Staircase");
-    
-        origin = trace["position"];
-        surface = trace["surfacetype"];
-
-        if(isDefined(surface) && (surface == "none" || surface == "default"))
-            return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
-        
-        level.SpiralStaircaseSpawning = true;
-
-        if(!isDefined(level.SpiralStaircase))
-            level.SpiralStaircase = [];
-        
-        level.SpiralStaircase[0] = SpawnScriptModel(origin, model, (-28, self.angles[1], 90));
-        
-        for(a = 1; a < size; a++)
-        {
-            if(!isDefined(level.SpiralStaircase[(level.SpiralStaircase.size - 1)]))
-                continue;
-            
-            level.SpiralStaircase[level.SpiralStaircase.size] = SpawnScriptModel((level.SpiralStaircase[(level.SpiralStaircase.size - 1)].origin + (AnglesToForward(level.SpiralStaircase[(level.SpiralStaircase.size - 1)].angles) * 10) + (0, 0, 8)), model, (level.SpiralStaircase[0].angles[0], (level.SpiralStaircase[(level.SpiralStaircase.size - 1)].angles[1] + 12), level.SpiralStaircase[0].angles[2]), 0.01);
-        }
-
-        if(Is_True(level.SpiralStaircaseSpawning))
-            level.SpiralStaircaseSpawning = BoolVar(level.SpiralStaircaseSpawning);
-    }
-}
-
 ZombieTeleportGrenades()
 {
     self endon("disconnect");
@@ -1451,38 +1415,74 @@ ZombieTeleportGrenades()
         self notify("EndZombieTeleportGrenades");
 }
 
-MexicanWave(size)
+ArtilleryStrike()
 {
-    if(isDefined(self.MexicanWave) && self.MexicanWave.size)
-    {
-        for(a = 0; a < self.MexicanWave.size; a++)
-            self.MexicanWave[a] delete();
-        
-        self.MexicanWave = undefined;
+    if(Is_True(self.ArtilleryStrike))
         return;
+    self.ArtilleryStrike = true;
+    
+    self endon("disconnect");
+
+    self closeMenu1();
+    wait 0.25;
+    
+    goalPos = SpawnScriptModel(GetGroundPos(self TraceBullet()), "tag_origin");
+    PlayFXOnTag(level._effect["powerup_on"], goalPos, "tag_origin");
+
+    self.DisableMenuControls = true;
+    self SetMenuInstructions("[{+attack}] - Confirm Location\n[{+melee}] - Cancel");
+    
+    while(1)
+    {
+        trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+        
+        origin = trace["position"];
+        surface = trace["surfacetype"];
+        goalPos.origin = origin;
+
+        if(self UseButtonPressed() || self AttackButtonPressed())
+        {
+            if(surface != "none" && surface != "default")
+            {
+                targetPos = goalPos.origin;
+                break;
+            }
+            else
+                self iPrintlnBold("^1ERROR: ^7Invalid Surface");
+        }
+        
+        if(self MeleeButtonPressed())
+            break;
+
+        wait 0.01;
     }
     
-    self.MexicanWave = [];
+    goalPos delete();
 
-    for(a = 0; a < size; a++)
+    if(Is_True(self.DisableMenuControls))
+        self.DisableMenuControls = BoolVar(self.DisableMenuControls);
+
+    self SetMenuInstructions();
+    
+    if(isDefined(targetPos))
     {
-        self.MexicanWave[self.MexicanWave.size] = SpawnScriptModel(self.origin + AnglesToRight(self.angles) * (a * 45), "defaultactor", self.angles);
-        self.MexicanWave[(self.MexicanWave.size - 1)] thread MexicanWaveMove(a);
+        targetPos = targetPos + (0, 0, 3500);
+
+        for(a = -1; a < 2; a += 2)
+            for(b = 0; b < 5; b++)
+            {
+                MagicBullet(GetWeapon("launcher_standard"), targetPos, targetPos - (0, b * (a * 25), 2500), self);
+                wait 0.25;
+            }
+
+        for(a = -1; a < 2; a += 2)
+            for(b = 0; b < 5; b++)
+            {
+                MagicBullet(GetWeapon("launcher_standard"), targetPos, targetPos - (b * (a * 25), 0, 2500), self);
+                wait 0.25;
+            }
     }
-}
-
-MexicanWaveMove(index)
-{
-    wait (index * 0.2);
-
-    while(isDefined(self))
-    {
-        self MoveZ(55, 0.75);
-        wait 0.74;
-
-        if(isDefined(self))
-            self MoveZ(-55, 0.75);
-        
-        wait 0.74;
-    }
+    
+    if(Is_True(self.ArtilleryStrike))
+        self.ArtilleryStrike = BoolVar(self.ArtilleryStrike);
 }

@@ -60,6 +60,14 @@ DisableTeleportEffect(player)
     player.DisableTeleportEffect = BoolVar(player.DisableTeleportEffect);
 }
 
+OfficialSpawnPoint(point, player)
+{
+    player SetOrigin(level.MenuSpawnPoints[point].origin);
+    player SetPlayerAngles(level.MenuSpawnPoints[point].angles);
+
+    player PlayTeleportEffect();
+}
+
 TeleportPlayer(origin, player, angles, name)
 {
     if(!isDefined(origin))
@@ -104,14 +112,6 @@ TeleportPlayer(origin, player, angles, name)
 
     if(isDefined(angles))
         player SetPlayerAngles(angles);
-
-    player PlayTeleportEffect();
-}
-
-OfficialSpawnPoint(point, player)
-{
-    player SetOrigin(level.MenuSpawnPoints[point].origin);
-    player SetPlayerAngles(level.MenuSpawnPoints[point].angles);
 
     player PlayTeleportEffect();
 }

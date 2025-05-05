@@ -677,7 +677,7 @@ SoftUnlockMenu()
 
     self.menuHud["scroller"] hudMoveX((isDefined(self.menuHud["background"]) && self.MenuStyle == "Quick Menu") ? self.menuHud["background"].x : (self.MenuStyle == "AIO") ? (self.menuX - 129) : self.menuX, 0.1);
     self.menuHud["scroller"] hudScaleOverTime(0.1, (self.MenuStyle == "Quick Menu") ? self.menuHud["background"].width : (self.MenuStyle == "AIO") ? 2 : 260, (self.MenuStyle == "Quick Menu") ? 14 : (self.MenuStyle == "AIO") ? 20 : 18);
-    self.menuHud["scroller"] hudFade(1, 0.05);
+    self.menuHud["scroller"] hudFade((self.MenuStyle == "Native") ? 0.6 : 1, 0.05);
     
     if(Is_True(self.inKeyboard))
         self.inKeyboard = BoolVar(self.inKeyboard);

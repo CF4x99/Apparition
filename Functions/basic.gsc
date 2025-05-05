@@ -442,13 +442,6 @@ GivePlayerGobblegum(name, player)
     }
     else
         player bgb::take();
-    
-}
-
-ThirdPerson(player)
-{
-    player.ThirdPerson = BoolVar(player.ThirdPerson);
-    player SetClientThirdPerson(Is_True(player.ThirdPerson));
 }
 
 SetMovementSpeed(scale, player)
@@ -467,6 +460,22 @@ SetMovementSpeed(scale, player)
     }
 }
 
+ThirdPerson(player)
+{
+    player.ThirdPerson = BoolVar(player.ThirdPerson);
+    player SetClientThirdPerson(Is_True(player.ThirdPerson));
+}
+
+Invisibility(player)
+{
+    player.Invisibility = BoolVar(player.Invisibility);
+
+    if(Is_True(player.Invisibility))
+        player Hide();
+    else
+        player Show();
+}
+
 PlayerClone(type, player)
 {
     switch(type)
@@ -483,16 +492,6 @@ PlayerClone(type, player)
         default:
             break;
     }
-}
-
-Invisibility(player)
-{
-    player.Invisibility = BoolVar(player.Invisibility);
-
-    if(Is_True(player.Invisibility))
-        player Hide();
-    else
-        player Show();
 }
 
 NoTarget(player)
@@ -569,12 +568,22 @@ MultiJump(player)
     }
 }
 
-PlayerSetVision(vision, player)
+DisablePlayerHUD(player)
 {
-    player UseServerVisionSet(vision != "Default");
+    player endon("disconnect");
 
-    if(vision != "Default")
-        player SetVisionSetForPlayer(vision, 0);
+    player.DisablePlayerHUD = BoolVar(player.DisablePlayerHUD);
+
+    if(Is_True(player.DisablePlayerHUD))
+    {
+        while(Is_True(player.DisablePlayerHUD))
+        {
+            player SetClientUIVisibilityFlag("hud_visible", 0);
+            wait 0.1;
+        }
+    }
+    else
+        player SetClientUIVisibilityFlag("hud_visible", 1);
 }
 
 GetVisualType(effect)
@@ -668,6 +677,14 @@ SetClientVisualEffects(effect, player)
     }
 }
 
+PlayerSetVision(vision, player)
+{
+    player UseServerVisionSet(vision != "Default");
+
+    if(vision != "Default")
+        player SetVisionSetForPlayer(vision, 0);
+}
+
 ZombieCharms(color, player)
 {
     switch(color)
@@ -714,6 +731,9 @@ CustomCrosshairs(text, player)
         return;
     }
 
+    if(player isInMenu(true))
+        player iPrintlnBold("^1NOTE: ^7Custom Crosshairs Is Only Visible While The Menu Is Closed");
+
     player.CustomCrosshairsText = text;
 
     if(Is_True(player.CustomCrosshairs))
@@ -750,24 +770,6 @@ NoExplosiveDamage(player)
     player.NoExplosiveDamage = BoolVar(player.NoExplosiveDamage);
 }
 
-DisablePlayerHUD(player)
-{
-    player endon("disconnect");
-
-    player.DisablePlayerHUD = BoolVar(player.DisablePlayerHUD);
-
-    if(Is_True(player.DisablePlayerHUD))
-    {
-        while(Is_True(player.DisablePlayerHUD))
-        {
-            player SetClientUIVisibilityFlag("hud_visible", 0);
-            wait 0.1;
-        }
-    }
-    else
-        player SetClientUIVisibilityFlag("hud_visible", 1);
-}
-
 SetCharacterModelIndex(index, player, disableEffect)
 {
     player endon("disconnect");
@@ -796,26 +798,6 @@ LoopCharacterModelIndex(player)
     }
 }
 
-UnlimitedSprint(player)
-{
-    player endon("disconnect");
-
-    player.UnlimitedSprint = BoolVar(player.UnlimitedSprint);
-
-    if(Is_True(player.UnlimitedSprint))
-    {
-        while(Is_True(player.UnlimitedSprint))
-        {
-            if(!player HasPerk("specialty_unlimitedsprint"))
-                player SetPerk("specialty_unlimitedsprint");
-            
-            wait 0.05;
-        }
-    }
-    else
-        player UnSetPerk("specialty_unlimitedsprint");
-}
-
 ShootWhileSprinting(player)
 {
     player endon("disconnect");
@@ -834,6 +816,26 @@ ShootWhileSprinting(player)
     }
     else
         player UnSetPerk("specialty_sprintfire");
+}
+
+UnlimitedSprint(player)
+{
+    player endon("disconnect");
+
+    player.UnlimitedSprint = BoolVar(player.UnlimitedSprint);
+
+    if(Is_True(player.UnlimitedSprint))
+    {
+        while(Is_True(player.UnlimitedSprint))
+        {
+            if(!player HasPerk("specialty_unlimitedsprint"))
+                player SetPerk("specialty_unlimitedsprint");
+            
+            wait 0.05;
+        }
+    }
+    else
+        player UnSetPerk("specialty_unlimitedsprint");
 }
 
 ServerRespawnPlayer(player)

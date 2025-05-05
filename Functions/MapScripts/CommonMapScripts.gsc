@@ -1,13 +1,82 @@
-PopulateMapChallenges(player)
+PopulateMapChallenges(menu)
 {
-    self addMenu("Challenges");
+    switch(menu)
+    {
+        case "Map Challenges":
+            if(!isDefined(self.mapChallengesPlayer))
+                self.mapChallengesPlayer = level.players[0];
 
-        if(isDefined(player._challenges))
-        {
-            self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_4687355c.n_index), ReturnMapChallengeIString(player._challenges.var_4687355c.str_notify), ::MapCompleteChallenge, player._challenges.var_4687355c, player);
-            self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_b88ea497.n_index), ReturnMapChallengeIString(player._challenges.var_b88ea497.str_notify), ::MapCompleteChallenge, player._challenges.var_b88ea497, player);
-            self addOptBool(player flag::get("flag_player_completed_challenge_" + player._challenges.var_928c2a2e.n_index), ReturnMapChallengeIString(player._challenges.var_928c2a2e.str_notify), ::MapCompleteChallenge, player._challenges.var_928c2a2e, player);
-        }
+            playerArray = [];
+
+            foreach(player in level.players)
+                playerArray[playerArray.size] = CleanName(player getName()) + " [" + player GetEntityNumber() + "]";
+
+            self addMenu("Challenges");
+                self addOptSlider("Player", ::SetMapChallengesPlayer, playerArray);
+                self addOpt("");
+
+                mapChallenge = [];
+
+                if(isDefined(self.mapChallengesPlayer._challenges))
+                {
+                    mapChallenge[0] = self.mapChallengesPlayer._challenges.challenge_1;
+                    mapChallenge[1] = self.mapChallengesPlayer._challenges.challenge_2;
+                    mapChallenge[2] = self.mapChallengesPlayer._challenges.challenge_3;
+                }
+                else if(isDefined(self.mapChallengesPlayer.s_challenges))
+                {
+                    mapChallenge[0] = self.mapChallengesPlayer.s_challenges.a_challenge_1;
+                    mapChallenge[1] = self.mapChallengesPlayer.s_challenges.a_challenge_2;
+                    mapChallenge[2] = self.mapChallengesPlayer.s_challenges.a_challenge_3;
+                }
+                else
+                    self addOpt("Map Challenges Not Supported");
+
+
+                if(isDefined(mapChallenge) && mapChallenge.size)
+                {
+                    for(a = 0; a < mapChallenge.size; a++)
+                        self addOptBool(self.mapChallengesPlayer flag::get("flag_player_completed_challenge_" + mapChallenge[a].n_index), ReturnMapChallengeIString(mapChallenge[a].str_notify), ::MapCompleteChallenge, mapChallenge[a], self.mapChallengesPlayer);
+                }
+            break;
+    }
+}
+
+SetMapChallengesPlayer(playerName)
+{
+    foreach(player in level.players)
+    {
+        if(CleanName(player getName()) + " [" + player GetEntityNumber() + "]" == playerName) //I included the players entity number for the case two players have the same name
+            self.mapChallengesPlayer = player;
+    }
+
+    self RefreshMenu(self getCurrent(), self getCursor());
+}
+
+MapCompleteChallenge(challenge, player)
+{
+    if(!isDefined(challenge) || player flag::get("flag_player_completed_challenge_" + challenge.n_index))
+        return;
+
+    player endon("disconnect");
+
+    curs = self getCursor();
+    menu = self getCurrent();
+
+    for(a = 0; a < challenge.n_count; a++)
+    {
+        player notify(challenge.str_notify);
+        wait 0.01;
+    }
+
+    player flag::wait_till("flag_player_completed_challenge_" + challenge.n_index);
+    self RefreshMenu(menu, curs);
+}
+
+ReturnMapChallengeIString(challenge)
+{
+    challengeTok = StrTok(challenge, "_");
+    return ToUpper(level.script) + "_CHALLENGE_" + challengeTok[2] + "_" + challengeTok[3];
 }
 
 ActivateZombieTrap(index)
@@ -21,7 +90,6 @@ ActivateZombieTrap(index)
         level flag::set(traps[index].script_flag_wait);
 
     wait 0.05;
-
     savedCost = traps[index].zombie_cost;
     traps[index].zombie_cost = 0; //This doesn't work on all maps. Too lazy to add support for the rest.
 
@@ -111,32 +179,4 @@ SamanthasHideAndSeekSong()
         level.StartedSamanthaSong = BoolVar(level.StartedSamanthaSong);
     
     self RefreshMenu(menu, curs);
-}
-
-MapCompleteChallenge(challenge, player)
-{
-    if(!isDefined(challenge) || player flag::get("flag_player_completed_challenge_" + challenge.n_index))
-        return;
-
-    player endon("disconnect");
-
-    curs = self getCursor();
-    menu = self getCurrent();
-
-    for(a = 0; a < challenge.n_count; a++)
-    {
-        player notify(challenge.str_notify);
-        wait 0.01;
-    }
-
-    while(!player flag::get("flag_player_completed_challenge_" + challenge.n_index))
-        wait 0.1;
-
-    self RefreshMenu(menu, curs);
-}
-
-ReturnMapChallengeIString(challenge)
-{
-    challengeTok = StrTok(challenge, "_");
-    return ToUpper(level.script) + "_CHALLENGE_" + challengeTok[2] + "_" + challengeTok[3];
 }

@@ -20,7 +20,6 @@ RunMenuOptions(menu)
                     self addOpt("Weaponry", ::newMenu, "Weaponry");
                     self addOpt("Bullet Menu", ::newMenu, "Bullet Menu");
                     self addOpt("Fun Scripts", ::newMenu, "Fun Scripts");
-                    
                     self addOpt("Aimbot Menu", ::newMenu, "Aimbot Menu");
 
                     if(self getVerification() > 3) //Admin
@@ -165,7 +164,6 @@ RunMenuOptions(menu)
         case "Zetsubou No Shima Scripts":
         case "Pack 'a' Punch Quest Parts":
         case "Zetsubou No Shima KT-4 Parts":
-        case "Map Challenges":
         case "Skulltar Teleports":
         case "ZNS Bucket Water":
             self PopulateZetsubouNoShimaScripts(menu);
@@ -220,6 +218,10 @@ RunMenuOptions(menu)
             self PopulateTunnelScripts(menu);
             break;
         
+        case "Map Challenges":
+            self PopulateMapChallenges(menu);
+            break;
+        
         case "Server Modifications":
         case "Doheart Options":
         case "Lobby Timer Options":
@@ -230,10 +232,13 @@ RunMenuOptions(menu)
         case "Mystery Box Normal Weapons":
         case "Mystery Box Upgraded Weapons":
         case "Joker Model":
-        case "Server Tweakables":
-        case "Enabled Power-Ups":
         case "Change Map":
             self PopulateServerModifications(menu);
+            break;
+        
+        case "Server Tweakables":
+        case "Enabled Power-Ups":
+            self PopulateServerTweakables(menu);
             break;
         
         case "Zombie Options":
@@ -416,10 +421,6 @@ MenuOptionsPlayer(menu, player)
         
         case "Aimbot Menu":
             self PopulateAimbotMenu(menu, player);
-            break;
-        
-        case "Map Challenges Player":
-            self PopulateMapChallenges(player);
             break;
         
         case "Options":

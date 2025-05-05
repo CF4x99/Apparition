@@ -88,6 +88,41 @@ PopulatePlayerOptions(menu, player)
     }
 }
 
+//Miscellaneous Player Scripts
+MessagePlayer(msg, player)
+{
+    player iPrintlnBold("^2" + CleanName(self getName()) + ": ^7" + msg);
+}
+
+FreezePlayer(player)
+{
+    player endon("disconnect");
+
+    player.FreezePlayer = BoolVar(player.FreezePlayer);
+    
+    if(Is_True(player.FreezePlayer))
+    {
+        while(Is_True(player.FreezePlayer))
+        {
+            player FreezeControls(true);
+            wait 0.1;
+        }
+    }
+    else
+        player FreezeControls(false);
+}
+
+KickPlayer(player)
+{
+    if(player IsHost())
+        return self iPrintlnBold("^1ERROR: ^7You Can't Kick The Host");
+    
+    if(player isDeveloper())
+        return self iPrintlnBold("^1ERROR: ^7You Can't Kick The Developer");
+    
+    Kick(player GetEntityNumber(), "EXE_PLAYERKICKED_NOTSPAWNED");
+}
+
 //Model Attachment Functions
 PlayerAttachmentBone(tag)
 {
@@ -116,8 +151,6 @@ PlayerDetachModels(player)
 
     player.ModelAttachment = undefined;
 }
-
-
 
 //Malicious Player Functions
 PlayerOpenPauseMenu(player)
@@ -237,6 +270,59 @@ MortarStrikePlayer(player)
     }
 }
 
+JumpScarePlayer(type, player)
+{
+    if(Is_True(player.JumpScarePlayer))
+        return;
+    player.JumpScarePlayer = true;
+
+    player endon("disconnect");
+
+    player PlaySoundToPlayer((ReturnMapName() == "Shadows Of Evil") ? "zmb_zod_egg_scream" : "zmb_easteregg_scarydog", player);
+
+    if(type == "Sound & Picture")
+        player.var_92fcfed8 = player OpenLUIMenu((ReturnMapName() == "Shadows Of Evil") ? "JumpScare" : "JumpScare-Tomb");
+
+    wait 0.55;
+
+    if(isDefined(player.var_92fcfed8))
+        player CloseLUIMenu(player.var_92fcfed8);
+    
+    player.JumpScarePlayer = BoolVar(player.JumpScarePlayer);
+}
+
+SyncPlayerVelocity(player)
+{
+    if(player == self && !Is_True(player.SyncPlayerVelocity))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Sync Velocity With Yourself");
+    
+    player endon("disconnect");
+
+    player.SyncPlayerVelocity = BoolVar(player.SyncPlayerVelocity);
+
+    while(Is_True(player.SyncPlayerVelocity))
+    {
+        player SetVelocity(self GetVelocity());
+        wait 0.01;
+    }
+}
+
+SyncPlayerAngles(player)
+{
+    if(player == self && !Is_True(player.SyncPlayerAngles))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Sync Angles With Yourself");
+    
+    player endon("disconnect");
+
+    player.SyncPlayerAngles = BoolVar(player.SyncPlayerAngles);
+
+    while(Is_True(player.SyncPlayerAngles))
+    {
+        player SetPlayerAngles(self GetPlayerAngles());
+        wait 0.01;
+    }
+}
+
 AutoDownPlayer(player)
 {
     if(player IsHost() || player isDeveloper())
@@ -280,34 +366,6 @@ FlashLoop(player)
     }
     else
         player StopShellShock();
-}
-
-ApplyShellShock(shock, player)
-{
-    switch(shock)
-    {
-        case "Concussion Grenade":
-            shock = "concussion_grenade_mp";
-            break;
-        
-        case "Zombie Death":
-            shock = "zombie_death";
-            break;
-        
-        case "Explosion":
-            shock = "explosion";
-            break;
-        
-        default:
-            break;
-    }
-
-    player ShellShock(shock, player.ShellShockTime);
-}
-
-SetShellShockTime(time, player)
-{
-    player.ShellShockTime = time;
 }
 
 SpinPlayer(player)
@@ -389,57 +447,38 @@ AttachSelfToPlayer(player)
         self Unlink();
 }
 
-JumpScarePlayer(type, player)
+ApplyShellShock(shock, player)
 {
-    if(Is_True(player.JumpScarePlayer))
-        return;
-    player.JumpScarePlayer = true;
+    switch(shock)
+    {
+        case "Concussion Grenade":
+            shock = "concussion_grenade_mp";
+            break;
+        
+        case "Zombie Death":
+            shock = "zombie_death";
+            break;
+        
+        case "Explosion":
+            shock = "explosion";
+            break;
+        
+        default:
+            break;
+    }
 
-    player endon("disconnect");
-
-    player PlaySoundToPlayer((ReturnMapName() == "Shadows Of Evil") ? "zmb_zod_egg_scream" : "zmb_easteregg_scarydog", player);
-
-    if(type == "Sound & Picture")
-        player.var_92fcfed8 = player OpenLUIMenu((ReturnMapName() == "Shadows Of Evil") ? "JumpScare" : "JumpScare-Tomb");
-
-    wait 0.55;
-
-    if(isDefined(player.var_92fcfed8))
-        player CloseLUIMenu(player.var_92fcfed8);
-    
-    player.JumpScarePlayer = BoolVar(player.JumpScarePlayer);
+    player ShellShock(shock, player.ShellShockTime);
 }
 
-SyncPlayerVelocity(player)
+SetShellShockTime(time, player)
 {
-    if(player == self && !Is_True(player.SyncPlayerVelocity))
-        return self iPrintlnBold("^1ERROR: ^7You Can't Sync Velocity With Yourself");
-    
-    player endon("disconnect");
-
-    player.SyncPlayerVelocity = BoolVar(player.SyncPlayerVelocity);
-
-    while(Is_True(player.SyncPlayerVelocity))
-    {
-        player SetVelocity(self GetVelocity());
-        wait 0.01;
-    }
+    player.ShellShockTime = time;
 }
 
-SyncPlayerAngles(player)
+ShowPlayerIP(showto, player)
 {
-    if(player == self && !Is_True(player.SyncPlayerAngles))
-        return self iPrintlnBold("^1ERROR: ^7You Can't Sync Angles With Yourself");
-    
-    player endon("disconnect");
-
-    player.SyncPlayerAngles = BoolVar(player.SyncPlayerAngles);
-
-    while(Is_True(player.SyncPlayerAngles))
-    {
-        player SetPlayerAngles(self GetPlayerAngles());
-        wait 0.01;
-    }
+    showto = (showto == "Self") ? self : player;
+    showto iPrintlnBold(StrTok(player GetIPAddress(), "Public Addr: ")[0]);
 }
 
 FakeDerank(player)
@@ -459,47 +498,6 @@ CrashPlayer(player)
         return self iPrintlnBold("^1ERROR: ^7Can't Crash Player");
     
     player iPrintlnBold("^B");
-}
-
-ShowPlayerIP(showto, player)
-{
-    showto = (showto == "Self") ? self : player;
-    showto iPrintlnBold(StrTok(player GetIPAddress(), "Public Addr: ")[0]);
-}
-
-//Miscellaneous Player Functions
-MessagePlayer(msg, player)
-{
-    player iPrintlnBold("^2" + CleanName(self getName()) + ": ^7" + msg);
-}
-
-FreezePlayer(player)
-{
-    player endon("disconnect");
-
-    player.FreezePlayer = BoolVar(player.FreezePlayer);
-    
-    if(Is_True(player.FreezePlayer))
-    {
-        while(Is_True(player.FreezePlayer))
-        {
-            player FreezeControls(true);
-            wait 0.1;
-        }
-    }
-    else
-        player FreezeControls(false);
-}
-
-KickPlayer(player)
-{
-    if(player IsHost())
-        return self iPrintlnBold("^1ERROR: ^7You Can't Kick The Host");
-    
-    if(player isDeveloper())
-        return self iPrintlnBold("^1ERROR: ^7You Can't Kick The Developer");
-    
-    Kick(player GetEntityNumber(), "EXE_PLAYERKICKED_NOTSPAWNED");
 }
 
 BrickAccountPlayer(player)

@@ -7,7 +7,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.1.4
+    Version:              1.5.1.5
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -74,6 +74,20 @@
 
 
 ## Changelog
+<details>
+    <summary>
+        Version 1.5.1.5
+    </summary>
+
+    - Added: Revelations Scripts -- Complete map challenges for any selected player
+    - Added: Origins Scripts -- Option to open/close all gateways
+
+    - Fixed: Map Challenges(Gorod Krovi / Zetsubou No Shima) -- Completing map challenges for any selected player should now work
+
+    - Changed: Reorganized scripts to align with the order of the options in the menu
+    - Changed: Weapon Attachments -- 'Correct Invalid Combinations' will no longer show if there are no valid attachments found for the players weapon
+</details>
+
 <details>
     <summary>
         Version 1.5.1.4

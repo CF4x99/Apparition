@@ -4,7 +4,8 @@ PopulateRevelationsScripts(menu)
     {
         case "Revelations Scripts":
             self addMenu("Revelations Scripts");
-                self addOpt("Keeper Companion", ::newMenu, "Revelations Keeper Companion");
+                self addOpt("Challenges", ::newMenu, "Map Challenges");
+                self addOpt("Keeper Companion Parts", ::newMenu, "Revelations Keeper Companion");
                 self addOptBool(level flag::get("all_power_on"), "Corrupt All Generators", ::RevelationsPowerOn);
                 self addOptBool(level flag::get("apothicon_trapped"), "Trap Apothicon", ::TrapApothicon);
                 self addOptBool(level flag::get("apotho_pack_freed"), "Free Pack 'a' Punch", ::RevelationsFreePackAPunch);

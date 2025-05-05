@@ -28,13 +28,6 @@ PopulateZetsubouNoShimaScripts(menu)
                 self addOptBool(level flag::get("ww3_found"), "Venom", ::CollectKT4Parts, "ww3_found");
             break;
 
-        case "Map Challenges":
-            self addMenu("Challenges");
-
-                foreach(player in level.players)
-                    self addOpt(CleanName(player getName()), ::newMenu, "Map Challenges Player");
-            break;
-
         case "Skulltar Teleports":
             skulltars = GetEntArray("mdl_skulltar", "targetname");
 

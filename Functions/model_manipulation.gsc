@@ -14,6 +14,17 @@ PopulateModelManipulation(menu, player)
     }
 }
 
+ResetPlayerModel(player)
+{
+    if(Is_True(player.ModelManipulation))
+        player.ModelManipulation = BoolVar(player.ModelManipulation);
+
+    if(isDefined(player.spawnedPlayerModel))
+        player.spawnedPlayerModel delete();
+    
+    player Show();
+}
+
 SetPlayerModel(model, player)
 {
     player endon("disconnect");
@@ -48,15 +59,4 @@ SetPlayerModel(model, player)
     
     if(Is_True(player.ModelManipulation))
         player ResetPlayerModel(player);
-}
-
-ResetPlayerModel(player)
-{
-    if(Is_True(player.ModelManipulation))
-        player.ModelManipulation = BoolVar(player.ModelManipulation);
-
-    if(isDefined(player.spawnedPlayerModel))
-        player.spawnedPlayerModel delete();
-    
-    player Show();
 }

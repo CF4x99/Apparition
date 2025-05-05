@@ -16,6 +16,10 @@ PopulateServerModifications(menu)
                 self addOptBool(level.Newsbar, "Newsbar", ::Newsbar);
                 self addOpt("Doheart Options", ::newMenu, "Doheart Options");
                 self addOpt("Lobby Timer Options", ::newMenu, "Lobby Timer Options");
+
+                if(!IsVerkoMap())
+                    self addOpt("Mystery Box Options", ::newMenu, "Mystery Box Options");
+                
                 self addOptBool(IsAllDoorsOpen(), "Open All Doors & Debris", ::OpenAllDoors);
                 self addOptSlider("Zombie Barriers", ::SetZombieBarrierState, "Break All;Repair All");
                 self addOpt("Spawn Bot", ::SpawnBot);
@@ -26,9 +30,6 @@ PopulateServerModifications(menu)
 
                 if(isDefined(level.MenuZombieTraps) && level.MenuZombieTraps.size)
                     self addOpt("Zombie Traps", ::newMenu, "Zombie Traps");
-                
-                if(!IsVerkoMap())
-                    self addOpt("Mystery Box Options", ::newMenu, "Mystery Box Options");
                 
                 self addOpt("Change Map", ::newMenu, "Change Map");
                 self addOpt("Restart Game", ::ServerRestartGame);
@@ -56,47 +57,14 @@ PopulateServerModifications(menu)
                 self addOptIncSlider("Set Lobby Timer", ::SetLobbyTimer, 1, 10, 30, 1);
             break;
         
-        case "Zombie Craftables":
-            craftables = GetArrayKeys(level.zombie_include_craftables);
-
-            self addMenu("Craftables");
-
-                if(!IsAllCraftablesCollected())
-                {
-                    self addOpt("Collect All", ::CollectAllCraftables);
-                    self addOpt("");
-                }
-
-                for(a = 0; a < craftables.size; a++)
-                {
-                    if(IsCraftableCollected(craftables[a]) || craftables[a] == "open_table" || IsSubStr(craftables[a], "ritual_"))
-                        continue;
-                    
-                    self addOpt(CleanString(craftables[a]), ::newMenu, craftables[a]);
-                }
-            break;
-        
-        case "Zombie Traps":
-            self addMenu("Zombie Traps");
-
-                if(isDefined(level.MenuZombieTraps) && level.MenuZombieTraps.size)
-                {
-                    self addOpt("Activate All Traps", ::ActivateAllZombieTraps);
-
-                    for(a = 0; a < level.MenuZombieTraps.size; a++)
-                        if(isDefined(level.MenuZombieTraps[a]))
-                            self addOpt(isDefined(level.MenuZombieTraps[a].prefabname) ? CleanString(level.MenuZombieTraps[a].prefabname) : "Trap " + (a + 1), ::ActivateZombieTrap, a);
-                }
-            break;
-        
         case "Mystery Box Options":
             self addMenu("Mystery Box Options");
                 self addOptBool(level.chests[level.chest_index].old_cost != 950, "Custom Price", ::NumberPad, ::SetBoxPrice);
+                self addOptBool((GetDvarString("magic_chest_movable") == "0"), "Never Moves", ::BoxNeverMoves);
                 self addOptBool(AllBoxesActive(), "Show All", ::ShowAllChests);
                 self addOpt("Force Joker", ::BoxForceJoker);
-                self addOptBool((GetDvarString("magic_chest_movable") == "0"), "Never Moves", ::BoxNeverMoves);
-                self addOpt("Weapons", ::newMenu, "Mystery Box Weapons");
                 self addOpt("Joker Model", ::newMenu, "Joker Model");
+                self addOpt("Weapons", ::newMenu, "Mystery Box Weapons");
             break;
         
         case "Mystery Box Weapons":
@@ -174,6 +142,39 @@ PopulateServerModifications(menu)
                     self addOptBool((level.chest_joker_model == level.MenuModels[a]), CleanString(level.MenuModels[a]), ::SetBoxJokerModel, level.MenuModels[a]);
             break;
         
+        case "Zombie Craftables":
+            craftables = GetArrayKeys(level.zombie_include_craftables);
+
+            self addMenu("Craftables");
+
+                if(!IsAllCraftablesCollected())
+                {
+                    self addOpt("Collect All", ::CollectAllCraftables);
+                    self addOpt("");
+                }
+
+                for(a = 0; a < craftables.size; a++)
+                {
+                    if(IsCraftableCollected(craftables[a]) || craftables[a] == "open_table" || IsSubStr(craftables[a], "ritual_"))
+                        continue;
+                    
+                    self addOpt(CleanString(craftables[a]), ::newMenu, craftables[a]);
+                }
+            break;
+        
+        case "Zombie Traps":
+            self addMenu("Zombie Traps");
+
+                if(isDefined(level.MenuZombieTraps) && level.MenuZombieTraps.size)
+                {
+                    self addOpt("Activate All Traps", ::ActivateAllZombieTraps);
+
+                    for(a = 0; a < level.MenuZombieTraps.size; a++)
+                        if(isDefined(level.MenuZombieTraps[a]))
+                            self addOpt(isDefined(level.MenuZombieTraps[a].prefabname) ? CleanString(level.MenuZombieTraps[a].prefabname) : "Trap " + (a + 1), ::ActivateZombieTrap, a);
+                }
+            break;
+        
         case "Change Map":
             mapNames = Array("zm_zod", "zm_factory", "zm_castle", "zm_island", "zm_stalingrad", "zm_genesis", "zm_prototype", "zm_asylum", "zm_sumpf", "zm_theater", "zm_cosmodrome", "zm_temple", "zm_moon", "zm_tomb");
 
@@ -181,41 +182,6 @@ PopulateServerModifications(menu)
 
                 for(a = 0; a < mapNames.size; a++)
                     self addOptBool((level.script == mapNames[a]), ReturnMapName(mapNames[a]), ::ServerChangeMap, mapNames[a]);
-            break;
-        
-        case "Server Tweakables":
-            self addMenu("Server Tweakables");
-                self addOpt("Enabled Power-Ups", ::newMenu, "Enabled Power-Ups");
-                self addOptIncSlider("Pack 'a' Punch Camo Index", ::SetPackCamoIndex, 0, level.pack_a_punch_camo_index, 138, 1);
-                self addOptIncSlider("Player Weapon Limit", ::SetPlayerWeaponLimit, 0, 0, 15, 1);
-                self addOptIncSlider("Player Perk Limit", ::SetPlayerPerkLimit, 0, 0, level.MenuPerks.size, 1);
-                self addOptIncSlider("Clip Size Multiplier", ::ServerSetClipSizeMultiplier, 1, 1, 10, 1);
-                self addOptIncSlider("Revive Trigger Radius", ::ServerSetReviveRadius, 0, GetDvarInt("revive_trigger_radius"), 1000, 25);
-                self addOptIncSlider("Last Stand Bleedout Time", ::ServerSetLastandTime, 0, GetDvarInt("player_lastStandBleedoutTime"), 1000, 1);
-                self addOptBool((level.zombie_vars["zombie_between_round_time"] == 0.1), "Fast Round Intermission", ::FastRoundIntermission);
-                self addOptBool(level.UpgradeWeaponWallbuys, "Upgrade Weapon Wallbuys", ::ServerUpgradeWeaponWallbuys);
-                self addOptBool(level.ServerMaxAmmoClips, "Max Ammo Powerups Fill Clips", ::ServerMaxAmmoClips);
-                self addOptBool(level.IncreasedDropRate, "Increased Power-Up Drop Rate", ::IncreasedDropRate);
-                self addOptBool(level.PowerupsNeverLeave, "Power-Ups Never Leave", ::PowerupsNeverLeave);
-                self addOptBool(level.DisablePowerups, "Disable Power-Ups", ::DisablePowerups);
-                self addOptBool(level.ShootToRevive, "Shoot To Revive", ::ShootToRevive);
-                self addOptBool(level.headshots_only, "Headshots Only", ::headshots_only);
-                self addOpt("Pack 'a' Punch Price", ::NumberPad, ::EditPackAPunchPrice);
-                self addOpt("Repack 'a' Punch Price", ::NumberPad, ::EditRepackAPunchPrice);
-            break;
-        
-        case "Enabled Power-Ups":
-            powerups = GetArrayKeys(level.zombie_include_powerups);
-
-            self addMenu("Enabled Power-Ups");
-
-                for(a = 0; a < powerups.size; a++)
-                {
-                    if(!isDefined(powerups[a]) || !isDefined(level.zombie_powerups[powerups[a]].func_should_drop_with_regular_powerups) || !IsFunctionPtr(level.zombie_powerups[powerups[a]].func_should_drop_with_regular_powerups))
-                        continue;
-                    
-                    self addOptBool([[ level.zombie_powerups[powerups[a]].func_should_drop_with_regular_powerups ]](), ReturnPowerupName(powerups[a]), ::SetPowerUpState, powerups[a]);
-                }
             break;
     }
 }
@@ -252,7 +218,7 @@ SetRound(round)
         round = (round >= 255) ? 254 : 1;
     
     level.zombie_total = 0;
-	world.roundnumber = (round ^ 115);
+    world.roundnumber = (round ^ 115);
     SetRoundsPlayed(round);
 
     level notify("kill_round");
@@ -260,7 +226,7 @@ SetRound(round)
 
     for(a = 0; a < 3; a++)
     {
-	    KillZombies("Head Gib");
+        KillZombies("Head Gib");
         wait 0.15;
     }
 
@@ -495,6 +461,239 @@ SetLobbyTimer(time)
             LobbyTimer();
 }
 
+SetBoxPrice(price)
+{
+    foreach(chest in level.chests)
+    {
+        chest.old_cost = price;
+        
+        if(!Is_True(level.zombie_vars["zombie_powerup_fire_sale_on"]))
+            chest.zombie_cost = price;
+    }
+}
+
+BoxNeverMoves()
+{
+    if(AllBoxesActive())
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While All Mystery Boxes Are Active");
+    
+    SetDvar("magic_chest_movable", (GetDvarString("magic_chest_movable") == "1") ? "0" : "1");
+}
+
+ShowAllChests()
+{
+    if(Is_True(level.ShowAllChestsWaiting))
+        return;
+    level.ShowAllChestsWaiting = true;
+
+    menu = self getCurrent();
+    curs = self getCursor();
+
+    if(!AllBoxesActive())
+    {
+        foreach(chest in level.chests)
+        {
+            if(chest.hidden)
+                chest thread zm_magicbox::show_chest();
+            
+            chest thread TriggerFix();
+            chest thread FirsaleFix();
+        }
+        
+        SetDvar("magic_chest_movable", "0");
+
+        while(!AllBoxesActive())
+            wait 0.1;
+        
+        self RefreshMenu(menu, curs);
+
+        if(Is_True(level.ShowAllChestsWaiting))
+            level.ShowAllChestsWaiting = BoolVar(level.ShowAllChestsWaiting);
+    }
+    else
+    {
+        foreach(chest in level.chests)
+        {
+            if(!chest.hidden && chest != level.chests[level.chest_index])
+            {
+                chest.was_temp = true;
+                chest zm_magicbox::hide_chest();
+            }
+            
+            chest notify("EndBoxFixes");
+        }
+        
+        SetDvar("magic_chest_movable", "1");
+
+        while(AllBoxesActive())
+            wait 0.1;
+        
+        self RefreshMenu(menu, curs);
+        
+        if(Is_True(level.ShowAllChestsWaiting))
+            level.ShowAllChestsWaiting = BoolVar(level.ShowAllChestsWaiting);
+    }
+}
+
+TriggerFix()
+{
+    self endon("EndBoxFixes");
+    
+    while(isDefined(self))
+    {
+        self.zbarrier waittill("closed");
+        thread zm_unitrigger::register_static_unitrigger(self.unitrigger_stub, zm_magicbox::magicbox_unitrigger_think);
+    }
+}
+
+FirsaleFix()
+{
+    self endon("EndBoxFixes");
+    
+    while(isDefined(self))
+    {
+        level waittill("fire_sale_off");
+        self.was_temp = undefined;
+    }
+}
+
+AllBoxesActive()
+{
+    foreach(chest in level.chests)
+        if(Is_True(chest.hidden))
+            return false;
+    
+    return true;
+}
+
+BoxForceJoker()
+{
+    if(AllBoxesActive())
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While All Mystery Boxes Are Active");
+    
+    SetDvar("magic_chest_movable", "1");
+    level.chest_accessed = 999;
+    level.chest_moves = 0;
+
+    self RefreshMenu(self getCurrent(), self getCursor()); //Needs to refresh the menu since 'magic_chest_movable' is a dvar used as a bool option
+}
+
+SetBoxJokerModel(model)
+{
+    level.chest_joker_model = model;
+}
+
+SetBoxWeaponState(weapon)
+{
+    if(!isDefined(level.customBoxWeapons))
+        return;
+    
+    if(isInArray(level.customBoxWeapons, weapon))
+        level.customBoxWeapons = ArrayRemove(level.customBoxWeapons, weapon);
+    else
+        level.customBoxWeapons[level.customBoxWeapons.size] = weapon;
+    
+    level.CustomRandomWeaponWeights = ::CustomBoxWeight;
+}
+
+IsAllWeaponsInBox(upgraded = false)
+{
+    weaps = upgraded ? GetArrayKeys(level.zombie_weapons_upgraded) : GetArrayKeys(level.zombie_weapons);
+    weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
+    
+    for(a = 0; a < weaps.size; a++)
+    {
+        if(IsInArray(weaponsVar, ToLower(CleanString(upgraded ? zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a])) : zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none" && !IsWeaponInBox(weaps[a]))
+            return false;
+    }
+    
+    if(!upgraded)
+    {
+        equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
+        equipmentCombined = GetArrayKeys(equipment);
+
+        if(!IsWeaponInBox(GetWeapon("minigun")) || !IsWeaponInBox(GetWeapon("defaultweapon")))
+            return false;
+
+        if(isDefined(equipmentCombined) && equipmentCombined.size)
+        {
+            for(a = 0; a < weaps.size; a++)
+            {
+                if(isInArray(equipment, weaps[a]) && !IsWeaponInBox(weaps[a]))
+                    return false;
+            }
+        }
+    }
+    
+    return true;
+}
+
+EnableAllWeaponsInBox(upgraded = false)
+{
+    weaps = upgraded ? GetArrayKeys(level.zombie_weapons_upgraded) : GetArrayKeys(level.zombie_weapons);
+
+    if(IsAllWeaponsInBox(upgraded))
+    {
+        if(isInArray(level.customBoxWeapons, GetWeapon("minigun")))
+            level.customBoxWeapons = ArrayRemove(level.customBoxWeapons, GetWeapon("minigun"));
+        
+        if(isInArray(level.customBoxWeapons, GetWeapon("defaultweapon")))
+            level.customBoxWeapons = ArrayRemove(level.customBoxWeapons, GetWeapon("defaultweapon"));
+        
+        for(a = 0; a < weaps.size; a++)
+        {
+            if(isInArray(level.customBoxWeapons, weaps[a]))
+                level.customBoxWeapons = ArrayRemove(level.customBoxWeapons, weaps[a]);
+        }
+    }
+    else
+    {
+        weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
+        
+        for(a = 0; a < weaps.size; a++)
+        {
+            if(IsInArray(weaponsVar, ToLower(CleanString(upgraded ? zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a])) : zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none" && !IsWeaponInBox(weaps[a]))
+                level.customBoxWeapons[level.customBoxWeapons.size] = weaps[a];
+        }
+        
+        if(!upgraded)
+        {
+            equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
+            keys = GetArrayKeys(equipment);
+
+            if(!IsWeaponInBox(GetWeapon("minigun")))
+                level.customBoxWeapons[level.customBoxWeapons.size] = GetWeapon("minigun");
+            
+            if(!IsWeaponInBox(GetWeapon("defaultweapon")))
+                level.customBoxWeapons[level.customBoxWeapons.size] = GetWeapon("defaultweapon");
+
+            if(isDefined(keys) && keys.size)
+            {
+                for(a = 0; a < weaps.size; a++)
+                {
+                    if(isInArray(equipment, weaps[a]) && !IsWeaponInBox(weaps[a]))
+                        level.customBoxWeapons[level.customBoxWeapons.size] = weaps[a];
+                }
+            }
+        }
+    }
+
+    level.CustomRandomWeaponWeights = ::CustomBoxWeight;
+}
+
+IsWeaponInBox(weapon)
+{
+    if(!isDefined(level.customBoxWeapons))
+        return false;
+    
+    return isInArray(level.customBoxWeapons, weapon);
+}
+
+CustomBoxWeight(keys)
+{
+    return array::randomize(level.customBoxWeapons);
+}
+
 OpenAllDoors()
 {
     if(IsAllDoorsOpen())
@@ -554,7 +753,7 @@ OpenAllDoors()
     }
 
     level.local_doors_stay_open = 1;
-	level.power_local_doors_globally = 1;
+    level.power_local_doors_globally = 1;
     wait 0.5;
 
     level notify("open_sesame");
@@ -688,9 +887,9 @@ CollectCraftableParts(craftable)
     menu = self getCurrent();
     curs = self getCursor();
 
-	foreach(part in level.zombie_include_craftables[craftable].a_piecestubs)
-		if(isDefined(part.pieceSpawn))
-			self zm_craftables::player_take_piece(part.pieceSpawn);
+    foreach(part in level.zombie_include_craftables[craftable].a_piecestubs)
+        if(isDefined(part.pieceSpawn))
+            self zm_craftables::player_take_piece(part.pieceSpawn);
     
     wait 0.05;
     self RefreshMenu(menu, curs);
@@ -737,519 +936,6 @@ IsAllCraftablesCollected()
             return false;
     
     return true;
-}
-
-SetBoxPrice(price)
-{
-    foreach(chest in level.chests)
-    {
-        chest.old_cost = price;
-        
-        if(!Is_True(level.zombie_vars["zombie_powerup_fire_sale_on"]))
-            chest.zombie_cost = price;
-    }
-}
-
-ShowAllChests()
-{
-    if(Is_True(level.ShowAllChestsWaiting))
-        return;
-    level.ShowAllChestsWaiting = true;
-
-    menu = self getCurrent();
-    curs = self getCursor();
-
-    if(!AllBoxesActive())
-    {
-        foreach(chest in level.chests)
-        {
-            if(chest.hidden)
-                chest thread zm_magicbox::show_chest();
-            
-            chest thread TriggerFix();
-            chest thread FirsaleFix();
-        }
-        
-        SetDvar("magic_chest_movable", "0");
-
-        while(!AllBoxesActive())
-            wait 0.1;
-        
-        self RefreshMenu(menu, curs);
-
-        if(Is_True(level.ShowAllChestsWaiting))
-            level.ShowAllChestsWaiting = BoolVar(level.ShowAllChestsWaiting);
-    }
-    else
-    {
-        foreach(chest in level.chests)
-        {
-            if(!chest.hidden && chest != level.chests[level.chest_index])
-            {
-                chest.was_temp = true;
-                chest zm_magicbox::hide_chest();
-            }
-            
-            chest notify("EndBoxFixes");
-        }
-        
-        SetDvar("magic_chest_movable", "1");
-
-        while(AllBoxesActive())
-            wait 0.1;
-        
-        self RefreshMenu(menu, curs);
-        
-        if(Is_True(level.ShowAllChestsWaiting))
-            level.ShowAllChestsWaiting = BoolVar(level.ShowAllChestsWaiting);
-    }
-}
-
-TriggerFix()
-{
-    self endon("EndBoxFixes");
-    
-    while(isDefined(self))
-    {
-        self.zbarrier waittill("closed");
-        thread zm_unitrigger::register_static_unitrigger(self.unitrigger_stub, zm_magicbox::magicbox_unitrigger_think);
-    }
-}
-
-FirsaleFix()
-{
-    self endon("EndBoxFixes");
-    
-    while(isDefined(self))
-    {
-        level waittill("fire_sale_off");
-        self.was_temp = undefined;
-    }
-}
-
-AllBoxesActive()
-{
-    foreach(chest in level.chests)
-        if(Is_True(chest.hidden))
-            return false;
-    
-    return true;
-}
-
-BoxForceJoker()
-{
-    if(AllBoxesActive())
-        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While All Mystery Boxes Are Active");
-    
-    SetDvar("magic_chest_movable", "1");
-    level.chest_accessed = 999;
-    level.chest_moves = 0;
-
-    self RefreshMenu(self getCurrent(), self getCursor()); //Needs to refresh the menu since 'magic_chest_movable' is a dvar used as a bool option
-}
-
-BoxNeverMoves()
-{
-    if(AllBoxesActive())
-        return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While All Mystery Boxes Are Active");
-    
-    SetDvar("magic_chest_movable", (GetDvarString("magic_chest_movable") == "1") ? "0" : "1");
-}
-
-IsWeaponInBox(weapon)
-{
-    if(!isDefined(level.customBoxWeapons))
-        return false;
-    
-    return isInArray(level.customBoxWeapons, weapon);
-}
-
-SetBoxWeaponState(weapon)
-{
-    if(!isDefined(level.customBoxWeapons))
-        return;
-    
-    if(isInArray(level.customBoxWeapons, weapon))
-        level.customBoxWeapons = ArrayRemove(level.customBoxWeapons, weapon);
-    else
-        level.customBoxWeapons[level.customBoxWeapons.size] = weapon;
-    
-    level.CustomRandomWeaponWeights = ::CustomBoxWeight;
-}
-
-IsAllWeaponsInBox(upgraded = false)
-{
-    weaps = upgraded ? GetArrayKeys(level.zombie_weapons_upgraded) : GetArrayKeys(level.zombie_weapons);
-    weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
-    
-    for(a = 0; a < weaps.size; a++)
-    {
-        if(IsInArray(weaponsVar, ToLower(CleanString(upgraded ? zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a])) : zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none" && !IsWeaponInBox(weaps[a]))
-            return false;
-    }
-    
-    if(!upgraded)
-    {
-        equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
-        equipmentCombined = GetArrayKeys(equipment);
-
-        if(!IsWeaponInBox(GetWeapon("minigun")) || !IsWeaponInBox(GetWeapon("defaultweapon")))
-            return false;
-
-        if(isDefined(equipmentCombined) && equipmentCombined.size)
-        {
-            for(a = 0; a < weaps.size; a++)
-            {
-                if(isInArray(equipment, weaps[a]) && !IsWeaponInBox(weaps[a]))
-                    return false;
-            }
-        }
-    }
-    
-    return true;
-}
-
-EnableAllWeaponsInBox(upgraded = false)
-{
-    weaps = upgraded ? GetArrayKeys(level.zombie_weapons_upgraded) : GetArrayKeys(level.zombie_weapons);
-
-    if(IsAllWeaponsInBox(upgraded))
-    {
-        if(isInArray(level.customBoxWeapons, GetWeapon("minigun")))
-            level.customBoxWeapons = ArrayRemove(level.customBoxWeapons, GetWeapon("minigun"));
-        
-        if(isInArray(level.customBoxWeapons, GetWeapon("defaultweapon")))
-            level.customBoxWeapons = ArrayRemove(level.customBoxWeapons, GetWeapon("defaultweapon"));
-        
-        for(a = 0; a < weaps.size; a++)
-        {
-            if(isInArray(level.customBoxWeapons, weaps[a]))
-                level.customBoxWeapons = ArrayRemove(level.customBoxWeapons, weaps[a]);
-        }
-    }
-    else
-    {
-        weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
-        
-        for(a = 0; a < weaps.size; a++)
-        {
-            if(IsInArray(weaponsVar, ToLower(CleanString(upgraded ? zm_utility::GetWeaponClassZM(zm_weapons::get_base_weapon(weaps[a])) : zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none" && !IsWeaponInBox(weaps[a]))
-                level.customBoxWeapons[level.customBoxWeapons.size] = weaps[a];
-        }
-        
-        if(!upgraded)
-        {
-            equipment = ArrayCombine(level.zombie_lethal_grenade_list, level.zombie_tactical_grenade_list, 0, 1);
-            keys = GetArrayKeys(equipment);
-
-            if(!IsWeaponInBox(GetWeapon("minigun")))
-                level.customBoxWeapons[level.customBoxWeapons.size] = GetWeapon("minigun");
-            
-            if(!IsWeaponInBox(GetWeapon("defaultweapon")))
-                level.customBoxWeapons[level.customBoxWeapons.size] = GetWeapon("defaultweapon");
-
-            if(isDefined(keys) && keys.size)
-            {
-                for(a = 0; a < weaps.size; a++)
-                {
-                    if(isInArray(equipment, weaps[a]) && !IsWeaponInBox(weaps[a]))
-                        level.customBoxWeapons[level.customBoxWeapons.size] = weaps[a];
-                }
-            }
-        }
-    }
-
-    level.CustomRandomWeaponWeights = ::CustomBoxWeight;
-}
-
-CustomBoxWeight(keys)
-{
-    return array::randomize(level.customBoxWeapons);
-}
-
-SetBoxJokerModel(model)
-{
-    level.chest_joker_model = model;
-}
-
-ServerUpgradeWeaponWallbuys()
-{
-    level.UpgradeWeaponWallbuys = BoolVar(level.UpgradeWeaponWallbuys);
-
-    if(Is_True(level.UpgradeWeaponWallbuys))
-    {
-        if(isDefined(level.wallbuy_should_upgrade_weapon_override))
-            level.saved_wallbuy_should_upgrade_weapon_override = level.wallbuy_should_upgrade_weapon_override;
-        
-        level.wallbuy_should_upgrade_weapon_override = ::wallbuy_should_upgrade_weapon_override;
-    }
-    else
-        level.wallbuy_should_upgrade_weapon_override = isDefined(level.saved_wallbuy_should_upgrade_weapon_override) ? level.saved_wallbuy_should_upgrade_weapon_override : undefined;
-}
-
-ServerMaxAmmoClips()
-{
-    level.ServerMaxAmmoClips = Boolvar(level.ServerMaxAmmoClips);
-
-    if(Is_True(level.ServerMaxAmmoClips))
-        level thread WatchForMaxAmmo();
-    else
-    {
-        level.WatchForMaxAmmo = undefined;
-        level notify("EndMaxAmmoMonitor");
-    }
-}
-
-ShootToRevive()
-{
-    level.ShootToRevive = BoolVar(level.ShootToRevive);
-
-    if(Is_True(level.ShootToRevive))
-    {
-        foreach(player in level.players)
-            player thread PlayerShootToRevive();
-    }
-    else
-        level notify("EndShootToRevive");
-}
-
-PlayerShootToRevive()
-{
-    self endon("disconnect");
-    level endon("EndShootToRevive");
-
-    while(Is_True(level.ShootToRevive))
-    {
-        self waittill("weapon_fired");
-
-        trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), true, self);
-
-        traceEntity = trace["entity"];
-        tracePosition = trace["position"];
-        
-        /*
-            For less of a hassle for the player, I'm running two traces.
-            The first one is the case where you didn't shoot directly at the downed player, but shot near them
-            The second one is the case that you shot them directly
-        */
-
-        if(!isDefined(traceEntity) || !IsPlayer(traceEntity))
-        {
-            foreach(player in level.players)
-            {
-                if(player == self || !Is_Alive(player) || !player IsDown() || Distance(tracePosition, player.origin) > 50)
-                    continue;
-                
-                self thread PlayerShootRevive(player);
-            }
-        }
-        else
-        {
-            if(!Is_Alive(traceEntity) || !traceEntity IsDown())
-                continue;
-            
-            self thread PlayerShootRevive(traceEntity);
-        }
-    }
-}
-
-PlayerShootRevive(player)
-{
-    if(!isDefined(player) || !IsPlayer(player))
-        return;
-    
-    if(isDefined(self.hud_damagefeedback))
-        self zombie_utility::show_hit_marker();
-
-    self PlayerRevive(player);
-}
-
-SetPowerUpState(powerup)
-{
-    if(!isDefined(powerup) || !isDefined(level.zombie_powerups[powerup].func_should_drop_with_regular_powerups) || !IsFunctionPtr(level.zombie_powerups[powerup].func_should_drop_with_regular_powerups))
-        return;
-    
-    if(GetActivePowerUpCount() < 2 && Is_True([[ level.zombie_powerups[powerup].func_should_drop_with_regular_powerups ]]()))
-        return self iPrintlnBold("^1ERROR: ^7At Least One Power-Up Must Be Enabled");
-    
-    level.zombie_powerups[powerup].func_should_drop_with_regular_powerups = Is_True([[ level.zombie_powerups[powerup].func_should_drop_with_regular_powerups ]]()) ? zm_powerups::func_should_never_drop : zm_powerups::func_should_always_drop;
-}
-
-GetActivePowerUpCount()
-{
-    index = 0;
-    powerups = GetArrayKeys(level.zombie_include_powerups);
-
-    for(a = 0; a < powerups.size; a++)
-    {
-        if(!isDefined(powerups[a]))
-            continue;
-        
-        if(Is_True([[ level.zombie_powerups[powerups[a]].func_should_drop_with_regular_powerups ]]()))
-            index++;
-    }
-
-    return index;
-}
-
-SetPackCamoIndex(index)
-{
-    level.pack_a_punch_camo_index = index;
-}
-
-SetPlayerWeaponLimit(limit)
-{
-    level.CustomPlayerWeaponLimit = limit;
-    level.additionalprimaryweapon_limit = limit;
-
-    foreach(player in level.players)
-        if(isDefined(player.get_player_weapon_limit))
-            player.get_player_weapon_limit = ::GetPlayerWeaponLimit;
-
-    level.get_player_weapon_limit = ::GetPlayerWeaponLimit;
-}
-
-GetPlayerWeaponLimit(player)
-{
-    return level.CustomPlayerWeaponLimit;
-}
-
-SetPlayerPerkLimit(limit)
-{
-    level.CustomPerkLimit = limit;
-    level.perk_purchase_limit = limit;
-    level.get_player_perk_purchase_limit = ::GetPlayerPerkLimit;
-}
-
-GetPlayerPerkLimit(player)
-{
-    return level.CustomPerkLimit;
-}
-
-IncreasedDropRate()
-{
-    if(Is_True(level.DisablePowerups) && !Is_True(level.IncreasedDropRate))
-        level DisablePowerups();
-    
-    level.IncreasedDropRate = BoolVar(level.IncreasedDropRate);
-
-    if(Is_True(level.IncreasedDropRate))
-    {
-        while(Is_True(level.IncreasedDropRate))
-        {
-            if(isDefined(level.powerup_drop_count) && level.powerup_drop_count > 0 || !isDefined(level.powerup_drop_count))
-                level.powerup_drop_count = 0;
-
-            if(level.zombie_vars["zombie_drop_item"] != 1)
-                level.zombie_vars["zombie_drop_item"] = 1;
-
-            if(level.zombie_vars["zombie_powerup_drop_max_per_round"] != 999)
-                level.zombie_vars["zombie_powerup_drop_max_per_round"] = 999;
-            
-            zombies = GetAITeamArray(level.zombie_team);
-
-            for(a = 0; a < zombies.size; a++)
-            {
-                if(isDefined(zombies[a]) && (!isDefined(zombies[a].no_powerup) || zombies[a].no_powerup))
-                    zombies[a].no_powerup = false;
-            }
-
-            wait 0.01;
-        }
-    }
-    else
-        level.zombie_vars["zombie_powerup_drop_max_per_round"] = 4;
-}
-
-PowerupsNeverLeave()
-{
-    level.PowerupsNeverLeave = BoolVar(level.PowerupsNeverLeave);
-    level._powerup_timeout_override = Is_True(level.PowerupsNeverLeave) ? PowerUpTime() : undefined;
-}
-
-PowerUpTime()
-{
-    return 0;
-}
-
-DisablePowerups()
-{
-    if(Is_True(level.IncreasedDropRate) && !Is_True(level.DisablePowerups))
-        level IncreasedDropRate();
-    
-    level.DisablePowerups = BoolVar(level.DisablePowerups);
-
-    if(Is_True(level.DisablePowerups))
-    {
-        powerups = zm_powerups::get_powerups(self.origin, 46340); //active powerups array is being weird and not returning all of the active powerups? -- distancesquared(origin, powerup.origin) < (radius * radius) -- 46340.50 is sqrt of int max
-
-        if(isDefined(powerups) && powerups.size)
-        {
-            foreach(index, powerup in powerups)
-            {
-                powerup notify("powerup_timedout");
-                powerup zm_powerups::powerup_delete();
-
-                wait 0.01;
-            }
-        }
-        
-        while(Is_True(level.DisablePowerups))
-        {
-            level waittill("powerup_dropped", powerup);
-            
-            if(isDefined(powerup))
-            {
-                powerup notify("powerup_timedout");
-                powerup thread zm_powerups::powerup_delete();
-            }
-        }
-    }
-    else
-        level.powerup_drop_count = 0;
-}
-
-headshots_only()
-{
-    level.headshots_only = BoolVar(level.headshots_only);
-}
-
-ServerSetClipSizeMultiplier(multiplier)
-{
-    SetDvar("player_clipSizeMultiplier", multiplier);
-}
-
-ServerSetReviveRadius(radius)
-{
-    SetDvar("revive_trigger_radius", radius);
-}
-
-ServerSetLastandTime(time)
-{
-    SetDvar("player_lastStandBleedoutTime", time);
-}
-
-FastRoundIntermission()
-{
-    level.zombie_vars["zombie_between_round_time"] = (level.zombie_vars["zombie_between_round_time"] == 0.1 ? level.roundIntermissionTime : 0.1);
-}
-
-EditPackAPunchPrice(price)
-{
-    vending_weapon_upgrade_trigger = level.pack_a_punch.triggers;
-
-    if(isDefined(vending_weapon_upgrade_trigger) && vending_weapon_upgrade_trigger.size >= 1)
-        foreach(index, trigger in vending_weapon_upgrade_trigger)
-            trigger.cost = price;
-}
-
-EditRepackAPunchPrice(price)
-{
-    vending_weapon_upgrade_trigger = level.pack_a_punch.triggers;
-
-    if(isDefined(vending_weapon_upgrade_trigger) && vending_weapon_upgrade_trigger.size >= 1)
-        foreach(index, trigger in vending_weapon_upgrade_trigger)
-            trigger.aat_cost = price;
 }
 
 ServerChangeMap(map)

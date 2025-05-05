@@ -19,39 +19,6 @@ PopulateMoonScripts(menu)
     }
 }
 
-CompleteSamanthaSays(part)
-{
-    if(!level flag::get("power_on"))
-        return self iPrintlnBold("^1ERROR: ^7The Power Needs To Be Turned On Before Using This Option");
-
-    if(part == "be2" && !level flag::get("vg_charged"))
-        return self iPrintlnBold("^1ERROR: ^7This Step Can't Be Completed Yet");
-
-    if(level flag::get(part))
-        return self iPrintlnBold("^1ERROR: ^7Samantha Says Has Already Been Completed");
-
-    if(Is_True(level.SamanthaSays))
-        return self iPrintlnBold("^1ERROR: ^7Samantha Says Is Currently Being Completed");
-
-    level.SamanthaSays = true;
-
-    curs = self getCursor();
-    menu = self getCurrent();
-
-    while(!level flag::get(part))
-    {
-        level notify("ss_won");
-        level._ss_sequence_matched = true;
-
-        wait 0.025;
-    }
-
-    self RefreshMenu(menu, curs);
-
-    if(Is_True(level.SamanthaSays))
-        level.SamanthaSays = BoolVar(level.SamanthaSays);
-}
-
 ActivateDigger(force_digger)
 {
     force_digger = ToLower(force_digger);
@@ -66,39 +33,6 @@ ActivateDigger(force_digger)
 
     level notify(force_digger + "_vox_timer_stop");
     level thread play_timer_vox(force_digger);
-}
-
-SetDiggerSpeed(speed)
-{
-    level.DiggerSpeed = speed;
-}
-
-FastExcavators()
-{
-    level endon("EndFastExcavators");
-
-    level.FastExcavators = BoolVar(level.FastExcavators);
-
-    if(Is_True(level.FastExcavators))
-    {
-        while(Is_True(level.FastExcavators))
-        {
-            level flag::wait_till("digger_moving");
-
-            while(level flag::get("digger_moving")) //This needs to be looped. The speed is recalculated the whole time the excavators are moving.
-            {
-                foreach(digger in GetEntArray("digger_body", "targetname"))
-                {
-                    tracks = (digger.script_string == "teleporter_digger_stopped") ? GetEntArray(digger.target, "targetname")[0] : GetEntArray(digger.target, "targetname")[1];
-                    tracks.digger_speed = 2000; //Set This To Whatever. Default is around 30 - 50. You don't need to reset it since it gets recalculated everytime they move.
-                }
-
-                wait 0.1;
-            }
-        }
-    }
-    else
-        level notify("EndFastExcavators");
 }
 
 send_clientnotify(digger_name, pause)
@@ -230,4 +164,65 @@ play_mooncomp_vox(alias, digger)
         level do_mooncomp_vox(alias + num);
         level.mooncomp_is_speaking = 0;
     }
+}
+
+CompleteSamanthaSays(part)
+{
+    if(!level flag::get("power_on"))
+        return self iPrintlnBold("^1ERROR: ^7The Power Needs To Be Turned On Before Using This Option");
+
+    if(part == "be2" && !level flag::get("vg_charged"))
+        return self iPrintlnBold("^1ERROR: ^7This Step Can't Be Completed Yet");
+
+    if(level flag::get(part))
+        return self iPrintlnBold("^1ERROR: ^7Samantha Says Has Already Been Completed");
+
+    if(Is_True(level.SamanthaSays))
+        return self iPrintlnBold("^1ERROR: ^7Samantha Says Is Currently Being Completed");
+
+    level.SamanthaSays = true;
+
+    curs = self getCursor();
+    menu = self getCurrent();
+
+    while(!level flag::get(part))
+    {
+        level notify("ss_won");
+        level._ss_sequence_matched = true;
+
+        wait 0.025;
+    }
+
+    self RefreshMenu(menu, curs);
+
+    if(Is_True(level.SamanthaSays))
+        level.SamanthaSays = BoolVar(level.SamanthaSays);
+}
+
+FastExcavators()
+{
+    level endon("EndFastExcavators");
+
+    level.FastExcavators = BoolVar(level.FastExcavators);
+
+    if(Is_True(level.FastExcavators))
+    {
+        while(Is_True(level.FastExcavators))
+        {
+            level flag::wait_till("digger_moving");
+
+            while(level flag::get("digger_moving")) //This needs to be looped. The speed is recalculated the whole time the excavators are moving.
+            {
+                foreach(digger in GetEntArray("digger_body", "targetname"))
+                {
+                    tracks = (digger.script_string == "teleporter_digger_stopped") ? GetEntArray(digger.target, "targetname")[0] : GetEntArray(digger.target, "targetname")[1];
+                    tracks.digger_speed = 2000; //Set This To Whatever. Default is around 30 - 50. You don't need to reset it since it gets recalculated everytime they move.
+                }
+
+                wait 0.1;
+            }
+        }
+    }
+    else
+        level notify("EndFastExcavators");
 }
