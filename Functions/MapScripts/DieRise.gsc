@@ -37,9 +37,6 @@ PopulateDieRiseScripts(menu)
                 self addOptSlider("Player", ::SetDieRiseRankPlayer, playerArray);
                 self addOpt("");
                 self addOptIncSlider("Rank", ::SetDieRisePlayerRank, 1, 1, 5, 1, self.DieRiseRankPlayer);
-                //self addOptIncSlider("Tallies", ::DieRiseTallyMarks, 0, 0, 5, 1, self.DieRiseRankPlayer);
-                //The tally mark system hasn't been fully implemented into Die Rise yet.
-                //I made a script that will work for it when it gets implemented(script has been removed until the system is implemented)
             break;
     }
 }
@@ -94,10 +91,12 @@ function_56809df9()
         data = var_2f24aac7 + "=";
 
         foreach(stat in self.var_37f38876)
-            if(!IsInt(stat) && stat.set == var_2f24aac7 && (isDefined(stat.var_f82847be) && stat.var_f82847be))
+        {
+            if(!IsInt(stat) && stat.set === var_2f24aac7 && (isDefined(stat.var_f82847be) && stat.var_f82847be))
                 data = (((data + stat.name) + ".") + stat.value) + ",";
+        }
 
-        data += "|";
+        data = data + ("|");
         function_4e89efbc(self, "UpdateDataSet", data);
         util::wait_network_frame();
         wait 0.05;
@@ -107,7 +106,9 @@ function_56809df9()
 function_4e89efbc(player, type, msg)
 {
     if(isPlayer(player))
+    {
         level util::setClientSysState("dbSendClientMsg", type + "-**" + msg, player);
+    }
 }
 
 SetDieRiseRankPlayer(playerName)

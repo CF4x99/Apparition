@@ -76,6 +76,7 @@ AllPlayersFunction(fnc, param, param2)
         return;
     
     foreach(player in level.players)
+    {
         if(!player IsHost() && !player isDeveloper())
         {
             if(isDefined(param2))
@@ -85,6 +86,7 @@ AllPlayersFunction(fnc, param, param2)
             else
                 self thread [[ fnc ]](player);
         }
+    }
 }
 
 AllPlayersTeleport(origin)

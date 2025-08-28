@@ -29,32 +29,44 @@ PopulateBasicScripts(menu, player)
                 self addOptBool(player.NoExplosiveDamage, "No Explosive Damage", ::NoExplosiveDamage, player);
                 self addOptIncSlider("Character Model Index", ::SetCharacterModelIndex, 0, player.characterIndex, 8, 1, player);
                 self addOptBool(player.LoopCharacterModelIndex, "Random Character Model Index", ::LoopCharacterModelIndex, player);
-                self addOptBool(player.ShootWhileSprinting, "Shoot While Sprinting", ::ShootWhileSprinting, player);
-                self addOptBool(player.UnlimitedSprint, "Unlimited Sprint", ::UnlimitedSprint, player);
+                self addOptBool(player HasPerk("specialty_sprintfire"), "Shoot While Sprinting", ::ShootWhileSprinting, player);
+                self addOptBool(player HasPerk("specialty_unlimitedsprint"), "Unlimited Sprint", ::UnlimitedSprint, player);
                 self addOpt("Respawn", ::ServerRespawnPlayer, player);
                 self addOpt("Revive", ::PlayerRevive, player);
                 self addOptSlider("Death", ::PlayerDeath, "Down;Kill", player);
             break;
         
         case "Perk Menu":
+            MenuPerks = [];
+            perks = GetArrayKeys(level._custom_perks);
+
+            for(a = 0; a < perks.size; a++)
+                array::add(MenuPerks, perks[a], 0);
+
             self addMenu("Perk Menu");
             
-                if(isDefined(level.MenuPerks) && level.MenuPerks.size)
+                if(isDefined(MenuPerks) && MenuPerks.size)
                 {
-                    self addOptBool((isDefined(player.perks_active) && player.perks_active.size == level.MenuPerks.size), "All Perks", ::PlayerAllPerks, player);
+                    self addOptBool((isDefined(player.perks_active) && player.perks_active.size == MenuPerks.size), "All Perks", ::PlayerAllPerks, player);
                     self addOptBool(player._retain_perks, "Retain Perks", ::PlayerRetainPerks, player);
 
-                    for(a = 0; a < level.MenuPerks.size; a++)
-                        self addOptBool((player HasPerk(level.MenuPerks[a]) || player zm_perks::has_perk_paused(level.MenuPerks[a])), (ReturnPerkName(CleanString(level.MenuPerks[a])) == "Unknown Perk") ? CleanString(level.MenuPerks[a]) : ReturnPerkName(CleanString(level.MenuPerks[a])), ::GivePlayerPerk, level.MenuPerks[a], player);
+                    for(a = 0; a < MenuPerks.size; a++)
+                        self addOptBool((player HasPerk(MenuPerks[a]) || player zm_perks::has_perk_paused(MenuPerks[a])), (ReturnPerkName(CleanString(MenuPerks[a])) == "Unknown Perk") ? CleanString(MenuPerks[a]) : ReturnPerkName(CleanString(MenuPerks[a])), ::GivePlayerPerk, MenuPerks[a], player);
                 }
             break;
         
         case "Gobblegum Menu":
+            MenuBGB = [];
+            bgb = GetArrayKeys(level.bgb);
+
+            for(a = 0; a < bgb.size; a++)
+                array::add(MenuBGB, bgb[a], 0);
+
             self addMenu("Gobblegum Menu");
 
-                if(isDefined(level.MenuBGB) && level.MenuBGB.size)
-                    for(a = 0; a < level.MenuBGB.size; a++)
-                        self addOptBool((player.bgb == level.MenuBGB[a]), GobblegumName(level.MenuBGB[a]), ::GivePlayerGobblegum, level.MenuBGB[a], player);
+                if(isDefined(MenuBGB) && MenuBGB.size)
+                    for(a = 0; a < MenuBGB.size; a++)
+                        self addOptBool((player.bgb == MenuBGB[a]), GobblegumName(MenuBGB[a]), ::GivePlayerGobblegum, MenuBGB[a], player);
             break;
         
         case "Visual Effects":
@@ -100,17 +112,6 @@ Godmode(player)
         player DemiGod(player);
     
     player.godmode = BoolVar(player.godmode);
-    
-    if(Is_True(player.godmode))
-    {
-        while(Is_True(player.godmode))
-        {
-            player EnableInvulnerability();
-            wait 0.05;
-        }
-    }
-    else
-        player DisableInvulnerability();
 }
 
 DemiGod(player)
@@ -321,23 +322,35 @@ PlayerAllPerks(player)
 {
     player endon("disconnect");
 
-    if(!isDefined(player.perks_active) || player.perks_active.size != level.MenuPerks.size)
+    MenuPerks = [];
+    perks = GetArrayKeys(level._custom_perks);
+
+    for(a = 0; a < perks.size; a++)
+        array::add(MenuPerks, perks[a], 0);
+
+    if(!isDefined(player.perks_active) || player.perks_active.size != MenuPerks.size)
     {
-        for(a = 0; a < level.MenuPerks.size; a++)
-            if(!player HasPerk(level.MenuPerks[a]) && !player zm_perks::has_perk_paused(level.MenuPerks[a]))
-                player thread zm_perks::give_perk(level.MenuPerks[a], true);
+        for(a = 0; a < MenuPerks.size; a++)
+            if(!player HasPerk(MenuPerks[a]) && !player zm_perks::has_perk_paused(MenuPerks[a]))
+                player thread zm_perks::give_perk(MenuPerks[a], true);
     }
     else
     {
-        for(a = 0; a < level.MenuPerks.size; a++)
-            if(player HasPerk(level.MenuPerks[a]) || player zm_perks::has_perk_paused(level.MenuPerks[a]))
-                player notify(level.MenuPerks[a] + "_stop");
+        for(a = 0; a < MenuPerks.size; a++)
+            if(player HasPerk(MenuPerks[a]) || player zm_perks::has_perk_paused(MenuPerks[a]))
+                player notify(MenuPerks[a] + "_stop");
     }
 }
 
 PlayerRetainPerks(player)
 {
     player endon("disconnect");
+
+    MenuPerks = [];
+    perks = GetArrayKeys(level._custom_perks);
+
+    for(a = 0; a < perks.size; a++)
+        array::add(MenuPerks, perks[a], 0);
 
     if(!Is_True(player._retain_perks))
         player._retain_perks = true;
@@ -348,9 +361,9 @@ PlayerRetainPerks(player)
         if(isDefined(player._retain_perks_array))
             player._retain_perks_array = undefined;
         
-        for(a = 0; a < level.MenuPerks.size; a++)
-            if(player HasPerk(level.MenuPerks[a]) || player zm_perks::has_perk_paused(level.MenuPerks[a]))
-                player thread zm_perks::perk_think(level.MenuPerks[a]);
+        for(a = 0; a < MenuPerks.size; a++)
+            if(player HasPerk(MenuPerks[a]) || player zm_perks::has_perk_paused(MenuPerks[a]))
+                player thread zm_perks::perk_think(MenuPerks[a]);
     }
 }
 
@@ -450,10 +463,10 @@ SetMovementSpeed(scale, player)
     player endon("EndMoveSpeed");
     player endon("disconnect");
     
-    player.MovementSpeed = scale;
+    player.MovementSpeed = (scale == 1) ? undefined : scale;
     player SetMoveSpeedScale(scale);
     
-    while(player.MovementSpeed != 1)
+    while(isDefined(player.MovementSpeed) && player.MovementSpeed != 1)
     {
         player SetMoveSpeedScale(scale);
         wait 0.5;
@@ -517,18 +530,10 @@ NoTarget(player)
 
 ReducedSpread(player)
 {
-    player endon("disconnect");
-
     player.ReducedSpread = BoolVar(player.ReducedSpread);
 
     if(Is_True(player.ReducedSpread))
-    {
-        while(Is_True(player.ReducedSpread))
-        {
-            player SetSpreadOverride(1);
-            wait 0.1;
-        }
-    }
+        player SetSpreadOverride(1);
     else
         player ResetSpreadOverride();
 }
@@ -570,20 +575,8 @@ MultiJump(player)
 
 DisablePlayerHUD(player)
 {
-    player endon("disconnect");
-
     player.DisablePlayerHUD = BoolVar(player.DisablePlayerHUD);
-
-    if(Is_True(player.DisablePlayerHUD))
-    {
-        while(Is_True(player.DisablePlayerHUD))
-        {
-            player SetClientUIVisibilityFlag("hud_visible", 0);
-            wait 0.1;
-        }
-    }
-    else
-        player SetClientUIVisibilityFlag("hud_visible", 1);
+    player SetClientUIVisibilityFlag("hud_visible", !Is_True(player.DisablePlayerHUD));
 }
 
 GetVisualType(effect)
@@ -635,10 +628,13 @@ SetClientVisualEffects(effect, player)
     if(!isDefined(type))
         return;
 
-    if(isDefined(player.ClientVisualEffect) && effect == player.ClientVisualEffect)
-        effect = "None";
-    else if(isDefined(player.ClientVisualEffect) && effect != player.ClientVisualEffect && player GetVisualEffectState(effect))
-        dEffect = effect;
+    if(isDefined(player.ClientVisualEffect))
+    {
+        if(effect == player.ClientVisualEffect)
+            effect = "None";
+        else if(effect != player.ClientVisualEffect && player GetVisualEffectState(effect))
+            dEffect = effect;
+    }
 
     if(isDefined(player.ClientVisualEffect) && player.ClientVisualEffect != "None" || isDefined(dEffect))
     {
@@ -719,50 +715,26 @@ ZombieCharms(color, player)
 
 CustomCrosshairs(text, player)
 {
-    if(text == "Disable" && !Is_True(player.CustomCrosshairs))
-        return;
-    
-    if(text == "Disable" && Is_True(player.CustomCrosshairs))
+    if(text == "Disable")
     {
+        if(!Is_True(player.CustomCrosshairs))
+            return;
+
         if(isDefined(player.CustomCrosshairsUI))
             player.CustomCrosshairsUI DestroyHud();
         
+        player.CustomCrosshairsUI = undefined;
         player.CustomCrosshairs = BoolVar(player.CustomCrosshairs);
         return;
     }
 
-    if(player isInMenu(true))
-        player iPrintlnBold("^1NOTE: ^7Custom Crosshairs Is Only Visible While The Menu Is Closed");
-
-    player.CustomCrosshairsText = text;
-
-    if(Is_True(player.CustomCrosshairs))
-    {
-        if(isDefined(player.CustomCrosshairsUI))
-            player.CustomCrosshairsUI SetTextString(text);
-        
-        return;
-    }
+    if(Is_True(player.CustomCrosshairs) && isDefined(player.CustomCrosshairsUI))
+        return player.CustomCrosshairsUI SetTextString(text);
 
     player.CustomCrosshairs = true;
-    player thread CustomCrosshairsHandler();
-}
 
-CustomCrosshairsHandler()
-{
-    self endon("disconnect");
-
-    //The custom crosshairs needs to be hidden when the menu is open to conserve hud
-
-    while(Is_True(self.CustomCrosshairs))
-    {
-        if(!self isInMenu(true) && !isDefined(self.CustomCrosshairsUI))
-            self.CustomCrosshairsUI = self createText("default", 1.2, 1, self.CustomCrosshairsText, "CENTER", "CENTER", 0, 0, 1, level.RGBFadeColor);
-        else if(self isInMenu(true) && isDefined(self.CustomCrosshairsUI))
-            self.CustomCrosshairsUI DestroyHud();
-        
-        wait 0.1;
-    }
+    if(!isDefined(player.CustomCrosshairsUI))
+        player.CustomCrosshairsUI = player createText("default", 1.2, 1, text, "CENTER", "CENTER", 0, 0, 1, level.RGBFadeColor);
 }
 
 NoExplosiveDamage(player)
@@ -772,6 +744,9 @@ NoExplosiveDamage(player)
 
 SetCharacterModelIndex(index, player, disableEffect)
 {
+    if(player.characterIndex == index)
+        return;
+    
     player endon("disconnect");
 
     if(!isDefined(disableEffect) || !disableEffect)
@@ -800,40 +775,16 @@ LoopCharacterModelIndex(player)
 
 ShootWhileSprinting(player)
 {
-    player endon("disconnect");
-
-    player.ShootWhileSprinting = BoolVar(player.ShootWhileSprinting);
-
-    if(Is_True(player.ShootWhileSprinting))
-    {
-        while(Is_True(player.ShootWhileSprinting))
-        {
-            if(!player HasPerk("specialty_sprintfire"))
-                player SetPerk("specialty_sprintfire");
-            
-            wait 0.05;
-        }
-    }
+    if(!player HasPerk("specialty_sprintfire"))
+        player SetPerk("specialty_sprintfire");
     else
         player UnSetPerk("specialty_sprintfire");
 }
 
 UnlimitedSprint(player)
 {
-    player endon("disconnect");
-
-    player.UnlimitedSprint = BoolVar(player.UnlimitedSprint);
-
-    if(Is_True(player.UnlimitedSprint))
-    {
-        while(Is_True(player.UnlimitedSprint))
-        {
-            if(!player HasPerk("specialty_unlimitedsprint"))
-                player SetPerk("specialty_unlimitedsprint");
-            
-            wait 0.05;
-        }
-    }
+    if(!player HasPerk("specialty_unlimitedsprint"))
+        player SetPerk("specialty_unlimitedsprint");
     else
         player UnSetPerk("specialty_unlimitedsprint");
 }
@@ -898,12 +849,11 @@ PlayerDeath(type, player)
             break;
         
         case "Kill":
-            if(level.players.size < 2)
-                if(player HasPerk("specialty_quickrevive") || player zm_perks::has_perk_paused("specialty_quickrevive"))
-                {
-                    player notify("specialty_quickrevive_stop");
-                    wait 0.5;
-                }
+            if(level.players.size < 2 && (player HasPerk("specialty_quickrevive") || player zm_perks::has_perk_paused("specialty_quickrevive")))
+            {
+                player notify("specialty_quickrevive_stop");
+                wait 0.5;
+            }
 
             if(!player IsDown())
             {

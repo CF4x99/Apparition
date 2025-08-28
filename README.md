@@ -7,7 +7,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.1.5
+    Version:              1.5.1.6
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -74,6 +74,26 @@
 
 
 ## Changelog
+<details>
+    <summary>
+        Version 1.5.1.6
+    </summary>
+    
+    - Added: Special comment on the brick account script :P
+    - Added: Fun Scripts -- Head Drama -- All damage dealt to zombies counts as headshot damage
+    - Added: Support for Diner Survival custom map by Verko
+    - Added: Diner Survival -- Map teleports
+    - Added: Menu Customization -- Design preference option to change the position of the bool boxes(Right side / Left side)
+    - Added: Origins -- Option to open the crypt(Room under pack 'a' punch)
+    - Added: Origins -- Option to fill all soul boxes(You still have the option to collect them one by one)
+    - Added: Origins -- Complete G-Strike Quest for individual players
+
+    - Changed: Several backend changes/improvements
+
+    - Fixed: Verko's Tranzit Survival Maps -- Fixed Issue With Power Script
+    - Fixed: HUD issue with Sharpshooter & All The Weapons gamemodes
+</details>
+
 <details>
     <summary>
         Version 1.5.1.5

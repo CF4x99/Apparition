@@ -74,6 +74,9 @@ addOptBoolPreview(boolVar, shader = "white", color = (0, 0, 0), name, fnc = ::Em
 
 addOptIncSlider(name, fnc = ::EmptyFunction, min = 0, start = 0, max = 1, increment = 1, input1, input2, input3, input4)
 {
+    if(!isDefined(self.menuSS))
+        self.menuSS = [];
+    
     option = SpawnStruct();
     index = self.menuStructure.size;
     menu = self isInQuickMenu() ? self.currentMenuQM : self.currentMenu;
@@ -104,6 +107,9 @@ addOptIncSlider(name, fnc = ::EmptyFunction, min = 0, start = 0, max = 1, increm
 
 addOptSlider(name, fnc = ::EmptyFunction, values, input1, input2, input3, input4)
 {
+    if(!isDefined(self.menuSS))
+        self.menuSS = [];
+    
     option = SpawnStruct();
     index = self.menuStructure.size;
     menu = self isInQuickMenu() ? self.currentMenuQM : self.currentMenu;

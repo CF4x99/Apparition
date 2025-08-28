@@ -1259,6 +1259,9 @@ ReturnMapName(map = level.script)
         
         case "zm_vk_tra_sur_tunnel":
             return "Tunnel";
+
+        case "zm_vk_tra_sur_diner":
+            return "Diner";
         
         default:
             return "Unknown";
@@ -1273,6 +1276,7 @@ IsSupportedCustomMap(map = level.script)
         case "zm_die":
         case "zm_vk_tra_sur_busdepot":
         case "zm_vk_tra_sur_tunnel":
+        case "zm_vk_tra_sur_diner":
             return true;
         
         default:
@@ -1282,8 +1286,8 @@ IsSupportedCustomMap(map = level.script)
 
 IsVerkoMap(map = level.script)
 {
-    vMaps = Array("zm_vk_tra_sur_busdepot", "zm_vk_tra_sur_tunnel");
-    return isInArray(vMaps, map);
+    vMaps = Array("zm_vk_tra_sur_busdepot", "zm_vk_tra_sur_tunnel", "zm_vk_tra_sur_diner");
+    return isInArray(vMaps, map) || IsSubStr(map, "zm_vk_tra_");
 }
 
 TriggerUniTrigger(struct, trigger_notify, time) //For Basic Uni Triggers

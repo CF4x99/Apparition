@@ -12,6 +12,8 @@ PopulateOriginsScripts(menu)
                 self addOpt("Soul Boxes", ::newMenu, "Soul Boxes");
                 self addOpt("Challenges", ::newMenu, "Origins Challenges");
                 self addOpt("Staff Puzzles", ::newMenu, "Origins Puzzles");
+                self addOpt("G-Strike Quest", ::newMenu, "Origins G-Strike Quest");
+                self addOptBool(level flag::get("crypt_opened"), "Open Crypt", ::OpenOriginsCrypt);
                 self addOptBool(isDefined(level.a_e_slow_areas), "Mud Slowdown", ::MudSlowdown);
                 self addOptBool(level.DisableTankCooldown, "Disable Tank Cooldown", ::DisableTankCooldown);
                 self addOptIncSlider("Tank Speed [Default = 8]", ::OriginsTankSpeed, 1, 8, 25, 1);
@@ -22,6 +24,7 @@ PopulateOriginsScripts(menu)
 
             self addMenu("Generators");
                 self addOptBool(AllOriginsGensActive(), "Enable All", ::EnableAllOriginsGens);
+                self addOpt("");
 
                 for(a = 0; a < generators.size; a++)
                 {
@@ -60,15 +63,19 @@ PopulateOriginsScripts(menu)
                     self addOptBool(player.dig_vars["has_helmet"], CleanName(player getName()), ::GivePlayerHelmet, player);
             break;
 
-
         case "Soul Boxes":
             boxes = GetEntArray("foot_box", "script_noteworthy");
 
             self addMenu("Soul Boxes");
 
                 if(isDefined(boxes) && boxes.size)
-                    foreach(index, box in boxes)
-                        self addOpt(ReturnSoulBoxName(box.script_int) + " Soul Box", ::CompleteSoulbox, box);
+                {
+                    self addOpt("Fill All", ::FillAllSoulBoxes);
+                    self addOpt("");
+                    
+                    foreach(box in boxes)
+                        self addOpt(ReturnSoulBoxName(box.script_int) + " Soul Box", ::FillSoulbox, box);
+                }
             break;
 
         case "Origins Challenges":
@@ -82,6 +89,7 @@ PopulateOriginsScripts(menu)
 
             self addMenu("Challenges");
                 self addOptSlider("Player", ::SetOriginsPlayer, playerArray);
+                self addOpt("");
 
                 foreach(challenge in level._challenges.a_stats)
                     self addOptBool(get_stat(challenge.str_name, self.originsPlayer).b_medal_awarded, ReturnOriginsIString(challenge.str_name), ::CompleteOriginChallenge, challenge.str_name, self.originsPlayer);
@@ -123,6 +131,13 @@ PopulateOriginsScripts(menu)
                 self addOptBool(level flag::get("electric_puzzle_1_complete"), "Song", ::CompleteLightningSong);
                 self addOptBool(level flag::get("electric_puzzle_2_complete"), "Turn Dials", ::CompleteLightningDials);
                 self addOptBool(level flag::get("staff_lightning_upgrade_unlocked"), "Damage Orb", ::OriginsDamageOrb, "lightning");
+            break;
+        
+        case "Origins G-Strike Quest":
+            self addMenu("G-Strike Quest");
+                
+                foreach(player in level.players)
+                    self addOptBool((isDefined(player.sq_one_inch_punch_stage) && player.sq_one_inch_punch_stage >= 6), CleanName(player getName()), ::OriginsGStrikeQuest, player);
             break;
     }
 }
@@ -527,7 +542,23 @@ GivePlayerHelmet(player)
         player SetCharacterBodyStyle(2);
 }
 
-CompleteSoulbox(box)
+FillAllSoulBoxes()
+{
+    boxes = GetEntArray("foot_box", "script_noteworthy");
+
+    if(!isDefined(boxes) || !boxes.size)
+        return;
+    
+    foreach(box in boxes)
+    {
+        if(!isDefined(box) || Is_True(box.fillingBox) || box.n_souls_absorbed >= 30)
+            continue;
+        
+        thread FillSoulBox(box);
+    }
+}
+
+FillSoulBox(box)
 {
     if(!isDefined(box))
         return;
@@ -1059,7 +1090,6 @@ CompleteLightningSong()
         {
             self notify("projectile_impact", GetWeapon("staff_lightning"), struct::get_array("piano_key", "script_noteworthy")[order[b]].origin);
             wait 0.5;
-            self iPrintlnBold("Impact: " + level.a_piano_keys_playing.size);
         }
 
         wait 5;
@@ -1250,6 +1280,213 @@ rumble_nearby_players(v_center, n_range, n_rumble_enum)
         e_player clientfield::set_to_player("player_rumble_and_shake", 0);
 }
 
+OpenOriginsCrypt()
+{
+    if(level flag::get("crypt_opened"))
+        return;
+    
+    if(Is_True(level.OpeningCrypt))
+        return self iPrintlnBold("^1ERROR: ^7The Crypt Is Already Being Opened");
+    
+    level.OpeningCrypt = true;
+    menu = self getCurrent();
+    curs = self getCursor();
+
+    level notify("open_all_gramophone_doors");
+    a_door_main = GetEntArray("chamber_entrance", "targetname");
+    trig_position = struct::get(a_door_main[1].targetname + "_position", "targetname");
+    trig_position.has_vinyl = true;
+    wait 0.5;
+
+    if(isDefined(trig_position.trigger))
+        trig_position.trigger notify("trigger", self);
+    
+    wait 6;
+    level.b_open_all_gramophone_doors = undefined;
+
+    while(isDefined(a_door_main[1]))
+        wait 0.1;
+
+    if(isDefined(trig_position.trigger))
+        trig_position.trigger notify("trigger", self);
+
+    while(!level flag::get("crypt_opened"))
+        wait 0.1;
+    
+    level.OpeningCrypt = undefined;
+    self RefreshMenu(menu, curs);
+}
+
+
+
+
+//G-Strike Quest
+OriginsGStrikeQuest(player)
+{
+    player endon("disconnect");
+
+    if(!isDefined(level.n_tablets_remaining) || level.n_tablets_remaining <= 0)
+        return self iPrintlnBold("^1ERROR: ^7This Step Has Already Been Completed");
+
+    if(!isDefined(player.sq_one_inch_punch_stage))
+        return self iPrintlnBold("^1ERROR: ^7This Quest Can't Be Completed");
+    
+    if(player.sq_one_inch_punch_stage >= 6)
+        return self iPrintlnBold("^1ERROR: ^7This Quest Has Already Been Completed");
+
+    if(Is_True(player.completingGStrike))
+        return self iPrintlnBold("^1ERROR: ^7This Quest Is Currently Being Completed");
+
+    player.completingGStrike = true;
+
+    t_bunker = GetEnt("trigger_oneinchpunch_bunker_table", "targetname");
+    t_birdbath = GetEnt("trigger_oneinchpunch_church_birdbath", "targetname");
+    
+    /*
+        This script will complete the g-strike quest for the player regardless of what step they are currently on
+        This was thrown together in a few minutes..so it's a little messy
+
+        - CF4
+    */
+
+    if(player.sq_one_inch_punch_stage == 0)
+    {
+        t_bunker notify("trigger", player);
+        wait 0.5;
+    }
+
+    if(player.sq_one_inch_punch_stage == 1)
+    {
+        t_birdbath notify("trigger", player);
+        wait 0.5;
+    }
+
+    if(player.sq_one_inch_punch_stage == 2)
+    {
+        spawnedZombies = [];
+        churchVolume = GetEnt("oneinchpunch_church_volume", "targetname");
+
+        while(player.sq_one_inch_punch_stage == 2)
+        {
+            zombie = SpawnSacrificedZombie(churchVolume);
+            
+            if(isDefined(zombie))
+            {
+                spawnedZombies[spawnedZombies.size] = zombie;
+                zombie DoDamage(zombie.health + 666, zombie.origin, player, player, undefined, "MOD_MELEE");
+            }
+        }
+
+        if(spawnedZombies.size)
+        {
+            for(a = 0; a < spawnedZombies.size; a++)
+            {
+                if(!isDefined(spawnedZombies[a]) || !IsAlive(spawnedZombies[a]))
+                    continue;
+                
+                spawnedZombies[a] DoDamage(spawnedZombies[a].health + 666, spawnedZombies[a].origin);
+            }
+
+            wait 0.5;
+            spawnedZombies = undefined;
+        }
+
+        wait 0.5;
+    }
+
+    if(player.sq_one_inch_punch_stage == 3)
+    {
+        t_birdbath notify("trigger", player);
+        wait 0.5;
+    }
+
+    if(player.sq_one_inch_punch_stage == 4)
+    {
+        t_bunker notify("trigger", player);
+        wait 0.5;
+    }
+
+    if(player.sq_one_inch_punch_stage == 5)
+    {
+        spawnedZombies = [];
+        churchVolume = GetEnt("oneinchpunch_bunker_volume", "targetname");
+
+        while(player.sq_one_inch_punch_kills < 20)
+        {
+            zombie = SpawnSacrificedZombie(churchVolume);
+            
+            if(isDefined(zombie))
+            {
+                spawnedZombies[spawnedZombies.size] = zombie;
+                zombie DoDamage(zombie.health + 666, zombie.origin, player, player, undefined, "MOD_MELEE");
+            }
+        }
+
+        if(spawnedZombies.size)
+        {
+            for(a = 0; a < spawnedZombies.size; a++)
+            {
+                if(!isDefined(spawnedZombies[a]) || !IsAlive(spawnedZombies[a]))
+                    continue;
+                
+                spawnedZombies[a] DoDamage(spawnedZombies[a].health + 666, spawnedZombies[a].origin);
+            }
+
+            wait 0.5;
+            spawnedZombies = undefined;
+        }
+
+        wait 0.5;
+    }
+
+    if(player.sq_one_inch_punch_stage == 6)
+    {
+        while(!Is_True(player.beacon_ready))
+            wait 0.1;
+        
+        t_bunker notify("trigger", player);
+    }
+
+    player.completingGStrike = BoolVar(player.completingGStrike);
+}
+
+SpawnSacrificedZombie(goalEnt)
+{
+    zombie = zombie_utility::spawn_zombie(level.zombie_spawners[0]);
+
+    if(isDefined(zombie))
+    {
+        zombie endon("death");
+
+        wait 0.1;
+        zombie zombie_utility::makezombiecrawler(true);
+        target = goalEnt.origin;
+
+        linker = Spawn("script_origin", zombie.origin);
+        linker.origin = zombie.origin;
+        linker.angles = zombie.angles;
+
+        zombie LinkTo(linker);
+        linker MoveTo(target, 0.01);
+
+        linker waittill("movedone");
+
+        zombie Unlink();
+        linker delete();
+
+        zombie LinkTo(goalEnt);
+        zombie.completed_emerging_into_playable_area = 1;
+        zombie Hide();
+    }
+
+    return zombie;
+}
+
+
+
+
+
+//Miscellaneous
 MudSlowdown()
 {
     level.a_e_slow_areas = isDefined(level.a_e_slow_areas) ? undefined : GetEntArray("player_slow_area", "targetname");
@@ -1257,15 +1494,13 @@ MudSlowdown()
 
 DisableTankCooldown()
 {
-    level notify("EndDisableCooldown");
-    level endon("EndDisableCooldown");
-
     level.DisableTankCooldown = BoolVar(level.DisableTankCooldown);
 
     while(isDefined(level.DisableTankCooldown))
     {
+        level flag::wait_till("tank_moving");
         level.vh_tank.n_cooldown_timer = 2; //2 seconds is the minimum cooldown time(if it's anything less than 2, then it gets reset to 2)
-        level.vh_tank waittill("tank_stop");
+        wait 0.01;
     }
 }
 

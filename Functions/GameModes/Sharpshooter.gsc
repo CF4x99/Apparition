@@ -26,6 +26,12 @@ initSharpshooter(type)
 
     weaponArray = array::randomize(weaponArray);
 
+    MenuPerks = [];
+    perks = GetArrayKeys(level._custom_perks);
+
+    for(a = 0; a < perks.size; a++)
+        array::add(MenuPerks, perks[a], 0);
+
     foreach(player in level.players)
     {
         if(player isDown())
@@ -39,7 +45,7 @@ initSharpshooter(type)
         
         thread UnlimitedAmmo("Reload", player);
 
-        if(!isDefined(player.perks_active) || player.perks_active.size != level.MenuPerks.size)
+        if(!isDefined(player.perks_active) || player.perks_active.size != MenuPerks.size)
             thread PlayerAllPerks(player);
         
         if(!Is_True(player._retain_perks))
@@ -55,9 +61,6 @@ initSharpshooter(type)
 
         if(Is_True(player.menuMonitor))
             player.menuMonitor = BoolVar(player.menuMonitor);
-
-        if(Is_True(player.MenuInstructionsDisplay))
-            player.MenuInstructionsDisplay = BoolVar(player.MenuInstructionsDisplay);
         
         player thread ModeWeaponMonitor(weaponArray);
     }
@@ -75,7 +78,7 @@ initSharpshooter(type)
             TakePlayerWeapons(player);
             
             if(!isDefined(player.weaponIndexUI))
-                player.weaponIndexUI = LUI_createText("Weapon: " + (level.indexSharpshooter + 1) + "/" + weaponArray.size, 2, 0, 25, 255, (1, 1, 1));
+                player.weaponIndexUI = player LUI_createText("Weapon: " + (level.indexSharpshooter + 1) + "/" + weaponArray.size, 2, 0, 25, 255, (1, 1, 1));
             
             player.timerSharpshooter = player OpenLUIMenu("HudElementTimer", true);
 

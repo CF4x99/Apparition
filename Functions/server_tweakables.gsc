@@ -3,11 +3,17 @@ PopulateServerTweakables(menu)
     switch(menu)
     {
         case "Server Tweakables":
+            MenuPerks = [];
+            perks = GetArrayKeys(level._custom_perks);
+
+            for(a = 0; a < perks.size; a++)
+                array::add(MenuPerks, perks[a], 0);
+
             self addMenu("Server Tweakables");
                 self addOpt("Enabled Power-Ups", ::newMenu, "Enabled Power-Ups");
                 self addOptIncSlider("Pack 'a' Punch Camo Index", ::SetPackCamoIndex, 0, level.pack_a_punch_camo_index, 138, 1);
                 self addOptIncSlider("Player Weapon Limit", ::SetPlayerWeaponLimit, 0, 0, 15, 1);
-                self addOptIncSlider("Player Perk Limit", ::SetPlayerPerkLimit, 0, 0, level.MenuPerks.size, 1);
+                self addOptIncSlider("Player Perk Limit", ::SetPlayerPerkLimit, 0, 0, MenuPerks.size, 1);
                 self addOptIncSlider("Clip Size Multiplier", ::ServerSetClipSizeMultiplier, 1, 1, 10, 1);
                 self addOptIncSlider("Revive Trigger Radius", ::ServerSetReviveRadius, 0, GetDvarInt("revive_trigger_radius"), 1000, 25);
                 self addOptIncSlider("Last Stand Bleedout Time", ::ServerSetLastandTime, 0, GetDvarInt("player_lastStandBleedoutTime"), 1000, 1);

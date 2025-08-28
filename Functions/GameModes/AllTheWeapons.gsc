@@ -26,6 +26,12 @@ initAllTheWeapons(type)
 
     weaponArray = array::randomize(weaponArray);
 
+    MenuPerks = [];
+    perks = GetArrayKeys(level._custom_perks);
+
+    for(a = 0; a < perks.size; a++)
+        array::add(MenuPerks, perks[a], 0);
+
     foreach(player in level.players)
     {
         if(player isDown())
@@ -39,7 +45,7 @@ initAllTheWeapons(type)
         
         thread UnlimitedAmmo("Reload", player);
 
-        if(!isDefined(player.perks_active) || player.perks_active.size != level.MenuPerks.size)
+        if(!isDefined(player.perks_active) || player.perks_active.size != MenuPerks.size)
             thread PlayerAllPerks(player);
         
         if(!Is_True(player._retain_perks))
@@ -55,9 +61,6 @@ initAllTheWeapons(type)
 
         if(Is_True(player.menuMonitor))
             player.menuMonitor = BoolVar(player.menuMonitor);
-
-        if(Is_True(player.MenuInstructionsDisplay))
-            player.MenuInstructionsDisplay = BoolVar(player.MenuInstructionsDisplay);
         
         player thread ModeWeaponMonitor(weaponArray);
     }
@@ -76,7 +79,7 @@ initAllTheWeapons(type)
     while(level.indexAllTheWeapons < (weaponArray.size - 1))
     {
         if(!isDefined(player.weaponKillsCounter))
-            player.weaponKillsCounter = LUI_createText("Kills: " + level.killsAllTheWeapons + "/" + level.killGoalAllTheWeapons, 2, 0, 55, 255, (1, 1, 1));
+            player.weaponKillsCounter = player LUI_createText("Kills: " + level.killsAllTheWeapons + "/" + level.killGoalAllTheWeapons, 2, 0, 55, 255, (1, 1, 1));
         else
         {
             if(player GetLUIMenuData(player.weaponKillsCounter, "text") != "Kills: " + level.killsAllTheWeapons + "/" + level.killGoalAllTheWeapons)

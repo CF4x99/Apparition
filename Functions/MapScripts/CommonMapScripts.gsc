@@ -121,7 +121,7 @@ ActivatePower()
     curs = self getCursor();
     menu = self getCurrent();
 
-    switches = Array("use_power_switch", "use_master_switch", "use_elec_switch", "power_trigger_left", "power_trigger_right");
+    switches = Array("use_power_switch", "use_master_switch", "use_elec_switch", "power_trigger_left", "power_trigger_right", "use_power_switch_vk");
 
     for(a = 0; a < switches.size; a++)
     {

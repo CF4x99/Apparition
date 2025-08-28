@@ -41,7 +41,10 @@ RunMenuOptions(menu)
                                 self addOpt("Host Menu", ::newMenu, "Host Menu");
                             
                             self addOpt("Players Menu", ::newMenu, "Players");
-                            self addOpt("All Players Menu", ::newMenu, "All Players");
+
+                            if(level.players.size > 1)
+                                self addOpt("All Players Menu", ::newMenu, "All Players");
+                            
                             self addOpt("Game Modes", ::newMenu, "Game Modes");
                         }
                     }
@@ -62,7 +65,7 @@ RunMenuOptions(menu)
                     self addOpt("Perk Menu", ::newMenu, "Perk Menu");
                     self addOptBool(self.playerIgnoreMe, "No Target", ::NoTarget, self);
                     self addOptBool(self.ReducedSpread, "Reduced Spread", ::ReducedSpread, self);
-                    self addOptBool(self.UnlimitedSprint, "Unlimited Sprint", ::UnlimitedSprint, self);
+                    self addOptBool(self HasPerk("specialty_unlimitedsprint"), "Unlimited Sprint", ::UnlimitedSprint, self);
                 }
 
                 self addOpt("Respawn", ::ServerRespawnPlayer, self);
@@ -154,6 +157,7 @@ RunMenuOptions(menu)
         case "Wind Puzzles":
         case "Fire Puzzles":
         case "Lightning Puzzles":
+        case "Origins G-Strike Quest":
             self PopulateOriginsScripts(menu);
             break;
         
@@ -216,6 +220,10 @@ RunMenuOptions(menu)
         
         case "Tunnel Scripts":
             self PopulateTunnelScripts(menu);
+            break;
+        
+        case "Diner Scripts":
+            self PopulateDinerScripts(menu);
             break;
         
         case "Map Challenges":
@@ -433,6 +441,10 @@ MenuOptionsPlayer(menu, player)
         
         default:
             weapons = Array("Assault Rifles", "Sub Machine Guns", "Light Machine Guns", "Sniper Rifles", "Shotguns", "Pistols", "Launchers", "Specials");
+            MenuVOXCategory = [];
+
+            foreach(category, sound in level.sndplayervox)
+                array::add(MenuVOXCategory, CleanString(category, true), 0);
             
             if(isInArray(weapons, menu))
             {
@@ -467,7 +479,7 @@ MenuOptionsPlayer(menu, player)
                         self addOptBool(player HasWeapon1(GetWeapon("tesla_gun")), GetWeapon("tesla_gun").displayname, ::GivePlayerWeapon, GetWeapon("tesla_gun"), player);
                 }
             }
-            else if(isInArray(level.MenuVOXCategory, menu))
+            else if(isInArray(MenuVOXCategory, menu))
                 self PopulateFunScripts(menu, player);
             else
             {
@@ -491,12 +503,13 @@ MenuOptionsPlayer(menu, player)
                 if(IsSubStr(menu, ReturnMapName() + " Teleports") || menu == ReturnMapName() + " Teleports")
                 {
                     error404 = false;
+                    locations = GenerateMapTeleports();
 
                     self addMenu(ReturnMapName() + " Teleports");
                         
-                        if(isDefined(level.menuTeleports) && level.menuTeleports.size)
-                            for(a = 0; a < level.menuTeleports.size; a += 2)
-                                self addOpt(level.menuTeleports[a], ::TeleportPlayer, level.menuTeleports[(a + 1)], player, undefined, level.menuTeleports[a]);
+                        if(isDefined(locations) && locations.size)
+                            for(a = 0; a < locations.size; a += 2)
+                                self addOpt(locations[a], ::TeleportPlayer, locations[(a + 1)], player, undefined, locations[a]);
                 }
 
                 if(error404)

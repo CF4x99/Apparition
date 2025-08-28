@@ -41,6 +41,7 @@ PopulateMenuCustomization(menu)
         case "Design Preferences":
             self addMenu("Design Preferences");
                 self addOptSlider("Toggle Style", ::ToggleStyle, "Boxes;Text;Text Color");
+                self addOptSlider("Bool Box Location", ::menuBoxLocation, "Right;Left");
                 self addOptIncSlider("Max Options", ::MenuMaxOptions, 5, 5, (self.MenuStyle == "Zodiac") ? 12 : (self.MenuStyle == "Quick Menu") ? 25 : 10, 1);
                 self addOptIncSlider("Scrolling Buffer", ::MenuScrollingBuffer, 1, self.ScrollingBuffer, 15, 1);
                 self addOpt("Reposition Menu", ::RepositionMenu);
@@ -143,11 +144,11 @@ MenuTheme(color)
             if(isDefined(self.menuHud[wHud][a]) && (Is_True(self.menuStructure[a].bool) || self.MenuStyle == "Nautaremake") && self.ToggleStyle != "Text")
                 self.menuHud[wHud][a] hudFadeColor(color, 1);
     
-    if(isDefined(self.MenuInstructionsBGOuter))
-        self.MenuInstructionsBGOuter hudFadeColor(color, 1);
+    if(isDefined(self.menuInstructions["outline"]))
+        self.menuInstructions["outline"] hudFadeColor(color, 1);
     
-    if(isDefined(self.PlayerInfoBackgroundOuter))
-        self.PlayerInfoBackgroundOuter hudFadeColor(color, 1);
+    if(isDefined(self.playerInfoHud["outline"]))
+        self.playerInfoHud["outline"] hudFadeColor(color, 1);
     
     self.MainColor = color;
     self SaveMenuTheme();
@@ -204,11 +205,11 @@ SmoothRainbowTheme()
                 if(isDefined(self.menuHud[wHud][a]) && (Is_True(self.menuStructure[a].bool) || self.MenuStyle == "Nautaremake") && self.ToggleStyle != "Text")
                     self.menuHud[wHud][a].color = level.RGBFadeColor;
         
-        if(isDefined(self.MenuInstructionsBGOuter))
-            self.MenuInstructionsBGOuter.color = level.RGBFadeColor;
+        if(isDefined(self.menuInstructions["outline"]))
+            self.menuInstructions["outline"].color = level.RGBFadeColor;
         
-        if(isDefined(self.PlayerInfoBackgroundOuter))
-            self.PlayerInfoBackgroundOuter.color = level.RGBFadeColor;
+        if(isDefined(self.playerInfoHud["outline"]))
+            self.playerInfoHud["outline"].color = level.RGBFadeColor;
         
         if(isDefined(self.keyboard) && isDefined(self.keyboard["scroller"]))
             self.keyboard["scroller"].color = level.RGBFadeColor;
@@ -291,6 +292,16 @@ ElementSmoothRainbow(element)
 ToggleStyle(style)
 {
     self.ToggleStyle = style;
+    self RefreshMenu();
+    self SaveMenuTheme();
+}
+
+menuBoxLocation(location)
+{
+    if(self.menuBoxLocation == location)
+        return;
+    
+    self.menuBoxLocation = location;
     self RefreshMenu();
     self SaveMenuTheme();
 }
@@ -443,6 +454,9 @@ DisableMenuInstructions()
 {
     self.DisableMenuInstructions = BoolVar(self.DisableMenuInstructions);
     self SaveMenuTheme();
+
+    if(!Is_True(self.DisableMenuInstructions))
+        self thread MenuInstructionsDisplay();
 }
 
 LargeCursor()
@@ -520,8 +534,8 @@ MenuStyle(style)
 
 SaveMenuTheme()
 {
-    variables = Array("MenuStyle", "ToggleStyle", "MaxOptions", "menuX", "menuY", "ScrollingBuffer", "DisableMenuInstructions", "LargeCursor", "DisableQM", "DisableMenuAnimations", "DisableMenuSounds", "MainColor", "OptionsColor", "TitleColor", "ToggleTextColor", "ScrollingTextColor", "OpenControls");
-    values    = Array(self.MenuStyle, self.ToggleStyle, self.MaxOptions, self.menuX, self.menuY, self.ScrollingBuffer, self.DisableMenuInstructions, self.LargeCursor, self.DisableQM, self.DisableMenuAnimations, self.DisableMenuSounds, self.MainColor, self.OptionsColor, self.TitleColor, self.ToggleTextColor, self.ScrollingTextColor, self.OpenControls);
+    variables = Array("MenuStyle", "ToggleStyle", "menuBoxLocation", "MaxOptions", "menuX", "menuY", "ScrollingBuffer", "DisableMenuInstructions", "LargeCursor", "DisableQM", "DisableMenuAnimations", "DisableMenuSounds", "MainColor", "OptionsColor", "TitleColor", "ToggleTextColor", "ScrollingTextColor", "OpenControls");
+    values    = Array(self.MenuStyle, self.ToggleStyle, self.menuBoxLocation, self.MaxOptions, self.menuX, self.menuY, self.ScrollingBuffer, self.DisableMenuInstructions, self.LargeCursor, self.DisableQM, self.DisableMenuAnimations, self.DisableMenuSounds, self.MainColor, self.OptionsColor, self.TitleColor, self.ToggleTextColor, self.ScrollingTextColor, self.OpenControls);
     
     foreach(index, variable in variables)
     {
@@ -562,6 +576,7 @@ LoadMenuVars()
     self.MaxOptions         = (self.MenuStyle == "Zodiac") ? 12 : (self.MenuStyle == "Quick Menu") ? 25 : 10;
     self.ScrollingBuffer    = 10;
     self.ToggleStyle        = "Boxes";
+    self.menuBoxLocation    = "Right";
     self.MainColor          = (1, 0, 0);
     self.OptionsColor       = (1, 1, 1);
     self.TitleColor         = (1, 1, 1);
@@ -579,15 +594,16 @@ LoadMenuVars()
     {
         self.MenuStyle               = self GetSavedVariable("MenuStyle");
         self.ToggleStyle             = self GetSavedVariable("ToggleStyle");
+        self.menuBoxLocation         = self GetSavedVariable("menuBoxLocation");
         self.MaxOptions              = Int(self GetSavedVariable("MaxOptions"));
         self.menuX                   = Int(self GetSavedVariable("menuX"));
         self.menuY                   = Int(self GetSavedVariable("menuY"));
         self.ScrollingBuffer         = Int(self GetSavedVariable("ScrollingBuffer"));
-        self.DisableMenuInstructions = Int(self GetSavedVariable("DisableMenuInstructions"));
-        self.LargeCursor             = Int(self GetSavedVariable("LargeCursor"));
-        self.DisableQM               = Int(self GetSavedVariable("DisableQM"));
-        self.DisableMenuAnimations   = Int(self GetSavedVariable("DisableMenuAnimations"));
-        self.DisableMenuSounds       = Int(self GetSavedVariable("DisableMenuSounds"));
+        self.DisableMenuInstructions = returnBool(Int(self GetSavedVariable("DisableMenuInstructions")));
+        self.LargeCursor             = returnBool(Int(self GetSavedVariable("LargeCursor")));
+        self.DisableQM               = returnBool(Int(self GetSavedVariable("DisableQM")));
+        self.DisableMenuAnimations   = returnBool(Int(self GetSavedVariable("DisableMenuAnimations")));
+        self.DisableMenuSounds       = returnBool(Int(self GetSavedVariable("DisableMenuSounds")));
 
         self.OpenControls = [];
         btnToks = StrTok(self GetSavedVariable("OpenControls"), ",");
@@ -639,4 +655,9 @@ LoadMenuVars()
     }
     
     self.TitleFontScale = (self.MenuStyle == "Zodiac") ? 1.6 : (self.MenuStyle == "Native") ? 2 : (self.MenuStyle == "Quick Menu") ? 1.5 : 1.4;
+}
+
+returnBool(boolVar)
+{
+    return Is_True(boolVar) ? true : undefined;
 }

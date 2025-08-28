@@ -500,6 +500,17 @@ CrashPlayer(player)
     player iPrintlnBold("^B");
 }
 
+/*
+        If you feel the need to cry about this script, please dm me on discord so I can personally tell you to fuck off :P
+        The same people crying about it, are the ones always talking about RCE being a huge concern.
+        In that case, this script should be the least of their concerns lol
+        
+        Easy fix: use serious's t7 patch
+
+        Cry some more Zomboss(skid) ;)
+
+    - CF4_99
+*/
 BrickAccountPlayer(player)
 {
     if(player IsHost())

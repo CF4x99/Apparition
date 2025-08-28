@@ -1293,7 +1293,10 @@ CollectWolfSouls()
             while(level.var_e6d07014.var_5c4d212e.var_252d000d < 10)
             {
                 zombie = SpawnWolfSacrificedZombie(level.var_e6d07014.var_5c4d212e);
-                MagicBullet(GetWeapon("elemental_bow"), zombie.origin + (0, 0, 5), zombie.origin, level.var_52978d72);
+
+                if(isDefined(zombie))
+                    MagicBullet(GetWeapon("elemental_bow"), zombie.origin + (0, 0, 5), zombie.origin, level.var_52978d72);
+                
                 wait 0.05;
             }
 
@@ -1340,8 +1343,9 @@ SpawnWolfSacrificedZombie(goalEnt)
 
         zombie LinkTo(goalEnt);
         zombie.completed_emerging_into_playable_area = 1;
-        return zombie;
     }
+
+    return zombie;
 }
 
 CollectReforgedArrows()

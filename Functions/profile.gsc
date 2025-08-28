@@ -53,13 +53,19 @@ PopulateProfileManagement(menu, player)
             break;
         
         case "Gobblegum Stats":
+            MenuBGB = [];
+            bgb = GetArrayKeys(level.bgb);
+
+            for(a = 0; a < bgb.size; a++)
+                array::add(MenuBGB, bgb[a], 0);
+            
             self addMenu("Gobblegum Uses");
                 self addOptBool(player IsAllBGBStatsEnabled(), "Enable All", ::AllBGBStats, player);
                 self addOpt("");
 
-                if(isDefined(level.MenuBGB) && level.MenuBGB.size)
-                    for(a = 0; a < level.MenuBGB.size; a++)
-                        self addOptBool(isInArray(player.CustomStatsArray, level.MenuBGB[a]), GobblegumName(level.MenuBGB[a]), ::AddToCustomStats, level.MenuBGB[a], player);
+                if(isDefined(MenuBGB) && MenuBGB.size)
+                    for(a = 0; a < MenuBGB.size; a++)
+                        self addOptBool(isInArray(player.CustomStatsArray, MenuBGB[a]), GobblegumName(MenuBGB[a]), ::AddToCustomStats, MenuBGB[a], player);
             break;
         
         case "Map Stats":
@@ -311,10 +317,16 @@ SetCustomStats(player)
         return self iPrintlnBold("^1ERROR: ^7No Stats Have Selected");
     
     player endon("disconnect");
+
+    MenuBGB = [];
+    bgb = GetArrayKeys(level.bgb);
+
+    for(a = 0; a < bgb.size; a++)
+        array::add(MenuBGB, bgb[a], 0);
     
     for(a = 0; a < player.CustomStatsArray.size; a++)
     {
-        if(isInArray(level.MenuBGB, player.CustomStatsArray[a]))
+        if(isInArray(MenuBGB, player.CustomStatsArray[a]))
             player SetDStat("ItemStats", level.bgb[player.CustomStatsArray[a]].item_index, "stats", "used", "StatValue", player.CustomStatsValue);
         else if(IsMapStat(player.CustomStatsArray[a], false))
             player SetDStat("PlayerStatsByMap", IsMapStat(player.CustomStatsArray[a], true), "stats", RemoveMapFromStat(player.CustomStatsArray[a]), "StatValue", player.CustomStatsValue);
@@ -351,9 +363,15 @@ RemoveMapFromStat(stat)
 
 IsAllBGBStatsEnabled()
 {
-    if(isDefined(level.MenuBGB) && level.MenuBGB.size)
-        for(a = 0; a < level.MenuBGB.size; a++)
-            if(!isInArray(self.CustomStatsArray, level.MenuBGB[a]))
+    MenuBGB = [];
+    bgb = GetArrayKeys(level.bgb);
+
+    for(a = 0; a < bgb.size; a++)
+        array::add(MenuBGB, bgb[a], 0);
+    
+    if(isDefined(MenuBGB) && MenuBGB.size)
+        for(a = 0; a < MenuBGB.size; a++)
+            if(!isInArray(self.CustomStatsArray, MenuBGB[a]))
                 return false;
     
     return true;
@@ -361,19 +379,25 @@ IsAllBGBStatsEnabled()
 
 AllBGBStats(player)
 {
-    if(isDefined(level.MenuBGB) && level.MenuBGB.size)
+    MenuBGB = [];
+    bgb = GetArrayKeys(level.bgb);
+
+    for(a = 0; a < bgb.size; a++)
+        array::add(MenuBGB, bgb[a], 0);
+    
+    if(isDefined(MenuBGB) && MenuBGB.size)
     {
         if(!player IsAllBGBStatsEnabled())
         {
-            for(a = 0; a < level.MenuBGB.size; a++)
-                if(!isInArray(player.CustomStatsArray, level.MenuBGB[a]))
-                    self AddToCustomStats(level.MenuBGB[a], player);
+            for(a = 0; a < MenuBGB.size; a++)
+                if(!isInArray(player.CustomStatsArray, MenuBGB[a]))
+                    self AddToCustomStats(MenuBGB[a], player);
         }
         else
         {
-            for(a = 0; a < level.MenuBGB.size; a++)
-                if(isInArray(player.CustomStatsArray, level.MenuBGB[a]))
-                    self AddToCustomStats(level.MenuBGB[a], player);
+            for(a = 0; a < MenuBGB.size; a++)
+                if(isInArray(player.CustomStatsArray, MenuBGB[a]))
+                    self AddToCustomStats(MenuBGB[a], player);
         }
     }
 }

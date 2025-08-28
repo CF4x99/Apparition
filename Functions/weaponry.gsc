@@ -195,7 +195,7 @@ PackCurrentWeapon(player, buildKit = true)
 
     originalWeapon = player GetCurrentWeapon();
 
-    if(!isDefined(originalWeapon))
+    if(!isDefined(originalWeapon) || originalWeapon == level.weaponnone)
         return self iPrintlnBold("^1ERROR: ^7Invalid Weapon");
 
     newWeapon = !zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()) ? zm_weapons::get_upgrade_weapon(player GetCurrentWeapon()) : zm_weapons::get_base_weapon(player GetCurrentWeapon());

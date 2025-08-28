@@ -142,11 +142,17 @@ ActivateGlowingPerk(origin)
 
 BottleTrigger()
 {
+    MenuPerks = [];
+    perks = GetArrayKeys(level._custom_perks);
+
+    for(a = 0; a < perks.size; a++)
+        array::add(MenuPerks, perks[a], 0);
+    
     while(isDefined(self))
     {
         self waittill("trigger", player);
 
-        if(!isDefined(self) || player isDown() || isDefined(player.perks_active) && player.perks_active.size == level.MenuPerks.size)
+        if(!isDefined(self) || player isDown() || isDefined(player.perks_active) && player.perks_active.size == MenuPerks.size)
             continue;
 
         PlayerAllPerks(player);

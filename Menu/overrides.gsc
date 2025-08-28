@@ -1,9 +1,12 @@
 override_player_damage(einflictor, eattacker, idamage, idflags, smeansofdeath, weapon, vpoint, vdir, shitloc, psoffsettime)
 {
-    if(Is_True(self.PlayerDemiGod) || Is_True(self.NoExplosiveDamage) && zm_utility::is_explosive_damage(smeansofdeath) || Is_True(level.AllPlayersTeleporting) && !self IsHost() && !self isDeveloper() || Is_True(self.ControllableZombie) || Is_True(self.AC130) || Is_True(self.lander))
+    if(Is_True(self.godmode) || Is_True(self.PlayerDemiGod) || Is_True(self.NoExplosiveDamage) && zm_utility::is_explosive_damage(smeansofdeath) || Is_True(level.AllPlayersTeleporting) && !self IsHost() && !self isDeveloper() || Is_True(self.ControllableZombie) || Is_True(self.AC130) || Is_True(self.lander))
     {
         if(Is_True(self.PlayerDemiGod))
             self FakeDamageFrom(vdir);
+        
+        if(Is_True(self.godmode))
+            self EnableInvulnerability(); //Just to be safe :P
         
         return 0;
     }
@@ -290,6 +293,9 @@ wallbuy_should_upgrade_weapon_override()
 
 onPlayerDisconnect()
 {
+    if(self IsHost())
+        return;
+    
     foreach(player in level.players)
     {
         if(!player hasMenu() || !isDefined(player) || player == self)

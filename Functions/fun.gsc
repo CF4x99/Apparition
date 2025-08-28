@@ -40,6 +40,7 @@ PopulateFunScripts(menu, player)
                 self addOptBool(player.DeleteGun, "Delete Gun", ::DeleteGun, player);
                 self addOptBool(player.RapidFire, "Rapid Fire", ::RapidFire, player);
                 self addOptBool(player.ExtraGore, "Extra Gore", ::ExtraGore, player);
+                self addOptBool(player HasPerk("specialty_locdamagecountsasheadshot"), "Head Drama", ::HeadDrama, player);
                 self addOptBool(player.PowerUpMagnet, "Power-Up Magnet", ::PowerUpMagnet, player);
                 self addOptBool(player.DisableEarningPoints, "Disable Earning Points", ::DisableEarningPoints, player);
                 self addOptIncSlider("Points Multiplier", ::DamagePointsMultiplier, 1, 1, 10, 0.5, player);
@@ -77,11 +78,16 @@ PopulateFunScripts(menu, player)
             break;
         
         case "Sound/Music":
+            MenuVOXCategory = [];
+
+            foreach(category, sound in level.sndplayervox)
+                array::add(MenuVOXCategory, CleanString(category, true), 0);
+
             self addMenu("Sound/Music");
                 self addOpt("Perk Jingles & Quotes", ::newMenu, "Perk Jingles & Quotes");
 
-                for(a = 0; a < level.MenuVOXCategory.size; a++)
-                    self addOpt(level.MenuVOXCategory[a], ::newMenu, level.MenuVOXCategory[a]);
+                for(a = 0; a < MenuVOXCategory.size; a++)
+                    self addOpt(MenuVOXCategory[a], ::newMenu, MenuVOXCategory[a]);
             break;
         
         case "Perk Jingles & Quotes":
@@ -121,7 +127,12 @@ PopulateFunScripts(menu, player)
             break;
         
         default:
-            if(isInArray(level.MenuVOXCategory, menu))
+            MenuVOXCategory = [];
+            
+            foreach(category, sound in level.sndplayervox)
+                array::add(MenuVOXCategory, CleanString(category, true), 0);
+            
+            if(isInArray(MenuVOXCategory, menu))
             {
                 self addMenu(menu);
 
@@ -648,6 +659,8 @@ ZombieCounter(player)
 
             wait 0.01;
         }
+
+        player.ZombieCounterHud = undefined;
     }
     else
         destroyAll(player.ZombieCounterHud);
@@ -1157,19 +1170,21 @@ HealthBar(player)
                 if(isDefined(player.HealthBarUI) && player.HealthBarUI.size)
                 {
                     destroyAll(player.HealthBarUI);
-                    player.HealthBarUI = [];
+                    player.HealthBarUI = undefined;
                 }
             }
 
             wait 0.01;
         }
+
+        player.HealthBarUI = undefined;
     }
     else
     {
         if(isDefined(player.HealthBarUI) && player.HealthBarUI.size)
         {
             destroyAll(player.HealthBarUI);
-            player.HealthBarUI = [];
+            player.HealthBarUI = undefined;
         }
     }
 }
@@ -1777,6 +1792,14 @@ RapidFire(player)
 ExtraGore(player)
 {
     player.ExtraGore = BoolVar(player.ExtraGore);
+}
+
+HeadDrama(player)
+{
+    if(!player HasPerk("specialty_locdamagecountsasheadshot"))
+        player SetPerk("specialty_locdamagecountsasheadshot");
+    else
+        player UnSetPerk("specialty_locdamagecountsasheadshot");
 }
 
 PowerUpMagnet(player)

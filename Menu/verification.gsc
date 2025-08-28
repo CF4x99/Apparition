@@ -29,9 +29,9 @@ setVerification(a, player, msg)
     if(player isInMenu(true))
         player closeMenu1();
     
-    player.currentMenu = "";
-    player.menuCurs["Main"] = 0;
-    player.menuParent = [];
+    player.currentMenu = undefined;
+    player.menuCurs = undefined;
+    player.menuParent = undefined;
     
     player notify("endMenuMonitor");
 

@@ -13,6 +13,8 @@ menuMonitor()
         {
             if(!self isInMenu(true))
             {
+                self.menuHud = [];
+                
                 if(self AreButtonsPressed(self.OpenControls) && Is_Alive(self))
                 {
                     self openMenu1(!Is_True(self.DisableMenuAnimations));
@@ -153,6 +155,9 @@ openMenu1(showAnim)
 
     if(!isDefined(self.currentMenu) || self.currentMenu == "")
         self.currentMenu = "Main";
+    
+    if(!isDefined(self.menuParent))
+        self.menuParent = [];
 
     if(isInArray(self.menuParent, "Players") && isDefined(self.SavedSelectedPlayer))
         self.SelectedPlayer = self.SavedSelectedPlayer;
@@ -241,12 +246,14 @@ closeMenu1(showAnim = false)
         if(Is_True(self.inKeyboard))
         {
             destroyAll(self.keyboard);
+            self.keyboard = undefined;
             self.inKeyboard = BoolVar(self.inKeyboard);
         }
         
         if(Is_True(self.CreditsPlaying))
         {
             destroyAll(self.credits);
+            self.credits = undefined;
             self.CreditsPlaying = BoolVar(self.CreditsPlaying);
         }
         
@@ -347,6 +354,7 @@ closeMenu1(showAnim = false)
         self DestroyOpts();
     
     destroyAll(self.menuHud);
+    self.menuHud = undefined;
 
     if(Is_True(self.isInMenu))
         self.isInMenu = BoolVar(self.isInMenu);
@@ -358,6 +366,9 @@ openQuickMenu1(menu)
 
     self.isInQuickMenu = true;
     self.SelectedPlayer = self;
+
+    if(!isDefined(self.menuParentQM))
+        self.menuParentQM = [];
 
     if(!isDefined(self.currentMenuQM))
         self.currentMenuQM = (isDefined(menu) && menu != "") ? menu : "Quick Menu";
@@ -437,8 +448,8 @@ drawText(showAnim = false)
             {
                 if(self.ToggleStyle == "Boxes")
                 {
-                    self.menuHud["BoolBack"][(a + start)] = self createRectangle("CENTER", "CENTER", (self.menuX + 122), (self.menuY + 14) + (a * 20), 8, 8, (self.MenuStyle == "Nautaremake") ? self.MainColor : (0.25, 0.25, 0.25), 5, 0, "white");
-                    self.menuHud["BoolOpt"][(a + start)] = self createRectangle("CENTER", "CENTER", (self.menuX + 122), (self.menuY + 14) + (a * 20), 7, 7, Is_True(self.menuStructure[(start + a)].bool) ? (self.MenuStyle == "Nautaremake") ? divideColor(85, 85, 85) : self.MainColor : (self.MenuStyle == "Nautaremake") ? divideColor(30, 30, 30) : (0, 0, 0), 6, 0, "white");
+                    self.menuHud["BoolBack"][(a + start)] = self createRectangle("CENTER", "CENTER", (self.menuBoxLocation == "Right") ? (self.menuX + 122) : (self.menuX - 122), (self.menuY + 14) + (a * 20), 8, 8, (self.MenuStyle == "Nautaremake") ? self.MainColor : (0.25, 0.25, 0.25), 5, 0, "white");
+                    self.menuHud["BoolOpt"][(a + start)] = self createRectangle("CENTER", "CENTER", (self.menuBoxLocation == "Right") ? (self.menuX + 122) : (self.menuX - 122), (self.menuY + 14) + (a * 20), 7, 7, Is_True(self.menuStructure[(start + a)].bool) ? (self.MenuStyle == "Nautaremake") ? divideColor(85, 85, 85) : self.MainColor : (self.MenuStyle == "Nautaremake") ? divideColor(30, 30, 30) : (0, 0, 0), 6, 0, "white");
                 }
                 else
                     self.menuHud["BoolOpt"][(a + start)] = self createText("default", ((a + start) == self getCursor() && Is_True(self.LargeCursor)) ? 1.2 : 1, 5, Is_True(self.menuStructure[(start + a)].bool) ? "ON" : "OFF", "RIGHT", "CENTER", (self.menuX + 126), (self.menuY + 14) + (a * 20), 0, ((start + a) == self getCursor()) ? self.ScrollingTextColor : self.OptionsColor);
@@ -453,7 +464,7 @@ drawText(showAnim = false)
             if(isDefined(self.menuStructure[(start + a)].slider) && self.menuStructure[(start + a)].slider)
                 self.menuHud["StringSlider"][(a + start)] = self createText("default", ((a + start) == self getCursor() && Is_True(self.LargeCursor)) ? 1.2 : 1, 5, "< " + self.menuStructure[(start + a)].sliderValues[self.menuSS[self getCurrent() + "_" + (start + a)]] + " > [" + (self.menuSS[self getCurrent() + "_" + (start + a)] + 1) + "/" + self.menuStructure[(start + a)].sliderValues.size + "]", "RIGHT", "CENTER", (self.menuX + 126), (self.menuY + 14) + (a * 20), 0, ((start + a) == self getCursor()) ? self.ScrollingTextColor : self.OptionsColor);
 
-            self.menuHud["text"][(a + start)] = self createText("default", ((a + start) == self getCursor() && Is_True(self.LargeCursor)) ? 1.2 : 1, 5, self.menuStructure[(start + a)].name, "LEFT", "CENTER", (self.menuX - 126), (self.menuY + 14) + (a * 20), 0, (Is_True(self.menuStructure[(start + a)].bool) && self.ToggleStyle == "Text Color") ? (IsVec(self.ToggleTextColor)) ? self.ToggleTextColor : IsString(self.ToggleTextColor) ? level.RGBFadeColor : (0, 0, 0) : ((start + a) == self getCursor()) ? self.ScrollingTextColor : self.OptionsColor);
+            self.menuHud["text"][(a + start)] = self createText("default", ((a + start) == self getCursor() && Is_True(self.LargeCursor)) ? 1.2 : 1, 5, self.menuStructure[(start + a)].name, "LEFT", "CENTER", (self.menuBoxLocation == "Right" || !Is_True(self.menuStructure[(start + a)].boolOpt) || self.ToggleStyle != "Boxes") ? (self.menuX - 126) : (self.menuX - 115), (self.menuY + 14) + (a * 20), 0, (Is_True(self.menuStructure[(start + a)].bool) && self.ToggleStyle == "Text Color") ? (IsVec(self.ToggleTextColor)) ? self.ToggleTextColor : IsString(self.ToggleTextColor) ? level.RGBFadeColor : (0, 0, 0) : ((start + a) == self getCursor()) ? self.ScrollingTextColor : self.OptionsColor);
             elems = Array(self.menuHud["BoolBack"][(a + start)], self.menuHud["BoolOpt"][(a + start)], self.menuHud["subMenu"][(a + start)], self.menuHud["IntSlider"][(a + start)], self.menuHud["StringSlider"][(a + start)], self.menuHud["text"][(a + start)]);
 
             foreach(elem in elems)
@@ -613,6 +624,8 @@ CreateOptionPreview()
     {
         if(isDefined(self.optionPreview))
             self.optionPreview DestroyHud();
+        
+        self.optionPreview = undefined;
     }
 }
 
@@ -680,10 +693,16 @@ SoftUnlockMenu()
     self.menuHud["scroller"] hudFade((self.MenuStyle == "Native") ? 0.6 : 1, 0.05);
     
     if(Is_True(self.inKeyboard))
+    {
         self.inKeyboard = BoolVar(self.inKeyboard);
+        self.keyboard = undefined;
+    }
     
     if(Is_True(self.CreditsPlaying))
+    {
         self.CreditsPlaying = BoolVar(self.CreditsPlaying);
+        self.credits = undefined;
+    }
     
     if(Is_True(self.DisableMenuControls))
         self.DisableMenuControls = BoolVar(self.DisableMenuControls);
@@ -856,11 +875,16 @@ DestroyOpts()
         if(isDefined(self.menuHud[hud[a]]) && self.menuHud[hud[a]].size)
             destroyAll(self.menuHud[hud[a]]);
         
-        self.menuHud[hud[a]] = [];
+        self.menuHud[hud[a]] = undefined;
     }
 
     if(isDefined(self.optionPreview))
+    {
         self.optionPreview DestroyHud();
+        self.optionPreview = undefined;
+    }
+
+    self.menuStructure = undefined;
 }
 
 IsInvalidOption(text)
@@ -909,11 +933,17 @@ getCurrent()
 
 getCursor()
 {
+    if(!isDefined(self.menuCurs))
+        self.menuCurs = [];
+    
     return self.menuCurs[self getCurrent()];
 }
 
 setCursor(curs)
 {
+    if(!isDefined(self.menuCurs))
+        self.menuCurs = [];
+    
     self.menuCurs[self getCurrent()] = curs;
 }
 
@@ -926,14 +956,7 @@ SetSlider(dir)
     self.menuSS[menu + "_" + curs] += (dir > 0) ? 1 : -1;
     
     if((self.menuSS[menu + "_" + curs] > max) || (self.menuSS[menu + "_" + curs] < 0))
-    {
-    	sliderCurs = max;
-
-    	if(self.menuSS[menu + "_" + curs] > max)
-    		sliderCurs = 0;
-
-        self.menuSS[menu + "_" + curs] = sliderCurs;
-    }
+        self.menuSS[menu + "_" + curs] = (self.menuSS[menu + "_" + curs] > max) ? 0 : max;
     
     if(isDefined(self.menuHud["StringSlider"][curs]))
         self.menuHud["StringSlider"][curs] SetTextString("< " + self.menuStructure[curs].sliderValues[self.menuSS[menu + "_" + curs]] + " > [" + (self.menuSS[menu + "_" + curs] + 1) + "/" + self.menuStructure[curs].sliderValues.size + "]");
@@ -951,33 +974,12 @@ SetIncSlider(dir)
     min = self.menuStructure[curs].min;
     
     if(self.menuSS[menu + "_" + curs] < max && (self.menuSS[menu + "_" + curs] + val) > max || (self.menuSS[menu + "_" + curs] > min) && (self.menuSS[menu + "_" + curs] - val) < min)
-    {
-        sliderCurs = min;
-
-        if(self.menuSS[menu + "_" + curs] < max && (self.menuSS[menu + "_" + curs] + val) > max)
-            sliderCurs = max;
-        
-        self.menuSS[menu + "_" + curs] = sliderCurs;
-    }
+        self.menuSS[menu + "_" + curs] = (self.menuSS[menu + "_" + curs] < max && (self.menuSS[menu + "_" + curs] + val) > max) ? max : min;
     else
-    {
-        sliderCurs = (val * -1);
-
-        if(dir > 0)
-            sliderCurs = val;
-        
-        self.menuSS[menu + "_" + curs] += sliderCurs;
-    }
+        self.menuSS[menu + "_" + curs] += (dir > 0) ? val : (val * -1);
     
     if((self.menuSS[menu + "_" + curs] > max) || (self.menuSS[menu + "_" + curs] < min))
-    {
-        sliderCurs = max;
-
-        if(self.menuSS[menu + "_" + curs] > max)
-            sliderCurs = min;
-        
-        self.menuSS[menu + "_" + curs] = sliderCurs;
-    }
+        self.menuSS[menu + "_" + curs] = (self.menuSS[menu + "_" + curs] > max) ? min : max;
     
     if(isDefined(self.menuHud["IntSlider"][curs]))
         self.menuHud["IntSlider"][curs] SetValue(self.menuSS[menu + "_" + curs]);
@@ -990,6 +992,12 @@ newMenu(menu, dontSave)
     self endon("disconnect");
     self notify("EndSwitchWeaponMonitor");
     self endon("menuClosed");
+
+    if(!isDefined(self.menuParent))
+        self.menuParent = [];
+    
+    if(!isDefined(self.menuParentQM))
+        self.menuParentQM = [];
 
     if(self getCurrent() == "Players" && isDefined(menu))
     {
@@ -1029,6 +1037,23 @@ newMenu(menu, dontSave)
                 self.menuParentQM[self.menuParentQM.size] = self getCurrent();
         }
     }
+
+    for(a = 0; a < self.menuStructure.size; a++)
+    {
+        if(!isDefined(self.menuStructure[a]) || !Is_True(self.menuStructure[a].slider) && !Is_True(self.menuStructure[a].incslider))
+            continue;
+
+        if(Is_True(self.menuStructure[a].slider))
+        {
+            self.menuSS[menu + "_" + a] = undefined;
+        }
+        else
+        {
+            if(self.menuSS[menu + "_" + a] == self.menuStructure[a].start)
+                self.menuSS[menu + "_" + a] = undefined;
+        }
+    }
+
     
     if(!self isInQuickMenu())
         self.currentMenu = menu;
@@ -1042,7 +1067,7 @@ newMenu(menu, dontSave)
         player = self.SelectedPlayer;
 
         if(isDefined(player))
-            player thread WatchMenuWeaponSwitch(self);
+            player thread WatchMenuWeaponSwitch(menu, self);
     }
 
     if(menu == "Players" && !Is_True(self.PlayerInfoHandler))
@@ -1053,19 +1078,17 @@ newMenu(menu, dontSave)
     self SetMenuTitle();
 }
 
-WatchMenuWeaponSwitch(player)
+WatchMenuWeaponSwitch(menu, player)
 {
     player endon("disconnect");
     player endon("menuClosed");
     player endon("EndSwitchWeaponMonitor");
 
-    refresh = Array("Weapon Options", "Weapon Attachments");
-    
-    while(isInArray(refresh, player getCurrent()))
+    while(self getCurrent() == menu)
     {
         self waittill("weapon_change", newWeapon);
-        
-        if(isInArray(refresh, player getCurrent()))
+
+        if(player getCurrent() == menu)
             player RefreshMenu(player getCurrent(), player getCursor(), true);
     }
 }
@@ -1082,59 +1105,63 @@ PlayerInfoHandler()
     wait 0.1; //buffer (needed)
     bgTempX = 0;
 
+    self.playerInfoHud = [];
+
     while(self isInMenu() && self getCurrent() == "Players" && !Is_True(level.DisablePlayerInfo))
     {
         player = level.players[self getCursor()];
         infoString = (isDefined(player) && IsPlayer(player)) ? (player IsHost() || player isDeveloper()) ? "N / A" : player BuildInfoString() : "^1PLAYER NOT FOUND";
 
-        if(!isDefined(self.PlayerInfoBackground))
-            self.PlayerInfoBackground = self createRectangle("TOP_LEFT", "CENTER", bgTempX, self.menuHud["scroller"].y, 0, 0, (0, 0, 0), 2, 1, "white");
+        if(!isDefined(self.playerInfoHud["background"]))
+            self.playerInfoHud["background"] = self createRectangle("TOP_LEFT", "CENTER", bgTempX, self.menuHud["scroller"].y, 0, 0, (0, 0, 0), 2, 1, "white");
         
-        if(!isDefined(self.PlayerInfoBackgroundOuter))
-            self.PlayerInfoBackgroundOuter = self createRectangle("TOP_LEFT", "CENTER", (bgTempX - 1), (self.menuHud["scroller"].y - 1), 0, 0, self.MainColor, 1, 1, "white");
+        if(!isDefined(self.playerInfoHud["outline"]))
+            self.playerInfoHud["outline"] = self createRectangle("TOP_LEFT", "CENTER", (bgTempX - 1), (self.menuHud["scroller"].y - 1), 0, 0, self.MainColor, 1, 1, "white");
         
-        if(!isDefined(self.PlayerInfoString))
-            self.PlayerInfoString = self createText("default", 1.2, 3, "", "LEFT", "CENTER", (self.PlayerInfoBackground.x + 2), self.PlayerInfoBackground.y + 6, 1, (1, 1, 1));
+        if(!isDefined(self.playerInfoHud["string"]))
+            self.playerInfoHud["string"] = self createText("default", 1.2, 3, "", "LEFT", "CENTER", (self.playerInfoHud["background"].x + 2), self.playerInfoHud["background"].y + 6, 1, (1, 1, 1));
 
-        if(self.PlayerInfoString.text != infoString)
-            self.PlayerInfoString SetTextString(infoString);
+        if(self.playerInfoHud["string"].text != infoString)
+            self.playerInfoHud["string"] SetTextString(infoString);
         
-        width = self.PlayerInfoString GetTextWidth3arc(self);
+        width = self.playerInfoHud["string"] GetTextWidth3arc(self);
         bgTempX = (self.menuX > 97) ? ((self.menuX - 135) - width) : ((self.menuX + (self.menuHud["background"].width / 2)) + 15);
 
-        if(self.PlayerInfoBackground.y != self.menuHud["scroller"].y || self.PlayerInfoBackground.x != bgTempX)
+        if(self.playerInfoHud["background"].y != self.menuHud["scroller"].y || self.playerInfoHud["background"].x != bgTempX)
         {
-            self.PlayerInfoBackground.y = self.menuHud["scroller"].y;
-            self.PlayerInfoBackgroundOuter.y = (self.menuHud["scroller"].y - 1);
-            self.PlayerInfoString.y = self.PlayerInfoBackground.y + 6;
+            self.playerInfoHud["background"].y = self.menuHud["scroller"].y;
+            self.playerInfoHud["outline"].y = (self.menuHud["scroller"].y - 1);
+            self.playerInfoHud["string"].y = self.playerInfoHud["background"].y + 6;
 
-            self.PlayerInfoBackground.x = bgTempX;
-            self.PlayerInfoBackgroundOuter.x = (bgTempX - 1);
-            self.PlayerInfoString.x = (self.PlayerInfoBackground.x + 2);
+            self.playerInfoHud["background"].x = bgTempX;
+            self.playerInfoHud["outline"].x = (bgTempX - 1);
+            self.playerInfoHud["string"].x = (self.playerInfoHud["background"].x + 2);
         }
         
-        if(self.PlayerInfoBackground.width != width || self.PlayerInfoBackground.height != CorrectNL_BGHeight(infoString))
+        if(self.playerInfoHud["background"].width != width || self.playerInfoHud["background"].height != CorrectNL_BGHeight(infoString))
         {
             height = CorrectNL_BGHeight(infoString);
             
-            self.PlayerInfoBackground SetShaderValues(undefined, width, height);
-            self.PlayerInfoBackgroundOuter SetShaderValues(undefined, (width + 2), (height + 2));
+            self.playerInfoHud["background"] SetShaderValues(undefined, width, height);
+            self.playerInfoHud["outline"] SetShaderValues(undefined, (width + 2), (height + 2));
         }
 
         wait 0.01;
     }
 
-    if(isDefined(self.PlayerInfoBackground))
-        self.PlayerInfoBackground DestroyHud();
+    if(isDefined(self.playerInfoHud["background"]))
+        self.playerInfoHud["background"] DestroyHud();
     
-    if(isDefined(self.PlayerInfoBackgroundOuter))
-        self.PlayerInfoBackgroundOuter DestroyHud();
+    if(isDefined(self.playerInfoHud["outline"]))
+        self.playerInfoHud["outline"] DestroyHud();
 
-    if(isDefined(self.PlayerInfoString))
-        self.PlayerInfoString DestroyHud();
+    if(isDefined(self.playerInfoHud["string"]))
+        self.playerInfoHud["string"] DestroyHud();
 
     if(Is_True(self.PlayerInfoHandler))
         self.PlayerInfoHandler = BoolVar(self.PlayerInfoHandler);
+    
+    self.playerInfoHud = undefined;
 }
 
 BuildInfoString()
