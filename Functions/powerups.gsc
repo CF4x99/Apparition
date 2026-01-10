@@ -36,7 +36,9 @@ SpawnPowerUp(powerup, origin)
     if(!IsDefined(origin))
     {
         if(IsString(self.PowerUpSpawnLocation) && self.PowerUpSpawnLocation == "Self")
+        {
             origin = self.origin;
+        }
         else
         {
             trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);

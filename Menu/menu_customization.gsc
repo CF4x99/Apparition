@@ -505,40 +505,20 @@ MenuStyle(style)
     
     self closeMenu1();
     self.MenuStyle = style;
+    self SetMenuDefaultValues();
 
     switch(style)
     {
         case "Zodiac":
-            self.menuX = 298;
-            self.menuY = -185;
-            
             self.TitleFontScale = 1.6;
-            self.MaxOptions = 12; //Zodiac Uses Less Hud, So We Can Show A Few More Options
-            self.LargeCursor = true;
-            self.ToggleStyle = "Boxes";
             break;
         
         case "Quick Menu":
-            self.menuX = 0;
-            self.menuY = -230;
-
             self.TitleFontScale = 1.5;
-            self.MaxOptions = 25;
-            self.LargeCursor = true;
             break;
         
         default:
-            self.menuX = -101;
-            self.menuY = -185;
             self.TitleFontScale = (self.MenuStyle == "Native") ? 2 : 1.4;
-            
-            if(self.MaxOptions > 10)
-                self.MaxOptions = 10;
-            
-            if(Is_True(self.LargeCursor))
-                self.LargeCursor = BoolVar(self.LargeCursor);
-            
-            self.ToggleStyle = "Boxes";
             break;
     }
     
@@ -584,24 +564,8 @@ GetSavedVariable(variable)
 
 LoadMenuVars()
 {
-    self.MenuStyle          = GetMenuName(); //Current Choices: Apparition, Zodiac, Nautaremake, AIO, Native, Quick Menu
-    self.menuX              = (self.MenuStyle == "Zodiac") ? 298 : (self.MenuStyle == "Quick Menu") ? 0 : -101; //Keep in mind that the position is close to the center to ensure the menu is visible on any resolution(use the menu position editor to place it where it best fits your liking)
-    self.menuY              = (self.MenuStyle == "Quick Menu") ? -230 : -185;
-    self.MaxOptions         = (self.MenuStyle == "Zodiac") ? 12 : (self.MenuStyle == "Quick Menu") ? 25 : 10;
-    self.ScrollingBuffer    = 10;
-    self.ToggleStyle        = "Boxes";
-    self.menuBoxLocation    = "Right";
-    self.MainTheme          = (1, 0, 0);
-    self.OptionsColor       = (1, 1, 1);
-    self.TitleColor         = (1, 1, 1);
-    self.ToggleTextColor    = (0, 1, 0);
-    self.ScrollingTextColor = (1, 1, 1);
-
-    self.OpenControls = Array("+speed_throw", "+melee");
-    
-    if(self.MenuStyle == "Zodiac" || self.MenuStyle == "Quick Menu")
-        self.LargeCursor = true;
-    
+    self.MenuStyle = GetMenuName(); //Current Choices: Apparition, Zodiac, Nautaremake, AIO, Native, Quick Menu
+    self SetMenuDefaultValues();
     saved = self GetSavedVariable("MenuStyle");
     
     if(IsDefined(saved) && saved != "")
@@ -668,6 +632,26 @@ LoadMenuVars()
     }
     
     self.TitleFontScale = (self.MenuStyle == "Zodiac") ? 1.6 : (self.MenuStyle == "Native") ? 2 : (self.MenuStyle == "Quick Menu") ? 1.5 : 1.4;
+}
+
+SetMenuDefaultValues()
+{
+    self.menuX              = (self.MenuStyle == "Zodiac") ? 298 : (self.MenuStyle == "Quick Menu") ? 0 : -101; //Keep in mind that the position is close to the center to ensure the menu is visible on any resolution(use the menu position editor to place it where it best fits your liking)
+    self.menuY              = (self.MenuStyle == "Quick Menu") ? -230 : -185;
+    self.MaxOptions         = (self.MenuStyle == "Zodiac") ? 12 : (self.MenuStyle == "Quick Menu") ? 25 : 10;
+    self.ScrollingBuffer    = 10;
+    self.ToggleStyle        = "Boxes";
+    self.menuBoxLocation    = "Right";
+    self.MainTheme          = (1, 0, 0);
+    self.OptionsColor       = (1, 1, 1);
+    self.TitleColor         = (1, 1, 1);
+    self.ToggleTextColor    = (0, 1, 0);
+    self.ScrollingTextColor = (1, 1, 1);
+
+    self.OpenControls = Array("+speed_throw", "+melee");
+    
+    if(self.MenuStyle == "Zodiac" || self.MenuStyle == "Quick Menu")
+        self.LargeCursor = true;
 }
 
 returnBool(boolVar)

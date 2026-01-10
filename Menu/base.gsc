@@ -59,7 +59,9 @@ menuMonitor()
                     if(IsDefined(self.menuStructure[curs]) && IsDefined(self.menuStructure[curs].func))
                     {
                         if(Is_True(self.menuStructure[curs].slider) || Is_True(self.menuStructure[curs].incslider))
+                        {
                             self ExeFunction(self.menuStructure[curs].func, Is_True(self.menuStructure[curs].slider) ? self.menuStructure[curs].sliderValues[self.menuSlider[menu + "_" + curs]] : self.menuSlider[menu + "_" + curs], self.menuStructure[curs].input1, self.menuStructure[curs].input2, self.menuStructure[curs].input3, self.menuStructure[curs].input4);
+                        }
                         else
                         {
                             self ExeFunction(self.menuStructure[curs].func, self.menuStructure[curs].input1, self.menuStructure[curs].input2, self.menuStructure[curs].input3, self.menuStructure[curs].input4);
@@ -358,7 +360,6 @@ closeMenu1(showAnim = false)
     destroyAll(self.menuUI);
     self.menuUI = undefined;
     self.menuStructure = undefined;
-    self.menuSlider = undefined;
 
     if(Is_True(self.isInMenu))
         self.isInMenu = BoolVar(self.isInMenu);
@@ -396,7 +397,6 @@ closeQuickMenu()
 
     self.menuUI = undefined;
     self.menuStructure = undefined;
-    self.menuSlider = undefined;
 
     if(Is_True(self.isInQuickMenu))
         self.isInQuickMenu = BoolVar(self.isInQuickMenu);
@@ -1045,18 +1045,11 @@ newMenu(menu, dontSave)
 
     for(a = 0; a < self.menuStructure.size; a++)
     {
-        if(!IsDefined(self.menuStructure[a]) || !Is_True(self.menuStructure[a].slider) && !Is_True(self.menuStructure[a].incslider))
+        if(!IsDefined(self.menuStructure[a]) || !Is_True(self.menuStructure[a].incslider))
             continue;
 
-        if(Is_True(self.menuStructure[a].slider))
-        {
+        if(IsDefined(self.menuSlider[menu + "_" + a]) && self.menuSlider[menu + "_" + a] == self.menuStructure[a].start)
             self.menuSlider[menu + "_" + a] = undefined;
-        }
-        else
-        {
-            if(IsDefined(self.menuSlider[menu + "_" + a]) && self.menuSlider[menu + "_" + a] == self.menuStructure[a].start)
-                self.menuSlider[menu + "_" + a] = undefined;
-        }
     }
     
     if(!self isInQuickMenu())

@@ -9,7 +9,7 @@ initSharpshooter(type)
     
     thread SetRound(15);
     level.zombie_vars["zombie_between_round_time"] = 0.1;
-    level thread GameOverHandle();
+    level thread SSGameOverHandle();
 
     weaponArray = [];
     usedWeaponArray = !IsVerkoMap() ? (type == "Base Weapons") ? GetArrayKeys(level.zombie_weapons) : (type == "Upgraded Weapons") ? GetArrayKeys(level.zombie_weapons_upgraded) : ArrayCombine(GetArrayKeys(level.zombie_weapons), GetArrayKeys(level.zombie_weapons_upgraded), 0, 1) : (type == "Base Weapons") ? level.var_21b77150 : (type == "Upgraded Weapons") ? level.var_2b893b73 : ArrayCombine(level.var_21b77150, level.var_2b893b73, 0, 1);
@@ -114,7 +114,7 @@ initSharpshooter(type)
     }
 }
 
-GameOverHandle()
+SSGameOverHandle()
 {
     level waittill("game_ended");
 

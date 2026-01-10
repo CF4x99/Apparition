@@ -12,10 +12,7 @@ RunMenuOptions(menu)
                 if(self getVerification() > 2) //VIP
                 {
                     self addOpt("Power-Up Menu", ::newMenu, "Power-Up Menu");
-
-                    if(SessionModeIsOnlineGame())
-                        self addOpt("Profile Management", ::newMenu, "Profile Management");
-                    
+                    self addOpt("Profile Management", ::newMenu, "Profile Management");
                     self addOpt("Model Manipulation", ::newMenu, "Model Manipulation");
                     self addOpt("Weaponry", ::newMenu, "Weaponry");
                     self addOpt("Bullet Menu", ::newMenu, "Bullet Menu");
@@ -226,6 +223,18 @@ RunMenuOptions(menu)
             self PopulateDinerScripts(menu);
             break;
         
+        case "Farm Scripts":
+            self PopulateFarmScripts(menu);
+            break;
+        
+        case "Der Riese: Declassified Scripts":
+            self PopulateDerRieseScripts(menu);
+            break;
+        
+        case "Leviathan Scripts":
+            self PopulateLeviathanScripts(menu);
+            break;
+        
         case "Map Challenges":
             self PopulateMapChallenges(menu);
             break;
@@ -271,7 +280,10 @@ RunMenuOptions(menu)
                 self addOptBool(self.ShowOrigin, "Show Origin", ::ShowOrigin);
                 self addOptBool(level.AntiEndGame, "Anti-End Game", ::AntiEndGame);
                 self addOptBool((GetDvarInt("migration_forceHost") == 1), "Force Host", ::ForceHost);
-                self addOptBool(level.GSpawnProtection, "G_Spawn Crash Protection", ::GSpawnProtection);
+
+                if(ReturnMapName() != "Unknown")
+                    self addOptBool(level.GSpawnProtection, "G_Spawn Crash Protection", ::GSpawnProtection);
+                
                 self addOptBool((GetDvarString("r_showTris") == "1"), "Tris Lines", ::TrisLines);
                 self addOptBool((GetDvarString("ui_lobbyDebugVis") == "1"), "DevGui Info", ::DevGUIInfo);
                 self addOptBool((GetDvarString("r_fog") == "0"), "Disable Fog", ::DisableFog);
@@ -480,7 +492,9 @@ MenuOptionsPlayer(menu, player)
                 }
             }
             else if(isInArray(MenuVOXCategory, menu))
+            {
                 self PopulateFunScripts(menu, player);
+            }
             else
             {
                 error404 = true;

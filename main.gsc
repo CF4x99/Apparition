@@ -8,7 +8,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.1.7
+    Version:              1.5.1.8
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -163,9 +163,11 @@ onPlayerSpawned()
     
     if(self IsHost() && !IsDefined(self.playerSpawned))
     {
-        self thread AntiEndGame();
-        self thread GSpawnProtection();
         level thread RGBFade();
+        self thread AntiEndGame();
+
+        if(ReturnMapName() != "Unknown")
+            self thread GSpawnProtection();
         
         level.player_out_of_playable_area_monitor = 0;
         level.player_out_of_playable_area_monitor_callback = ::player_out_of_playable_area_monitor;
@@ -189,7 +191,9 @@ onPlayerSpawned()
             level.saved_callbackactorkilled = level.callbackactorkilled;
         
         level.callbackactorkilled = ::override_actor_killed;
-        level.custom_game_over_hud_elem = ::override_game_over_hud_elem;
+
+        if(ReturnMapName() != "Unknown")
+            level.custom_game_over_hud_elem = ::override_game_over_hud_elem;
 
         if(IsDefined(level.player_score_override))
             level.saved_player_score_override = level.player_score_override;

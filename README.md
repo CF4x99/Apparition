@@ -7,7 +7,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.1.7
+    Version:              1.5.1.8
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -35,7 +35,7 @@
         Just to clear up any confusion:
             Apparition, including the base, belongs to me (CF4_99) and only me.
             I built it 100% from the ground up.
-            I’m the sole developer
+            I’m the sole developer.
 
         The Credits Below Says Exactly What These People Offered Apparition, Nothing More, Nothing Less.
 
@@ -44,7 +44,7 @@
         - CF4_99 ~ Project Developer
         - Extinct ~ Ideas, Suggestions, Constructive Criticism, and His Spec-Nade
         - CraftyCritter ~ BO3 Compiler
-        - ItsFebiven ~ Some Ideas and Suggestions
+        - ItsFebiven ~ Ideas, Suggestions, and Nautaremake Style
         - Joel ~ Suggestions, Bug Reports, and Testing The Unique String Crash Protection
 
 
@@ -61,7 +61,7 @@
         I have created scripts to complete the EE's for the classic maps that have smaller EE's.
         As for the bigger maps that have bigger and more complex EE's, I have made scripts to make completing the EE's, a lot easier.
         The EE scripts will complete steps properly, not just set flags/variables tricking the game into thinking the step has been completed, when it actually hasn't(unlike other "developers")
-        This will prevent any issues with crashes/conflictions later on while continuing regular gameplay/playing through other parts of the EE.
+        This will prevent issues with any crashes or conflictions later on while continuing regular gameplay and playing through other parts of the EE.
 
         Where to find options that help completing EE's:
             Main Menu -> [map name] Scripts
@@ -81,6 +81,37 @@
 
 
 ## Changelog
+<details>
+    <summary>
+        Version 1.5.1.8
+    </summary>
+    - PS4 Users: I will now start including a pre-compiled version with each release(can be found in the release section on the Apparition Github repository)
+    - The PS4 is identical to the version found on my Github aside from custom map scripts, and other stuff not needed on console
+
+    - Added: Fun Scripts -> Hit Marker Options -> Hitmarker Sound
+    - Added: Fun Scripts -> Frog Jump
+    - Added: Der Riese: Declassified -> Custom teleport locations
+    - Added: Der Riese: Declassified -> Turn on power
+    - Added: Der Riese: Declassified -> Space for scripts to be added for the map
+    - Added: Leviathan -> Custom teleport locations
+    - Added: Leviathan -> Turn on power
+    - Added: Leviathan -> Space for scripts to be added for the map
+    - Added: Farm Survival -> Custom teleport locations
+    - Added: Farm Survival -> Turn on power
+    - Added: Farm Survival -> Space for scripts to be added for the map
+
+    - Removed: Der Riese: Declassified -> Removed 'Wunderwaffe DG-Scharfschutze' craftable parts -- Collecting those parts using the menu would break the EE
+    - Removed: Weaponry -> Attachments -> 'Correct Invalid Combination' -- It will now automatically correct invalid attachment combinations
+    - Removed: 'Brick Account' option -- lol
+
+    - Changed: G_Spawn Crash Protection -- Now works properly for supported custom maps
+    - Changed: G_Spawn Crash Protection -- Will no longer be usable for unsupported custom maps(caused some custom maps to be unplayable)
+    - Changed: Menu Base -- Slider options will now save the current slider value again
+    - Chanegd: Custom game over message will no longer display for unsupported custom maps -- NOTE: this only displays for players that have been given access to the menu
+
+    - Fixed: Duplicate function defintion -- 'GameOverHandle' was defined more than once -- Should fix compilation error when compiling with serious's t7 compiler
+</details>
+
 <details>
     <summary>
         Version 1.5.1.7

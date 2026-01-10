@@ -97,31 +97,31 @@ AllPlayersTeleport(origin)
     switch(origin)
     {
         case "Sky":
-            level.AllPlayersTeleporting = true;
+            level.AllPlayersTeleporting = self;
 
             foreach(player in level.players)
             {
-                if(!player IsHost() && !player isDeveloper())
+                if(!player IsHost() && !player isDeveloper() && player != self)
                     player SetOrigin(player.origin + (0, 0, 35000));
             }
             break;
         
         case "Crosshairs":
-            level.AllPlayersTeleporting = true;
+            level.AllPlayersTeleporting = self;
 
             foreach(player in level.players)
             {
-                if(!player IsHost() && !player isDeveloper())
+                if(!player IsHost() && !player isDeveloper() && player != self)
                     player SetOrigin(self TraceBullet());
             }
             break;
         
         case "Self":
-            level.AllPlayersTeleporting = true;
+            level.AllPlayersTeleporting = self;
 
             foreach(player in level.players)
             {
-                if(!player IsHost() && !player isDeveloper())
+                if(!player IsHost() && !player isDeveloper() && player != self)
                     player SetOrigin(self.origin);
             }
             break;
@@ -131,9 +131,7 @@ AllPlayersTeleport(origin)
     }
 
     wait 2;
-
-    if(Is_True(level.AllPlayersTeleporting))
-        level.AllPlayersTeleporting = BoolVar(level.AllPlayersTeleporting);
+    level.AllPlayersTeleporting = undefined;
 }
 
 AllClientsGodModeCheck()

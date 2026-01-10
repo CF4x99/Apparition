@@ -21,14 +21,17 @@ SpawnSkybase()
         goalPos.origin = trace["position"];
 
         if(self AttackButtonPressed())
+        {
             distance += 25;
+        }
         else if(self AdsButtonPressed())
+        {
             distance -= 25;
+        }
         else if(self UseButtonPressed() || self MeleeButtonPressed())
         {
             origin = trace["position"];
             level.SkybaseOrigin = origin;
-
             break;
         }
 

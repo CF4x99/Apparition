@@ -110,8 +110,6 @@ PopulateBasicScripts(menu, player)
 
 Godmode(player)
 {
-    player endon("disconnect");
-
     if(Is_True(player.PlayerDemiGod))
         player DemiGod(player);
     
@@ -310,9 +308,13 @@ ModifyScore(score, player)
     score = Int(score);
 
     if(score > 0)
+    {
         player zm_score::add_to_player_score(score);
+    }
     else if(score < 0)
+    {
         player zm_score::minus_to_player_score((score * -1));
+    }
     else
     {
         if(player.score > 0)
@@ -361,7 +363,9 @@ PlayerRetainPerks(player)
         array::add(MenuPerks, perks[a], 0);
 
     if(!Is_True(player._retain_perks))
+    {
         player._retain_perks = true;
+    }
     else
     {
         player._retain_perks = false;
@@ -464,7 +468,9 @@ GivePlayerGobblegum(name, player)
         self RefreshMenu(menu, curs);
     }
     else
+    {
         player bgb::take();
+    }
 }
 
 SetMovementSpeed(scale, player)
@@ -535,7 +541,9 @@ NoTarget(player)
         }
     }
     else
+    {
         player.ignoreme = false;
+    }
 }
 
 ReducedSpread(player)
@@ -653,7 +661,9 @@ SetClientVisualEffects(effect, player)
     if(IsDefined(player.ClientVisualEffect) && player.ClientVisualEffect != "None" || IsDefined(dEffect))
     {
         if(IsDefined(dEffect))
+        {
             disable = dEffect;
+        }
         else
         {
             if(IsDefined(player.ClientVisualEffect))

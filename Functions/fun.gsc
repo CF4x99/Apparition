@@ -27,6 +27,7 @@ PopulateFunScripts(menu, player)
                 self addOptBool(player.SpecNade, "Spec-Nade", ::SpecNade, player);
                 self addOptBool(player.NukeNades, "Nuke Nades", ::NukeNades, player);
                 self addOptBool(player.CodJumper, "Cod Jumper", ::CodJumper, player);
+                self addOptBool(player.FrogJump, "Frog Jump", ::FrogJump, player);
                 self addOptBool(player.Jetpack, "Jetpack", ::Jetpack, player);
                 self addOptBool(player.HealthBar, "Health Bar", ::HealthBar, player);
                 self addOptBool(player.ClusterGrenades, "Cluster Grenades", ::ClusterGrenades, player);
@@ -68,6 +69,7 @@ PopulateFunScripts(menu, player)
             
             self addMenu("Hit Markers");
                 self addOptBool(player.ShowHitmarkers, "Hit Markers", ::ShowHitmarkers, player);
+                self addOptSlider("Hit Marker Sound", ::HitmarkerSound, "None;fly_melee_lunge_victim_bat;fly_melee_lunge_victim_pistol;fly_melee_lunge_rifle;fly_melee_lunge_victim_knife;fly_melee_lunge_victim_nunchucks", player);
                 self addOptSlider("Feedback", ::HitmarkerFeedback, "damage_feedback_glow_orange;damage_feedback;damage_feedback_flak;damage_feedback_tac;damage_feedback_armor", player);
                 self addOpt("");
 
@@ -377,6 +379,11 @@ ShowHitmarkers(player)
     player.ShowHitmarkers = BoolVar(player.ShowHitmarkers);
 }
 
+HitmarkerSound(snd, player)
+{
+    player.HitmarkerFeedbackSound = snd;
+}
+
 HitmarkerFeedback(feedback, player)
 {
     player.HitmarkerFeedback = feedback;
@@ -486,7 +493,6 @@ DeathSkullLinker(skulls, player)
         PlayFX(level._effect["grenade_samantha_steal"], self.origin);
         PlayFX(level._effect["poltergeist"], self.origin);
         PlayFX("zombie/fx_powerup_nuke_zmb", self.origin);
-        
         wait 1;
     }
 }
@@ -585,7 +591,7 @@ DeadOpsView(player)
     {
         player endon("disconnect");
         
-        tracePosition    = BulletTrace(player.origin, player.origin + (0, 0, 350), 0, player)["position"];
+        tracePosition = BulletTrace(player.origin, player.origin + (0, 0, 350), 0, player)["position"];
         player.camlinker = SpawnScriptModel(tracePosition, "tag_origin", (90, 90, 0));
         
         player CameraSetPosition(player.camlinker);
@@ -667,7 +673,9 @@ ZombieCounter(player)
         player.ZombieCounterHud = undefined;
     }
     else
+    {
         destroyAll(player.ZombieCounterHud);
+    }
 }
 
 LightProtector(player)
@@ -976,7 +984,9 @@ NukeNades(player)
         }
     }
     else
+    {
         player notify("EndNukeNades");
+    }
 }
 
 NukeNade()
@@ -1096,6 +1106,30 @@ CodBoxHandler()
         }
 
         wait 0.01;
+    }
+}
+
+FrogJump(player)
+{
+    player.FrogJump = BoolVar(player.FrogJump);
+
+    if(Is_True(player.FrogJump))
+    {
+        player endon("disconnect");
+        
+        while(Is_True(player.FrogJump))
+        {
+            if(player JumpButtonPressed() && !player IsOnGround() && player GetStance() == "stand" && Is_Alive(player))
+            {
+                AngF = AnglesToForward(player GetPlayerAngles());
+                player SetVelocity((AngF[0] * 550, AngF[1] * 550, 400));
+                
+                while(!player IsOnGround())
+                    wait 0.05;
+            }
+            
+            wait 0.01;
+        }
     }
 }
 
@@ -1228,7 +1262,9 @@ ClusterGrenades(player)
         }
     }
     else
+    {
         player notify("EndClusterGrenades");
+    }
 }
 
 GetRandomThrowSpeed()
@@ -1526,7 +1562,9 @@ ShootPowerUps(player)
         }
     }
     else
+    {
         player notify("EndShootPowerUps");
+    }
 }
 
 RocketRiding(player)
@@ -1591,7 +1629,9 @@ RocketRiding(player)
         }
     }
     else
+    {
         player notify("EndRocketRiding");
+    }
 }
 
 WatchRocket(rocket)
@@ -1800,7 +1840,9 @@ RapidFire(player)
         }
     }
     else
+    {
         player notify("EndRapidFire");
+    }
 }
 
 ExtraGore(player)

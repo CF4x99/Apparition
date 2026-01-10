@@ -204,7 +204,9 @@ ForgeDeleteLastSpawn()
         self.forgeSpawnedArray = arry;
     }
     else
+    {
         self.forgeSpawnedArray = undefined;
+    }
 }
 
 ForgeDeleteAllSpawned()
@@ -253,5 +255,7 @@ ForgeShootModel()
         }
     }
     else
+    {
         self notify("EndShootModel");
+    }
 }

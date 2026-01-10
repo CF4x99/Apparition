@@ -198,7 +198,9 @@ AIPrioritizePlayer(player)
         }
     }
     else
+    {
         player.b_is_designated_target = false;
+    }
 }
 
 ZombiesDeathEffect()
@@ -256,7 +258,9 @@ SetZombieModel(model)
         spawner::add_archetype_spawn_function("zombie", ::SetZombieSpawnModel);
     }
     else
+    {
         DisableZombieModel();
+    }
 }
 
 SetZombieSpawnModel()
@@ -469,7 +473,9 @@ GetZombieHealthFromRound(round_number)
                 return old_health;
         }
         else
+        {
             zombie_health = Int(zombie_health + level.zombie_vars["zombie_health_increase"]);
+        }
     }
 
     return zombie_health;
@@ -797,7 +803,9 @@ DisappearingZombies()
     zombies = GetAITeamArray(level.zombie_team);
 
     if(Is_True(level.DisappearingZombies))
+    {
         spawner::add_archetype_spawn_function("zombie", ::ZombieSpawnDisappearingZombie);
+    }
     else
     {
         spawner::remove_global_spawn_function("zombie", ::ZombieSpawnDisappearingZombie);
@@ -809,7 +817,9 @@ DisappearingZombies()
         if(IsDefined(zombies[a]) && IsAlive(zombies[a]))
         {
             if(Is_True(level.DisappearingZombies))
+            {
                 zombies[a] thread DisappearingZombie();
+            }
             else
             {
                 if(Is_True(zombies[a].disappearing))

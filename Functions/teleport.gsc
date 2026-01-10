@@ -177,7 +177,9 @@ TeleportGun(player)
         }
     }
     else
+    {
         player notify("EndTeleportGun");
+    }
 }
 
 SaveAndLoad(player)
@@ -333,6 +335,18 @@ GenerateMapTeleports()
             
             case "Diner":
                 locations = ["Spawn", (7583.19, -12471.09, -0.625), "Power", (10258.39, -12906.60, 95.125), "Pack 'a' Punch", (5171.02, -13046.58, 0.64), "Prison", (5516.14, -19922.40, -115.875)];
+                break;
+            
+            case "Farm":
+                locations = ["Spawn", (4924.46, -586.4, 80.92), "Power", (7154.933, 1721.47, -487.875), "Pack 'a' Punch", (6463.42, 1914.62, -487.875), "Prison", (5152.64, 2035.49, -247.875)];
+                break;
+            
+            case "Der Riese: Declassified":
+                locations = ["Spawn", (-51.78, 305.3, 98.375), "Power", (530.13, -1810.82, 61.125), "Pack 'a' Punch", (-55.18, 511, 101.125), "Prison", (5454.43, -20.8, -271.875), "Kino Der Toten", (28491.7, -1889, -323.16), "Nacht Der Untoten", (24360.625, -10584, -872.52), "Richtofen's Lab", (23457.99, 961.57, 57.21), "Samantha's Bedroom", (23346.86, -1918.75, 174.125), "Forest", (27320.9, -10309.79, -879.73), "Boss Fight", (41130, 37102.87, -1995.35)];
+                break;
+            
+            case "Leviathan":
+                locations = ["Spawn", (-789.95, -29.18, -484.875)];
                 break;
         }
 

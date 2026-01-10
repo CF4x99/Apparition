@@ -102,7 +102,9 @@ ActivateZombieTrap(index)
         }
     }
     else
+    {
         traps[index] notify("trigger", self);
+    }
 
     wait 0.1;
     traps[index].zombie_cost = savedCost;
@@ -125,6 +127,7 @@ ActivatePower()
     curs = self getCursor();
     menu = self getCurrent();
 
+    foundSwitch = false;
     switches = Array("use_power_switch", "use_master_switch", "use_elec_switch", "power_trigger_left", "power_trigger_right", "use_power_switch_vk");
 
     for(a = 0; a < switches.size; a++)
@@ -132,8 +135,14 @@ ActivatePower()
         rightSwitch = GetEnt(switches[a], "targetname");
 
         if(IsDefined(rightSwitch))
+        {
+            foundSwitch = true;
             rightSwitch notify("trigger", self);
+        }
     }
+
+    if(!foundSwitch)
+        return;
 
     level flag::wait_till("power_on");
 

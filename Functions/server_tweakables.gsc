@@ -141,7 +141,9 @@ ServerUpgradeWeaponWallbuys()
         level.wallbuy_should_upgrade_weapon_override = ::wallbuy_should_upgrade_weapon_override;
     }
     else
+    {
         level.wallbuy_should_upgrade_weapon_override = IsDefined(level.saved_wallbuy_should_upgrade_weapon_override) ? level.saved_wallbuy_should_upgrade_weapon_override : undefined;
+    }
 }
 
 ServerMaxAmmoClips()
@@ -149,7 +151,9 @@ ServerMaxAmmoClips()
     level.ServerMaxAmmoClips = Boolvar(level.ServerMaxAmmoClips);
 
     if(Is_True(level.ServerMaxAmmoClips))
+    {
         level thread WatchForMaxAmmo();
+    }
     else
     {
         level.WatchForMaxAmmo = undefined;
@@ -189,7 +193,9 @@ IncreasedDropRate()
         }
     }
     else
+    {
         level.zombie_vars["zombie_powerup_drop_max_per_round"] = 4;
+    }
 }
 
 PowerupsNeverLeave()
@@ -237,7 +243,9 @@ DisablePowerups()
         }
     }
     else
+    {
         level.powerup_drop_count = 0;
+    }
 }
 
 ShootToRevive()
@@ -250,7 +258,9 @@ ShootToRevive()
             player thread PlayerShootToRevive();
     }
     else
+    {
         level notify("EndShootToRevive");
+    }
 }
 
 PlayerShootToRevive()

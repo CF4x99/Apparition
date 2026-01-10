@@ -967,6 +967,8 @@ FeedDemonUrn()
 
     menu = self getCurrent();
     curs = self getCursor();
+    wait 2;
+
     urnTrig = GetEnt("aq_dg_trophy_room_trig", "targetname");
 
     if(IsDefined(urnTrig))

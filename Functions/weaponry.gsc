@@ -91,9 +91,6 @@ PopulateWeaponry(menu, player)
 
                 if(attachments.size)
                 {
-                    self addOptBool(player.CorrectInvalidCombo, "Correct Invalid Combinations", ::CorrectInvalidCombo, player);
-                    self addOpt("");
-
                     foreach(attachment in attachments)
                         self addOptBool(isInArray(weapon.attachments, attachment), ReturnAttachmentName(attachment), ::GivePlayerAttachment, attachment, player);
                 }
@@ -147,7 +144,7 @@ TakeCurrentWeapon(player)
 {
     weapon = player GetCurrentWeapon();
 
-    if(!IsDefined(weapon) || weapon == level.weaponnone || weapon == level.weaponbasemelee || IsSubStr(weapon.name, "_knife"))
+    if(!IsDefined(weapon) || weapon == level.weaponnone || IsDefined(level.weaponbasemelee) && weapon == level.weaponbasemelee || IsSubStr(weapon.name, "_knife"))
         return;
     
     player TakeWeapon(weapon);
@@ -157,7 +154,7 @@ TakePlayerWeapons(player)
 {
     foreach(weapon in player GetWeaponsList(1))
     {
-        if(!IsDefined(weapon) || weapon == level.weaponnone || weapon == level.weaponbasemelee || IsSubStr(weapon.name, "_knife"))
+        if(!IsDefined(weapon) || weapon == level.weaponnone || IsDefined(level.weaponbasemelee) && weapon == level.weaponbasemelee || IsSubStr(weapon.name, "_knife"))
             continue;
         
         player TakeWeapon(weapon);
@@ -292,13 +289,17 @@ VerkoPackCurrentWeapon(type, player)
             return;
     }
     else
+    {
         return self iPrintlnBold("^1ERROR: Not A Valid Weapon");
+    }
     
     weaponIndex = 0;
 
     for(a = 0; a < currentArray.size; a++)
+    {
         if(currentArray[a] == currentWeapon.name)
             weaponIndex = a;
+    }
     
     switch(type)
     {
@@ -349,7 +350,7 @@ VerkoGetAAT(aat)
     }
 }
 
-GivePlayerAttachment(attachment, player, override = false)
+GivePlayerAttachment(attachment, player)
 {
     player endon("disconnect");
 
@@ -367,18 +368,13 @@ GivePlayerAttachment(attachment, player, override = false)
     {
         if(!IsValidCombination(attachments, attachment))
         {
-            if(Is_True(player.CorrectInvalidCombo) || override) //Auto-Correct invalid attachment combinations
-            {
-                invalid = GetInvalidAttachments(attachments, attachment);
+            invalid = GetInvalidAttachments(attachments, attachment);
 
-                if(IsDefined(invalid) && invalid.size)
-                {
-                    for(a = 0; a < invalid.size; a++)
-                        attachments = ArrayRemove(attachments, invalid[a]);
-                }
+            if(IsDefined(invalid) && invalid.size)
+            {
+                for(a = 0; a < invalid.size; a++)
+                    attachments = ArrayRemove(attachments, invalid[a]);
             }
-            else
-                return self iPrintlnBold("^1ERROR: ^7Invalid Attachment Combination");
         }
         
         array::add(attachments, attachment, 0);
@@ -428,11 +424,6 @@ GetInvalidAttachments(attachments, attachment)
     }
     
     return invalid;
-}
-
-CorrectInvalidCombo(player)
-{
-    player.CorrectInvalidCombo = BoolVar(player.CorrectInvalidCombo);
 }
 
 SaveCurrentLoadout(type, player)
@@ -570,7 +561,7 @@ GivePlayerLoadout()
                 attachments = StrTok(weaponAttachments, ";");
 
                 for(a = 0; a < attachments.size; a++)
-                    GivePlayerAttachment(attachments[a], self, true);
+                    GivePlayerAttachment(attachments[a], self);
             }
         }
 
@@ -631,7 +622,9 @@ GiveWeaponAAT(aat, player)
     player endon("disconnect");
     
     if(!IsDefined(player.aat[player aat::get_nonalternate_weapon(player GetCurrentWeapon())]) || player.aat[player aat::get_nonalternate_weapon(player GetCurrentWeapon())] != aat)
+    {
         player aat::acquire(player GetCurrentWeapon(), aat);
+    }
     else
     {
         player aat::remove(player GetCurrentWeapon());

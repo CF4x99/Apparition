@@ -233,7 +233,9 @@ ExplosiveBullets(player)
         }
     }
     else
+    {
         player notify("EndExplosiveBullets");
+    }
 }
 
 ExplosiveBulletEffect(player)

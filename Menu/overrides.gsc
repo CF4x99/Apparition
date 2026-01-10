@@ -1,6 +1,6 @@
 override_player_damage(einflictor, eattacker, idamage, idflags, smeansofdeath, weapon, vpoint, vdir, shitloc, psoffsettime)
 {
-    if(Is_True(self.playerGodmode) || Is_True(self.PlayerDemiGod) || Is_True(self.NoExplosiveDamage) && zm_utility::is_explosive_damage(smeansofdeath) || Is_True(level.AllPlayersTeleporting) && !self IsHost() && !self isDeveloper() || Is_True(self.ControllableZombie) || Is_True(self.AC130) || Is_True(self.lander))
+    if(Is_True(self.playerGodmode) || Is_True(self.PlayerDemiGod) || Is_True(self.NoExplosiveDamage) && zm_utility::is_explosive_damage(smeansofdeath) || IsDefined(level.AllPlayersTeleporting) && IsPlayer(level.AllPlayersTeleporting) && self != level.AllPlayersTeleporting && !self IsHost() && !self isDeveloper() || Is_True(self.ControllableZombie) || Is_True(self.AC130) || Is_True(self.lander))
     {
         if(Is_True(self.PlayerDemiGod))
             self FakeDamageFrom(vdir);
@@ -55,7 +55,6 @@ CommonDamageOverride(mod, hit_location, hit_origin, player, amount, team, weapon
             if(IsDefined(player.PlayerInstaKill) && (player.PlayerInstaKill == "All" || player.PlayerInstaKill == "Melee" && mod == "MOD_MELEE"))
             {
                 self.health = 1;
-
                 self DoDamage((self.health + 666), self.origin, player, self, hit_location, zm_utility::remove_mod_from_methodofdeath(mod));
                 player notify("zombie_killed");
             }
@@ -137,6 +136,9 @@ DamageFeedBack()
     }
     
     self zombie_utility::show_hit_marker();
+
+    if(IsDefined(self.HitmarkerFeedbackSound) && self.HitmarkerFeedbackSound != "None" && Is_True(self.hitsoundtracker))
+        self PlaySoundToPlayer(self.HitmarkerFeedbackSound, self);
     
     if(IsDefined(self.HitmarkerFeedback))
         self.hud_damagefeedback SetShaderValues(self.HitmarkerFeedback, 24, 48);
