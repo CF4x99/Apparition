@@ -21,7 +21,7 @@ PopulateServerModifications(menu)
                     self addOpt("Mystery Box Options", ::newMenu, "Mystery Box Options");
                 
                 self addOptBool(IsAllDoorsOpen(), "Open All Doors & Debris", ::OpenAllDoors);
-                self addOptSlider("Zombie Barriers", ::SetZombieBarrierState, "Break All;Repair All");
+                self addOptSlider("Zombie Barriers", ::SetZombieBarrierState, Array("Break All", "Repair All"));
                 self addOpt("Spawn Bot", ::SpawnBot);
 
                 if(IsDefined(level.zombie_include_craftables) && level.zombie_include_craftables.size && !IsDefined(level.all_parts_required))
@@ -46,8 +46,8 @@ PopulateServerModifications(menu)
             
             self addMenu("Doheart Options");
                 self addOptBool(level.Doheart, "Doheart", ::Doheart);
-                self addOptSlider("Text", ::DoheartTextPass, CleanName(bot::get_host_player() getName()) + ";" + GetMenuName() + ";CF4_99;Custom");
-                self addOptSlider("Style", ::SetDoheartStyle, "Pulsing;Pulse Effect;Type Writer;Moving;Fade Effect");
+                self addOptSlider("Text", ::DoheartTextPass, Array(CleanName(bot::get_host_player() getName()), GetMenuName(), "CF4_99", "Custom"));
+                self addOptSlider("Style", ::SetDoheartStyle, Array("Pulsing", "Pulse Effect", "Type Writer", "Moving", "Fade Effect"));
             break;
         
         case "Lobby Timer Options":

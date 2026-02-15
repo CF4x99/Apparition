@@ -5,14 +5,11 @@ PopulateMenuCustomization(menu)
         case "Menu Customization":
             self addMenu("Menu Customization");
                 self addOpt("Menu Credits", ::MenuCredits);
-                self addOptSlider("Menu Style", ::MenuStyle, GetMenuName() + ";Zodiac;Nautaremake;AIO;Native;Quick Menu");
                 self addOpt("Open Controls", ::newMenu, "Open Controls");
-                self addOpt("Design Preferences", ::newMenu, "Design Preferences");
+                self addOpt("Reposition Menu", ::RepositionMenu);
                 self addOpt("Main Design Color", ::newMenu, "Main Design Color");
-                self addOpt("Title Color", ::newMenu, "Title Color");
-                self addOpt("Options Color", ::newMenu, "Options Color");
-                self addOpt("Scrolling Option Color", ::newMenu, "Scrolling Option Color");
-                self addOpt("Toggled Option Color", ::newMenu, "Toggled Option Color");
+                self addOptBool(self.DisableMenuInstructions, "Disable Instructions", ::DisableMenuInstructions);
+                self addOptBool(self.DisableQM, "Disable Quick Menu", ::DisableQuickMenu);
             break;
         
         case "Open Controls":
@@ -37,20 +34,6 @@ PopulateMenuCustomization(menu)
                 foreach(button in buttons)
                     self addOptBool((IsDefined(self.OpenControls[(self.OpenControlIndex - 1)]) && self.OpenControls[(self.OpenControlIndex - 1)] == button), "[{" + button + "}]", ::SetOpenButtons, button);
             break;
-
-        case "Design Preferences":
-            self addMenu("Design Preferences");
-                self addOptSlider("Toggle Style", ::ToggleStyle, "Boxes;Text;Text Color");
-                self addOptSlider("Bool Box Location", ::menuBoxLocation, "Right;Left");
-                self addOptIncSlider("Max Options", ::MenuMaxOptions, 5, 5, (self.MenuStyle == "Zodiac") ? 12 : (self.MenuStyle == "Quick Menu") ? 25 : 10, 1);
-                self addOptIncSlider("Scrolling Buffer", ::MenuScrollingBuffer, 1, self.ScrollingBuffer, 15, 1);
-                self addOpt("Reposition Menu", ::RepositionMenu);
-                self addOptBool(self.LargeCursor, "Large Cursor", ::LargeCursor);
-                self addOptBool(self.DisableMenuInstructions, "Disable Instructions", ::DisableMenuInstructions);
-                self addOptBool(self.DisableQM, "Disable Quick Menu", ::DisableQuickMenu);
-                self addOptBool(self.DisableMenuAnimations, "Disable Menu Animations", ::DisableMenuAnimations);
-                self addOptBool(self.DisableMenuSounds, "Disable Menu Sounds", ::DisableMenuSounds);
-            break;
         
         case "Main Design Color":
             self addMenu("Main Design Color");
@@ -59,42 +42,6 @@ PopulateMenuCustomization(menu)
                     self addOptBoolPreview((!Is_True(self.SmoothRainbowTheme) && self.MainTheme == divideColor(GetColorValues()[(3 * a)], GetColorValues()[((3 * a) + 1)], GetColorValues()[((3 * a) + 2)])), "white", divideColor(GetColorValues()[(3 * a)], GetColorValues()[((3 * a) + 1)], GetColorValues()[((3 * a) + 2)]), GetColorNames()[a], ::MenuTheme, divideColor(GetColorValues()[(3 * a)], GetColorValues()[((3 * a) + 1)], GetColorValues()[((3 * a) + 2)]));
                 
                 self addOptBoolPreview(self.SmoothRainbowTheme, "white", "Rainbow", "Smooth Rainbow", ::SmoothRainbowTheme);
-            break;
-        
-        case "Title Color":
-            self addMenu("Title Color");
-                
-                for(a = 0; a < GetColorNames().size; a++)
-                    self addOptBoolPreview((IsVec(self.TitleColor) && self.TitleColor == divideColor(GetColorValues()[(3 * a)], GetColorValues()[((3 * a) + 1)], GetColorValues()[((3 * a) + 2)])), "white", divideColor(GetColorValues()[(3 * a)], GetColorValues()[((3 * a) + 1)], GetColorValues()[((3 * a) + 2)]), GetColorNames()[a], ::SetTitleColor, divideColor(GetColorValues()[(3 * a)], GetColorValues()[((3 * a) + 1)], GetColorValues()[((3 * a) + 2)]));
-                
-                self addOptBoolPreview((IsString(self.TitleColor) && self.TitleColor == "Rainbow"), "white", "Rainbow", "Smooth Rainbow", ::SetTitleColor, "Rainbow");
-            break;
-        
-        case "Options Color":
-            self addMenu("Options Color");
-                
-                for(a = 0; a < GetColorNames().size; a++)
-                    self addOptBoolPreview((IsVec(self.OptionsColor) && self.OptionsColor == divideColor(GetColorValues()[(3 * a)], GetColorValues()[((3 * a) + 1)], GetColorValues()[((3 * a) + 2)])), "white", divideColor(GetColorValues()[(3 * a)], GetColorValues()[((3 * a) + 1)], GetColorValues()[((3 * a) + 2)]), GetColorNames()[a], ::SetOptionsColor, divideColor(GetColorValues()[(3 * a)], GetColorValues()[((3 * a) + 1)], GetColorValues()[((3 * a) + 2)]));
-
-                self addOptBoolPreview((IsString(self.OptionsColor) && self.OptionsColor == "Rainbow"), "white", "Rainbow", "Smooth Rainbow", ::SetOptionsColor, "Rainbow");
-            break;
-        
-        case "Toggled Option Color":
-            self addMenu("Toggled Option Color");
-                
-                for(a = 0; a < GetColorNames().size; a++)
-                    self addOptBoolPreview((IsVec(self.ToggleTextColor) && self.ToggleTextColor == divideColor(GetColorValues()[(3 * a)], GetColorValues()[((3 * a) + 1)], GetColorValues()[((3 * a) + 2)])), "white", divideColor(GetColorValues()[(3 * a)], GetColorValues()[((3 * a) + 1)], GetColorValues()[((3 * a) + 2)]), GetColorNames()[a], ::SetToggleTextColor, divideColor(GetColorValues()[(3 * a)], GetColorValues()[((3 * a) + 1)], GetColorValues()[((3 * a) + 2)]));
-
-                self addOptBoolPreview((IsString(self.ToggleTextColor) && self.ToggleTextColor == "Rainbow"), "white", "Rainbow", "Smooth Rainbow", ::SetToggleTextColor, "Rainbow");
-            break;
-        
-        case "Scrolling Option Color":
-            self addMenu("Scrolling Option Color");
-
-                for(a = 0; a < GetColorNames().size; a++)
-                    self addOptBoolPreview((IsVec(self.ScrollingTextColor) && self.ScrollingTextColor == divideColor(GetColorValues()[(3 * a)], GetColorValues()[((3 * a) + 1)], GetColorValues()[((3 * a) + 2)])), "white", divideColor(GetColorValues()[(3 * a)], GetColorValues()[((3 * a) + 1)], GetColorValues()[((3 * a) + 2)]), GetColorNames()[a], ::SetScrollingTextColor, divideColor(GetColorValues()[(3 * a)], GetColorValues()[((3 * a) + 1)], GetColorValues()[((3 * a) + 2)]));
-            
-                self addOptBoolPreview((IsString(self.ScrollingTextColor) && self.ScrollingTextColor == "Rainbow"), "white", "Rainbow", "Smooth Rainbow", ::SetScrollingTextColor, "Rainbow");
             break;
     }
 }
@@ -106,53 +53,39 @@ MenuTheme(color)
     if(Is_True(self.SmoothRainbowTheme))
         self.SmoothRainbowTheme = BoolVar(self.SmoothRainbowTheme);
     
-    hud = Array("outlines");
+    hud = Array("text", "subMenu", "IntSlider", "StringSlider");
     
-    if(self.MenuStyle != "Nautaremake" || self isInQuickMenu())
-        hud[hud.size] = "scroller";
-    
-    if(self.MenuStyle == "Zodiac" || self.MenuStyle == "Quick Menu" || self isInQuickMenu())
-        hud[hud.size] = "title";
-    
-    for(a = 0; a < hud.size; a++)
+    if(IsDefined(self.menuUI))
     {
-        if(!IsDefined(self.menuUI[hud[a]]))
-            continue;
+        if(IsDefined(self.menuUI["title"]))
+            self.menuUI["title"] hudFadeColor(color, 0.5);
         
-        if(IsArray(self.menuUI[hud[a]]))
+        if(IsDefined(self.menuStructure) && self.menuStructure.size)
         {
-            for(b = 0; b < self.menuUI[hud[a]].size; b++)
+            for(a = 0; a < self.menuStructure.size; a++)
             {
-                if(!IsDefined(self.menuUI[hud[a]][b]))
-                    continue;
+                boolVal = self GetOption(a, 6);
+
+                if(IsDefined(self.menuUI["BoolOpt"]) && IsDefined(self.menuUI["BoolOpt"][a]) && Is_True(boolVal))
+                    self.menuUI["BoolOpt"][a] hudFadeColor(color, 0.5);
                 
-                if(self.MenuStyle == "Native" && hud[a] == "outlines" && b)
-                    continue;
-                
-                if(IsDefined(self.menuUI[hud[a]][b]))
-                    self.menuUI[hud[a]][b] hudFadeColor(color, 1);
+                for(b = 0; b < hud.size; b++)
+                {
+                    if(IsDefined(self.menuUI[hud[b]][a]))
+                        self.menuUI[hud[b]][a] hudFadeColor((a == self getCursor()) ? color : (1, 1, 1), 1);
+                }
             }
         }
-        else
-            self.menuUI[hud[a]] hudFadeColor(color, 1);
     }
+
+    if(IsDefined(self.menuInstructionsUI) && IsDefined(self.menuInstructionsUI["outline"]))
+        self.menuInstructionsUI["outline"] hudFadeColor(color, 0.5);
     
-    wHud = (self.MenuStyle == "Nautaremake") ? "BoolBack" : "BoolOpt";
+    if(IsDefined(self.playerInfoHud) && IsDefined(self.playerInfoHud["outline"]))
+        self.playerInfoHud["outline"] hudFadeColor(color, 0.5);
     
-    if(IsDefined(self.menuStructure) && self.menuStructure.size)
-    {
-        for(a = 0; a < self.menuStructure.size; a++)
-        {
-            if(IsDefined(self.menuUI[wHud][a]) && (Is_True(self.menuStructure[a].bool) || self.MenuStyle == "Nautaremake") && self.ToggleStyle != "Text")
-                self.menuUI[wHud][a] hudFadeColor(color, 1);
-        }
-    }
-    
-    if(IsDefined(self.menuInstructionsUI["outline"]))
-        self.menuInstructionsUI["outline"] hudFadeColor(color, 1);
-    
-    if(IsDefined(self.playerInfoHud["outline"]))
-        self.playerInfoHud["outline"] hudFadeColor(color, 1);
+    if(IsDefined(self.keyboard) && IsDefined(self.keyboard["scroller"]))
+        self.keyboard["scroller"] hudFadeColor(color, 0.5);
     
     self.MainTheme = color;
     self SaveMenuTheme();
@@ -168,216 +101,54 @@ SmoothRainbowTheme()
     
     self endon("disconnect");
     self endon("EndSmoothRainbowTheme");
+
+    hud = Array("text", "subMenu", "IntSlider", "StringSlider");
     
     while(Is_True(self.SmoothRainbowTheme))
     {
-        hud = Array("outlines");
-        
-        if(self.MenuStyle != "Nautaremake" || self isInQuickMenu())
-            hud[hud.size] = "scroller";
-        
-        if(self.MenuStyle == "Zodiac" || self.MenuStyle == "Quick Menu" || self isInQuickMenu())
-            hud[hud.size] = "title";
+        color = level.RGBFadeColor;
 
-        for(a = 0; a < hud.size; a++)
+        if(IsDefined(self.menuUI))
         {
-            if(!IsDefined(self.menuUI[hud[a]]))
-                continue;
+            if(IsDefined(self.menuUI["title"]))
+                self.menuUI["title"].color = color;
             
-            if(IsArray(self.menuUI[hud[a]]))
+            if(IsDefined(self.menuStructure) && self.menuStructure.size)
             {
-                for(b = 0; b < self.menuUI[hud[a]].size; b++)
+                for(a = 0; a < self.menuStructure.size; a++)
                 {
-                    if(!IsDefined(self.menuUI[hud[a]][b]))
-                        continue;
+                    boolVal = self GetOption(a, 6);
+
+                    if(IsDefined(self.menuUI["BoolOpt"]) && IsDefined(self.menuUI["BoolOpt"][a]) && Is_True(boolVal))
+                        self.menuUI["BoolOpt"][a].color = color;
                     
-                    if(self.MenuStyle == "Native" && hud[a] == "outlines" && b)
-                        continue;
-                    
-                    if(IsDefined(self.menuUI[hud[a]][b]))
-                        self.menuUI[hud[a]][b].color = level.RGBFadeColor;
+                    for(b = 0; b < hud.size; b++)
+                    {
+                        if(IsDefined(self.menuUI[hud[b]][a]))
+                            self.menuUI[hud[b]][a].color = (a == self getCursor()) ? color : (1, 1, 1);
+                    }
                 }
             }
-            else
-                self.menuUI[hud[a]].color = level.RGBFadeColor;
         }
 
-        wHud = (self.MenuStyle == "Nautaremake") ? "BoolBack" : "BoolOpt";
+        if(IsDefined(self.menuInstructionsUI) && IsDefined(self.menuInstructionsUI["outline"]))
+            self.menuInstructionsUI["outline"].color = color;
         
-        if(IsDefined(self.menuStructure) && self.menuStructure.size)
-        {
-            for(a = 0; a < self.menuStructure.size; a++)
-            {
-                if(IsDefined(self.menuUI[wHud][a]) && (Is_True(self.menuStructure[a].bool) || self.MenuStyle == "Nautaremake") && self.ToggleStyle != "Text")
-                    self.menuUI[wHud][a].color = level.RGBFadeColor;
-            }
-        }
-        
-        if(IsDefined(self.menuInstructionsUI["outline"]))
-            self.menuInstructionsUI["outline"].color = level.RGBFadeColor;
-        
-        if(IsDefined(self.playerInfoHud["outline"]))
-            self.playerInfoHud["outline"].color = level.RGBFadeColor;
+        if(IsDefined(self.playerInfoHud) && IsDefined(self.playerInfoHud["outline"]))
+            self.playerInfoHud["outline"].color = color;
         
         if(IsDefined(self.keyboard) && IsDefined(self.keyboard["scroller"]))
-            self.keyboard["scroller"].color = level.RGBFadeColor;
+            self.keyboard["scroller"].color = color;
         
-        self.MainTheme = level.RGBFadeColor;
+        self.MainTheme = color;
         wait 0.01;
     }
-}
-
-ElementSmoothRainbow(element)
-{
-    self notify("EndElemSmoothRainbow" + element);
-    self endon("disconnect");
-    self endon("EndElemSmoothRainbow" + element);
-
-    if(element == "textScrolling" || element == "textToggled")
-    {
-        if(element == "textScrolling")
-            textScrolling = true;
-
-        if(element == "textToggled")
-            textToggled = true;
-
-        element = "text";
-    }
-
-    while(1)
-    {
-        if(!self isInQuickMenu())
-        {
-            if(IsArray(self.menuUI[element]))
-            {
-                foreach(index, elem in self.menuUI[element])
-                {
-                    if(!IsDefined(elem))
-                        continue;
-                    
-                    if(self isInQuickMenu() && !IsDefined(textToggled))
-                        continue;
-                    
-                    if(element == "text")
-                    {
-                        if(IsDefined(textToggled) && (!IsDefined(self.menuStructure[index].boolOpt) || !Is_True(self.menuStructure[index].bool) || self.ToggleStyle != "Text Color"))
-                            continue;
-                        
-                        if(!IsDefined(textScrolling) && !IsDefined(textToggled) && index == self getCursor())
-                            continue;
-                        
-                        if(IsDefined(textScrolling) && (index != self getCursor() || Is_True(self.menuStructure[index].bool) && self.ToggleStyle == "Text Color"))
-                            continue;
-                        
-                        if(!IsDefined(textToggled) && Is_True(self.menuStructure[index].bool) && self.ToggleStyle == "Text Color")
-                            continue;
-                    }
-
-                    elem.color = level.RGBFadeColor;
-                    hudElems = Array("BoolOpt", "subMenu", "IntSlider", "StringSlider");
-
-                    for(a = 0; a < hudElems.size; a++)
-                    {
-                        if(IsDefined(self.menuUI[hudElems[a]][index]) && (hudElems[a] != "BoolOpt" || hudElems[a] == "BoolOpt" && self.ToggleStyle == "Text"))
-                            self.menuUI[hudElems[a]][index].color = level.RGBFadeColor;
-                    }
-                }
-            }
-            else
-            {
-                if(IsDefined(self.menuUI[element]) && (element != "title" || element == "title" && self.MenuStyle != "Zodiac" && !self isInQuickMenu()))
-                {
-                    self.menuUI[element].color = level.RGBFadeColor;
-
-                    if(element == "title" && self.MenuStyle == "AIO" && IsDefined(self.menuUI["MenuName"]))
-                        self.menuUI["MenuName"].color = level.RGBFadeColor;
-                }
-            }
-        }
-
-        wait 0.01;
-    }
-}
-
-ToggleStyle(style)
-{
-    self.ToggleStyle = style;
-    self RefreshMenu();
-    self SaveMenuTheme();
-}
-
-menuBoxLocation(location)
-{
-    if(self.menuBoxLocation == location)
-        return;
-    
-    self.menuBoxLocation = location;
-    self RefreshMenu();
-    self SaveMenuTheme();
-}
-
-SetTitleColor(color)
-{
-    self notify("EndElemSmoothRainbowtitle");
-
-    self.TitleColor = color;
-
-    if(IsString(color))
-        self thread ElementSmoothRainbow("title");
-    
-    self RefreshMenu();
-    self SaveMenuTheme();
-}
-
-SetOptionsColor(color)
-{
-    self notify("EndElemSmoothRainbowtext");
-
-    self.OptionsColor = color;
-
-    if(IsString(color))
-        self thread ElementSmoothRainbow("text");
-    
-    self RefreshMenu();
-    self SaveMenuTheme();
-}
-
-SetToggleTextColor(color)
-{
-    self notify("EndElemSmoothRainbowtextToggled");
-
-    self.ToggleTextColor = color;
-
-    if(IsString(color))
-        self thread ElementSmoothRainbow("textToggled");
-    
-    self RefreshMenu();
-    self SaveMenuTheme();
-}
-
-SetScrollingTextColor(color)
-{
-    self notify("EndElemSmoothRainbowtextScrolling");
-
-    self.ScrollingTextColor = color;
-
-    if(IsString(color))
-        self thread ElementSmoothRainbow("textScrolling");
-    
-    self RefreshMenu();
-    self SaveMenuTheme();
 }
 
 MenuMaxOptions(max)
 {
     self.MaxOptions = max;
     self RefreshMenu();
-    self SaveMenuTheme();
-}
-
-MenuScrollingBuffer(buffer)
-{
-    self.ScrollingBuffer = buffer;
     self SaveMenuTheme();
 }
 
@@ -393,11 +164,11 @@ RepositionMenu()
     if(IsDefined(self.menuUI["scroller"]))
         self.menuUI["scroller"].alpha = 0;
     
-    self SetMenuInstructions((self.MenuStyle == "Zodiac") ? "[{+melee}] - Exit\n[{+activate}] - Save Position\n[{+actionslot 3}] - Move Left\n[{+actionslot 4}] - Move Right" : "[{+melee}] - Exit\n[{+activate}] - Save Position\n[{+actionslot 1}] - Move Up\n[{+actionslot 2}] - Move Down\n[{+actionslot 3}] - Move Left\n[{+actionslot 4}] - Move Right");
+    self SetMenuInstructions("[{+melee}] - Exit\n[{+activate}] - Save Position\n[{+actionslot 1}] - Move Up\n[{+actionslot 2}] - Move Down\n[{+actionslot 3}] - Move Left\n[{+actionslot 4}] - Move Right");
     
-    while(1)
+    while(self isInMenu(true))
     {
-        if(self.MenuStyle != "Zodiac" && (self ActionSlotOneButtonPressed() || self ActionSlotTwoButtonPressed()))
+        if(self ActionSlotOneButtonPressed() || self ActionSlotTwoButtonPressed())
         {
             incValue = self ActionSlotTwoButtonPressed() ? 8 : -8;
             
@@ -415,7 +186,9 @@ RepositionMenu()
                     }
                 }
                 else
+                {
                     self.menuUI[key].y += incValue;
+                }
             }
             
             adjY += incValue;
@@ -438,7 +211,9 @@ RepositionMenu()
                     }
                 }
                 else
+                {
                     self.menuUI[key].x += incValue;
+                }
             }
             
             adjX += incValue;
@@ -473,63 +248,16 @@ DisableMenuInstructions()
         self thread MenuInstructionsDisplay();
 }
 
-LargeCursor()
-{
-    self.LargeCursor = BoolVar(self.LargeCursor);
-    self RefreshMenu();
-    self SaveMenuTheme();
-}
-
 DisableQuickMenu()
 {
     self.DisableQM = BoolVar(self.DisableQM);
     self SaveMenuTheme();
 }
 
-DisableMenuAnimations()
-{
-    self.DisableMenuAnimations = BoolVar(self.DisableMenuAnimations);
-    self SaveMenuTheme();
-}
-
-DisableMenuSounds()
-{
-    self.DisableMenuSounds = BoolVar(self.DisableMenuSounds);
-    self SaveMenuTheme();
-}
-
-MenuStyle(style)
-{
-    if(self.MenuStyle == style)
-        return;
-    
-    self closeMenu1();
-    self.MenuStyle = style;
-    self SetMenuDefaultValues();
-
-    switch(style)
-    {
-        case "Zodiac":
-            self.TitleFontScale = 1.6;
-            break;
-        
-        case "Quick Menu":
-            self.TitleFontScale = 1.5;
-            break;
-        
-        default:
-            self.TitleFontScale = (self.MenuStyle == "Native") ? 2 : 1.4;
-            break;
-    }
-    
-    self openMenu1();
-    self SaveMenuTheme();
-}
-
 SaveMenuTheme()
 {
-    variables = Array("MenuStyle", "ToggleStyle", "menuBoxLocation", "MaxOptions", "menuX", "menuY", "ScrollingBuffer", "DisableMenuInstructions", "LargeCursor", "DisableQM", "DisableMenuAnimations", "DisableMenuSounds", "MainTheme", "OptionsColor", "TitleColor", "ToggleTextColor", "ScrollingTextColor", "OpenControls");
-    values    = Array(self.MenuStyle, self.ToggleStyle, self.menuBoxLocation, self.MaxOptions, self.menuX, self.menuY, self.ScrollingBuffer, self.DisableMenuInstructions, self.LargeCursor, self.DisableQM, self.DisableMenuAnimations, self.DisableMenuSounds, self.MainTheme, self.OptionsColor, self.TitleColor, self.ToggleTextColor, self.ScrollingTextColor, self.OpenControls);
+    variables = Array("menuX", "menuY", "MaxOptions", "DisableMenuInstructions", "DisableQM", "MainTheme", "OpenControls");
+    values    = Array(self.menuX, self.menuY, self.MaxOptions, self.DisableMenuInstructions, self.DisableQM, self.MainTheme, self.OpenControls);
     
     foreach(index, variable in variables)
     {
@@ -564,62 +292,26 @@ GetSavedVariable(variable)
 
 LoadMenuVars()
 {
-    self.MenuStyle = GetMenuName(); //Current Choices: Apparition, Zodiac, Nautaremake, AIO, Native, Quick Menu
-    self SetMenuDefaultValues();
-    saved = self GetSavedVariable("MenuStyle");
+    self.menuX = -101; //Keep in mind that the position is close to the center to ensure the menu is visible on any resolution(use the menu position editor to place it where it best fits your liking)
+    self.menuY = -185;
+    self.MaxOptions = 11;
+    self.MainTheme = (1, 0, 0);
+    self.OpenControls = Array("+speed_throw", "+melee");
+    saved = Int(self GetSavedVariable("MaxOptions"));
     
-    if(IsDefined(saved) && saved != "")
+    if(IsDefined(saved) && saved)
     {
-        self.MenuStyle               = self GetSavedVariable("MenuStyle");
-        self.ToggleStyle             = self GetSavedVariable("ToggleStyle");
-        self.menuBoxLocation         = self GetSavedVariable("menuBoxLocation");
-        self.MaxOptions              = Int(self GetSavedVariable("MaxOptions"));
         self.menuX                   = Int(self GetSavedVariable("menuX"));
         self.menuY                   = Int(self GetSavedVariable("menuY"));
-        self.ScrollingBuffer         = Int(self GetSavedVariable("ScrollingBuffer"));
+        self.MaxOptions              = Int(self GetSavedVariable("MaxOptions"));
         self.DisableMenuInstructions = returnBool(Int(self GetSavedVariable("DisableMenuInstructions")));
-        self.LargeCursor             = returnBool(Int(self GetSavedVariable("LargeCursor")));
         self.DisableQM               = returnBool(Int(self GetSavedVariable("DisableQM")));
-        self.DisableMenuAnimations   = returnBool(Int(self GetSavedVariable("DisableMenuAnimations")));
-        self.DisableMenuSounds       = returnBool(Int(self GetSavedVariable("DisableMenuSounds")));
 
         self.OpenControls = [];
         btnToks = StrTok(self GetSavedVariable("OpenControls"), ",");
 
         foreach(btn in btnToks)
             self.OpenControls[self.OpenControls.size] = btn;
-
-        if(self GetSavedVariable("OptionsColor") == "Rainbow")
-        {
-            self.OptionsColor = "Rainbow";
-            self thread ElementSmoothRainbow("text");
-        }
-        else
-            self.OptionsColor = GetDvarVector1("OptionsColor" + self GetXUID());
-        
-        if(self GetSavedVariable("TitleColor") == "Rainbow")
-        {
-            self.TitleColor = "Rainbow";
-            self thread ElementSmoothRainbow("title");
-        }
-        else
-            self.TitleColor = GetDvarVector1("TitleColor" + self GetXUID());
-        
-        if(self GetSavedVariable("ToggleTextColor") == "Rainbow")
-        {
-            self.ToggleTextColor = "Rainbow";
-            self thread ElementSmoothRainbow("textToggled");
-        }
-        else
-            self.ToggleTextColor = GetDvarVector1("ToggleTextColor" + self GetXUID());
-        
-        if(self GetSavedVariable("ScrollingTextColor") == "Rainbow")
-        {
-            self.ScrollingTextColor = "Rainbow";
-            self thread ElementSmoothRainbow("textScrolling");
-        }
-        else
-            self.ScrollingTextColor = GetDvarVector1("ScrollingTextColor" + self GetXUID());
 
         if(self GetSavedVariable("MainTheme") == "Rainbow")
             self thread SmoothRainbowTheme();
@@ -630,28 +322,6 @@ LoadMenuVars()
     {
         self SaveMenuTheme();
     }
-    
-    self.TitleFontScale = (self.MenuStyle == "Zodiac") ? 1.6 : (self.MenuStyle == "Native") ? 2 : (self.MenuStyle == "Quick Menu") ? 1.5 : 1.4;
-}
-
-SetMenuDefaultValues()
-{
-    self.menuX              = (self.MenuStyle == "Zodiac") ? 298 : (self.MenuStyle == "Quick Menu") ? 0 : -101; //Keep in mind that the position is close to the center to ensure the menu is visible on any resolution(use the menu position editor to place it where it best fits your liking)
-    self.menuY              = (self.MenuStyle == "Quick Menu") ? -230 : -185;
-    self.MaxOptions         = (self.MenuStyle == "Zodiac") ? 12 : (self.MenuStyle == "Quick Menu") ? 25 : 10;
-    self.ScrollingBuffer    = 10;
-    self.ToggleStyle        = "Boxes";
-    self.menuBoxLocation    = "Right";
-    self.MainTheme          = (1, 0, 0);
-    self.OptionsColor       = (1, 1, 1);
-    self.TitleColor         = (1, 1, 1);
-    self.ToggleTextColor    = (0, 1, 0);
-    self.ScrollingTextColor = (1, 1, 1);
-
-    self.OpenControls = Array("+speed_throw", "+melee");
-    
-    if(self.MenuStyle == "Zodiac" || self.MenuStyle == "Quick Menu")
-        self.LargeCursor = true;
 }
 
 returnBool(boolVar)

@@ -4,7 +4,7 @@ PopulateMessageMenu(menu)
     {
         case "Message Menu":
             self addMenu("Message Menu");
-                self addOptSlider("Display Type", ::MessageDisplay, "Notify;Print Bold");
+                self addOptSlider("Display Type", ::MessageDisplay, Array("Notify", "Print Bold"));
                 self addOpt("Custom Message", ::Keyboard, ::DisplayMessage);
                 self addOpt("Miscellaneous", ::newMenu, "Miscellaneous Messages");
                 self addOpt("Advertisements", ::newMenu, "Advertisements Messages");
@@ -23,6 +23,7 @@ PopulateMessageMenu(menu)
         case "Advertisements Messages":
             self addMenu("Advertisements");
                 self addOpt("Welcome", ::DisplayMessage, "Welcome To " + GetMenuName());
+                self addOpt("Apparition", ::DisplayMessage, "Apparition Is The Biggest & Best Menu For BO3 Zombies");
                 self addOpt("Developer", ::DisplayMessage, GetMenuName() + " Was Developed By CF4_99");
                 self addOpt("YouTube", ::DisplayMessage, "YouTube: CF4_99");
             break;

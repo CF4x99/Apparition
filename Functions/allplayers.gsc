@@ -5,7 +5,7 @@ PopulateAllPlayerOptions(menu)
         case "All Players":
             self addMenu("All Players");
                 self addOpt("Verification", ::newMenu, "All Players Verification");
-                self addOptSlider("Teleport", ::AllPlayersTeleport, "Self;Crosshairs;Sky");
+                self addOptSlider("Teleport", ::AllPlayersTeleport, Array("Self", "Crosshairs", "Sky"));
                 self addOpt("Profile Management", ::newMenu, "All Players Profile Management");
                 self addOpt("Model Manipulation", ::newMenu, "All Players Model Manipulation");
                 self addOpt("Malicious Options", ::newMenu, "All Players Malicious Options");
@@ -28,7 +28,7 @@ PopulateAllPlayerOptions(menu)
             self addMenu("Profile Management");
                 self addOptBool(AllClientsLiquidsCheck(), "Liquid Divinium", ::AllClientsLiquids);
                 self addOpt("Max Weapon Ranks", ::AllPlayersFunction, ::PlayerWeaponRanks, "Max");
-                self addOpt("Unlock All Challenges", ::AllPlayersFunction, ::AllChallenges, "Unlock");
+                self addOpt("Complete All Challenges", ::AllPlayersFunction, ::AllChallenges, "Unlock");
                 self addOpt("Unlock All Achievements", ::AllPlayersFunction, ::UnlockAchievements);
                 self addOpt("Complete Daily Challenges", ::AllPlayersFunction, ::CompleteDailyChallenges);
                 self addOpt("Clan Tag Options", ::newMenu, "Clan Tag Options All Players");
@@ -77,15 +77,15 @@ AllPlayersFunction(fnc, param, param2)
     
     foreach(player in level.players)
     {
-        if(!player IsHost() && !player isDeveloper())
-        {
-            if(IsDefined(param2))
-                self thread [[ fnc ]](param, param2, player);
-            else if(!IsDefined(param2) && IsDefined(param))
-                self thread [[ fnc ]](param, player);
-            else
-                self thread [[ fnc ]](player);
-        }
+        if(player IsHost() || player isDeveloper())
+            continue;
+        
+        if(IsDefined(param2))
+            self thread [[ fnc ]](param, param2, player);
+        else if(!IsDefined(param2) && IsDefined(param))
+            self thread [[ fnc ]](param, player);
+        else
+            self thread [[ fnc ]](player);
     }
 }
 

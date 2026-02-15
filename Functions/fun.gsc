@@ -13,9 +13,9 @@ PopulateFunScripts(menu, player)
                 self addOpt("Effects Man Options", ::newMenu, "Effects Man Options");
                 self addOpt("Audio Quotes", ::newMenu, "Sound/Music");
                 self addOpt("Hit Markers", ::newMenu, "Hit Markers");
-                self addOptSlider("Insta-Kill", ::PlayerInstaKill, "Disable;All;Melee", player);
-                self addOptSlider("Death Skull", ::SpawnDeathSkull, "Spawn;Delete All", player);
-                self addOptSlider("Mount Camera", ::PlayerMountCamera, "Disable;j_head;j_neck;j_spine4;j_spinelower;j_mainroot;pelvis;j_ankle_le;j_ankle_ri", player);
+                self addOptSlider("Insta-Kill", ::PlayerInstaKill, Array("Disable", "All", "Melee"), player);
+                self addOptSlider("Death Skull", ::SpawnDeathSkull, Array("Spawn", "Delete All"), player);
+                self addOptSlider("Mount Camera", ::PlayerMountCamera, Array("Disable", "j_head", "j_neck", "j_spine4", "j_spinelower", "j_mainroot", "pelvis", "j_ankle_le", "j_ankle_ri"), player);
                 self addOptBool(player.DropCamera, "Drop Camera", ::PlayerDropCamera, player);
                 self addOptBool(player.DeadOpsView, "Dead Ops View", ::DeadOpsView, player);
                 self addOptBool(player.ZombieCounter, "Zombie Counter", ::ZombieCounter, player);
@@ -53,7 +53,7 @@ PopulateFunScripts(menu, player)
 
             self addMenu("Effects Man Options");
                 self addOptBool(!IsDefined(player.EffectMan), "Disable", ::DisableEffectMan, player);
-                self addOptSlider("Tag", ::SetEffectManTag, "j_head;j_neck;j_spine4;j_spinelower;j_mainroot;pelvis;j_ankle_ri;j_ankle_le", player);
+                self addOptSlider("Tag", ::SetEffectManTag, Array("j_head", "j_neck", "j_spine4", "j_spinelower", "j_mainroot", "pelvis", "j_ankle_ri", "j_ankle_le"), player);
                 self addOpt("");
 
                 for(a = 0; a < level.menuFX.size; a++)
@@ -69,8 +69,8 @@ PopulateFunScripts(menu, player)
             
             self addMenu("Hit Markers");
                 self addOptBool(player.ShowHitmarkers, "Hit Markers", ::ShowHitmarkers, player);
-                self addOptSlider("Hit Marker Sound", ::HitmarkerSound, "None;fly_melee_lunge_victim_bat;fly_melee_lunge_victim_pistol;fly_melee_lunge_rifle;fly_melee_lunge_victim_knife;fly_melee_lunge_victim_nunchucks", player);
-                self addOptSlider("Feedback", ::HitmarkerFeedback, "damage_feedback_glow_orange;damage_feedback;damage_feedback_flak;damage_feedback_tac;damage_feedback_armor", player);
+                self addOptSlider("Hit Marker Sound", ::HitmarkerSound, Array("None", "fly_melee_lunge_victim_bat", "fly_melee_lunge_victim_pistol", "fly_melee_lunge_rifle", "fly_melee_lunge_victim_knife", "fly_melee_lunge_victim_nunchucks"), player);
+                self addOptSlider("Feedback", ::HitmarkerFeedback, Array("damage_feedback", "damage_feedback_glow_orange", "damage_feedback_flak", "damage_feedback_tac", "damage_feedback_armor"), player);
                 self addOpt("");
 
                 for(a = 0; a < GetColorNames().size; a++)
@@ -125,7 +125,7 @@ PopulateFunScripts(menu, player)
             self addMenu("Force Field Options");
                 self addOptBool(player.ForceField, "Force Field", ::ForceField, player);
                 self addOptIncSlider("Size", ::ForceFieldSize, 250, player.ForceFieldSize, 500, 25, player);
-                self addOptSlider("Type", ::ForceFieldType, "Invisible;Death Skulls;Light", player);
+                self addOptSlider("Type", ::ForceFieldType, Array("Invisible", "Death Skulls", "Light"), player);
             break;
         
         default:
@@ -1487,6 +1487,8 @@ weapon_replaced_monitor(weapon)
 
 HumanCentipede(player)
 {
+    player endon("disconnect");
+    
     player.HumanCentipede = BoolVar(player.HumanCentipede);
 
     if(Is_True(player.HumanCentipede))
@@ -1496,7 +1498,7 @@ HumanCentipede(player)
         
         while(Is_True(player.HumanCentipede))
         {
-            if(IsAlive(player))
+            if(Is_Alive(player))
             {
                 player.HumanCentipedeArray[player.HumanCentipedeClone] = player ClonePlayer(999999, player GetCurrentWeapon(), player);
                 player.HumanCentipedeArray[player.HumanCentipedeClone] StartRagDoll(1);
@@ -1524,7 +1526,7 @@ HumanCentipede(player)
                 }
             }
             
-            wait 0.01;
+            wait 0.25;
         }
     }
     else

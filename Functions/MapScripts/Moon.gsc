@@ -5,7 +5,7 @@ PopulateMoonScripts(menu)
         case "Moon Scripts":
             self addMenu("Moon Scripts");
                 self addOptBool(level flag::get("power_on"), "Turn On Power", ::ActivatePower);
-                self addOptSlider("Activate Excavator", ::ActivateDigger, "Teleporter;Hangar;Biodome");
+                self addOptSlider("Activate Excavator", ::ActivateDigger, Array("Teleporter", "Hangar", "Biodome"));
                 self addOptBool(level.FastExcavators, "Fast Excavators", ::FastExcavators);
 
                 if(level flag::get("power_on"))

@@ -23,10 +23,10 @@ PopulateAimbotMenu(menu, player)
             
             self addMenu("Aimbot Menu");
                 self addOptBool(player.Aimbot, "Aimbot", ::Aimbot, player);
-                self addOptSlider("Type", ::AimbotType, "Snap;Smooth Snap;Silent", player);
-                self addOptSlider("Tag", ::AimBoneTag, "j_head;j_neck;j_spine4;j_spinelower;j_mainroot;pelvis;tag_body;j_ankle_le;j_ankle_ri", player);
-                self addOptSlider("Key", ::AimbotKey, "None;Aiming;Firing", player);
-                self addOptSlider("Requirement", ::AimbotVisibilityRequirement, "None;Visible;Damageable", player);
+                self addOptSlider("Type", ::AimbotType, Array("Snap", "Smooth Snap", "Silent"), player);
+                self addOptSlider("Tag", ::AimBoneTag, Array("j_head", "j_neck", "j_spine4", "j_spinelower", "j_mainroot", "pelvis", "tag_body", "j_ankle_le", "j_ankle_ri"), player);
+                self addOptSlider("Key", ::AimbotKey, Array("None", "Aiming", "Firing"), player);
+                self addOptSlider("Requirement", ::AimbotVisibilityRequirement, Array("None", "Visible", "Damageable"), player);
                 self addOptIncSlider("Smooth Snaps", ::SetSmoothSnaps, 5, 5, 15, 1, player);
                 self addOptBool(player.PlayableAreaCheck, "In Playable Area", ::AimbotOptions, 1, player);
                 self addOptBool(player.AutoFire, "Auto-Fire", ::AimbotOptions, 2, player);
@@ -55,7 +55,7 @@ Aimbot(player)
         if(IsDefined(enemy) && Is_True(player.AimbotDistanceCheck) && Distance(player.origin, enemy.origin) > player.AimbotDistance)
             enemy = undefined;
         
-        if(IsDefined(enemy) && Is_True(player.PlayableAreaCheck) && !zm_behavior::inplayablearea(enemy))
+        if(IsDefined(enemy) && Is_True(player.PlayableAreaCheck) && enemy.archetype == "zombie" && !zm_behavior::inplayablearea(enemy))
             enemy = undefined;
         
         if(IsDefined(enemy) && player.AimbotVisibilityRequirement != "None")
@@ -163,7 +163,7 @@ GetClosestTarget()
 
     for(a = 0; a < zombies.size; a++)
     {
-        if(!IsDefined(zombies[a]) || !IsAlive(zombies[a]) || Is_True(self.AimbotDistanceCheck) && Distance(self.origin, zombies[a].origin) > self.AimbotDistance || self.AimbotVisibilityRequirement == "Damageable" && zombies[a] DamageConeTrace(self GetEye(), self) < 0.1 || self.AimbotVisibilityRequirement == "Visible" && !self IsVisible(zombies[a]) || Is_True(self.PlayableAreaCheck) && !zm_behavior::inplayablearea(zombies[a]))
+        if(!IsDefined(zombies[a]) || !IsAlive(zombies[a]) || Is_True(self.AimbotDistanceCheck) && Distance(self.origin, zombies[a].origin) > self.AimbotDistance || self.AimbotVisibilityRequirement == "Damageable" && zombies[a] DamageConeTrace(self GetEye(), self) < 0.1 || self.AimbotVisibilityRequirement == "Visible" && !self IsVisible(zombies[a]) || Is_True(self.PlayableAreaCheck) && zombies[a].archetype == "zombie" && !zm_behavior::inplayablearea(zombies[a]))
             continue;
         
         if(!IsDefined(enemy))

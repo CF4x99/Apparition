@@ -5,8 +5,8 @@ PopulateProfileManagement(menu, player)
         case "Profile Management":
             self addMenu("Profile Management");
                 self addOptBool(player.LiquidsLoop, "Liquid Divinium", ::LiquidsLoop, player);
-                self addOptSlider("Challenges", ::AllChallenges, "Unlock;Lock", player);
-                self addOptSlider("Weapon Ranks", ::PlayerWeaponRanks, "Max;Reset", player);
+                self addOptSlider("Challenges", ::AllChallenges, Array("Unlock", "Lock"), player);
+                self addOptSlider("Weapon Ranks", ::PlayerWeaponRanks, Array("Max", "Reset"), player);
                 self addOptIncSlider("Rank", ::SetPlayerRank, (player GetDStat("PlayerStatsList", "plevel", "StatValue") == level.maxprestige) ? 36 : 1, (player GetDStat("PlayerStatsList", "plevel", "StatValue") == level.maxprestige) ? 36 : 1, (player GetDStat("PlayerStatsList", "plevel", "StatValue") == level.maxprestige) ? 1000 : 35, 1, player);
                 self addOptIncSlider("Prestige", ::SetPlayerPrestige, 0, player.pers["plevel"], 11, 1, player);
                 self addOpt("Complete Daily Challenges", ::CompleteDailyChallenges, player);
@@ -21,7 +21,7 @@ PopulateProfileManagement(menu, player)
                 self addOpt("Reset", ::SetClanTag, "", player);
                 self addOpt("Invisible Name", ::SetClanTag, "^Hä", player);
                 self addOpt("@CF4", ::SetClanTag, "@CF4", player);
-                self addOptSlider("Name Color", ::SetClanTag, "Black;Red;Green;Yellow;Blue;Cyan;Pink", player);
+                self addOptSlider("Name Color", ::SetClanTag, Array("Black", "Red", "Green", "Yellow", "Blue", "Cyan", "Pink"), player);
                 self addOpt("Custom", ::Keyboard, ::SetClanTag, player);
             break;
         
@@ -341,7 +341,7 @@ AddToCustomStats(stat, player)
 SetCustomStats(player)
 {
     if(!IsDefined(player.CustomStatsArray) || !player.CustomStatsArray.size)
-        return self iPrintlnBold("^1ERROR: ^7No Stats Have Selected");
+        return self iPrintlnBold("^1ERROR: ^7No Stats Have Been Selected");
     
     player endon("disconnect");
 

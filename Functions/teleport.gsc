@@ -17,7 +17,7 @@ PopulateTeleportMenu(menu, player)
                     self addOpt(mapStr + " Teleports", ::newMenu, mapStr + " Teleports");
                 
                 self addOpt("Entity Teleports", ::newMenu, "Entity Teleports");
-                self addOptSlider("Teleport", ::TeleportPlayer, "Crosshairs;Sky;Random Player", player);
+                self addOptSlider("Teleport", ::TeleportPlayer, Array("Crosshairs", "Sky", "Random Player"), player);
                 self addOptBool(player.TeleportGun, "Teleport Gun", ::TeleportGun, player);
                 self addOptBool(player.SaveAndLoad, "Save & Load Position", ::SaveAndLoad, player);
                 self addOpt("Save Current Location", ::SaveCurrentLocation, player);

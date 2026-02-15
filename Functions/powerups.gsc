@@ -12,7 +12,7 @@ PopulatePowerupMenu(menu)
                 
                 if(IsDefined(powerups) && powerups.size)
                 {
-                    self addOptSlider("Spawn Location", ::PowerUpSpawnLocation, "Crosshairs;Self");
+                    self addOptSlider("Spawn Location", ::PowerUpSpawnLocation, Array("Crosshairs", "Self"));
                     self addOpt("Reign Drops", zm_bgb_reign_drops::activation);
                     self addOpt("");
 

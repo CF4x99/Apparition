@@ -7,7 +7,7 @@ PopulateSpawnables(menu)
                 level.spawnable = [];
 
             self addMenu("Spawnables");
-                self addOptSlider("Skybase", ::SpawnSystem, "Spawn;Dismantle;Delete", "Skybase", ::SpawnSkybase);
+                self addOptSlider("Skybase", ::SpawnSystem, Array("Spawn", "Dismantle", "Delete"), "Skybase", ::SpawnSkybase);
 
                 if(Is_True(level.spawnable["Skybase_Spawned"]))
                 {
@@ -15,8 +15,8 @@ PopulateSpawnables(menu)
                     self addOpt("");
                 }
 
-                self addOptSlider("Drop Tower", ::SpawnSystem, "Spawn;Dismantle;Delete", "Drop Tower", ::SpawnDropTower);
-                self addOptSlider("Merry Go Round", ::SpawnSystem, "Spawn;Dismantle;Delete", "Merry Go Round", ::SpawnMerryGoRound);
+                self addOptSlider("Drop Tower", ::SpawnSystem, Array("Spawn", "Dismantle", "Delete"), "Drop Tower", ::SpawnDropTower);
+                self addOptSlider("Merry Go Round", ::SpawnSystem, Array("Spawn", "Dismantle", "Delete"), "Merry Go Round", ::SpawnMerryGoRound);
 
                 if(IsDefined(level.spawnable["Merry Go Round_Spawned"]))
                     self addOptIncSlider("Merry Go Round Speed", ::SetMerryGoRoundSpeed, 1, 1, 10, 1);

@@ -9,23 +9,23 @@ PopulateBasicScripts(menu, player)
                 self addOptBool(player.Noclip, "Noclip", ::Noclip1, player);
                 self addOptBool(player.NoclipBind1, "Bind Noclip To [{+frag}]", ::BindNoclip, player);
                 self addOptBool(player.UFOMode, "UFO Mode", ::UFOMode, player);
-                self addOptSlider("Unlimited Ammo", ::UnlimitedAmmo, "Continuous;Reload;Disable", player);
+                self addOptSlider("Unlimited Ammo", ::UnlimitedAmmo, Array("Continuous", "Reload", "Disable"), player);
                 self addOptBool(player.UnlimitedEquipment, "Unlimited Equipment", ::UnlimitedEquipment, player);
-                self addOptSlider("Modify Score", ::ModifyScore, "1000000;100000;10000;1000;100;10;0;-10;-100;-1000;-10000;-100000;-1000000", player);
+                self addOptSlider("Modify Score", ::ModifyScore, Array("1000000", "100000", "10000", "1000", "100", "10", "0", "-10", "-100", "-1000", "-10000", "-100000", "-1000000"), player);
                 self addOpt("Perk Menu", ::newMenu, "Perk Menu");
                 self addOpt("Gobblegum Menu", ::newMenu, "Gobblegum Menu");
                 self addOptIncSlider("Movement Speed", ::SetMovementSpeed, 0, 1, 3, 0.5, player);
                 self addOptBool(player.ThirdPerson, "Third Person", ::ThirdPerson, player);
                 self addOptBool(player.Invisibility, "Invisibility", ::Invisibility, player);
-                self addOptSlider("Clone", ::PlayerClone, "Clone;Dead", player);
+                self addOptSlider("Clone", ::PlayerClone, Array("Clone", "Dead"), player);
                 self addOptBool(player.playerIgnoreMe, "No Target", ::NoTarget, player);
                 self addOptBool(player.ReducedSpread, "Reduced Spread", ::ReducedSpread, player);
                 self addOptBool(player.MultiJump, "Multi-Jump", ::MultiJump, player);
                 self addOptBool(player.DisablePlayerHUD, "Disable HUD", ::DisablePlayerHUD, player);
                 self addOpt("Visual Effects", ::newMenu, "Visual Effects");
-                self addOptSlider("Set Vision", ::PlayerSetVision, "Default;zombie_last_stand;zombie_death", player);
-                self addOptSlider("Zombie Charms", ::ZombieCharms, "None;Orange;Green;Purple;Blue", player);
-                self addOptSlider("Custom Crosshairs", ::CustomCrosshairs, "Disable;+;@;x;o;> <;CF4_99;Extinct;ItsFebiven;Apparition;" + CleanName(player getName()), player);
+                self addOptSlider("Set Vision", ::PlayerSetVision, Array("Default", "zombie_last_stand", "zombie_death"), player);
+                self addOptSlider("Zombie Charms", ::ZombieCharms, Array("None", "Orange", "Green", "Purple", "Blue"), player);
+                self addOptSlider("Custom Crosshairs", ::CustomCrosshairs, Array("Disable", "+", "@", "x", "o", "> <", "CF4_99", "Extinct", "Daltax", "GBP", "ItsFebiven", "Apparition", CleanName(player getName())), player);
                 self addOptBool(player.NoExplosiveDamage, "No Explosive Damage", ::NoExplosiveDamage, player);
                 self addOptIncSlider("Character Model Index", ::SetCharacterModelIndex, 0, player.characterIndex, 8, 1, player);
                 self addOptBool(player.LoopCharacterModelIndex, "Random Character Model Index", ::LoopCharacterModelIndex, player);
@@ -33,7 +33,7 @@ PopulateBasicScripts(menu, player)
                 self addOptBool(player HasPerk("specialty_unlimitedsprint"), "Unlimited Sprint", ::UnlimitedSprint, player);
                 self addOpt("Respawn", ::ServerRespawnPlayer, player);
                 self addOpt("Revive", ::PlayerRevive, player);
-                self addOptSlider("Death", ::PlayerDeath, "Down;Kill", player);
+                self addOptSlider("Death", ::PlayerDeath, Array("Down", "Kill"), player);
             break;
         
         case "Perk Menu":
@@ -194,7 +194,7 @@ BindNoclip(player)
     {
         if(player FragButtonPressed() && !Is_True(player.DisableMenuControls))
         {
-            player thread Noclip1(player);
+            player Noclip1(player);
             wait 0.2;
         }
 
@@ -244,7 +244,7 @@ UFOMode(player)
         }
 
         if(Is_True(player.UFOMode))
-            player thread UFOMode(player);
+            player UFOMode(player);
     }
     else
     {
@@ -339,7 +339,7 @@ PlayerAllPerks(player)
         for(a = 0; a < MenuPerks.size; a++)
         {
             if(!player HasPerk(MenuPerks[a]) && !player zm_perks::has_perk_paused(MenuPerks[a]))
-                player thread zm_perks::give_perk(MenuPerks[a], true);
+                player zm_perks::give_perk(MenuPerks[a], true);
         }
     }
     else
@@ -425,7 +425,7 @@ GivePlayerGobblegum(name, player)
             {
                 player notify("bgb_gumball_anim_give", name);
 
-                player thread bgb::give(name);
+                player bgb::give(name);
                 player zm_stats::increment_client_stat("bgbs_chewed");
                 player zm_stats::increment_player_stat("bgbs_chewed");
                 player zm_stats::increment_challenge_stat("GUM_GOBBLER_CONSUME");
@@ -734,7 +734,7 @@ ZombieCharms(color, player)
             break;
     }
 
-    player thread clientfield::set_to_player("eye_candy_render", color);
+    player clientfield::set_to_player("eye_candy_render", color);
 }
 
 CustomCrosshairs(text, player)
@@ -824,7 +824,7 @@ ServerRespawnPlayer(player)
         level.custom_spawnplayer = zm::spectator_respawn;
 
     player [[ level.spawnplayer ]]();
-    thread zm::refresh_player_navcard_hud();
+    zm::refresh_player_navcard_hud();
 
     if(IsDefined(level.script) && level.round_number > 6 && player.score < 1500)
     {

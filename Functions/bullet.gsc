@@ -17,72 +17,39 @@ PopulateBulletMenu(menu, player)
                 player.ProjectileMultiplier = 1;
             
             if(!IsDefined(player.ProjectileSpreadMultiplier))
-                player.ProjectileSpreadMultiplier = 10;
+                player.ProjectileSpreadMultiplier = 1;
             
             self addMenu("Projectiles");
-                self addOpt("Weapon Projectile", ::newMenu, "Weapon Bullets");
                 self addOptIncSlider("Projectile Multiplier", ::ProjectileMultiplier, 1, 1, 5, 1, player);
-                self addOptIncSlider("Spread Multiplier", ::ProjectileSpreadMultiplier, 1, 5, 50, 1, player);
-            break;
-        
-        case "Weapon Bullets":
-            self addMenu("Weapon Bullets");
-                if(!IsVerkoMap())
-                {
-                    self addOpt("Normal", ::newMenu, "Normal Weapon Bullets");
-                    self addOpt("Upgraded", ::newMenu, "Upgraded Weapon Bullets");
-                }
-                else
+                self addOptIncSlider("Spread Multiplier", ::ProjectileSpreadMultiplier, 1, 1, 50, 1, player);
+                self addOpt("");
+
+                if(IsVerkoMap())
                 {
                     for(a = 0; a < level.var_21b77150.size; a++)
                         self addOpt(level.var_7df703ba[a], ::BulletProjectile, GetWeapon(level.var_21b77150[a]), "Projectile", player);
                 }
-            break;
-        
-        case "Normal Weapon Bullets":
-            arr = [];
-            weaps = GetArrayKeys(level.zombie_weapons);
-            weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
-            
-            self addMenu("Normal Weapons");
+                else
+                {
+                    arr = [];
+                    weaps = GetArrayKeys(level.zombie_weapons);
+                    weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
 
-                if(IsDefined(weaps) && weaps.size)
-                {
-                    for(a = 0; a < weaps.size; a++)
+                    if(IsDefined(weaps) && weaps.size)
                     {
-                        if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
+                        for(a = 0; a < weaps.size; a++)
                         {
-                            strng = (MakeLocalizedString(weaps[a].displayname) != "") ? weaps[a].displayname : weaps[a].name;
-                            
-                            if(!IsInArray(arr, strng))
+                            if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
                             {
-                                arr[arr.size] = strng;
-                                self addOpt(strng, ::BulletProjectile, weaps[a], "Projectile", player);
-                            }
-                        }
-                    }
-                }
-            break;
-        
-        case "Upgraded Weapon Bullets":
-            arr = [];
-            weaps = GetArrayKeys(level.zombie_weapons_upgraded);
-            weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
-            
-            self addMenu("Upgraded Weapons");
-            
-                if(IsDefined(weaps) && weaps.size)
-                {
-                    for(a = 0; a < weaps.size; a++)
-                    {
-                        if(IsInArray(weaponsVar, ToLower(CleanString(zm_utility::GetWeaponClassZM(weaps[a])))) && !weaps[a].isgrenadeweapon && !IsSubStr(weaps[a].name, "knife") && weaps[a].name != "none")
-                        {
-                            strng = (MakeLocalizedString(weaps[a].displayname) != "") ? weaps[a].displayname : weaps[a].name;
-                            
-                            if(!IsInArray(arr, strng))
-                            {
-                                arr[arr.size] = strng;
-                                self addOpt(strng, ::BulletProjectile, weaps[a], "Projectile", player);
+                                strng = (MakeLocalizedString(weaps[a].displayname) != "") ? weaps[a].displayname : weaps[a].name;
+                                
+                                if(!IsInArray(arr, strng))
+                                {
+                                    arr[arr.size] = strng;
+                                    upgrade = zm_weapons::get_upgrade_weapon(weaps[a], 1);
+
+                                    self addOptSlider(strng, ::ProjectileWeaponSelection, !IsDefined(upgrade) ? Array("Base Weapon") : Array("Base Weapon", "Upgraded"), weaps[a], player);
+                                }
                             }
                         }
                     }
@@ -157,6 +124,24 @@ PopulateBulletMenu(menu, player)
     }
 }
 
+ProjectileWeaponSelection(type, weapon, player)
+{
+    if(!IsDefined(type) || !IsDefined(weapon))
+        return;
+    
+    if(type == "Upgraded")
+    {
+        upgrade_weapon = zm_weapons::get_upgrade_weapon(weapon, 1);
+        
+        if(!IsDefined(upgrade_weapon))
+            return;
+        
+        weapon = upgrade_weapon;
+    }
+    
+    BulletProjectile(weapon, "Projectile", player);
+}
+
 BulletProjectile(projectile, type, player)
 {
     player notify("endProjectile");
@@ -167,15 +152,20 @@ BulletProjectile(projectile, type, player)
     {
         player waittill("weapon_fired");
 
+        start = player GetWeaponMuzzlePoint();
+
+        if(!IsDefined(start) || !IsVec(start))
+            start = player GetEye();
+
         switch(type)
         {
             case "Projectile":
                 for(a = 0; a < player.ProjectileMultiplier; a++)
-                    MagicBullet(projectile, player GetWeaponMuzzlePoint(), BulletTrace(player GetWeaponMuzzlePoint(), player GetWeaponMuzzlePoint() + player GetWeaponForwardDir() * 100, 0, undefined)["position"] + (RandomFloatRange((-1 * player.ProjectileSpreadMultiplier), player.ProjectileSpreadMultiplier), RandomFloatRange((-1 * player.ProjectileSpreadMultiplier), player.ProjectileSpreadMultiplier), RandomFloatRange((-1 * player.ProjectileSpreadMultiplier), player.ProjectileSpreadMultiplier)), player);
+                    MagicBullet(projectile, start, BulletTrace(start, start + player GetWeaponForwardDir() * 100, 0, undefined)["position"] + (RandomFloatRange((-1 * player.ProjectileSpreadMultiplier), player.ProjectileSpreadMultiplier), RandomFloatRange((-1 * player.ProjectileSpreadMultiplier), player.ProjectileSpreadMultiplier), RandomFloatRange((-1 * player.ProjectileSpreadMultiplier), player.ProjectileSpreadMultiplier)), player);
                 break;
             
             case "Equipment":
-                player MagicGrenadeType(projectile, player GetWeaponMuzzlePoint(), VectorScale(VectorNormalize(AnglesToForward(player GetPlayerAngles())), 3000), 1);
+                player MagicGrenadeType(projectile, start, VectorScale(VectorNormalize(AnglesToForward(player GetPlayerAngles())), 3000), 1);
                 break;
             
             case "Spawnable":

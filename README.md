@@ -7,7 +7,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.1.8
+    Version:              1.6.0.0
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -83,6 +83,30 @@
 ## Changelog
 <details>
     <summary>
+        Version 1.6.0.0
+    </summary>
+    - I am aware of a crashing issue after some time in a match while using Apparition...That should 100% be fixed now(sorry it took so long for me to see it)
+    - Apparition got a much needed structure rebuild which even includes a new and refined 3d scrolling system
+    - The rebuild also changed the design completely, which might be temporary(idk yet)...The quick menu also shares this design
+    - It will now without a doubt be the biggest, best, most detail oriented, and stable mod menu for BO3 zombies you will ever use
+    - Just know you will never have to pay for early updates to Apparition or special features, it will forever be free and open source -- because I'm not a broke skid :P
+
+    - Removed: Several menu customization options
+
+    - Changed: Major rewrite of the whole Apparition base structure
+    - Changed: Replaced old scrolling system with a new and refined 3D scrolling system
+    - Changed: Bullet Projectiles -- Added fallback 'MagicBullet' start origin for the case that 'GetWeaponMuzzlePoint' doesn't return a valid origin
+    - Changed: 'All Players Menu' will now be visible even in a solo match
+    - Changed: 'Game Modes' can only be seen/accessed by the host
+    - Changed: 'Projectiles' -- Projectile Spread Multiplier is now 1 by default(was 10 by default)
+    - Changed: 'Projectiles' -- You will now get a list of all available weapons -- each weapon option will be a slider for you to choose the base weapon or upraded bullets(if upgrade is available)
+
+    - Fixed: Apparition Backend -- Fixed issues causing dev errors to be thrown for trying to access undefined array(s) -- Started happening in a recent update
+    - Fixed: Aimbot -- Enabling 'In Playable Area' would break targeting for some AI types(i.e. dogs)
+</details>
+
+<details>
+    <summary>
         Version 1.5.1.8
     </summary>
     - PS4 Users: I will now start including a pre-compiled version with each release(can be found in the release section on the Apparition Github repository)
@@ -107,7 +131,7 @@
     - Changed: G_Spawn Crash Protection -- Now works properly for supported custom maps
     - Changed: G_Spawn Crash Protection -- Will no longer be usable for unsupported custom maps(caused some custom maps to be unplayable)
     - Changed: Menu Base -- Slider options will now save the current slider value again
-    - Chanegd: Custom game over message will no longer display for unsupported custom maps -- NOTE: this only displays for players that have been given access to the menu
+    - Changed: Custom game over message will no longer display for unsupported custom maps -- NOTE: this only displays for players that have been given access to the menu
 
     - Fixed: Duplicate function defintion -- 'GameOverHandle' was defined more than once -- Should fix compilation error when compiling with serious's t7 compiler
 </details>

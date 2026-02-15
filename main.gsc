@@ -8,7 +8,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.5.1.8
+    Version:              1.6.0.0
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -203,12 +203,12 @@ onPlayerSpawned()
 
     self thread GivePlayerLoadout();
     level flag::wait_till("initial_blackscreen_passed");
+    self notify("stop_player_out_of_playable_area_monitor");
 
     self AllowWallRun(0);
     self AllowDoubleJump(0);
 
     self.StartOrigin = self.origin;
-    self notify("stop_player_out_of_playable_area_monitor");
 
     if(GetDvarString(level.script + "Spawn" + self GetEntityNumber()) != "")
         self SetOrigin(GetDvarVector1(level.script + "Spawn" + self GetEntityNumber()));
@@ -236,42 +236,51 @@ DefineMenuArrays()
 {
     level.BgGravity = GetDvarInt("bg_gravity");
     level.GSpeed = GetDvarString("g_speed");
-    level.roundIntermissionTime = IsDefined(level.zombie_vars["zombie_between_round_time"]) ? level.zombie_vars["zombie_between_round_time"] : 10;
+    level.roundIntermissionTime = (IsDefined(level.zombie_vars) && IsDefined(level.zombie_vars["zombie_between_round_time"])) ? level.zombie_vars["zombie_between_round_time"] : 10;
     
     level.menu_models = Array("defaultactor", "defaultvehicle");
     ents = GetEntArray("script_model", "classname");
 
-    for(a = 0; a < ents.size; a++)
+    if(IsDefined(ents) && ents.size)
     {
-        if(ents[a].model != "tag_origin" && ents[a].model != "" && !IsSubStr(ents[a].model, "collision_"))
-            array::add(level.menu_models, ents[a].model, 0);
+        for(a = 0; a < ents.size; a++)
+        {
+            if(ents[a].model != "tag_origin" && ents[a].model != "" && !IsSubStr(ents[a].model, "collision_"))
+                array::add(level.menu_models, ents[a].model, 0);
+        }
     }
     
     tempEffects = [];
     level.menuFX = [];
     fxs = GetArrayKeys(level._effect);
 
-    for(a = 0; a < fxs.size; a++)
+    if(IsDefined(fxs) && fxs.size)
     {
-        if(!IsDefined(fxs[a]))
-            continue;
-        
-        if(IsSubStr(fxs[a], "step_") || IsSubStr(fxs[a], "fall_") || IsSubStr(fxs[a], "tesla_viewmodel") || isInArray(level.menuFX, fxs[a]) || isInArray(tempEffects, level._effect[fxs[a]]))
-            continue;
-        
-        level.menuFX[level.menuFX.size] = fxs[a];
-        tempEffects[tempEffects.size] = level._effect[fxs[a]];
+        for(a = 0; a < fxs.size; a++)
+        {
+            if(!IsDefined(fxs[a]))
+                continue;
+            
+            if(IsSubStr(fxs[a], "step_") || IsSubStr(fxs[a], "fall_") || IsSubStr(fxs[a], "tesla_viewmodel") || isInArray(level.menuFX, fxs[a]) || isInArray(tempEffects, level._effect[fxs[a]]))
+                continue;
+            
+            level.menuFX[level.menuFX.size] = fxs[a];
+            tempEffects[tempEffects.size] = level._effect[fxs[a]];
+        }
     }
     
     level.custom_boxWeapons = [];
     weapons = GetArrayKeys(level.zombie_weapons);
 
-    for(a = 0; a < weapons.size; a++)
+    if(IsDefined(weapons) && weapons.size)
     {
-        if(IsDefined(weapons[a]) && Is_True(level.zombie_weapons[weapons[a]].is_in_box))
-            array::add(level.custom_boxWeapons, weapons[a], 0);
+        for(a = 0; a < weapons.size; a++)
+        {
+            if(IsDefined(weapons[a]) && Is_True(level.zombie_weapons[weapons[a]].is_in_box))
+                array::add(level.custom_boxWeapons, weapons[a], 0);
+        }
     }
-    
+
     trapTypes = Array("zombie_trap", "gas_access", "trap_electric", "trap_fire", "use_trap_chain");
     level.menu_traps = [];
 
@@ -325,7 +334,12 @@ DefineMenuArrays()
     }
 
     foreach(DeathBarrier in GetEntArray("trigger_hurt", "classname"))
+    {
+        if(!IsDefined(DeathBarrier))
+            continue;
+        
         DeathBarrier Delete();
+    }
 
     level.saved_jokerModel = level.chest_joker_model;
     
@@ -417,13 +431,19 @@ MenuInstructionsDisplay()
                             str += "\n[{+speed_throw}] & [{+smoke}]: Open Quick Menu";
                     }
                     else
+                    {
                         str = "[{+attack}]/[{+speed_throw}]/[{+actionslot 1}]/[{+actionslot 2}]: Scroll\n[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right\n[{+activate}]: Select\n[{+melee}]: Go Back/Exit";
+                    }
                 }
                 else
+                {
                     str = self.instructionsString;
+                }
             }
             else
+            {
                 str = self isInMenu(true) ? "[{+attack}]/[{+speed_throw}]: Scroll\n[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right\n[{+activate}]: Select\n[{+gostand}]: Exit" : "[{+speed_throw}] & [{+gostand}]: Open Quick Menu";
+            }
             
             if(self.menuInstructionsUI["string"].text != str)
                 self.menuInstructionsUI["string"] SetTextString(str);

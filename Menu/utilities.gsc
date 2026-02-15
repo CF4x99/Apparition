@@ -10,7 +10,7 @@ createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
 
     textElem.sort = sort;
     textElem.alpha = alpha;
-    textElem.color = (IsDefined(color) && IsVec(color)) ? color : IsString(color) ? level.RGBFadeColor : (0, 0, 0);
+    textElem.color = IsDefined(color) ? IsVec(color) ? color : IsString(color) ? level.RGBFadeColor : (0, 0, 0) : (0, 0, 0);
     textElem hud::SetPoint(align, relative, x, y);
 
     if(IsInt(text) || IsFloat(text))
@@ -132,7 +132,7 @@ DestroyHud()
     
     self destroy();
 
-    if(IsDefined(self.player))
+    if(IsDefined(self.player) && IsPlayer(self.player))
         self.player.hud_count--;
 }
 
@@ -310,7 +310,7 @@ hudFade(alpha, time)
         wait time;
 }
 
-hudFadenDestroy(alpha, time)
+hudFadeDestroy(alpha, time)
 {
     if(!IsDefined(self))
         return;
@@ -407,7 +407,9 @@ getName()
     name = self.name;
 
     if(name[0] != "[")
+    {
         return name;
+    }
     else
     {
         tagSize = 0;
@@ -787,7 +789,7 @@ Keyboard(func, player)
     if(IsDefined(self.menuUI["scroller"]))
         self.menuUI["scroller"] hudScaleOverTime(0.1, 16, 16);
     
-    self SoftLockMenu(121);
+    self SoftLockMenu(150);
     
     letters = [];
     self.keyboard = [];
@@ -800,20 +802,14 @@ Keyboard(func, player)
         for(b = 0; b < lettersTok[a].size; b++)
             letters[a] += lettersTok[a][b] + "\n";
     }
-
-    valueX = (self.MenuStyle == "Quick Menu") ? self.menuX : self.menuUI["background"].x;
-    valueY = (self.MenuStyle == "AIO") ? (self.menuUI["title"].y + 10) : (self.MenuStyle == "Nautaremake") ? (self.menuUI["nautaicon"].y + 50) : self.menuUI["title"].y;
-
-    self.keyboard["string"] = self createText("objective", 1.1, 5, "", "CENTER", "CENTER", valueX, (valueY + 15), 1, (1, 1, 1));
+    
+    self.keyboard["string"] = self createText("objective", 1.1, 5, "", "CENTER", "CENTER", self.menuX, (self.menuY + 30), 1, (1, 1, 1));
 
     for(a = 0; a < letters.size; a++)
-        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (valueX - 94) + (a * 15), (valueY + 35), 1, (1, 1, 1));
+        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menuX - 94) + (a * 15), (self.menuY + 50), 1, (1, 1, 1));
     
     if(IsDefined(self.menuUI["scroller"]))
         self.menuUI["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), 0.01);
-    
-    if(self.MenuStyle == "Nautaremake")
-        self.keyboard["scroller"] = self createRectangle("TOP", "CENTER", self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 9), 17, 18, self.MainTheme, 3, 1, "white");
     
     cursY = 0;
     cursX = 0;
@@ -869,7 +865,9 @@ Keyboard(func, player)
                 self.keyboard["string"] SetTextString(strng);
             }
             else
+            {
                 self iPrintlnBold("^1ERROR: ^7Max String Size Reached");
+            }
 
             wait 0.15;
         }
@@ -881,7 +879,9 @@ Keyboard(func, player)
                 self.keyboard["string"] SetTextString(strng);
             }
             else
+            {
                 self iPrintlnBold("^1ERROR: ^7Max String Size Reached");
+            }
 
             wait 0.1;
         }
@@ -898,7 +898,9 @@ Keyboard(func, player)
                     self ExeFunction(func, strng);
             }
             else
+            {
                 returnString = true;
+            }
 
             break;
         }
@@ -917,7 +919,9 @@ Keyboard(func, player)
                 wait 0.1;
             }
             else
+            {
                 break;
+            }
         }
 
         wait 0.05;
@@ -943,7 +947,7 @@ NumberPad(func, player, param)
     if(IsDefined(self.menuUI["scroller"]))
         self.menuUI["scroller"] hudScaleOverTime(0.1, 14, 14);
     
-    self SoftLockMenu(50);
+    self SoftLockMenu(75);
     
     letters = [];
     self.keyboard = [];
@@ -951,19 +955,13 @@ NumberPad(func, player, param)
     for(a = 0; a < 10; a++)
         letters[a] = a;
     
-    valueX = (self.MenuStyle == "Quick Menu") ? self.menuX : self.menuUI["background"].x;
-    valueY = (self.MenuStyle == "AIO") ? (self.menuUI["title"].y + 10) : (self.MenuStyle == "Nautaremake") ? (self.menuUI["nautaicon"].y + 50) : self.menuUI["title"].y;
-    
-    self.keyboard["string"] = self createText("objective", 1.2, 5, 0, "CENTER", "CENTER", valueX, (valueY + 15), 1, (1, 1, 1));
+    self.keyboard["string"] = self createText("objective", 1.2, 5, 0, "CENTER", "CENTER", self.menuX, (self.menuY + 30), 1, (1, 1, 1));
 
     for(a = 0; a < letters.size; a++)
-        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (valueX - 130) + 53 + (a * 15), (valueY + 35), 1, (1, 1, 1));
+        self.keyboard["keys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", (self.menuX - 130) + 53 + (a * 15), (self.menuY + 50), 1, (1, 1, 1));
     
     if(IsDefined(self.menuUI["scroller"]))
         self.menuUI["scroller"] hudMoveXY(self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 7), 0.01);
-    
-    if(self.MenuStyle == "Nautaremake")
-        self.keyboard["scroller"] = self createRectangle("TOP", "CENTER", self.keyboard["keys0"].x, (self.keyboard["keys0"].y - 8), 15, 16, self.MainTheme, 3, 1, "white");
     
     cursX = 0;
     stringLimit = 10;
@@ -1018,7 +1016,9 @@ NumberPad(func, player, param)
                     self ExeFunction(func, Int(strng));
             }
             else
+            {
                 returnValue = true;
+            }
 
             break;
         }
@@ -1042,7 +1042,9 @@ NumberPad(func, player, param)
                 wait 0.1;
             }
             else
+            {
                 break;
+            }
         }
         
         wait 0.05;
@@ -1115,7 +1117,7 @@ isPlayerLinked(exclude)
 
     for(a = 0; a < ents.size; a++)
     {
-        if(IsDefined(exclude) && ents[a] != exclude && self isLinkedTo(ents[a]) || !IsDefined(exclude) && self isLinkedTo(ents[a]))
+        if(IsDefined(exclude) && ents[a] != exclude && self IsLinkedTo(ents[a]) || !IsDefined(exclude) && self IsLinkedTo(ents[a]))
             return true;
     }
 
@@ -1647,8 +1649,6 @@ SetDeveloperMode()
 {
     value = GetDvarInt("developer");
     SetDvar("developer", (IsDefined(value) && value == 0 || !IsDefined(value)) ? 2 : 0);
-
-    self iPrintlnBold("^1NOTE: ^7You Must Restart The Match For This To Take Effect");
 }
 
 GetGroundPos(position)
@@ -1707,8 +1707,8 @@ MenuCreditsStart(creditArray)
             if(creditArray[a][0] == "^" && creditArray[a][1] == "1")
                 fontScale = 1.4;
 
-            hudX = (self.MenuStyle == "Quick Menu") ? self.menuUI["background"].x : self.menuX;
-            hudY = (self.MenuStyle == "Quick Menu") ? (self.menuUI["title"].y + 215) : (self.MenuStyle == "Zodiac") ? (self.menuY + 220) : (self.menuY + (self.menuUI["background"].height - 8));
+            hudX = self.menuX;
+            hudY = (self.menuY + (self.menuUI["background"].height - 8));
 
             self.credits["MenuCreditsHud"][a] = self createText("objective", fontScale, 3, "", "CENTER", "CENTER", hudX, hudY, 0, (1, 1, 1));
             self thread CreditsFadeIn(self.credits["MenuCreditsHud"][a], creditArray[a], moveTime, 0.5);
@@ -1716,7 +1716,9 @@ MenuCreditsStart(creditArray)
             wait (moveTime / 12);
         }
         else
+        {
             wait (moveTime / 4);
+        }
     }
     
     wait moveTime;
@@ -1736,16 +1738,13 @@ CreditsFadeIn(hud, text, moveTime, fadeTime)
     hud SetTextString(text);
     hud thread hudFade(1, fadeTime);
 
-    hudY = (self.MenuStyle == "Quick Menu") ? (self.menuUI["title"].y + 15) : self.menuY;
+    hudY = self.menuY + 30;
     hud thread hudMoveY(hudY, moveTime);
-
-    if(self.MenuStyle == "Nautaremake")
-        moveTime -= 0.3;
     
     wait (moveTime - fadeTime);
     
     if(IsDefined(hud))
-        hud hudFadenDestroy(0, fadeTime);
+        hud hudFadeDestroy(0, fadeTime);
 }
 
 credits_delete(hud)

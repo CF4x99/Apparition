@@ -3,17 +3,12 @@ PopulatePlayerOptions(menu, player)
     switch(menu)
     {
         case "Options":
-            submenus = Array("Verification", "Basic Scripts", "Teleport Menu", "Weaponry", "Bullet Menu", "Fun Scripts", "Model Manipulation", "Aimbot Menu", "Model Attachment", "Malicious Options");
+            submenus = Array("Verification", "Basic Scripts", "Teleport Menu", "Profile Management", "Weaponry", "Bullet Menu", "Fun Scripts", "Model Manipulation", "Aimbot Menu", "Model Attachment", "Malicious Options");
             
             self addMenu("[^2" + player.accessLevel + "^7]" + CleanName(player getName()));
 
                 for(a = 0; a < submenus.size; a++)
-                {
                     self addOpt(submenus[a], ::newMenu, submenus[a]);
-
-                    if(submenus[a] == "Teleport Menu" && SessionModeIsOnlineGame())
-                        self addOpt("Profile Management", ::newMenu, "Profile Management");
-                }
 
                 self addOpt("Send Message", ::Keyboard, ::MessagePlayer, player);
                 self addOptBool(player.FreezePlayer, "Freeze", ::FreezePlayer, player);
@@ -36,7 +31,7 @@ PopulatePlayerOptions(menu, player)
                 
                 if(IsDefined(level.menu_models) && level.menu_models.size)
                 {
-                    self addOptSlider("Location", ::PlayerAttachmentBone, "j_head;j_neck;j_spine4;j_spinelower;j_mainroot;pelvis;j_ankle_ri;j_ankle_le");
+                    self addOptSlider("Location", ::PlayerAttachmentBone, Array("j_head", "j_neck", "j_spine4", "j_spinelower", "j_mainroot", "pelvis", "j_ankle_ri", "j_ankle_le"));
                     self addOpt("Detach All", ::PlayerDetachModels, player);
                     self addOpt("");
 
@@ -55,12 +50,12 @@ PopulatePlayerOptions(menu, player)
             self addMenu("Malicious Options");
                 self addOpt("Open Pause Menu", ::PlayerOpenPauseMenu, player);
                 self addOpt("Disable Actions", ::newMenu, "Disable Actions");
-                self addOptSlider("Set Stance", ::SetPlayerStance, "Prone;Crouch;Stand", player);
+                self addOptSlider("Set Stance", ::SetPlayerStance, Array("Prone", "Crouch", "Stand"), player);
                 self addOpt("Launch", ::LaunchPlayer, player);
                 self addOpt("Mortar Strike", ::MortarStrikePlayer, player);
 
                 if(ReturnMapName() == "Shadows Of Evil" || ReturnMapName() == "Origins")
-                    self addOptSlider("Jump Scare", ::JumpScarePlayer, "Sound & Picture;Sound Only", player);
+                    self addOptSlider("Jump Scare", ::JumpScarePlayer, Array("Sound & Picture", "Sound Only"), player);
                 
                 self addOptBool(player.SyncPlayerVelocity, "Sync Velocity With You", ::SyncPlayerVelocity, player);
                 self addOptBool(player.SyncPlayerAngles, "Sync Angles With You", ::SyncPlayerAngles, player);
@@ -70,9 +65,9 @@ PopulatePlayerOptions(menu, player)
                 self addOptBool(player.BlackScreen, "Black Screen", ::BlackScreenPlayer, player);
                 self addOptBool(player.FakeLag, "Fake Lag", ::FakeLag, player);
                 self addOptBool(self.AttachToPlayer, "Attach Self To Player", ::AttachSelfToPlayer, player);
-                self addOptSlider("Shellshock", ::ApplyShellShock, "Concussion Grenade;Zombie Death;Explosion", player);
+                self addOptSlider("Shellshock", ::ApplyShellShock, Array("Concussion Grenade", "Zombie Death", "Explosion"), player);
                 self addOptIncSlider("Shellshock Time", ::SetShellShockTime, 1, 1, 30, 1, player);
-                self addOptSlider("Show IP", ::ShowPlayerIP, "Self;Player", player);
+                self addOptSlider("Show IP", ::ShowPlayerIP, Array("Self", "Player"), player);
                 self addOpt("Fake Derank", ::FakeDerank, player);
                 self addOpt("Fake Damage", ::FakeDamagePlayer, player);
                 self addOpt("Crash Game", ::CrashPlayer, player);

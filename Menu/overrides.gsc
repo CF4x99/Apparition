@@ -125,7 +125,9 @@ DamageFeedBack()
     if(IsDefined(self.HitMarkerColor))
     {
         if(IsString(self.HitMarkerColor) && self.HitMarkerColor == "Rainbow")
+        {
             self.hud_damagefeedback thread HudRGBFade();
+        }
         else
         {
             if(Is_True(self.hud_damagefeedback.RGBFade))
@@ -300,7 +302,7 @@ onPlayerDisconnect()
     
     foreach(player in level.players)
     {
-        if(!player hasMenu() || !IsDefined(player) || player == self)
+        if(!IsDefined(player) || !IsPlayer(player) || player == self || !player hasMenu())
             continue;
         
         //If a player is navigating another players options, and that player disconnects, it will kick them back to the player menu
@@ -322,6 +324,8 @@ onPlayerDisconnect()
             }
         }
         else if(player isInMenu() && player getCurrent() == "Players") //If a player is viewing the player menu when a player disconnects, it will refresh the player list
+        {
             player RefreshMenu();
+        }
     }
 }

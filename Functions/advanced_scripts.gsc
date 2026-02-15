@@ -6,9 +6,9 @@ PopulateAdvancedScripts(menu)
             self addMenu("Advanced Scripts");
                 self addOpt("Rain Options", ::newMenu, "Rain Options");
                 self addOpt("Custom Sentry", ::newMenu, "Custom Sentry");
-                self addOptSlider("Controllable Zombie", ::ControllableZombie, "Friendly;Enemy");
-                self addOptSlider("Teleporter", ::SpawnTeleporter, "Spawn;Delete All");
-                self addOptSlider("AC-130", ::AC130, "Fly;Walking");
+                self addOptSlider("Controllable Zombie", ::ControllableZombie, Array("Friendly", "Enemy"));
+                self addOptSlider("Teleporter", ::SpawnTeleporter, Array("Spawn", "Delete All"));
+                self addOptSlider("AC-130", ::AC130, Array("Fly", "Walking"));
                 self addOptIncSlider("Mexican Wave", ::MexicanWave, 2, 2, 15, 1);
                 self addOptIncSlider("Spiral Staircase", ::SpiralStaircase, 5, 5, 50, 1);
 
@@ -199,7 +199,7 @@ CustomSentry(origin)
         self.sentrygun_weapon = zm_utility::spawn_weapon_model(sentrygun, undefined, origin, (0, self.angles[1], 0));
         self.sentrygun_weapon.owner = self;
 
-        self.sentrygun_weapon thread clientfield::set("zm_aat_fire_works", 1);
+        self.sentrygun_weapon clientfield::set("zm_aat_fire_works", 1);
         self.sentrygun_weapon MoveTo(origin + (0, 0, 56), 0.5);
         self.sentrygun_weapon waittill("movedone");
         
@@ -897,6 +897,7 @@ MoonDoors()
     else
     {
         types = Array("zombie_door", "zombie_airlock_buy", "zombie_debris");
+        script_strings = Array("rotate", "slide_apart", "move");
 
         for(a = 0; a < types.size; a++)
         {
@@ -909,8 +910,6 @@ MoonDoors()
             {
                 if(!IsDefined(doors[b]) || doors[b] IsDoorOpen(types[a]))
                     continue;
-                
-                script_strings = Array("rotate", "slide_apart", "move");
                 
                 for(c = 0; c < doors[b].doors.size; c++)
                 {
@@ -928,6 +927,7 @@ MoonDoors()
 OpenCloseMoonDoors()
 {
     types = Array("zombie_door", "zombie_airlock_buy", "zombie_debris");
+    script_strings = Array("rotate", "slide_apart", "move");
 
     while(Is_True(level.MoonDoors))
     {
@@ -942,8 +942,6 @@ OpenCloseMoonDoors()
             {
                 if(!IsDefined(doors[b]))
                     continue;
-                
-                script_strings = Array("rotate", "slide_apart", "move");
                 
                 if(AnyoneNearDoor(doors[b]) && !doors[b] IsDoorOpen(types[a]))
                 {

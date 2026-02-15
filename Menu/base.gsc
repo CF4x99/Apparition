@@ -1,3 +1,22 @@
+#define OPT_NAME = 0;
+#define OPT_FUNC = 1;
+#define OPT_IN1 = 2;
+#define OPT_IN2 = 3;
+#define OPT_IN3 = 4;
+#define OPT_IN4 = 5;
+#define OPT_BOOL = 6;
+#define OPT_BOOLOPT = 7;
+#define OPT_SHADER = 8;
+#define OPT_COLOR = 9;
+#define OPT_PREVIEW = 10;
+#define OPT_INCSLIDER = 11;
+#define OPT_MIN = 12;
+#define OPT_MAX = 13;
+#define OPT_START = 14;
+#define OPT_INCREMENT = 15;
+#define OPT_SLIDER = 16;
+#define OPT_SLIDERVALUES = 17;
+
 menuMonitor()
 {
     if(Is_True(self.menuMonitor))
@@ -17,20 +36,12 @@ menuMonitor()
                 
                 if(self AreButtonsPressed(self.OpenControls) && Is_Alive(self))
                 {
-                    self openMenu1(!Is_True(self.DisableMenuAnimations));
-
-                    if(!Is_True(self.DisableMenuSounds))
-                        self PlaySoundToPlayer("uin_alert_lockon", self);
-
+                    self openMenu1();
                     wait 0.5;
                 }
                 else if(self AdsButtonPressed() && (self SecondaryOffhandButtonPressed() || !Is_Alive(self) && self JumpButtonPressed()) && !Is_True(self.DisableQM))
                 {
                     self openQuickMenu1();
-
-                    if(!Is_True(self.DisableMenuSounds))
-                        self PlaySoundToPlayer("uin_alert_lockon", self);
-
                     wait 0.5;
                 }
             }
@@ -47,52 +58,50 @@ menuMonitor()
                     dir = (self AdsButtonPressed() || self ActionSlotOneButtonPressed()) ? -1 : 1;
 
                     self setCursor(curs + dir);
-                    self ScrollingSystem(dir);
-
-                    if(!Is_True(self.DisableMenuSounds))
-                        self PlaySoundToPlayer("cac_grid_nav", self);
-
-                    wait (0.01 * self.ScrollingBuffer);
+                    self ScrollingSystem(dir, curs);
+                    wait 0.15;
                 }
                 else if(self UseButtonPressed())
                 {
-                    if(IsDefined(self.menuStructure[curs]) && IsDefined(self.menuStructure[curs].func))
+                    if(IsDefined(self.menuStructure) && IsDefined(self.menuStructure[curs]) && IsDefined(self GetOption(curs, OPT_FUNC)))
                     {
-                        if(Is_True(self.menuStructure[curs].slider) || Is_True(self.menuStructure[curs].incslider))
+                        optSlider = self GetOption(curs, OPT_SLIDER);
+                        optIncSlider = self GetOption(curs, OPT_INCSLIDER);
+                        sliderValues = self GetOption(curs, OPT_SLIDERVALUES);
+
+                        if(Is_True(optSlider) || Is_True(optIncSlider))
                         {
-                            self ExeFunction(self.menuStructure[curs].func, Is_True(self.menuStructure[curs].slider) ? self.menuStructure[curs].sliderValues[self.menuSlider[menu + "_" + curs]] : self.menuSlider[menu + "_" + curs], self.menuStructure[curs].input1, self.menuStructure[curs].input2, self.menuStructure[curs].input3, self.menuStructure[curs].input4);
+                            self ExeFunction(self GetOption(curs, OPT_FUNC), Is_True(optSlider) ? sliderValues[self.menuSlider[menu][curs]] : self.menuSlider[menu][curs], self GetOption(curs, OPT_IN1), self GetOption(curs, OPT_IN2), self GetOption(curs, OPT_IN3), self GetOption(curs, OPT_IN4));
                         }
                         else
                         {
-                            self ExeFunction(self.menuStructure[curs].func, self.menuStructure[curs].input1, self.menuStructure[curs].input2, self.menuStructure[curs].input3, self.menuStructure[curs].input4);
+                            self ExeFunction(self GetOption(curs, OPT_FUNC), self GetOption(curs, OPT_IN1), self GetOption(curs, OPT_IN2), self GetOption(curs, OPT_IN3), self GetOption(curs, OPT_IN4));
+                            boolOpt = self GetOption(curs, OPT_BOOLOPT);
 
-                            if(IsDefined(self.menuStructure[curs]) && Is_True(self.menuStructure[curs].boolOpt))
+                            if(IsDefined(self.menuStructure) && IsDefined(self.menuStructure[curs]) && Is_True(boolOpt))
                             {
                                 wait 0.18;
                                 self RefreshMenu(menu, curs); //This Will Refresh That Bool Option For Every Player That Is Able To See It.
                             }
                         }
 
-                        if(!Is_True(self.DisableMenuSounds))
-                            self PlaySoundToPlayer("uin_alert_lockon", self);
-
                         wait 0.2;
                     }
                 }
                 else if(self ActionslotThreeButtonPressed() && !self ActionSlotFourButtonPressed() || self ActionslotFourButtonPressed() && !self ActionSlotThreeButtonPressed())
                 {
-                    if(Is_True(self.menuStructure[curs].slider) || Is_True(self.menuStructure[curs].incslider))
+                    optSlider = self GetOption(curs, OPT_SLIDER);
+                    optIncSlider = self GetOption(curs, OPT_INCSLIDER);
+                    
+                    if(IsDefined(self.menuStructure) && (Is_True(optSlider) || Is_True(optIncSlider))) 
                     {
                         dir = self ActionslotThreeButtonPressed() ? -1 : 1;
 
-                        if(Is_True(self.menuStructure[curs].slider))
+                        if(Is_True(optSlider))
                             self SetSlider(dir);
                         else
                             self SetIncSlider(dir);
-
-                        if(!Is_True(self.DisableMenuSounds))
-                            self PlaySoundToPlayer("cac_grid_nav", self);
-
+                        
                         wait 0.13;
                     }
                 }
@@ -103,13 +112,12 @@ menuMonitor()
                         if(self isInQuickMenu())
                             self closeQuickMenu();
                         else
-                            self closeMenu1(!Is_True(self.DisableMenuAnimations));
+                            self closeMenu1();
                     }
                     else
+                    {
                         self newMenu();
-
-                    if(!Is_True(self.DisableMenuSounds))
-                        self PlaySoundToPlayer("uin_alert_lockon", self);
+                    }
 
                     wait 0.2;
                 }
@@ -148,7 +156,7 @@ ExeFunction(fnc, i1, i2, i3, i4, i5, i6)
     return self thread [[ fnc ]]();
 }
 
-openMenu1(showAnim)
+openMenu1(showAnim = true)
 {
     self endon("disconnect");
 
@@ -164,63 +172,10 @@ openMenu1(showAnim)
     if(isInArray(self.menu_parent, "Players") && IsDefined(self.SavedSelectedPlayer))
         self.SelectedPlayer = self.SavedSelectedPlayer;
 
-    if(self.MenuStyle != "Quick Menu")
-    {
-        self.menuUI["background"] = self createRectangle("TOP", "CENTER", self.menuX, (self.MenuStyle == "Zodiac") ? (self.menuY - 60) : (self.MenuStyle == "Native") ? (self.menuY + 6) : (self.MenuStyle == "AIO") ? (self.menuY - 5) : self.menuY, 260, 0, (self.MenuStyle == "Nautaremake") ? divideColor(25, 25, 25) : (0, 0, 0), 2, Is_True(showAnim) ? 0 : (self.MenuStyle == "Zodiac") ? 0.8 : (self.MenuStyle == "Native") ? 0.35 : (self.MenuStyle == "AIO") ? 0.4 : 1, "white");
-
-        if(self.MenuStyle == "Nautaremake" || self.MenuStyle == "AIO")
-        {
-            self.menuUI["nautabackground"] = self createRectangle("TOP", "CENTER", self.menuX, (self.MenuStyle == "Nautaremake") ? (self.menuY - 40) : (self.menuY - 27), (self.MenuStyle == "Nautaremake") ? 260 : 264, 0, (self.MenuStyle == "Nautaremake") ? divideColor(45, 45, 45) : (0, 0, 0), 1, Is_True(showAnim) ? 0 : (self.MenuStyle == "AIO") ? 0.3 : 1, "white");
-
-            if(self.MenuStyle == "Nautaremake")
-                self.menuUI["nautaicon"] = self createRectangle("TOP", "CENTER", self.menuX, (self.menuY - 57), 32, 54, (1, 1, 1), 4, Is_True(showAnim) ? 0 : 1, "damage_feedback_tac");
-        }
-
-        if(self.MenuStyle != "Zodiac")
-        {
-            self.menuUI["outlines"] = [];
-
-            if(self.MenuStyle != "Native" && self.MenuStyle != "AIO")
-            {
-                //Left Side
-                self.menuUI["outlines"][self.menuUI["outlines"].size] = self createRectangle("TOP", "CENTER", (self.menuX - 130), (self.MenuStyle == "Nautaremake") ? (self.menuY - 40) : self.menuY, 1, 0, self.MainTheme, 5, Is_True(showAnim) ? 0 : 1, "white");
-
-                //Right Side
-                self.menuUI["outlines"][self.menuUI["outlines"].size] = self createRectangle("TOP", "CENTER", (self.menuX + 130), (self.MenuStyle == "Nautaremake") ? (self.menuY - 40) : self.menuY, 1, 0, self.MainTheme, 5, Is_True(showAnim) ? 0 : 1, "white");
-            }
-
-            //Top 2 || Native Design Banner || AIO Top Banner
-            self.menuUI["outlines"][self.menuUI["outlines"].size] = self createRectangle("TOP", "CENTER", self.menuX, (self.MenuStyle == "Nautaremake") ? self.menuY : (self.MenuStyle == "Native") ? (self.menuY - 50) : (self.MenuStyle == "AIO") ? (self.menuY - 25) : (self.menuY - 13), (self.MenuStyle == GetMenuName()) ? 261 : 260, (self.MenuStyle == "Nautaremake") ? 1 : (self.MenuStyle == "Native") ? 39 : (self.MenuStyle == "AIO") ? 25 : 16, self.MainTheme, 5, Is_True(showAnim) ? 0 : (self.MenuStyle == "Native") ? 0.8 : 1, "white");
-
-            //Bottom 1 || AIO Bottom Banner
-            if(self.MenuStyle != "Native")
-                self.menuUI["outlines"][self.menuUI["outlines"].size] = self createRectangle("TOP", "CENTER", self.menuX, self.menuY, 260, (self.MenuStyle == "AIO") ? 25 : 1, self.MainTheme, 5, Is_True(showAnim) ? 0 : 1, "white");
-
-            if(self.MenuStyle == "Nautaremake" || self.MenuStyle == "Native")
-            {
-                //Top 1 || Native Design Title Bar
-                self.menuUI["outlines"][self.menuUI["outlines"].size] = self createRectangle("TOP", "CENTER", self.menuX, (self.MenuStyle == "Native") ? (self.menuY - 11) : (self.menuY - 40), 260, (self.MenuStyle == "Native") ? 17 : 1, (self.MenuStyle == "Native") ? (0, 0, 0) : self.MainTheme, 6, Is_True(showAnim) ? 0 : 1, "white");
-
-                //Bottom 2
-                if(self.MenuStyle == "Nautaremake")
-                    self.menuUI["outlines"][self.menuUI["outlines"].size] = self createRectangle("TOP", "CENTER", self.menuX, self.menuY, 260, 1, self.MainTheme, 5, Is_True(showAnim) ? 0 : 1, "white");
-            }
-        }
-
-        self.menuUI["scroller"] = self createRectangle("TOP", "CENTER", (self.MenuStyle == "AIO") ? (self.menuX - 129) : self.menuX, (self.menuY + 6), (self.MenuStyle == "AIO") ? 2 : 260, (self.MenuStyle == "AIO") ? 20 : 18, (self.MenuStyle == "Nautaremake") ? divideColor(45, 45, 45) : self.MainTheme, 4, Is_True(showAnim) ? 0 : (self.MenuStyle == "Native") ? 0.6 : 1, "white");
-
-        if(self.MenuStyle != "Nautaremake")
-            self.menuUI["title"] = self createText("default", (self.MenuStyle == "Native") ? 1.2 : self.TitleFontScale, 7, "", (self.MenuStyle == "Native") ? "CENTER" : "LEFT", "CENTER", (self.MenuStyle == "Native") ? self.menuX : (self.menuX - 126), (self.MenuStyle == "Native") ? (self.menuY - 3) : (self.MenuStyle == "Zodiac") ? (self.menuY - 20) : (self.MenuStyle == "AIO") ? (self.menuY - 13) : (self.menuY - 6), Is_True(showAnim) ? 0 : 1, (self.MenuStyle == "Zodiac") ? self.MainTheme : (IsDefined(self.TitleColor) && IsVec(self.TitleColor)) ? self.TitleColor : IsString(self.TitleColor) ? level.RGBFadeColor : (0, 0, 0));
-        
-        if(self.MenuStyle == "Native" || self.MenuStyle == "AIO")
-            self.menuUI["MenuName"] = self createText("default", self.TitleFontScale, 7, (self.MenuStyle == "AIO") ? "Status: " + self.accessLevel : GetMenuName(), (self.MenuStyle == "AIO") ? "LEFT" : "CENTER", "CENTER", (self.MenuStyle == "AIO") ? (self.menuX - 126) : self.menuX, (self.MenuStyle == "AIO") ? self.menuY : (self.menuY - 31), Is_True(showAnim) ? 0 : 1, (self.MenuStyle == "AIO") ? (IsDefined(self.TitleColor) && IsVec(self.TitleColor)) ? self.TitleColor : IsString(self.TitleColor) ? level.RGBFadeColor : (0, 0, 0) : (1, 1, 1));
-    }
-    else
-    {
-        self.menuUI["background"] = self createRectangle("TOP", "CENTER", self.menuX, self.menuY, 155, 0, (0, 0, 0), 2, 0.7, "white");
-        self.menuUI["scroller"] = self createRectangle("TOP", "CENTER", self.menuX, (self.menuY + 24), 155, 14, self.MainTheme, 4, 1, "white");
-        self.menuUI["title"] = self createText("default", self.TitleFontScale, 4, "", "CENTER", "CENTER", self.menuX, (self.menuUI["background"].y + 8), 1, self.MainTheme);
-    }
+    self.menuUI["background"] = self createRectangle("TOP", "CENTER", self.menuX, self.menuY, 260, 300, (0, 0, 0), 2, 0.25, "white");
+    self.menuUI["banner"] = self createRectangle("TOP", "CENTER", self.menuX, self.menuY, 260, 20, divideColor(25, 25, 25), 4, 1, "white");
+    self.menuUI["scroller"] = self createRectangle("TOP", "CENTER", self.menuX, (self.menuY + 25), 260, 18, divideColor(25, 25, 25), 4, 1, "white");
+    self.menuUI["title"] = self createText("default", 1.4, 5, "", "CENTER", "CENTER", self.menuX, (self.menuUI["background"].y + 9), 1, self.MainTheme);
 
     self drawText(showAnim);
 
@@ -263,100 +218,6 @@ closeMenu1(showAnim = false)
             self.DisableMenuControls = BoolVar(self.DisableMenuControls);
     }
 
-    if(Is_True(showAnim))
-    {
-        if(IsDefined(self.menuUI["scroller"]))
-            self.menuUI["scroller"] DestroyHud();
-        
-        hudElems = Array(self.menuUI["BoolBack"], self.menuUI["BoolOpt"], self.menuUI["subMenu"], self.menuUI["IntSlider"], self.menuUI["StringSlider"], self.menuUI["text"]);
-        fadeTime = 0.15;
-
-        foreach(hud in hudElems)
-        {
-            if(!IsDefined(hud) || !IsArray(hud) || !hud.size)
-                continue;
-            
-            indexf = 0;
-
-            foreach(index, hude in hud)
-            {
-                if(IsDefined(hude))
-                {
-                    indexf++;
-                    hude thread hudFade(0, ((fadeTime + 0.1) / indexf));
-                }
-            }
-        }
-
-        hudElems = Array(self.menuUI["background"], self.menuUI["nautabackground"]);
-
-        //self.menuUI["outlines"] won't always be defined, so before we try to use it to grab the elements from the array, we need to make sure it's actually defined.
-        if(IsDefined(self.menuUI["outlines"]))
-        {
-            if(IsDefined(self.menuUI["outlines"][0]))
-                hudElems[hudElems.size] = self.menuUI["outlines"][0];
-            
-            if(IsDefined(self.menuUI["outlines"][1]))
-                hudElems[hudElems.size] = self.menuUI["outlines"][1];
-        }
-        
-        foreach(hud in hudElems)
-        {
-            if(!IsDefined(hud))
-                continue;
-            
-            if(!((self.MenuStyle == "Native" || self.MenuStyle == "AIO") && IsDefined(self.menuUI["outlines"]) && isInArray(self.menuUI["outlines"], hud)))
-                hud thread hudScaleOverTime(fadeTime, hud.width, (self.MenuStyle == "Nautaremake" && hud != self.menuUI["background"]) ? 89 : 29);
-            
-            if(IsDefined(self.menuUI["outlines"]) && self.MenuStyle == "AIO" && hud == self.menuUI["outlines"][1])
-            {
-                hud thread hudMoveY(self.menuY + 29, fadeTime);
-
-                if(IsDefined(self.menuUI["MenuName"]))
-                {
-                    self.menuUI["MenuName"] thread hudMoveY(self.menuY + 29, fadeTime + 0.035);
-                    self.menuUI["MenuName"] thread hudFade(0, fadeTime + 0.1);
-                }
-            }
-            
-            hud thread hudFade(0, fadeTime + 0.1);
-        }
-
-        if(IsDefined(self.menuUI["outlines"]) && self.MenuStyle != "AIO")
-        {
-            for(a = 2; a < 6; a++)
-            {
-                if(!IsDefined(self.menuUI["outlines"][a]))
-                    continue;
-                
-                if(a == 3)
-                    self.menuUI["outlines"][a] thread hudMoveY((self.menuY + 28), fadeTime);
-                
-                if(a == 5)
-                    self.menuUI["outlines"][a] thread hudMoveY((self.menuY + 48), fadeTime);
-                
-                self.menuUI["outlines"][a] thread hudFade(0, fadeTime + 0.1);
-            }
-        }
-
-        if(IsDefined(self.menuUI["nautaicon"]))
-            self.menuUI["nautaicon"] thread hudFade(0, fadeTime + 0.1);
-
-        menuText = Array(self.menuUI["title"], self.menuUI["MenuName"]);
-
-        foreach(hud in menuText)
-        {
-            if(!IsDefined(hud))
-                continue;
-            
-            hud thread hudFade(0, fadeTime + 0.1);
-        }
-        
-        wait (fadeTime + 0.1);
-    }
-    else
-        self DestroyOpts();
-    
     destroyAll(self.menuUI);
     self.menuUI = undefined;
     self.menuStructure = undefined;
@@ -378,9 +239,10 @@ openQuickMenu1(menu)
     if(!IsDefined(self.currentMenuQM))
         self.currentMenuQM = (IsDefined(menu) && menu != "") ? menu : "Quick Menu";
 
-    self.menuUI["background"] = self createRectangle("TOP", "CENTER", 0, -210, 155, 0, (0, 0, 0), 2, 0.7, "white");
-    self.menuUI["scroller"] = self createRectangle("TOP", "CENTER", self.menuUI["background"].x, self.menuUI["background"].y, 155, 14, self.MainTheme, 4, 1, "white");
-    self.menuUI["title"] = self createText("default", 1.4, 4, "", "CENTER", "CENTER", self.menuUI["background"].x, (self.menuUI["background"].y + 8), 1, self.MainTheme);
+    self.menuUI["background"] = self createRectangle("TOP", "CENTER", self.menuX, self.menuY, 260, 300, (0, 0, 0), 2, 0.25, "white");
+    self.menuUI["banner"] = self createRectangle("TOP", "CENTER", self.menuX, self.menuY, 260, 20, divideColor(25, 25, 25), 4, 1, "white");
+    self.menuUI["scroller"] = self createRectangle("TOP", "CENTER", self.menuX, (self.menuY + 25), 260, 18, divideColor(25, 25, 25), 4, 1, "white");
+    self.menuUI["title"] = self createText("default", 1.4, 5, "", "CENTER", "CENTER", self.menuX, (self.menuUI["background"].y + 9), 1, self.MainTheme);
 
     self drawText();
 }
@@ -391,12 +253,8 @@ closeQuickMenu()
         return;
     
     self endon("disconnect");
-    
-    self DestroyOpts();
-    destroyAll(self.menuUI);
 
-    self.menuUI = undefined;
-    self.menuStructure = undefined;
+    destroyAll(self.menuUI);
 
     if(Is_True(self.isInQuickMenu))
         self.isInQuickMenu = BoolVar(self.isInQuickMenu);
@@ -419,202 +277,196 @@ drawText(showAnim = false)
     if(!IsDefined(cursor))
         self setCursor(0);
     
-    self.menuUI["text"] = [];
-    maxOptions = self isInQuickMenu() ? 20 : self.MaxOptions;
-    numOpts = (self.menuStructure.size > maxOptions) ? maxOptions : self.menuStructure.size;
+    if(self getCursor() >= self.menuStructure.size)
+        self setCursor((self.menuStructure.size - 1));
+    
+    numOpts = (self.menuStructure.size > self.MaxOptions) ? self.MaxOptions : self.menuStructure.size;
+    start = 0;
+    
+    if(self getCursor() > Int((self.MaxOptions - 1) / 2) && self getCursor() < (self.menuStructure.size - Int((self.MaxOptions + 1) / 2)) && self.menuStructure.size > self.MaxOptions)
+        start = (self getCursor() - Int((self.MaxOptions - 1) / 2));
+    
+    if(self getCursor() > (self.menuStructure.size - (Int((self.MaxOptions + 1) / 2) + 1)) && self.menuStructure.size > self.MaxOptions)
+        start = (self.menuStructure.size - self.MaxOptions);
+    
+    self.saved_hudcount = self.hud_count;
 
-    if(!self isInQuickMenu() && self.MenuStyle != "Quick Menu")
+    if(!IsDefined(self.menuUI["text"])) self.menuUI["text"] = [];
+    if(!IsDefined(self.menuUI["subMenu"])) self.menuUI["subMenu"] = [];
+    if(!IsDefined(self.menuUI["BoolOpt"])) self.menuUI["BoolOpt"] = [];
+    if(!IsDefined(self.menuUI["BoolBack"])) self.menuUI["BoolBack"] = [];
+    if(!IsDefined(self.menuUI["IntSlider"])) self.menuUI["IntSlider"] = [];
+    if(!IsDefined(self.menuUI["StringSlider"])) self.menuUI["StringSlider"] = [];
+
+    startY = IsDefined(self.menuUI["background"]) ? (self.menuUI["background"].y + 30) : (self.menuY + 30);
+
+    for(a = 0; a < numOpts; a++)
     {
-        self UpdateOptCount(showAnim);
-        
-        self.menuUI["subMenu"] = [];
-        self.menuUI["BoolOpt"] = [];
-        self.menuUI["BoolBack"] = [];
-        self.menuUI["IntSlider"] = [];
-        self.menuUI["StringSlider"] = [];
-        
-        if(self getCursor() >= self.menuStructure.size)
-            self setCursor((self.menuStructure.size - 1));
+        boolVal = self GetOption(start + a, OPT_BOOL);
+        boolOpt = self GetOption(start + a, OPT_BOOLOPT);
+        optName = self GetOption(start + a, OPT_NAME);
+        optFunc = self GetOption(start + a, OPT_FUNC);
+        optSlider = self GetOption(start + a, OPT_SLIDER);
+        optIncSlider = self GetOption(start + a, OPT_INCSLIDER);
+        sliderValues = self GetOption(start + a, OPT_SLIDERVALUES);
 
-        half = Int(self.MaxOptions / 2);
-        start = (self getCursor() >= half && self.menuStructure.size > self.MaxOptions) ? (self getCursor() + half >= self.menuStructure.size - 1) ? (self.menuStructure.size - self.MaxOptions) : (self getCursor() - (half - 1)) : 0;
-
-        for(a = 0; a < numOpts; a++)
+        if(Is_True(boolOpt))
         {
-            if(Is_True(self.menuStructure[(start + a)].boolOpt) && (self.ToggleStyle == "Boxes" || self.ToggleStyle == "Text"))
-            {
-                if(self.ToggleStyle == "Boxes")
-                {
-                    self.menuUI["BoolBack"][(a + start)] = self createRectangle("CENTER", "CENTER", (self.menuBoxLocation == "Right") ? (self.menuX + 122) : (self.menuX - 122), (self.menuY + 14) + (a * 20), 8, 8, (self.MenuStyle == "Nautaremake") ? self.MainTheme : (0.25, 0.25, 0.25), 5, 0, "white");
-                    self.menuUI["BoolOpt"][(a + start)] = self createRectangle("CENTER", "CENTER", (self.menuBoxLocation == "Right") ? (self.menuX + 122) : (self.menuX - 122), (self.menuY + 14) + (a * 20), 7, 7, Is_True(self.menuStructure[(start + a)].bool) ? (self.MenuStyle == "Nautaremake") ? divideColor(85, 85, 85) : self.MainTheme : (self.MenuStyle == "Nautaremake") ? divideColor(30, 30, 30) : (0, 0, 0), 6, 0, "white");
-                }
-                else
-                    self.menuUI["BoolOpt"][(a + start)] = self createText("default", ((a + start) == self getCursor() && Is_True(self.LargeCursor)) ? 1.2 : 1, 5, Is_True(self.menuStructure[(start + a)].bool) ? "ON" : "OFF", "RIGHT", "CENTER", (self.menuX + 126), (self.menuY + 14) + (a * 20), 0, ((start + a) == self getCursor()) ? self.ScrollingTextColor : self.OptionsColor);
-            }
-
-            if(IsDefined(self.menuStructure[(start + a)].func) && self.menuStructure[(start + a)].func == ::newMenu)
-                self.menuUI["subMenu"][(a + start)] = self createText("default", ((a + start) == self getCursor() && Is_True(self.LargeCursor)) ? 1.2 : 1, 5, ">", "RIGHT", "CENTER", (self.menuX + 126), (self.menuY + 14) + (a * 20), 0, ((start + a) == self getCursor()) ? self.ScrollingTextColor : self.OptionsColor);
-
-            if(IsDefined(self.menuStructure[(start + a)].incslider) && self.menuStructure[(start + a)].incslider)
-                self.menuUI["IntSlider"][(a + start)] = self createText("default", ((a + start) == self getCursor() && Is_True(self.LargeCursor)) ? 1.2 : 1, 5, self.menuSlider[self getCurrent() + "_" + (start + a)], "RIGHT", "CENTER", (self.menuX + 126), (self.menuY + 14) + (a * 20), 0, ((start + a) == self getCursor()) ? self.ScrollingTextColor : self.OptionsColor);
-
-            if(IsDefined(self.menuStructure[(start + a)].slider) && self.menuStructure[(start + a)].slider)
-                self.menuUI["StringSlider"][(a + start)] = self createText("default", ((a + start) == self getCursor() && Is_True(self.LargeCursor)) ? 1.2 : 1, 5, "< " + self.menuStructure[(start + a)].sliderValues[self.menuSlider[self getCurrent() + "_" + (start + a)]] + " > [" + (self.menuSlider[self getCurrent() + "_" + (start + a)] + 1) + "/" + self.menuStructure[(start + a)].sliderValues.size + "]", "RIGHT", "CENTER", (self.menuX + 126), (self.menuY + 14) + (a * 20), 0, ((start + a) == self getCursor()) ? self.ScrollingTextColor : self.OptionsColor);
-
-            self.menuUI["text"][(a + start)] = self createText("default", ((a + start) == self getCursor() && Is_True(self.LargeCursor)) ? 1.2 : 1, 5, self.menuStructure[(start + a)].name, "LEFT", "CENTER", (self.menuBoxLocation == "Right" || !Is_True(self.menuStructure[(start + a)].boolOpt) || self.ToggleStyle != "Boxes") ? (self.menuX - 126) : (self.menuX - 115), (self.menuY + 14) + (a * 20), 0, (Is_True(self.menuStructure[(start + a)].bool) && self.ToggleStyle == "Text Color") ? (IsVec(self.ToggleTextColor)) ? self.ToggleTextColor : IsString(self.ToggleTextColor) ? level.RGBFadeColor : (0, 0, 0) : ((start + a) == self getCursor()) ? self.ScrollingTextColor : self.OptionsColor);
-            elems = Array(self.menuUI["BoolBack"][(a + start)], self.menuUI["BoolOpt"][(a + start)], self.menuUI["subMenu"][(a + start)], self.menuUI["IntSlider"][(a + start)], self.menuUI["StringSlider"][(a + start)], self.menuUI["text"][(a + start)]);
-
-            foreach(elem in elems)
-            {
-                if(!IsDefined(elem))
-                    continue;
-                
-                if(Is_True(showAnim))
-                    elem thread hudFade(1, (a * 0.15));
-                else
-                    elem.alpha = 1;
-            }
+            self.menuUI["BoolBack"][start + a] = self createRectangle("CENTER", "CENTER", (self.menuX + 122), startY + (a * 20), 8, 8, (0.25, 0.25, 0.25), 5, 1, "white");
+            self.menuUI["BoolOpt"][start + a] = self createRectangle("CENTER", "CENTER", (self.menuX + 122), startY + (a * 20), 6, 6, Is_True(boolVal) ? self.MainTheme : (0, 0, 0), 6, 1, "white");
         }
 
-        if(!IsDefined(self.menuUI["text"][self getCursor()]))
-            self.menuCursor[self getCurrent()] = (self.menuStructure.size - 1);
+        if(IsDefined(optFunc) && optFunc == ::newMenu)
+            self.menuUI["subMenu"][start + a] = self createText("default", ((start + a) == self getCursor()) ? 1.2 : 1, 5, ">", "RIGHT", "CENTER", (self.menuX + 126), startY + (a * 20), 1, ((start + a) == self getCursor()) ? self.MainTheme : (1, 1, 1));
+
+        if(Is_True(optIncSlider))
+            self.menuUI["IntSlider"][start + a] = self createText("default", ((start + a) == self getCursor()) ? 1.2 : 1, 5, self.menuSlider[self getCurrent()][start + a], "RIGHT", "CENTER", (self.menuX + 126), startY + (a * 20), 1, ((start + a) == self getCursor()) ? self.MainTheme : (1, 1, 1));
         
-        if(IsDefined(self.menuUI["scroller"]) && IsDefined(self.menuUI["text"][self getCursor()]))
-        {
-            offset = (self.MenuStyle == "AIO") ? 10 : 8;
+        if(Is_True(optSlider))
+            self.menuUI["StringSlider"][start + a] = self createText("default", ((start + a) == self getCursor()) ? 1.2 : 1, 5, "< " + sliderValues[self.menuSlider[self getCurrent()][start + a]] + " > [" + (self.menuSlider[self getCurrent()][start + a] + 1) + "/" + sliderValues.size + "]", "RIGHT", "CENTER", (self.menuX + 126), startY + (a * 20), 1, ((start + a) == self getCursor()) ? self.MainTheme : (1, 1, 1));
 
-            if(Is_True(showAnim))
-                self.menuUI["scroller"] thread hudMoveY((self.menuUI["text"][self getCursor()].y - offset), 0.15);
-            else
-                self.menuUI["scroller"].y = (self.menuUI["text"][self getCursor()].y - offset);
-        }
-    }
-    else
-    {
-        start = (self getCursor() >= maxOptions) ? (self getCursor() - (maxOptions - 1)) : 0;
-        largestStr = self.menuUI["title"] GetTextWidth3arc(self);
-
-        for(a = 0; a < numOpts; a++)
-        {
-            optStr = self.menuStructure[(start + a)].name;
-
-            if(IsDefined(self.menuStructure[(start + a)].slider) || IsDefined(self.menuStructure[(start + a)].incslider))
-            {
-                optionString = IsDefined(self.menuStructure[(start + a)].slider) ? optStr + " < " + self.menuStructure[(start + a)].sliderValues[self.menuSlider[self getCurrent() + "_" + (start + a)]] + " > [" + (self.menuSlider[self getCurrent() + "_" + (start + a)] + 1) + "/" + self.menuStructure[(start + a)].sliderValues.size + "]" : optStr + " < " + self.menuSlider[self getCurrent() + "_" + (start + a)] + " >";
-                optStr = optionString;
-            }
-
-            if(IsDefined(self.menuStructure[(start + a)].func) && self.menuStructure[(start + a)].func == ::newMenu)
-                optStr += " >";
-
-            self.menuUI["text"][(start + a)] = self createText("default", ((a + start) == self getCursor() && (Is_True(self.LargeCursor) || self isInQuickMenu())) ? 1.2 : 1, 5, optStr, "CENTER", "CENTER", self.menuUI["background"].x, ((self.menuUI["background"].y + 30) + (a * 15)), 0, Is_True(self.menuStructure[(start + a)].bool) ? IsVec(self.ToggleTextColor) ? self.ToggleTextColor : IsString(self.ToggleTextColor) ? level.RGBFadeColor : (0, 0, 0) : ((start + a) == self getCursor()) ? self.ScrollingTextColor : self.OptionsColor);
-
-            if(Is_True(showAnim) && !self isInQuickMenu())
-                self.menuUI["text"][(start + a)] thread hudFade(1, (a * 0.15));
-            else
-                self.menuUI["text"][(start + a)].alpha = 1;
-
-            if(self.menuUI["text"][(start + a)] GetTextWidth3arc(self) > largestStr)
-                largestStr = self.menuUI["text"][(start + a)] GetTextWidth3arc(self);
-        }
-
-        if(!IsDefined(self.menuUI["text"][self getCursor()]))
-            self.menuCursor[self getCurrent()] = (self.menuStructure.size - 1);
-        
-        if(IsDefined(self.menuUI["scroller"]))
-            self.menuUI["scroller"] SetShaderValues(undefined, largestStr);
-
-        if(IsDefined(self.menuUI["background"]))
-        {
-            if(self isInQuickMenu() || !Is_True(showAnim))
-            {
-                self.menuUI["background"] SetShaderValues(undefined, largestStr, 23 + (numOpts * 15));
-                
-                if(IsDefined(self.menuUI["scroller"]) && IsDefined(self.menuUI["text"][self getCursor()]))
-                    self.menuUI["scroller"].y = (self.menuUI["text"][self getCursor()].y - 6);
-            }
-            else
-            {
-                self.menuUI["background"] SetShaderValues(undefined, largestStr);
-                self.menuUI["background"] thread hudScaleOverTime(0.15, largestStr, 23 + (numOpts * 15));
-                
-                if(IsDefined(self.menuUI["scroller"]) && IsDefined(self.menuUI["text"][self getCursor()]))
-                    self.menuUI["scroller"] thread hudMoveY((self.menuUI["text"][self getCursor()].y - 6), 0.15);
-            }
-        }
+        self.menuUI["text"][start + a] = self createText("default", ((start + a) == self getCursor()) ? 1.2 : 1, 5, optName, "LEFT", "CENTER", (self.menuX - 126), startY + (a * 20), 1, ((start + a) == self getCursor()) ? self.MainTheme : (1, 1, 1));
     }
 
-    self CreateOptionPreview();
+    if(!IsDefined(self.menuUI["text"][self getCursor()]))
+        self.menuCursor[self getCurrent()] = (self.menuStructure.size - 1);
+    
+    if(IsDefined(self.menuUI["scroller"]) && IsDefined(self.menuUI["text"][self getCursor()]))
+    {
+        if(Is_True(showAnim))
+            self.menuUI["scroller"] thread hudMoveY((self.menuUI["text"][self getCursor()].y - 8), 0.15);
+        else
+            self.menuUI["scroller"].y = (self.menuUI["text"][self getCursor()].y - 8);
+    }
+
+    if(IsDefined(self.menuUI) && IsDefined(self.menuUI["background"]) && IsDefined(self.menuUI["text"]) && self.menuUI["text"].size)
+        self.menuUI["background"] SetShaderValues(undefined, undefined, 40 + (20 * (self.menuUI["text"].size - 1)));
 }
 
-ScrollingSystem(dir)
+ScrollingSystem(dir, OldCurs)
 {
+    self endon("menuClosed");
     self endon("disconnect");
 
-    menu = self getCurrent();
-
-    if(IsDefined(self.menuStructure[self getCursor()]) && IsInvalidOption(self.menuStructure[self getCursor()].name))
+    curs = self getCursor();
+    
+    add = Int((self.MaxOptions + 1) / 2);
+    sub = Int((self.MaxOptions - 1) / 2);
+    hud = Array("text", "BoolOpt", "BoolBack", "subMenu", "IntSlider", "StringSlider");
+    
+    if(curs < 0 || curs > (self.menuStructure.size - 1))
     {
-        self setCursor(self getCursor() + dir);
-        return ScrollingSystem(dir);
-    }
+        self setCursor((curs < 0) ? (self.menuStructure.size - 1) : 0);
+        
+        curs = getCursor();
+        OldCurs = curs;
 
-    if(!self isInQuickMenu() && self.MenuStyle != "Quick Menu")
-    {
-        if(self getCursor() >= self.menuStructure.size || self getCursor() < 0)
-            self setCursor((self getCursor() >= self.menuStructure.size) ? 0 : (self.menuStructure.size - 1));
-
-        self drawText();
-
-        if(IsDefined(self.menuUI["scroller"]) && IsDefined(self.menuUI["text"][self getCursor()]))
-            self.menuUI["scroller"].y = (self.MenuStyle == "AIO") ? (self.menuUI["text"][self getCursor()].y - 10) : (self.menuUI["text"][self getCursor()].y - 8);
-
-        self UpdateOptCount();
-    }
-    else
-    {
-        maxOptions = self isInQuickMenu() ? 20 : self.MaxOptions;
-
-        if(self.menuCursor[menu] >= self.menuStructure.size || self.menuCursor[menu] < 0 || self.menuStructure.size > maxOptions && self.menuCursor[menu] >= (maxOptions - 1))
+        if(self.menuStructure.size > self.MaxOptions)
         {
-            if(self.menuCursor[menu] >= self.menuStructure.size || self.menuCursor[menu] < 0)
-                self.menuCursor[menu] = (self.menuCursor[menu] >= self.menuStructure.size) ? 0 : (self.menuStructure.size - 1);
-
-            self drawText();
+            self RefreshMenu();
+            return;
         }
-        else
+    }
+    else if(curs < (self.menuStructure.size - add) && (OldCurs > sub) || (curs > sub) && OldCurs < (self.menuStructure.size - add))
+    {
+        boolVal = self GetOption(curs + (sub * dir), OPT_BOOL);
+        boolOpt = self GetOption(curs + (sub * dir), OPT_BOOLOPT);
+        optName = self GetOption(curs + (sub * dir), OPT_NAME);
+        optFunc = self GetOption(curs + (sub * dir), OPT_FUNC);
+        optSlider = self GetOption(curs + (sub * dir), OPT_SLIDER);
+        optIncSlider = self GetOption(curs + (sub * dir), OPT_INCSLIDER);
+        sliderValues = self GetOption(curs + (sub * dir), OPT_SLIDERVALUES);
+
+        offset = 0;
+
+        for(a = 0; a < hud.size; a++)
         {
-            foreach(index, elem in self.menuUI["text"])
+            if(IsDefined(self.menuUI[hud[a]][(curs + ((add * -1) * dir))]))
             {
-                color = Is_True(self.menuStructure[index].bool) ? (IsString(self.ToggleTextColor) && self.ToggleTextColor == "Rainbow") ? level.RGBFadeColor : self.ToggleTextColor : (index == self getCursor()) ? self.ScrollingTextColor : self.OptionsColor;
-                scale = (index == self getCursor() && (Is_True(self.LargeCursor) || self isInQuickMenu())) ? 1.2 : 1;
-
-                if(elem.fontScale != scale)
-                    elem ChangeFontscaleOverTime1(scale, 0.05);
-
-                if(elem.color != color)
-                    elem.color = color;
+                self.menuUI[hud[a]][(curs + ((add * -1) * dir))] thread hudFadeDestroy(0, 0.13);
+                offset++;
             }
         }
 
-        if(IsDefined(self.menuUI["scroller"]) && IsDefined(self.menuUI["text"][self getCursor()]))
-            self.menuUI["scroller"].y = (self.menuUI["text"][self getCursor()].y - 6);
+        self.hud_count = (self.saved_hudcount + offset);
+
+        for(a = 0; a < self.menuStructure.size; a++)
+        {
+            for(b = 0; b < hud.size; b++)
+            {
+                if(IsDefined(self.menuUI[hud[b]][a]) && a != (curs + ((add * -1) * dir)))
+                {
+                    self.menuUI[hud[b]][a].archived = self ShouldArchive();
+                    self.hud_count++;
+
+                    self.menuUI[hud[b]][a] thread hudMoveY((self.menuUI[hud[b]][a].y - (20 * dir)), 0.13);
+                }
+            }
+        }
         
-        self CreateOptionPreview();
+        if(Is_True(boolOpt))
+        {
+            self.menuUI["BoolBack"][curs + (sub * dir)] = self createRectangle("CENTER", "CENTER", (self.menuX + 122), self.menuUI["text"][curs].y + (((self.MaxOptions * 10) - 10) * dir), 8, 8, (0.25, 0.25, 0.25), 5, 0, "white");
+            self.menuUI["BoolOpt"][curs + (sub * dir)] = self createRectangle("CENTER", "CENTER", (self.menuX + 122), self.menuUI["text"][curs].y + (((self.MaxOptions * 10) - 10) * dir), 6, 6, Is_True(boolVal) ? self.MainTheme : (0, 0, 0), 6, 0, "white");
+        }
+
+        if(IsDefined(optFunc) && optFunc == ::newMenu)
+            self.menuUI["subMenu"][curs + (sub * dir)] = self createText("default", 1, 5, ">", "RIGHT", "CENTER", (self.menuX + 126), self.menuUI["text"][curs].y + (((self.MaxOptions * 10) - 10) * dir), 0, ((curs + (sub * dir)) == self getCursor()) ? self.MainTheme : (1, 1, 1));
+
+        if(Is_True(optIncSlider))
+            self.menuUI["IntSlider"][curs + (sub * dir)] = self createText("default", 1, 5, self.menuSlider[self getCurrent()][curs + (sub * dir)], "RIGHT", "CENTER", (self.menuX + 126), self.menuUI["text"][curs].y + (((self.MaxOptions * 10) - 10) * dir), 0, ((curs + (sub * dir)) == self getCursor()) ? self.MainTheme : (1, 1, 1));
+        
+        if(Is_True(optSlider))
+            self.menuUI["StringSlider"][curs + (sub * dir)] = self createText("default", 1, 5, "< " + sliderValues[self.menuSlider[self getCurrent()][curs + (sub * dir)]] + " > [" + (self.menuSlider[self getCurrent()][curs + (sub * dir)] + 1) + "/" + sliderValues.size + "]", "RIGHT", "CENTER", (self.menuX + 126), self.menuUI["text"][curs].y + (((self.MaxOptions * 10) - 10) * dir), 0, ((curs + (sub * dir)) == self getCursor()) ? self.MainTheme : (1, 1, 1));
+
+        self.menuUI["text"][curs + (sub * dir)] = self createText("default", 1, 5, optName, "LEFT", "CENTER", (self.menuX - 126), self.menuUI["text"][curs].y + (((self.MaxOptions * 10) - 10) * dir), 0, ((curs + (sub * dir)) == self getCursor()) ? self.MainTheme : (1, 1, 1));
+        
+        for(a = 0; a < hud.size; a++)
+        {
+            if(IsDefined(self.menuUI[hud[a]][(curs + (sub * dir))]))
+                self.menuUI[hud[a]][(curs + (sub * dir))] thread hudFade(1, 0.13);
+        }
+    }
+
+    for(a = 0; a < self.menuStructure.size; a++)
+    {
+        for(b = 0; b < hud.size; b++)
+        {
+            if(IsDefined(self.menuUI[hud[b]][a]) && hud[b] != "BoolOpt" && hud[b] != "BoolBack")
+            {
+                self.menuUI[hud[b]][a] hudFadeColor((curs == a) ? self.MainTheme : (1, 1, 1), 0.13);
+                self.menuUI[hud[b]][a] ChangeFontscaleOverTime1((curs == a) ? 1.2 : 1, 0.13);
+            }
+        }
+    }
+    
+    if(IsDefined(self.menuUI["scroller"]))
+        self.menuUI["scroller"] thread hudMoveY(self.menuUI["text"][curs].y - 8, 0.13);
+    
+    if(IsDefined(self.menuStructure[curs]) && IsInvalidOption(self GetOption(curs, OPT_NAME)))
+    {
+        self setCursor(curs + dir);
+        return self ScrollingSystem(dir, curs);
     }
 }
 
 CreateOptionPreview()
 {
-    if(Is_True(self.menuStructure[self getCursor()].preview))
+    cursor = self getCursor();
+    optPreview = self GetOption(cursor, OPT_PREVIEW);
+
+    if(Is_True(optPreview))
     {
         if(IsDefined(self.optionPreview))
             self.optionPreview DestroyHud();
         
-        previewWidth = 100;
-        self.optionPreview = self createRectangle("TOP_LEFT", "CENTER", (self.menuX > 97) ? ((self.menuX - 135) - previewWidth) : ((self.menuX + (self.menuUI["background"].width / 2)) + 15), self.menuUI["scroller"].y, previewWidth, 15, (IsString(self.menuStructure[self getCursor()].color) && self.menuStructure[self getCursor()].color == "Rainbow") ? level.RGBFadeColor : self.menuStructure[self getCursor()].color, 2, 1, self.menuStructure[self getCursor()].shader);
+        optShader = self GetOption(cursor, OPT_SHADER);
+        optColor = self GetOption(cursor, OPT_COLOR);
         
-        if(IsString(self.menuStructure[self getCursor()].color) && self.menuStructure[self getCursor()].color == "Rainbow")
+        previewWidth = 100;
+        self.optionPreview = self createRectangle("TOP_LEFT", "CENTER", (self.menuX > 97) ? ((self.menuX - 135) - previewWidth) : ((self.menuX + (self.menuUI["background"].width / 2)) + 15), self.menuUI["scroller"].y, previewWidth, 15, (IsString(optColor) && optColor == "Rainbow") ? level.RGBFadeColor : optColor, 2, 1, optShader);
+        
+        if(IsString(optColor) && optColor == "Rainbow")
             self.optionPreview thread HudRGBFade();
     }
     else
@@ -636,46 +488,8 @@ SoftLockMenu(bgHeight)
     self.DisableMenuControls = true;
     self DestroyOpts();
 
-    if(self.MenuStyle == "Zodiac")
-        return;
-    
-    if(self.MenuStyle == "Quick Menu")
-        bgHeight += 10;
-
     if(IsDefined(self.menuUI["background"]))
-    {
         self.menuUI["background"] SetShaderValues(undefined, 260, bgHeight);
-
-        if(self.MenuStyle == "AIO")
-        {
-            if(IsDefined(self.menuUI["outlines"]) && IsDefined(self.menuUI["outlines"][1]))
-                self.menuUI["outlines"][1].y = ((self.menuY + bgHeight) -5);
-            
-            if(IsDefined(self.menuUI["MenuName"]))
-                self.menuUI["MenuName"].y = ((self.menuY + bgHeight) + 7);
-        }
-    }
-
-    if(IsDefined(self.menuUI["nautabackground"]))
-        self.menuUI["nautabackground"] SetShaderValues(undefined, undefined, (self.MenuStyle == "AIO") ? (bgHeight + 49) : (bgHeight + 60));
-
-    if(self.MenuStyle != "Native" && self.MenuStyle != "Quick Menu" && self.MenuStyle != "AIO")
-    {
-        if(IsDefined(self.menuUI["outlines"][0]) || IsDefined(self.menuUI["outlines"][1]))
-        {
-            if(IsDefined(self.menuUI["outlines"][0]))
-                self.menuUI["outlines"][0] SetShaderValues(undefined, undefined, (self.MenuStyle == "Nautaremake") ? (bgHeight + 60) : bgHeight);
-            
-            if(IsDefined(self.menuUI["outlines"][1]))
-                self.menuUI["outlines"][1] SetShaderValues(undefined, undefined, (self.MenuStyle == "Nautaremake") ? (bgHeight + 60) : bgHeight);
-        }
-
-        if(IsDefined(self.menuUI["outlines"][3]))
-            self.menuUI["outlines"][3].y = (self.menuY + (bgHeight - 1));
-
-        if(IsDefined(self.menuUI["outlines"][5]))
-            self.menuUI["outlines"][5].y = (self.menuY + (bgHeight - 1)) + 20;
-    }
 }
 
 SoftUnlockMenu()
@@ -685,9 +499,9 @@ SoftUnlockMenu()
     
     self endon("disconnect");
 
-    self.menuUI["scroller"] hudMoveX((IsDefined(self.menuUI["background"]) && self.MenuStyle == "Quick Menu") ? self.menuUI["background"].x : (self.MenuStyle == "AIO") ? (self.menuX - 129) : self.menuX, 0.1);
-    self.menuUI["scroller"] hudScaleOverTime(0.1, (self.MenuStyle == "Quick Menu") ? self.menuUI["background"].width : (self.MenuStyle == "AIO") ? 2 : 260, (self.MenuStyle == "Quick Menu") ? 14 : (self.MenuStyle == "AIO") ? 20 : 18);
-    self.menuUI["scroller"] hudFade((self.MenuStyle == "Native") ? 0.6 : 1, 0.05);
+    self.menuUI["scroller"] hudMoveX(self.menuX, 0.1);
+    self.menuUI["scroller"] hudScaleOverTime(0.1, 260, 18);
+    self.menuUI["scroller"] hudFade(1, 0.05);
     
     if(Is_True(self.inKeyboard))
     {
@@ -718,106 +532,6 @@ SetMenuTitle(title)
         title = self.menuTitle;
 
     self.menuUI["title"] SetTextString(title);
-
-    if((!IsString(self.TitleColor) && self.menuUI["title"].color != self.TitleColor || IsString(self.TitleColor) && self.menuUI["title"].color != level.RGBFadeColor) && self.MenuStyle != "Zodiac" && self.MenuStyle != "Quick Menu" && !self isInQuickMenu())
-    {
-        self.menuUI["title"].color = IsString(self.TitleColor) ? level.RGBFadeColor : self.TitleColor;
-
-        if(IsDefined(self.menuUI["MenuName"]) && self.MenuStyle == "AIO")
-            self.menuUI["MenuName"].color = self.menuUI["title"].color;
-    }
-}
-
-UpdateOptCount(showAnim)
-{
-    self endon("disconnect");
-
-    height = (self.MenuStyle == "Zodiac") ? 1000 : ((self.menuStructure.size >= self.MaxOptions) ? self.MaxOptions : self.menuStructure.size) * 20;
-    
-    if(self.MenuStyle == "AIO")
-        height += 6;
-
-    //self.menuUI["outlines"] won't always be defined, so before we try to use it to grab the elements from the array, we need to make sure it's actually defined as an array.
-    hudElems = IsDefined(self.menuUI["outlines"]) ? Array(self.menuUI["background"], self.menuUI["nautabackground"], self.menuUI["outlines"][0], self.menuUI["outlines"][1]) : Array(self.menuUI["background"], self.menuUI["nautabackground"]);
-
-    if(Is_True(showAnim))
-    {
-        keys = GetArrayKeys(self.menuUI);
-
-        foreach(key in keys)
-        {
-            if(!IsDefined(self.menuUI[key]))
-                continue;
-            
-            if(IsArray(self.menuUI[key]))
-            {
-                foreach(index, hud in self.menuUI[key])
-                {
-                    if(IsDefined(hud))
-                        hud thread hudFade((self.MenuStyle == "Zodiac") ? 0.8 : (self.MenuStyle == "Native" && key == "background") ? 0.45 : (self.MenuStyle == "AIO" && key == "nautabackground") ? 0.3 : (self.MenuStyle == "AIO" && key == "background") ? 0.4 : (self.MenuStyle == "Native" && key == "outlines" && index == 0) ? 0.8 : 1, 0.15);
-                }
-            }
-            else
-                self.menuUI[key] thread hudFade((self.MenuStyle == "Zodiac" && key == "background") ? 0.8 : (self.MenuStyle == "Native") ? (key == "background") ? 0.45 : (key == "scroller") ? 0.6 : 1 : (self.MenuStyle == "AIO" && key == "nautabackground") ? 0.3 : (self.MenuStyle == "AIO" && key == "background") ? 0.4 : 1, 0.15);
-        }
-    }
-
-    foreach(hud in hudElems)
-    {
-        if(!IsDefined(hud) || (self.MenuStyle == "Native" || self.MenuStyle == "AIO") && isInArray(self.menuUI["outlines"], hud))
-            continue;
-
-        if(self.MenuStyle == "Native")
-            height -= 11;
-        
-        hudHeight = (self.MenuStyle == "Nautaremake" && hud != self.menuUI["background"]) ? (69 + height) : (self.MenuStyle == "AIO" && hud == self.menuUI["nautabackground"]) ? (height + 58) : (height + 9);
-        
-        if(Is_True(showAnim))
-            hud thread hudScaleOverTime(0.15, hud.width, hudHeight);
-        else
-            hud SetShaderValues(undefined, undefined, hudHeight);
-        
-        if(self.MenuStyle == "AIO" && hud == self.menuUI["background"] && IsDefined(self.menuUI["outlines"]))
-        {
-            if(IsDefined(self.menuUI["outlines"][1]))
-            {
-                if(Is_True(showAnim))
-                {
-                    self.menuUI["outlines"][1] thread hudMoveY(((self.menuY + height) + 4), 0.15);
-                    
-                    if(IsDefined(self.menuUI["MenuName"]))
-                        self.menuUI["MenuName"] thread hudMoveY(((self.menuY + height) + 16), 0.15);
-                }
-                else
-                {
-                    self.menuUI["outlines"][1].y = ((self.menuY + height) + 4);
-                    
-                    if(IsDefined(self.menuUI["MenuName"]))
-                        self.menuUI["MenuName"].y = ((self.menuY + height) + 16);
-                }
-            }
-        }
-    }
-
-    if(IsDefined(self.menuUI["outlines"]) && IsDefined(self.menuUI["outlines"][3]))
-    {
-        if(Is_True(showAnim))
-        {
-            self.menuUI["outlines"][3] thread hudMoveY((self.menuY + (height + 8)), 0.15);
-
-            if(IsDefined(self.menuUI["outlines"][5]))
-                self.menuUI["outlines"][5] thread hudMoveY((self.menuY + (height + 28)), 0.15);
-
-            wait 0.05;
-        }
-        else
-        {
-            self.menuUI["outlines"][3].y = (self.menuY + (height + 8));
-
-            if(IsDefined(self.menuUI["outlines"][5]))
-                self.menuUI["outlines"][5].y = (self.menuY + (height + 28));
-        }
-    }
 }
 
 RefreshMenu(menu, curs, force)
@@ -837,26 +551,26 @@ RefreshMenu(menu, curs, force)
             if(player getCurrent() == menu || self != player && player PlayerHasOption(self, menu, curs))
             {
                 if(IsDefined(player.menuUI["text"][curs]) || player == self && player getCurrent() == menu && IsDefined(player.menuUI["text"][curs]) || self != player && player PlayerHasOption(self, menu, curs) || IsDefined(force) && force)
-                    player thread drawText();
+                    player drawText();
             }
         }
     }
     else
     {
         if(IsDefined(self) && self hasMenu() && self isInMenu(true) && !Is_True(self.DisableMenuControls))
-            self thread drawText(); //if menu or cursor are undefined, it will only refresh the menu for the player it was called on
+            self drawText(); //if menu or cursor are undefined, it will only refresh the menu for the player it was called on
     }
 }
 
 PlayerHasOption(source, menu, curs)
 {
-    option = source.menuStructure[curs].name;
+    option = source GetOption(curs, OPT_NAME);
 
     if(IsDefined(self.menuStructure) && self.menuStructure.size && IsDefined(option))
     {
         for(a = 0; a < self.menuStructure.size; a++)
         {
-            if(option == self.menuStructure[a].name && (source.SelectedPlayer == self || self.SelectedPlayer == self && source.SelectedPlayer == source && self getCurrent() == menu))
+            if(option == self GetOption(a, OPT_NAME) && (source.SelectedPlayer == self || self.SelectedPlayer == self && source.SelectedPlayer == source && self getCurrent() == menu))
                 return true;
         }
     }
@@ -868,14 +582,21 @@ DestroyOpts()
 {
     self endon("disconnect");
     
-    hud = Array("text", "BoolOpt", "BoolBack", "subMenu", "IntSlider", "StringSlider");
+    if(!IsDefined(level.menuHudKeys))
+        level.menuHudKeys = Array("text", "BoolOpt", "BoolBack", "subMenu", "IntSlider", "StringSlider");
     
-    for(a = 0; a < hud.size; a++)
+    hud = level.menuHudKeys;
+    
+    if(IsDefined(self.menuUI) && self.menuUI.size)
     {
-        if(IsDefined(self.menuUI[hud[a]]) && self.menuUI[hud[a]].size)
-            destroyAll(self.menuUI[hud[a]]);
-        
-        self.menuUI[hud[a]] = undefined;
+        for(a = 0; a < hud.size; a++)
+        {
+            if(IsDefined(self.menuUI[hud[a]]) && self.menuUI[hud[a]].size)
+            {
+                destroyAll(self.menuUI[hud[a]]);
+                self.menuUI[hud[a]] = undefined;
+            }
+        }
     }
 
     if(IsDefined(self.optionPreview))
@@ -917,7 +638,7 @@ BackMenu()
 
 isInMenu(iqm)
 {
-    return Is_True(self.isInMenu) || IsDefined(iqm) && iqm && Is_True(self.isInQuickMenu);
+    return Is_True(self.isInMenu) || Is_True(iqm) && Is_True(self.isInQuickMenu);
 }
 
 isInQuickMenu()
@@ -956,15 +677,26 @@ SetSlider(dir)
 {
     menu = self getCurrent();
     curs = self getCursor();
-    max  = (self.menuStructure[curs].sliderValues.size - 1);
 
-    self.menuSlider[menu + "_" + curs] += (dir > 0) ? 1 : -1;
+    if(!IsDefined(self.menuSlider))
+        self.menuSlider = [];
     
-    if((self.menuSlider[menu + "_" + curs] > max) || (self.menuSlider[menu + "_" + curs] < 0))
-        self.menuSlider[menu + "_" + curs] = (self.menuSlider[menu + "_" + curs] > max) ? 0 : max;
+    if(!IsDefined(self.menuSlider[menu]))
+        self.menuSlider[menu] = [];
     
-    if(IsDefined(self.menuUI["StringSlider"][curs]))
-        self.menuUI["StringSlider"][curs] SetTextString("< " + self.menuStructure[curs].sliderValues[self.menuSlider[menu + "_" + curs]] + " > [" + (self.menuSlider[menu + "_" + curs] + 1) + "/" + self.menuStructure[curs].sliderValues.size + "]");
+    if(!IsDefined(self.menuSlider[menu][curs]))
+        self.menuSlider[menu][curs] = 0;
+
+    sliderValues = self GetOption(curs, OPT_SLIDERVALUES);
+    max  = (sliderValues.size - 1);
+
+    self.menuSlider[menu][curs] += (!IsDefined(dir) || !IsInt(dir) || dir > 0) ? 1 : -1;
+    
+    if((self.menuSlider[menu][curs] > max) || (self.menuSlider[menu][curs] < 0))
+        self.menuSlider[menu][curs] = (self.menuSlider[menu][curs] > max) ? 0 : max;
+    
+    if(IsDefined(self.menuUI) && IsDefined(self.menuUI["StringSlider"]) && IsDefined(self.menuUI["StringSlider"][curs]))
+        self.menuUI["StringSlider"][curs] SetTextString("< " + sliderValues[self.menuSlider[menu][curs]] + " > [" + (self.menuSlider[menu][curs] + 1) + "/" + sliderValues.size + "]");
     else
         self drawText(); //Needed To Resize Background & Refresh Sliders
 }
@@ -973,21 +705,30 @@ SetIncSlider(dir)
 {
     menu = self getCurrent();
     curs = self getCursor();
+
+    if(!IsDefined(self.menuSlider))
+        self.menuSlider = [];
     
-    val = self.menuStructure[curs].increment;
-    max = self.menuStructure[curs].max;
-    min = self.menuStructure[curs].min;
+    if(!IsDefined(self.menuSlider[menu]))
+        self.menuSlider[menu] = [];
     
-    if(self.menuSlider[menu + "_" + curs] < max && (self.menuSlider[menu + "_" + curs] + val) > max || (self.menuSlider[menu + "_" + curs] > min) && (self.menuSlider[menu + "_" + curs] - val) < min)
-        self.menuSlider[menu + "_" + curs] = (self.menuSlider[menu + "_" + curs] < max && (self.menuSlider[menu + "_" + curs] + val) > max) ? max : min;
+    if(!IsDefined(self.menuSlider[menu][curs]))
+        self.menuSlider[menu][curs] = 0;
+    
+    val = self GetOption(curs, OPT_INCREMENT);
+    max = self GetOption(curs, OPT_MAX);
+    min = self GetOption(curs, OPT_MIN);
+    
+    if(self.menuSlider[menu][curs] < max && (self.menuSlider[menu][curs] + val) > max || (self.menuSlider[menu][curs] > min) && (self.menuSlider[menu][curs] - val) < min)
+        self.menuSlider[menu][curs] = (self.menuSlider[menu][curs] < max && (self.menuSlider[menu][curs] + val) > max) ? max : min;
     else
-        self.menuSlider[menu + "_" + curs] += (dir > 0) ? val : (val * -1);
+        self.menuSlider[menu][curs] += (!IsDefined(dir) || !IsInt(dir) || dir > 0) ? val : (val * -1);
     
-    if((self.menuSlider[menu + "_" + curs] > max) || (self.menuSlider[menu + "_" + curs] < min))
-        self.menuSlider[menu + "_" + curs] = (self.menuSlider[menu + "_" + curs] > max) ? min : max;
+    if((self.menuSlider[menu][curs] > max) || (self.menuSlider[menu][curs] < min))
+        self.menuSlider[menu][curs] = (self.menuSlider[menu][curs] > max) ? min : max;
     
-    if(IsDefined(self.menuUI["IntSlider"][curs]))
-        self.menuUI["IntSlider"][curs] SetValue(self.menuSlider[menu + "_" + curs]);
+    if(IsDefined(self.menuUI) && IsDefined(self.menuUI["IntSlider"]) && IsDefined(self.menuUI["IntSlider"][curs]))
+        self.menuUI["IntSlider"][curs] SetValue(self.menuSlider[menu][curs]);
     else
         self drawText(); //Needed To Resize Background & Refresh Sliders
 }
@@ -1016,9 +757,13 @@ newMenu(menu, dontSave)
         self.SavedSelectedPlayer = player; //Fix for force closing the menu while navigating a players options and opening the quick menu.
     }
     else if(self getCurrent() == "Players" && !IsDefined(menu))
+    {
         self.SelectedPlayer = self;
+    }
     else if(self isInMenu(false) && isInArray(self.menu_parent, "Players"))
+    {
         self.SelectedPlayer = self.SavedSelectedPlayer;
+    }
     
     if(!IsDefined(menu))
     {
@@ -1045,11 +790,15 @@ newMenu(menu, dontSave)
 
     for(a = 0; a < self.menuStructure.size; a++)
     {
-        if(!IsDefined(self.menuStructure[a]) || !Is_True(self.menuStructure[a].incslider))
-            continue;
+        optIncSlider = self GetOption(a, OPT_INCSLIDER);
 
-        if(IsDefined(self.menuSlider[menu + "_" + a]) && self.menuSlider[menu + "_" + a] == self.menuStructure[a].start)
-            self.menuSlider[menu + "_" + a] = undefined;
+        if(!IsDefined(self.menuStructure[a]) || !Is_True(optIncSlider) || !IsDefined(self.menuSlider) || !IsDefined(self.menuSlider[menu]))
+            continue;
+        
+        optStart = self GetOption(a, OPT_START);
+
+        if(IsDefined(self.menuSlider[menu][a]) && IsDefined(optStart) && self.menuSlider[menu][a] == optStart)
+            self.menuSlider[menu][a] = undefined;
     }
     
     if(!self isInQuickMenu())
@@ -1070,18 +819,17 @@ newMenu(menu, dontSave)
     if(menu == "Players" && !Is_True(self.PlayerInfoHandler))
         self thread PlayerInfoHandler();
     
-    self DestroyOpts();
     self drawText();
-    self SetMenuTitle();
 }
 
 WatchMenuWeaponSwitch(menu, player)
 {
+    self endon("disconnect");
     player endon("disconnect");
     player endon("menuClosed");
     player endon("EndSwitchWeaponMonitor");
 
-    while(self getCurrent() == menu)
+    while(player getCurrent() == menu)
     {
         self waittill("weapon_change", newWeapon);
 
@@ -1284,4 +1032,195 @@ OpenControlIndex(index)
 {
     self.OpenControlIndex = index;
     self RefreshMenu(self getCurrent(), self getCursor());
+}
+
+
+
+
+
+//option structures
+addMenu(title)
+{
+    self.menuStructure = [];
+
+    if(IsDefined(title))
+        self.menuTitle = title;
+}
+
+addOpt(name, fnc = ::EmptyFunction, input1, input2, input3, input4)
+{
+    if(!IsDefined(self.menuStructure))
+        self.menuStructure = [];
+
+    option = [];
+    
+    option[OPT_NAME] = name;
+    option[OPT_FUNC] = fnc;
+
+    if(IsDefined(input1)) option[OPT_IN1] = input1;
+    if(IsDefined(input2)) option[OPT_IN2] = input2;
+    if(IsDefined(input3)) option[OPT_IN3] = input3;
+    if(IsDefined(input4)) option[OPT_IN4] = input4;
+    
+    self.menuStructure[self.menuStructure.size] = option;
+}
+
+addOptPreview(shader = "white", color = (0, 0, 0), name, fnc = ::EmptyFunction, input1, input2, input3, input4)
+{
+    if(!IsDefined(self.menuStructure))
+        self.menuStructure = [];
+    
+    option = [];
+    
+    option[OPT_NAME] = name;
+    option[OPT_FUNC] = fnc;
+    option[OPT_SHADER] = shader;
+    option[OPT_COLOR] = color;
+
+    if(IsDefined(input1)) option[OPT_IN1] = input1;
+    if(IsDefined(input2)) option[OPT_IN2] = input2;
+    if(IsDefined(input3)) option[OPT_IN3] = input3;
+    if(IsDefined(input4)) option[OPT_IN4] = input4;
+
+    option[OPT_PREVIEW] = true;
+
+    self.menuStructure[self.menuStructure.size] = option;
+}
+
+addOptBool(boolVar, name, fnc = ::EmptyFunction, input1, input2, input3, input4)
+{
+    if(!IsDefined(self.menuStructure))
+        self.menuStructure = [];
+    
+    option = [];
+    
+    option[OPT_NAME] = name;
+    option[OPT_FUNC] = fnc;
+
+    if(IsDefined(input1)) option[OPT_IN1] = input1;
+    if(IsDefined(input2)) option[OPT_IN2] = input2;
+    if(IsDefined(input3)) option[OPT_IN3] = input3;
+    if(IsDefined(input4)) option[OPT_IN4] = input4;
+
+    option[OPT_BOOL] = Is_True(boolVar);
+    option[OPT_BOOLOPT] = true;
+    
+    self.menuStructure[self.menuStructure.size] = option;
+}
+
+addOptBoolPreview(boolVar, shader = "white", color = (0, 0, 0), name, fnc = ::EmptyFunction, input1, input2, input3, input4)
+{
+    if(!IsDefined(self.menuStructure))
+        self.menuStructure = [];
+    
+    option = [];
+    
+    option[OPT_NAME] = name;
+    option[OPT_FUNC] = fnc;
+    option[OPT_SHADER] = shader;
+    option[OPT_COLOR] = color;
+    
+    if(IsDefined(input1)) option[OPT_IN1] = input1;
+    if(IsDefined(input2)) option[OPT_IN2] = input2;
+    if(IsDefined(input3)) option[OPT_IN3] = input3;
+    if(IsDefined(input4)) option[OPT_IN4] = input4;
+
+    option[OPT_BOOL] = Is_True(boolVar);
+    option[OPT_BOOLOPT] = true;
+    option[OPT_PREVIEW] = true;
+
+    self.menuStructure[self.menuStructure.size] = option;
+}
+
+addOptIncSlider(name, fnc = ::EmptyFunction, min = 0, start = 0, max = 1, increment = 1, input1, input2, input3, input4)
+{
+    if(!IsDefined(self.menuStructure))
+        self.menuStructure = [];
+    
+    if(!IsDefined(self.menuSlider))
+        self.menuSlider = [];
+    
+    option = [];
+    index = self.menuStructure.size;
+    menu = self isInQuickMenu() ? self.currentMenuQM : self.currentMenu;
+
+    if(!IsDefined(self.menuSlider[menu]))
+        self.menuSlider[menu] = [];
+    
+    option[OPT_NAME] = name;
+    option[OPT_FUNC] = fnc;
+    
+    if(IsDefined(input1)) option[OPT_IN1] = input1;
+    if(IsDefined(input2)) option[OPT_IN2] = input2;
+    if(IsDefined(input3)) option[OPT_IN3] = input3;
+    if(IsDefined(input4)) option[OPT_IN4] = input4;
+
+    option[OPT_INCSLIDER] = true;
+    option[OPT_MIN] = min;
+    option[OPT_MAX] = (max < min) ? min : max;
+
+    option[OPT_START] = (start > max || start < min) ? (start > max) ? max : min : start;
+    option[OPT_INCREMENT] = increment;
+    
+    if(!IsDefined(self.menuSlider[menu][index]))
+    {
+        self.menuSlider[menu][index] = option[OPT_START];
+    }
+    else
+    {
+        if(self.menuSlider[menu][index] > max || self.menuSlider[menu][index] < min)
+            self.menuSlider[menu][index] = self.menuSlider[menu][index] < min ? min : max;
+    }
+    
+    self.menuStructure[self.menuStructure.size] = option;
+}
+
+addOptSlider(name, fnc = ::EmptyFunction, values, input1, input2, input3, input4)
+{
+    if(!IsDefined(self.menuStructure))
+        self.menuStructure = [];
+    
+    if(!IsDefined(self.menuSlider))
+        self.menuSlider = [];
+    
+    option = [];
+    index = self.menuStructure.size;
+    menu = self isInQuickMenu() ? self.currentMenuQM : self.currentMenu;
+
+    if(!IsDefined(self.menuSlider[menu]))
+        self.menuSlider[menu] = [];
+
+    option[OPT_NAME] = name;
+    option[OPT_FUNC] = fnc;
+    
+    if(IsDefined(input1)) option[OPT_IN1] = input1;
+    if(IsDefined(input2)) option[OPT_IN2] = input2;
+    if(IsDefined(input3)) option[OPT_IN3] = input3;
+    if(IsDefined(input4)) option[OPT_IN4] = input4;
+
+    if(!IsArray(values))
+        values = Array("Invalid array values passed");
+
+    option[OPT_SLIDER] = true;
+    option[OPT_SLIDERVALUES] = values;
+    
+    if(!IsDefined(self.menuSlider[menu][index]))
+        self.menuSlider[menu][index] = 0;
+    
+    self.menuStructure[self.menuStructure.size] = option;
+}
+
+EmptyFunction(){}
+
+GetOption(index, data)
+{
+    if(!IsDefined(self.menuStructure) || !IsDefined(self.menuStructure[index]))
+        return;
+    
+    value = self.menuStructure[index][data];
+
+    if(!IsDefined(value))
+        return;
+
+    return value;
 }

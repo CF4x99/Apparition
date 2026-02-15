@@ -21,7 +21,7 @@ PopulateDieRiseScripts(menu)
             self addMenu(menu);
 
                 foreach(player in level.players)
-                    self addOptSlider(CleanName(player getName()), ::SetPlayerBank, "Max;Reset", player);
+                    self addOptSlider(CleanName(player getName()), ::SetPlayerBank, Array("Max", "Reset"), player);
             break;
         
         case "Die Rise Player Ranks":

@@ -3,7 +3,7 @@ RunMenuOptions(menu)
     switch(menu)
     {
         case "Main":
-            self addMenu((self.MenuStyle == "Native") ? "Main Menu" : GetMenuName());
+            self addMenu(GetMenuName());
                 self addOpt("Basic Scripts", ::newMenu, "Basic Scripts");
                 self addOpt("Menu Customization", ::newMenu, "Menu Customization");
                 self addOpt("Message Menu", ::newMenu,"Message Menu");
@@ -38,11 +38,10 @@ RunMenuOptions(menu)
                                 self addOpt("Host Menu", ::newMenu, "Host Menu");
                             
                             self addOpt("Players Menu", ::newMenu, "Players");
+                            self addOpt("All Players Menu", ::newMenu, "All Players");
 
-                            if(level.players.size > 1)
-                                self addOpt("All Players Menu", ::newMenu, "All Players");
-                            
-                            self addOpt("Game Modes", ::newMenu, "Game Modes");
+                            if(self IsHost() || self isDeveloper())
+                                self addOpt("Game Modes", ::newMenu, "Game Modes");
                         }
                     }
                 }
@@ -56,9 +55,9 @@ RunMenuOptions(menu)
                     self addOptBool(self.playerGodmode, "God Mode", ::Godmode, self);
                     self addOptBool(self.Noclip, "Noclip", ::Noclip1, self);
                     self addOptBool(self.NoclipBind1, "Bind Noclip To [{+frag}]", ::BindNoclip, self);
-                    self addOptSlider("Unlimited Ammo", ::UnlimitedAmmo, "Continuous;Reload;Disable", self);
+                    self addOptSlider("Unlimited Ammo", ::UnlimitedAmmo, Array("Continuous", "Reload", "Disable"), self);
                     self addOptBool(self.UnlimitedEquipment, "Unlimited Equipment", ::UnlimitedEquipment, self);
-                    self addOptSlider("Modify Score", ::ModifyScore, "1000000;100000;10000;1000;100;10;0;-10;-100;-1000;-10000;-100000;-1000000", self);
+                    self addOptSlider("Modify Score", ::ModifyScore, Array("1000000", "100000", "10000", "1000", "100", "10", "0", "-10", "-100", "-1000", "-10000", "-100000", "-1000000"), self);
                     self addOpt("Perk Menu", ::newMenu, "Perk Menu");
                     self addOptBool(self.playerIgnoreMe, "No Target", ::NoTarget, self);
                     self addOptBool(self.ReducedSpread, "Reduced Spread", ::ReducedSpread, self);
@@ -299,8 +298,8 @@ RunMenuOptions(menu)
         
         case "Custom Map Spawns":
             self addMenu("Custom Map Spawns");
-                self addOptSlider("Set Map Spawn Location", ::SetMapSpawn, "Player 1;Player 2;Player 3;Player 4", "Set");
-                self addOptSlider("Clear Map Spawn Location", ::SetMapSpawn, "Player 1;Player 2;Player 3;Player 4", "Clear");
+                self addOptSlider("Set Map Spawn Location", ::SetMapSpawn, Array("Player 1", "Player 2", "Player 3", "Player 4"), "Set");
+                self addOptSlider("Clear Map Spawn Location", ::SetMapSpawn, Array("Player 1", "Player 2", "Player 3", "Player 4"), "Clear");
             break;
         
         case "Players":
@@ -326,14 +325,14 @@ RunMenuOptions(menu)
         
         case "Game Modes":
             self addMenu("Game Modes");
-                self addOptSlider("Sharpshooter", ::initSharpshooter, "Base Weapons;Upgraded Weapons;Both");
-                self addOptSlider("All The Weapons", ::initAllTheWeapons, "Base Weapons;Upgraded Weapons;Both");
+                self addOptSlider("Sharpshooter", ::initSharpshooter, Array("Base Weapons", "Upgraded Weapons", "Both"));
+                self addOptSlider("All The Weapons", ::initAllTheWeapons, Array("Base Weapons", "Upgraded Weapons", "Both"));
             break;
         
         default:
             craftables = GetArrayKeys(level.zombie_include_craftables);
 
-            if(isInArray(craftables, menu))
+            if(IsDefined(craftables) && craftables.size && isInArray(craftables, menu))
             {
                 self addMenu(CleanString(menu));
 
@@ -370,7 +369,6 @@ RunMenuOptions(menu)
                 
                 self MenuOptionsPlayer(menu, self.SelectedPlayer);
             }
-
             break;
     }
 }
@@ -416,9 +414,6 @@ MenuOptionsPlayer(menu, player)
         
         case "Bullet Menu":
         case "Weapon Projectiles":
-        case "Weapon Bullets":
-        case "Normal Weapon Bullets":
-        case "Upgraded Weapon Bullets":
         case "Equipment Bullets":
         case "Bullet Effects":
         case "Bullet Spawnables":

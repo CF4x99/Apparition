@@ -19,8 +19,8 @@ PopulateWeaponry(menu, player)
                 {
                     self addOpt("Take Current Weapon", ::TakeCurrentWeapon, player);
                     self addOpt("Take All Weapons", ::TakePlayerWeapons, player);
-                    self addOptSlider("Drop Current Weapon", ::DropCurrentWeapon, "Take;Don't Take", player);
-                    self addOptSlider("Pack 'a' Punch Current Weapon", ::VerkoPackCurrentWeapon, "None;Upgrade;Mastery", player);
+                    self addOptSlider("Drop Current Weapon", ::DropCurrentWeapon, Array("Take", "Don't Take"), player);
+                    self addOptSlider("Pack 'a' Punch Current Weapon", ::VerkoPackCurrentWeapon, Array("None", "Upgrade", "Mastery"), player);
                 }
 
                 self addOpt("");
@@ -42,7 +42,7 @@ PopulateWeaponry(menu, player)
             self addMenu("Options");
                 self addOpt("Take Current Weapon", ::TakeCurrentWeapon, player);
                 self addOpt("Take All Weapons", ::TakePlayerWeapons, player);
-                self addOptSlider("Drop Current Weapon", ::DropCurrentWeapon, "Take;Don't Take", player);
+                self addOptSlider("Drop Current Weapon", ::DropCurrentWeapon, Array("Take", "Don't Take"), player);
                 self addOptBool(player zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()), "Pack 'a' Punch Current Weapon", ::PackCurrentWeapon, player);
             break;
         
@@ -95,7 +95,9 @@ PopulateWeaponry(menu, player)
                         self addOptBool(isInArray(weapon.attachments, attachment), ReturnAttachmentName(attachment), ::GivePlayerAttachment, attachment, player);
                 }
                 else
+                {
                     self addOpt("No Supported Attachments Found");
+                }
             break;
         
         case "Weapon AAT":

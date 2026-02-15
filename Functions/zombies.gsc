@@ -10,20 +10,20 @@ PopulateZombieOptions(menu)
                 self addOpt("Damage Effect", ::newMenu, "Zombie Damage Effect");
                 self addOpt("Animations", ::newMenu, "Zombie Animations");
                 self addOpt("Model", ::newMenu, "Zombie Model Manipulation");
-                self addOptSlider("Gib", ::ZombieGibBone, "Random;Head;Right Leg;Left Leg;Right Arm;Left Arm");
-                self addOptSlider("Kill", ::KillZombies, "Death;Head Gib;Flame;Delete");
-                self addOptSlider("Health", ::SetZombieHealth, "Custom;Reset");
-                self addOptSlider("Movement", ::SetZombieRunSpeed, "Walk;Run;Sprint;Super Sprint");
+                self addOptSlider("Gib", ::ZombieGibBone, Array("Random", "Head", "Right Leg", "Left Leg", "Right Arm", "Left Arm"));
+                self addOptSlider("Kill", ::KillZombies, Array("Death", "Head Gib", "Flame", "Delete"));
+                self addOptSlider("Health", ::SetZombieHealth, Array("Custom", "Reset"));
+                self addOptSlider("Movement", ::SetZombieRunSpeed, Array("Walk", "Run", "Sprint", "Super Sprint"));
                 
                 //The only map Knockdown isn't registered on is The Giant
                 if(ReturnMapName() != "The Giant")
-                    self addOptSlider("Knockdown", ::KnockdownZombies, "Front;Back");
+                    self addOptSlider("Knockdown", ::KnockdownZombies, Array("Front", "Back"));
 
                 //Push is only registered on SOE
                 if(ReturnMapName() == "Shadows Of Evil")
-                    self addOptSlider("Push", ::PushZombies, "Left;Right");
+                    self addOptSlider("Push", ::PushZombies, Array("Left", "Right"));
                 
-                self addOptSlider("Teleport", ::TeleportZombies, "Crosshairs;Self");
+                self addOptSlider("Teleport", ::TeleportZombies, Array("Crosshairs", "Self"));
                 self addOptIncSlider("Animation Speed", ::SetZombieAnimationSpeed, 1, 1, 2, 0.5);
                 self addOptBool(level.ZombiesToCrosshairsLoop, "Teleport To Crosshairs", ::ZombiesToCrosshairsLoop);
                 self addOptBool(level.DisableZombieCollision, "Disable Player Collision", ::DisableZombieCollision);
@@ -51,7 +51,7 @@ PopulateZombieOptions(menu)
             map = ReturnMapName();
             
             self addMenu("Spawner");
-                self addOptSlider("Spawn Location", ::AISpawnLocation, "Crosshairs;Random;Self");
+                self addOptSlider("Spawn Location", ::AISpawnLocation, Array("Crosshairs", "Random", "Self"));
                 self addOptIncSlider("Zombie", ::ServerSpawnAI, 1, 1, 10, 1, ::ServerSpawnZombie);
 
                 if(map != "Unknown")
@@ -595,20 +595,22 @@ TeleportZombies(loc)
 
 SetZombieAnimationSpeed(rate)
 {
+    spawner::remove_global_spawn_function("zombie", ::ZombieAnimationWait);
     zombies = GetAITeamArray(level.zombie_team);
 
-    for(a = 0; a < zombies.size; a++)
+    if(IsDefined(zombies) && zombies.size)
     {
-        if(!IsDefined(zombies[a]) || !IsAlive(zombies[a]))
-            continue;
-        
-        if(rate != 1)
-            zombies[a] thread ZombieAnimationWait(rate);
-        else
-            zombies[a] ASMSetAnimationRate(rate);
+        for(a = 0; a < zombies.size; a++)
+        {
+            if(!IsDefined(zombies[a]) || !IsAlive(zombies[a]))
+                continue;
+            
+            if(rate != 1)
+                zombies[a] thread ZombieAnimationWait(rate);
+            else
+                zombies[a] ASMSetAnimationRate(rate);
+        }
     }
-
-    spawner::remove_global_spawn_function("zombie", ::ZombieAnimationWait);
 
     if(rate != 1)
         spawner::add_archetype_spawn_function("zombie", ::ZombieAnimationWait, rate);
@@ -619,7 +621,7 @@ ZombieAnimationWait(rate)
     while(!self CanControl() && IsAlive(self))
         wait 0.1;
     
-    if(IsAlive(self))
+    if(IsDefined(self) && IsAlive(self))
         self ASMSetAnimationRate(rate);
 }
 

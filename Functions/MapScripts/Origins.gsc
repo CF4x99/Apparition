@@ -4,7 +4,7 @@ PopulateOriginsScripts(menu)
     {
         case "Origins Scripts":
             self addMenu("Origins Scripts");
-                self addOptSlider("Weather", ::OriginsSetWeather, "None;Rain;Snow");
+                self addOptSlider("Weather", ::OriginsSetWeather, Array("None", "Rain", "Snow"));
                 self addOpt("Generators", ::newMenu, "Origins Generators");
                 self addOpt("Gateways", ::newMenu, "Origins Gateways");
                 self addOpt("Give Shovel", ::newMenu, "Give Shovel Origins");
@@ -53,7 +53,7 @@ PopulateOriginsScripts(menu)
             self addMenu("Give Shovel");
 
                 foreach(player in level.players)
-                    self addOptSlider(CleanName(player getName()), ::GivePlayerShovel, "Normal;Golden", player);
+                    self addOptSlider(CleanName(player getName()), ::GivePlayerShovel, Array("Normal", "Golden"), player);
             break;
 
         case "Give Helmet Origins":
@@ -102,7 +102,7 @@ PopulateOriginsScripts(menu)
                 self addOpt("Fire", ::newMenu, "Fire Puzzles");
                 self addOpt("Lightning", ::newMenu, "Lightning Puzzles");
                 self addOpt("");
-                self addOptSlider("115 Rings", ::Align115Rings, "Ice;Lightning;Fire;Wind");
+                self addOptSlider("115 Rings", ::Align115Rings, Array("Ice", "Lightning", "Fire", "Wind"));
             break;
 
         case "Ice Puzzles":
