@@ -66,14 +66,20 @@ PopulateSOEScripts(menu)
             self addMenu("Snakeskin Boots");
 
                 foreach(index, radio in GetEntArray("hs_radio", "targetname"))
+                {
                     if(IsDefined(radio) && !Is_True(radio.b_activated))
                         self addOpt(ReturnRadioName(index) + " Radio", ::ActivateSOERadio, radio);
+                }
             break;
     }
 }
 
 PlayerBeastMode(player)
 {
+    if(Is_True(player.beastModeExecution))
+        return;
+    player.beastModeExecution = true;
+
     curs = self getCursor();
     menu = self getCurrent();
 
@@ -101,10 +107,26 @@ PlayerBeastMode(player)
         player thread BeastModeWatchForCancel();
     }
     else
+    {
         player notify("altbody_end");
+    }
 
     wait 0.1;
     self RefreshMenu(menu, curs);
+    
+    if(IsDefined(player.is_drinking) && player.is_drinking)
+        player.is_drinking = 0;
+}
+
+function_a27a52af(name)
+{
+    foreach(str_bgb in level.var_ba1ef2b1[name])
+    {
+        if(self bgb::is_enabled(str_bgb))
+            return true;
+    }
+
+    return false;
 }
 
 Exit_BeastMode()
@@ -149,7 +171,9 @@ BeastModeWatchForCancel()
 function_72c3fae0(washuman)
 {
     if(washuman)
+    {
         PlayFX(level._effect["human_disappears"], self.origin);
+    }
     else
     {
         PlayFX(level._effect["zombie_disappears"], self.origin);

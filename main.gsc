@@ -8,7 +8,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.6.0.0
+    Version:              1.6.0.1
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -17,63 +17,12 @@
     Menu Source & Current Update: https://github.com/CF4x99/Apparition
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
-    Apparition is open source as a learning opportunity. Please take advantage of that and actually learn from it.
-    You will learn nothing from just copying and pasting everything.
-
-    PLEASE KEEP IN MIND THE MENU IS CLOSE TO THE CENTER TO MAKE SURE IT IS VISIBLE FOR ANY SCREEN RESOLUTION
-    YOU CAN ALWAYS CHANGE IT IN 'menu_customization.gsc' WHERE ALL OF THE DEFAULT MENU VARIABLES ARE SET
-    OR YOU CAN JUST USE THE MENU POSITION EDITOR WHILE IN GAME TO SET A CUSTOM POSITION THAT YOU LIKE
-
-    NOTE:
-        I can say without a doubt that Apparition will be unmatched in every way.
-        It’s the most stable, in-depth, detail-oriented, organized, and flat-out biggest mod menu you’ll ever see.
-        I’ve put countless hours into it over the years, across both newer and older games, to get it where it is today.
-
-        You won’t find anything even close to Apparition.
-        Not even the menus made by “devs” who keep pulling stuff from it for their own projects.
-        Apparition will stay on top no matter who tries to compete.
-
-        Just to clear up any confusion:
-            Apparition, including the base, belongs to me (CF4_99) and only me.
-            I built it 100% from the ground up.
-            I’m the sole developer.
-
-        The Credits Below Says Exactly What These People Offered Apparition, Nothing More, Nothing Less.
-
-
     Credits:
         - CF4_99 ~ Project Developer
         - Extinct ~ Ideas, Suggestions, Constructive Criticism, and His Spec-Nade
         - CraftyCritter ~ BO3 Compiler
-        - ItsFebiven ~ Ideas, Suggestions, and Nautaremake Style
+        - ItsFebiven ~ Ideas and Suggestions
         - Joel ~ Suggestions, Bug Reports, and Testing The Unique String Crash Protection
-
-
-    Custom Maps:
-        While I have tested Apparition a lot on custom maps, you may run into some issues with a few options not working 100% as they should.
-
-        Known Issues On Custom Maps(Ones that can't, or won't, be fixed):
-
-            Weaponry - Not all weapons are in the right category(Also applies to custom weapon mods):
-                ~ I am aware of this. There isn't anything I can do about it. Most of them, if not all, are moved into the 'Specials' Category.
-
-
-    Map EE Options:
-        I have created scripts to complete the EE's for the classic maps that have smaller EE's.
-        As for the bigger maps that have bigger and more complex EE's, I have made scripts to make completing the EE's, a lot easier.
-        The EE scripts will complete steps properly, not just set flags/variables tricking the game into thinking the step has been completed, when it actually hasn't(unlike other "developers")
-        This will prevent issues with any crashes or conflictions later on while continuing regular gameplay and playing through other parts of the EE.
-
-        Where to find options that help completing EE's:
-            Main Menu -> [map name] Scripts
-            Server Modifications -> Craftables
-        
-    Craftables:
-        Not all craftables will be found in the Craftables menu
-        Some craftables have to be added and collected manually
-        So if you can't find a craftable in the Craftables menu, check the map scripts menu
-        If it's not found in Craftables, or the map scripts menu, then it's a craftable that would have to be added manually, and I haven't made a script to collect the parts yet
-
 
     If you find any bugs, or come across something that you feel isn't working as it should, please message me on discord.
 
@@ -150,7 +99,14 @@ autoexec __init__system__()
 __init__()
 {
     callback::on_spawned(::onPlayerSpawned);
+    callback::on_connect(::onPlayerConnect);
     callback::on_disconnect(::onPlayerDisconnect);
+}
+
+onPlayerConnect()
+{
+    if(Is_True(level.antiJoin))
+        Kick(self GetEntityNumber());
 }
 
 onPlayerSpawned()
@@ -200,6 +156,11 @@ onPlayerSpawned()
         
         level.player_score_override = ::override_player_points;
     }
+
+    if(IsDefined(self.overrideplayerdamage))
+        self.saved_playeroverrideplayerdamage = self.overrideplayerdamage;
+    
+    self.overrideplayerdamage = ::override_player_damage;
 
     self thread GivePlayerLoadout();
     level flag::wait_till("initial_blackscreen_passed");
@@ -425,10 +386,17 @@ MenuInstructionsDisplay()
                         foreach(index, btn in self.OpenControls)
                             str += (index < (self.OpenControls.size - 1)) ? "[{" + btn + "}] & " : "[{" + btn + "}]";
                         
-                        str +=": Open " + GetMenuName();
+                        str += ": Open " + GetMenuName();
 
                         if(!Is_True(self.DisableQM))
-                            str += "\n[{+speed_throw}] & [{+smoke}]: Open Quick Menu";
+                        {
+                            str += "\n";
+                            
+                            foreach(index, btn in self.QuickControls)
+                                str += (index < (self.QuickControls.size - 1)) ? "[{" + btn + "}] & " : "[{" + btn + "}]";
+
+                            str += ": Open Quick Menu";
+                        }
                     }
                     else
                     {

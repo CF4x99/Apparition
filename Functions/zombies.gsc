@@ -244,14 +244,17 @@ SetZombieModel(model)
         level.ZombieModel = model;
         zombies = GetAITeamArray(level.zombie_team);
 
-        for(a = 0; a < zombies.size; a++)
+        if(IsDefined(zombies) && zombies.size)
         {
-            if(IsDefined(zombies[a]) && IsAlive(zombies[a]) && zombies[a].model != level.ZombieModel)
+            foreach(zombie in zombies)
             {
-                if(!IsDefined(zombies[a].savedModel))
-                    zombies[a].savedModel = zombies[a].model;
-                
-                zombies[a] SetModel(level.ZombieModel);
+                if(IsDefined(zombie) && IsAlive(zombie) && zombie.model != level.ZombieModel)
+                {
+                    if(!IsDefined(zombie.savedModel))
+                        zombie.savedModel = zombie.model;
+                    
+                    zombie SetModel(level.ZombieModel);
+                }
             }
         }
 
@@ -280,10 +283,13 @@ DisableZombieModel()
     spawner::remove_global_spawn_function("zombie", ::SetZombieSpawnModel);
     zombies = GetAITeamArray(level.zombie_team);
 
-    for(a = 0; a < zombies.size; a++)
+    if(IsDefined(zombies) && zombies.size)
     {
-        if(IsDefined(zombies[a]) && IsAlive(zombies[a]) && IsDefined(zombies[a].savedModel))
-            zombies[a] SetModel(zombies[a].savedModel);
+        foreach(zombie in zombies)
+        {
+            if(IsDefined(zombie) && IsAlive(zombie) && IsDefined(zombie.savedModel))
+                zombie SetModel(zombie.savedModel);
+        }
     }
 }
 

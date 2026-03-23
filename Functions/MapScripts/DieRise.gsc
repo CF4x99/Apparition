@@ -92,11 +92,11 @@ function_56809df9()
 
         foreach(stat in self.var_37f38876)
         {
-            if(!IsInt(stat) && stat.set === var_2f24aac7 && (IsDefined(stat.var_f82847be) && stat.var_f82847be))
-                data = (((data + stat.name) + ".") + stat.value) + ",";
+            if(!IsInt(stat) && stat.set == var_2f24aac7 && (IsDefined(stat.var_f82847be) && stat.var_f82847be))
+                data = data + stat.name + "." + stat.value + ",";
         }
 
-        data = data + ("|");
+        data = data + "|";
         function_4e89efbc(self, "UpdateDataSet", data);
         util::wait_network_frame();
         wait 0.05;

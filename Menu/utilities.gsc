@@ -10,6 +10,29 @@ createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
 
     textElem.sort = sort;
     textElem.alpha = alpha;
+
+    colors = Array(0, 0, 0);
+    if(IsDefined(color) && IsVec(color))
+    {
+        for(a = 0; a < 3; a++)
+        {
+            if(!IsDefined(color[a]) || color[a] < 0)
+                colors[a] = 0;
+
+            if(color[a] > 255)
+                color[a] = 255;
+
+            if(color[a] >= 0 && color[a] <= 1)
+            {
+                colors[a] = color[a];
+                continue;
+            }
+
+            colors[a] = color[a] / 255;
+        }
+    }
+
+    color = (colors[0], colors[1], colors[2]);
     textElem.color = IsDefined(color) ? IsVec(color) ? color : IsString(color) ? level.RGBFadeColor : (0, 0, 0) : (0, 0, 0);
     textElem hud::SetPoint(align, relative, x, y);
 
@@ -52,6 +75,29 @@ createServerText(font, fontSize, sort, text, align, relative, x, y, alpha, color
 
     textElem.sort = sort;
     textElem.alpha = alpha;
+
+    colors = Array(0, 0, 0);
+    if(IsDefined(color) && IsVec(color))
+    {
+        for(a = 0; a < 3; a++)
+        {
+            if(!IsDefined(color[a]) || color[a] < 0)
+                colors[a] = 0;
+
+            if(color[a] > 255)
+                color[a] = 255;
+
+            if(color[a] >= 0 && color[a] <= 1)
+            {
+                colors[a] = color[a];
+                continue;
+            }
+
+            colors[a] = color[a] / 255;
+        }
+    }
+
+    color = (colors[0], colors[1], colors[2]);
     textElem.color = color;
 
     textElem hud::SetPoint(align, relative, x, y);
@@ -78,6 +124,29 @@ createRectangle(align, relative, x, y, width, height, color, sort, alpha, shader
     uiElement.xOffset = 0;
     uiElement.yOffset = 0;
     uiElement.sort = sort;
+
+    colors = Array(0, 0, 0);
+    if(IsDefined(color) && IsVec(color))
+    {
+        for(a = 0; a < 3; a++)
+        {
+            if(!IsDefined(color[a]) || color[a] < 0)
+                colors[a] = 0;
+
+            if(color[a] > 255)
+                color[a] = 255;
+
+            if(color[a] >= 0 && color[a] <= 1)
+            {
+                colors[a] = color[a];
+                continue;
+            }
+
+            colors[a] = color[a] / 255;
+        }
+    }
+
+    color = (colors[0], colors[1], colors[2]);
     uiElement.color = (IsDefined(color) && IsVec(color)) ? color : IsString(color) ? level.RGBFadeColor : (0, 0, 0);
     uiElement.alpha = alpha;
     
@@ -107,6 +176,29 @@ createServerRectangle(align, relative, x, y, width, height, color, sort, alpha, 
     uiElement.xOffset = 0;
     uiElement.yOffset = 0;
     uiElement.sort = sort;
+
+    colors = Array(0, 0, 0);
+    if(IsDefined(color) && IsVec(color))
+    {
+        for(a = 0; a < 3; a++)
+        {
+            if(!IsDefined(color[a]) || color[a] < 0)
+                colors[a] = 0;
+
+            if(color[a] > 255)
+                color[a] = 255;
+
+            if(color[a] >= 0 && color[a] <= 1)
+            {
+                colors[a] = color[a];
+                continue;
+            }
+
+            colors[a] = color[a] / 255;
+        }
+    }
+
+    color = (colors[0], colors[1], colors[2]);
     uiElement.color = color;
     uiElement.alpha = alpha;
     
@@ -133,7 +225,12 @@ DestroyHud()
     self destroy();
 
     if(IsDefined(self.player) && IsPlayer(self.player))
+    {
         self.player.hud_count--;
+
+        if(self.player.hud_count < 0)
+            self.player.hud_count = 0;
+    }
 }
 
 SetTextString(text)
@@ -329,6 +426,28 @@ hudFadeColor(color, time)
     if(time > 0)
         self FadeOverTime(time);
     
+    colors = Array(0, 0, 0);
+    if(IsDefined(color) && IsVec(color))
+    {
+        for(a = 0; a < 3; a++)
+        {
+            if(!IsDefined(color[a]) || color[a] < 0)
+                colors[a] = 0;
+
+            if(color[a] > 255)
+                color[a] = 255;
+
+            if(color[a] >= 0 && color[a] <= 1)
+            {
+                colors[a] = color[a];
+                continue;
+            }
+
+            colors[a] = color[a] / 255;
+        }
+    }
+
+    color = (colors[0], colors[1], colors[2]);
     self.color = color;
 }
 
@@ -365,6 +484,9 @@ HudRGBFade()
 
 ChangeFontscaleOverTime1(scale, time)
 {
+    if(IsDefined(self.fontScale) && self.fontScale == scale)
+        return;
+    
     if(time > 0)
         self ChangeFontscaleOverTime(time);
     
@@ -789,7 +911,7 @@ Keyboard(func, player)
     if(IsDefined(self.menuUI["scroller"]))
         self.menuUI["scroller"] hudScaleOverTime(0.1, 16, 16);
     
-    self SoftLockMenu(150);
+    self SoftLockMenu(125);
     
     letters = [];
     self.keyboard = [];
@@ -947,7 +1069,7 @@ NumberPad(func, player, param)
     if(IsDefined(self.menuUI["scroller"]))
         self.menuUI["scroller"] hudScaleOverTime(0.1, 14, 14);
     
-    self SoftLockMenu(75);
+    self SoftLockMenu(50);
     
     letters = [];
     self.keyboard = [];
@@ -1062,37 +1184,47 @@ RGBFade()
 {
     if(IsDefined(level.RGBFadeColor))
         return;
-    
-    RGBValues = [];
-    level.RGBFadeColor = ((RandomInt(250) / 255), 0, 0);
-    rate = 1;
-    
+
+    hue = RandomFloatRange(0, 1);
+
     while(1)
     {
-        for(a = 0; a < 3; a++)
+        scaled = (hue * 6);
+        step = (Int(scaled) % 6);
+
+        switch(step)
         {
-            while((level.RGBFadeColor[a] * 255) < 255)
-            {
-                RGBValues[a] = ((level.RGBFadeColor[a] * 255) + rate);
-
-                if(RGBValues[a] > 255)
-                    RGBValues[a] = 255;
-
-                for(b = 0; b < 3; b++)
-                {
-                    if(b != a)
-                    {
-                        RGBValues[b] = (level.RGBFadeColor[b] > 0) ? ((level.RGBFadeColor[b] * 255) - rate) : 0;
-
-                        if(RGBValues[b] < 0)
-                            RGBValues[b] = 0;
-                    }
-                }
-                
-                level.RGBFadeColor = divideColor(RGBValues[0], RGBValues[1], RGBValues[2]);
-                wait 0.01;
-            }
+            case 0:
+                level.RGBFadeColor = (1, (scaled - step), 0);
+                break;
+            
+            case 1:
+                level.RGBFadeColor = ((1 - (scaled - step)), 1, 0);
+                break;
+            
+            case 2:
+                level.RGBFadeColor = (0, 1, (scaled - step));
+                break;
+            
+            case 3:
+                level.RGBFadeColor = (0, (1 - (scaled - step)), 1);
+                break;
+            
+            case 4:
+                level.RGBFadeColor = ((scaled - step), 0, 1);
+                break;
+            
+            default:
+                level.RGBFadeColor = (1, 0, (1 - (scaled - step)));
+                break;
         }
+
+        hue += 0.001; //speed -- The faster it goes, the more choppy it will look
+
+        if(hue >= 1)
+            hue -= 1;
+
+        wait 0.01;
     }
 }
 
@@ -1708,9 +1840,9 @@ MenuCreditsStart(creditArray)
                 fontScale = 1.4;
 
             hudX = self.menuX;
-            hudY = (self.menuY + (self.menuUI["background"].height - 8));
+            hudY = (self.menuUI["background"].y + (self.menuUI["background"].height - 8));
 
-            self.credits["MenuCreditsHud"][a] = self createText("objective", fontScale, 3, "", "CENTER", "CENTER", hudX, hudY, 0, (1, 1, 1));
+            self.credits["MenuCreditsHud"][a] = self createText("objective", fontScale, 5, "", "CENTER", "CENTER", hudX, hudY, 0, (1, 1, 1));
             self thread CreditsFadeIn(self.credits["MenuCreditsHud"][a], creditArray[a], moveTime, 0.5);
             
             wait (moveTime / 12);
@@ -1825,7 +1957,7 @@ GetTextWidth3arc(player, widthScale)
         widthScale = 7;
 
         if(IsDefined(player) && IsPlayer(player) && player GamePadUsedLast())
-            widthScale = 5;
+            widthScale = 6;
     }
     
     width = 1;

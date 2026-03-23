@@ -11,6 +11,9 @@ override_player_damage(einflictor, eattacker, idamage, idflags, smeansofdeath, w
     if(IsDefined(level.saved_overrideplayerdamage))
         return [[ level.saved_overrideplayerdamage ]](eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, weapon, vPoint, vDir, sHitLoc, psOffsetTime);
     
+    if(IsDefined(self.saved_playeroverrideplayerdamage))
+        return [[ self.saved_playeroverrideplayerdamage ]](eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, weapon, vPoint, vDir, sHitLoc, psOffsetTime);
+    
     return zm::player_damage_override(eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, weapon, vPoint, vDir, sHitLoc, psOffsetTime);
 }
 

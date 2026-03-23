@@ -7,7 +7,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.6.0.0
+    Version:              1.6.0.1
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -16,63 +16,12 @@
     Menu Source & Current Update: https://github.com/CF4x99/Apparition
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
-    Apparition is open source as a learning opportunity. Please take advantage of that and actually learn from it.
-    You will learn nothing from just copying and pasting everything.
-
-    PLEASE KEEP IN MIND THE MENU IS CLOSE TO THE CENTER TO MAKE SURE IT IS VISIBLE FOR ANY SCREEN RESOLUTION
-    YOU CAN ALWAYS CHANGE IT IN 'menu_customization.gsc' WHERE ALL OF THE DEFAULT MENU VARIABLES ARE SET
-    OR YOU CAN JUST USE THE MENU POSITION EDITOR WHILE IN GAME TO SET A CUSTOM POSITION THAT YOU LIKE
-
-    NOTE:
-        I can say without a doubt that Apparition will be unmatched in every way.
-        It’s the most stable, in-depth, detail-oriented, organized, and flat-out biggest mod menu you’ll ever see.
-        I’ve put countless hours into it over the years, across both newer and older games, to get it where it is today.
-
-        You won’t find anything even close to Apparition.
-        Not even the menus made by “devs” who keep pulling stuff from it for their own projects.
-        Apparition will stay on top no matter who tries to compete.
-
-        Just to clear up any confusion:
-            Apparition, including the base, belongs to me (CF4_99) and only me.
-            I built it 100% from the ground up.
-            I’m the sole developer.
-
-        The Credits Below Says Exactly What These People Offered Apparition, Nothing More, Nothing Less.
-
-
     Credits:
         - CF4_99 ~ Project Developer
         - Extinct ~ Ideas, Suggestions, Constructive Criticism, and His Spec-Nade
         - CraftyCritter ~ BO3 Compiler
         - ItsFebiven ~ Ideas, Suggestions, and Nautaremake Style
         - Joel ~ Suggestions, Bug Reports, and Testing The Unique String Crash Protection
-
-
-    Custom Maps:
-        While I have tested Apparition a lot on custom maps, you may run into some issues with a few options not working 100% as they should.
-
-        Known Issues On Custom Maps(Ones that can't, or won't, be fixed):
-
-            Weaponry - Not all weapons are in the right category(Also applies to custom weapon mods):
-                ~ I am aware of this. There isn't anything I can do about it. Most of them, if not all, are moved into the 'Specials' Category.
-
-
-    Map EE Options:
-        I have created scripts to complete the EE's for the classic maps that have smaller EE's.
-        As for the bigger maps that have bigger and more complex EE's, I have made scripts to make completing the EE's, a lot easier.
-        The EE scripts will complete steps properly, not just set flags/variables tricking the game into thinking the step has been completed, when it actually hasn't(unlike other "developers")
-        This will prevent issues with any crashes or conflictions later on while continuing regular gameplay and playing through other parts of the EE.
-
-        Where to find options that help completing EE's:
-            Main Menu -> [map name] Scripts
-            Server Modifications -> Craftables
-        
-    Craftables:
-        Not all craftables will be found in the Craftables menu
-        Some craftables have to be added and collected manually
-        So if you can't find a craftable in the Craftables menu, check the map scripts menu
-        If it's not found in Craftables, or the map scripts menu, then it's a craftable that would have to be added manually, and I haven't made a script to collect the parts yet
-
 
     If you find any bugs, or come across something that you feel isn't working as it should, please message me on discord.
 
@@ -83,13 +32,39 @@
 ## Changelog
 <details>
     <summary>
+        Version 1.6.0.1
+    </summary>
+    - I know Apparition has drifted a bit over time, and some of what made it feel unique, and honestly hard to compete with, has slipped.
+    I’m not promising overnight fixes, but I’m hoping the recent updates and the ones ahead will slowly get it back to where it should be.
+    New features will be coming to Apparition...stay tuned
+    Please report any/all bugs/issues you encounter -> Discord: cf4_99
+    
+
+    - Added: Server Modifications -- Anti-Join (Requested by a PS User)
+    - Added: Menu Base -- Blank or invalid option spacer -- This will display a wide bar as a spacer indicating a blank or invalid option that will be skipped when scrolling
+    - Added: Menu Customization -- Ability to change the open controls for both Apparition and the Quick Menu
+
+    - Changed: Menu Design -- The new design should be a little more modern looking -- Still not 100% set on it though
+    - Changed: Menu Base -- When menu instructions are enabled max option count is 10, when instructions are disabled, max option count is 11
+    - Changed: RGB Fade -- Rewrote the RGB fade so color cycling is smoother and covers a bigger range of colors
+
+    - Fixed: Scrolling System -- Auto-scrolling over blank options should look a little smoother now
+    - Fixed: Scrolling System -- Major Rewrite -- The max number of options shown on screen can now be set to an even value without breaking, and options should create and destroy correctly
+    - Fixed: Revelations -- Fixed an override issue on Revelations that caused god mode and demi-god to not work
+    - Fixed: Origins Scripts -- Disable Tank Cooldown
+    - Fixed: Origins Scripts -- Dev errors being thrown when disabling mud slowdown -- Caused by undefining the entity array used by the mud slowdown monitor
+    - Fixed: Der Eisendrache Scripts -- Bug with completing wolf bow 'Escort & Collect Wolf Souls'
+    - Fixed: Shadows Of Evil Scripts -- Bug With toggling beast mode for players
+</details>
+
+<details>
+    <summary>
         Version 1.6.0.0
     </summary>
+
     - I am aware of a crashing issue after some time in a match while using Apparition...That should 100% be fixed now(sorry it took so long for me to see it)
     - Apparition got a much needed structure rebuild which even includes a new and refined 3d scrolling system
     - The rebuild also changed the design completely, which might be temporary(idk yet)...The quick menu also shares this design
-    - It will now without a doubt be the biggest, best, most detail oriented, and stable mod menu for BO3 zombies you will ever use
-    - Just know you will never have to pay for early updates to Apparition or special features, it will forever be free and open source -- because I'm not a broke skid :P
 
     - Removed: Several menu customization options
 

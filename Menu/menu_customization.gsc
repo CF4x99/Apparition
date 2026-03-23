@@ -16,23 +16,29 @@ PopulateMenuCustomization(menu)
             if(!IsDefined(self.OpenControlIndex))
                 self.OpenControlIndex = 1;
             
-            buttons = Array("+actionslot 1", "+actionslot 2", "+actionslot 3", "+actionslot 4", "+melee", "+speed_throw", "+attack", "+breath_sprint", "+activate", "+frag", "+stance");
-
+            if(!IsDefined(self.OpenControlType))
+                self.OpenControlType = "Apparition";
+            
+            buttons = Array("+actionslot 1", "+actionslot 2", "+actionslot 3", "+actionslot 4", "+melee", "+speed_throw", "+attack", "+breath_sprint", "+activate", "+frag", "+smoke", "+stance");
+            
             /*
                 I made this system allow any amount of buttons to be used to open Apparition(I limited it to 3 buttons)
                 No matter how many buttons you allow to be chosen, the players selection will save through games, and will show on the menu instructions as well.
                 Also, no button can be selected more than once, and Bind Slot 1 can never be set to 'None'
             */
 
+            type = (self.OpenControlType == "Apparition") ? self.OpenControls : self.QuickControls;
+
             self addMenu("Open Controls");
+                self addOptSlider("Menu", ::OpenControlType, Array("Apparition", "Quick Menu"));
                 self addOptIncSlider("Bind Slot", ::OpenControlIndex, 1, 1, 3, 1); //If you want to allow more buttons to be chosen, change the '3' to whatever number you want.
                 self addOpt("");
 
                 if(self.OpenControlIndex != 1)
-                    self addOptBool(!IsDefined(self.OpenControls[(self.OpenControlIndex - 1)]), "None", ::SetOpenButtons, "None");
+                    self addOptBool(!IsDefined(type[(self.OpenControlIndex - 1)]), "None", ::SetOpenButtons, self.OpenControlType, "None");
 
                 foreach(button in buttons)
-                    self addOptBool((IsDefined(self.OpenControls[(self.OpenControlIndex - 1)]) && self.OpenControls[(self.OpenControlIndex - 1)] == button), "[{" + button + "}]", ::SetOpenButtons, button);
+                    self addOptBool((IsDefined(type[(self.OpenControlIndex - 1)]) && type[(self.OpenControlIndex - 1)] == button), "[{" + button + "}]", ::SetOpenButtons, self.OpenControlType, button);
             break;
         
         case "Main Design Color":
@@ -69,6 +75,9 @@ MenuTheme(color)
                 if(IsDefined(self.menuUI["BoolOpt"]) && IsDefined(self.menuUI["BoolOpt"][a]) && Is_True(boolVal))
                     self.menuUI["BoolOpt"][a] hudFadeColor(color, 0.5);
                 
+                if(IsDefined(self.menuUI["invalidOption"]) && IsDefined(self.menuUI["invalidOption"][a]))
+                    self.menuUI["invalidOption"][a] hudFadeColor(color, 0.5);
+                
                 for(b = 0; b < hud.size; b++)
                 {
                     if(IsDefined(self.menuUI[hud[b]][a]))
@@ -76,6 +85,12 @@ MenuTheme(color)
                 }
             }
         }
+
+        if(IsDefined(self.menuUI["separator"]))
+            self.menuUI["separator"] hudFadeColor(color, 0.5);
+        
+        if(IsDefined(self.menuUI["bottomLine"]))
+            self.menuUI["bottomLine"] hudFadeColor(color, 0.5);
     }
 
     if(IsDefined(self.menuInstructionsUI) && IsDefined(self.menuInstructionsUI["outline"]))
@@ -122,6 +137,9 @@ SmoothRainbowTheme()
                     if(IsDefined(self.menuUI["BoolOpt"]) && IsDefined(self.menuUI["BoolOpt"][a]) && Is_True(boolVal))
                         self.menuUI["BoolOpt"][a].color = color;
                     
+                    if(IsDefined(self.menuUI["invalidOption"]) && IsDefined(self.menuUI["invalidOption"][a]))
+                        self.menuUI["invalidOption"][a].color = color;
+                    
                     for(b = 0; b < hud.size; b++)
                     {
                         if(IsDefined(self.menuUI[hud[b]][a]))
@@ -129,6 +147,12 @@ SmoothRainbowTheme()
                     }
                 }
             }
+
+            if(IsDefined(self.menuUI["separator"]))
+                self.menuUI["separator"].color = color;
+            
+            if(IsDefined(self.menuUI["bottomLine"]))
+                self.menuUI["bottomLine"].color = color;
         }
 
         if(IsDefined(self.menuInstructionsUI) && IsDefined(self.menuInstructionsUI["outline"]))
@@ -242,6 +266,7 @@ RepositionMenu()
 DisableMenuInstructions()
 {
     self.DisableMenuInstructions = BoolVar(self.DisableMenuInstructions);
+    self.MaxOptions = Is_True(self.DisableMenuInstructions) ? 11 : 10;
     self SaveMenuTheme();
 
     if(!Is_True(self.DisableMenuInstructions))
@@ -256,8 +281,8 @@ DisableQuickMenu()
 
 SaveMenuTheme()
 {
-    variables = Array("menuX", "menuY", "MaxOptions", "DisableMenuInstructions", "DisableQM", "MainTheme", "OpenControls");
-    values    = Array(self.menuX, self.menuY, self.MaxOptions, self.DisableMenuInstructions, self.DisableQM, self.MainTheme, self.OpenControls);
+    variables = Array("menuSaved", "menuX", "menuY", "DisableMenuInstructions", "DisableQM", "MainTheme", "OpenControls", "QuickControls");
+    values    = Array(1, self.menuX, self.menuY, self.DisableMenuInstructions, self.DisableQM, self.MainTheme, self.OpenControls, self.QuickControls);
     
     foreach(index, variable in variables)
     {
@@ -269,6 +294,15 @@ SaveMenuTheme()
 
             foreach(indx, btn in self.OpenControls)
                 str += (indx < (self.OpenControls.size - 1)) ? btn + "," : btn;
+            
+            value = str;
+        }
+        else if(variable == "QuickControls")
+        {
+            str = "";
+
+            foreach(indx, btn in self.QuickControls)
+                str += (indx < (self.QuickControls.size - 1)) ? btn + "," : btn;
             
             value = str;
         }
@@ -294,16 +328,15 @@ LoadMenuVars()
 {
     self.menuX = -101; //Keep in mind that the position is close to the center to ensure the menu is visible on any resolution(use the menu position editor to place it where it best fits your liking)
     self.menuY = -185;
-    self.MaxOptions = 11;
-    self.MainTheme = (1, 0, 0);
+    self.MainTheme = (57, 152, 254);
     self.OpenControls = Array("+speed_throw", "+melee");
-    saved = Int(self GetSavedVariable("MaxOptions"));
+    self.QuickControls = Array("+speed_throw", "+smoke");
+    saved = Int(self GetSavedVariable("menuSaved"));
     
     if(IsDefined(saved) && saved)
     {
         self.menuX                   = Int(self GetSavedVariable("menuX"));
         self.menuY                   = Int(self GetSavedVariable("menuY"));
-        self.MaxOptions              = Int(self GetSavedVariable("MaxOptions"));
         self.DisableMenuInstructions = returnBool(Int(self GetSavedVariable("DisableMenuInstructions")));
         self.DisableQM               = returnBool(Int(self GetSavedVariable("DisableQM")));
 
@@ -312,6 +345,12 @@ LoadMenuVars()
 
         foreach(btn in btnToks)
             self.OpenControls[self.OpenControls.size] = btn;
+        
+        self.QuickControls = [];
+        btnToks = StrTok(self GetSavedVariable("QuickControls"), ",");
+
+        foreach(btn in btnToks)
+            self.QuickControls[self.QuickControls.size] = btn;
 
         if(self GetSavedVariable("MainTheme") == "Rainbow")
             self thread SmoothRainbowTheme();
@@ -322,6 +361,8 @@ LoadMenuVars()
     {
         self SaveMenuTheme();
     }
+
+    self.MaxOptions = Is_True(self.DisableMenuInstructions) ? 11 : 10;
 }
 
 returnBool(boolVar)

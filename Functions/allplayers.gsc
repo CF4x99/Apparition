@@ -3,7 +3,7 @@ PopulateAllPlayerOptions(menu)
     switch(menu)
     {
         case "All Players":
-            self addMenu("All Players");
+            self addMenu("All Players Menu");
                 self addOpt("Verification", ::newMenu, "All Players Verification");
                 self addOptSlider("Teleport", ::AllPlayersTeleport, Array("Self", "Crosshairs", "Sky"));
                 self addOpt("Profile Management", ::newMenu, "All Players Profile Management");

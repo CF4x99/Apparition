@@ -14,7 +14,7 @@ PopulateOriginsScripts(menu)
                 self addOpt("Staff Puzzles", ::newMenu, "Origins Puzzles");
                 self addOpt("G-Strike Quest", ::newMenu, "Origins G-Strike Quest");
                 self addOptBool(level flag::get("crypt_opened"), "Open Crypt", ::OpenOriginsCrypt);
-                self addOptBool(IsDefined(level.a_e_slow_areas), "Mud Slowdown", ::MudSlowdown);
+                self addOptBool(level.DisableMudSlowdown, "Disable Mud Slowdown", ::DisableMudSlowdown);
                 self addOptBool(level.DisableTankCooldown, "Disable Tank Cooldown", ::DisableTankCooldown);
                 self addOptIncSlider("Tank Speed [Default = 8]", ::OriginsTankSpeed, 1, 8, 25, 1);
             break;
@@ -1352,23 +1352,20 @@ OriginsGStrikeQuest(player)
 
     t_bunker = GetEnt("trigger_oneinchpunch_bunker_table", "targetname");
     t_birdbath = GetEnt("trigger_oneinchpunch_church_birdbath", "targetname");
-    
-    /*
-        This script will complete the g-strike quest for the player regardless of what step they are currently on
-        This was thrown together in a few minutes..so it's a little messy
-
-        - CF4
-    */
 
     if(player.sq_one_inch_punch_stage == 0)
     {
-        t_bunker notify("trigger", player);
+        if(IsDefined(t_bunker))
+            t_bunker notify("trigger", player);
+        
         wait 0.5;
     }
 
     if(player.sq_one_inch_punch_stage == 1)
     {
-        t_birdbath notify("trigger", player);
+        if(IsDefined(t_birdbath))
+            t_birdbath notify("trigger", player);
+        
         wait 0.5;
     }
 
@@ -1377,14 +1374,17 @@ OriginsGStrikeQuest(player)
         spawnedZombies = [];
         churchVolume = GetEnt("oneinchpunch_church_volume", "targetname");
 
-        while(player.sq_one_inch_punch_stage == 2)
+        if(IsDefined(churchVolume))
         {
-            zombie = SpawnSacrificedZombie(churchVolume);
-            
-            if(IsDefined(zombie))
+            while(player.sq_one_inch_punch_stage == 2)
             {
-                spawnedZombies[spawnedZombies.size] = zombie;
-                zombie DoDamage(zombie.health + 666, zombie.origin, player, player, undefined, "MOD_MELEE");
+                zombie = SpawnSacrificedZombie(churchVolume);
+                
+                if(IsDefined(zombie))
+                {
+                    spawnedZombies[spawnedZombies.size] = zombie;
+                    zombie DoDamage(zombie.health + 666, zombie.origin, player, player, undefined, "MOD_MELEE");
+                }
             }
         }
 
@@ -1407,13 +1407,17 @@ OriginsGStrikeQuest(player)
 
     if(player.sq_one_inch_punch_stage == 3)
     {
-        t_birdbath notify("trigger", player);
+        if(IsDefined(t_birdbath))
+            t_birdbath notify("trigger", player);
+        
         wait 0.5;
     }
 
     if(player.sq_one_inch_punch_stage == 4)
     {
-        t_bunker notify("trigger", player);
+        if(IsDefined(t_bunker))
+            t_bunker notify("trigger", player);
+        
         wait 0.5;
     }
 
@@ -1422,14 +1426,17 @@ OriginsGStrikeQuest(player)
         spawnedZombies = [];
         churchVolume = GetEnt("oneinchpunch_bunker_volume", "targetname");
 
-        while(player.sq_one_inch_punch_kills < 20)
+        if(IsDefined(churchVolume))
         {
-            zombie = SpawnSacrificedZombie(churchVolume);
-            
-            if(IsDefined(zombie))
+            while(player.sq_one_inch_punch_kills < 20)
             {
-                spawnedZombies[spawnedZombies.size] = zombie;
-                zombie DoDamage(zombie.health + 666, zombie.origin, player, player, undefined, "MOD_MELEE");
+                zombie = SpawnSacrificedZombie(churchVolume);
+                
+                if(IsDefined(zombie))
+                {
+                    spawnedZombies[spawnedZombies.size] = zombie;
+                    zombie DoDamage(zombie.health + 666, zombie.origin, player, player, undefined, "MOD_MELEE");
+                }
             }
         }
 
@@ -1455,7 +1462,8 @@ OriginsGStrikeQuest(player)
         while(!Is_True(player.beacon_ready))
             wait 0.1;
         
-        t_bunker notify("trigger", player);
+        if(IsDefined(t_bunker))
+            t_bunker notify("trigger", player);
     }
 
     player.completingGStrike = BoolVar(player.completingGStrike);
@@ -1467,9 +1475,10 @@ OriginsGStrikeQuest(player)
 
 
 //Miscellaneous
-MudSlowdown()
+DisableMudSlowdown()
 {
-    level.a_e_slow_areas = IsDefined(level.a_e_slow_areas) ? undefined : GetEntArray("player_slow_area", "targetname");
+    level.DisableMudSlowdown = BoolVar(level.DisableMudSlowdown);
+    level.a_e_slow_areas = Is_True(level.DisableMudSlowdown) ? GetEntArray("trigger_out_of_bounds", "classname") : GetEntArray("player_slow_area", "targetname");
 }
 
 DisableTankCooldown()
@@ -1478,8 +1487,12 @@ DisableTankCooldown()
 
     while(IsDefined(level.DisableTankCooldown))
     {
-        level flag::wait_till("tank_moving");
-        level.vh_tank.n_cooldown_timer = 2; //2 seconds is the minimum cooldown time(if it's anything less than 2, then it gets reset to 2)
+        if(level.vh_tank flag::get("tank_moving"))
+            level.vh_tank.str_location_current = ""; //End the loop that sets the cooldown time while moving
+
+        if(level.vh_tank flag::get("tank_cooldown"))
+            level.vh_tank.n_cooldown_timer = 2; //2 seconds is actuall the minimum the cooldown script allows
+        
         wait 0.01;
     }
 }

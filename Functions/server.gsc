@@ -9,6 +9,7 @@ PopulateServerModifications(menu)
                 self addOptBool((GetDvarString("g_speed") == "500"), "Super Speed", ::SuperSpeed);
                 self addOptIncSlider("Timescale", ::ServerSetTimeScale, 0.5, GetDvarInt("timescale"), 5, 0.5);
                 self addOpt("Set Round", ::NumberPad, ::SetRound);
+                self addOptBool(level.antiJoin, "Anti-Join", ::AntiJoin);
                 self addOptBool(level.AntiQuit, "Anti-Quit", ::AntiQuit);
                 self addOptBool(level.AutoRevive, "Auto-Revive", ::AutoRevive);
                 self addOptBool(level.AutoRespawn, "Auto-Respawn", ::AutoRespawn);
@@ -241,6 +242,11 @@ SetRound(round)
         if(player.sessionstate == "spectator")
             player thread ServerRespawnPlayer(player);
     }
+}
+
+AntiJoin()
+{
+    level.antiJoin = BoolVar(level.antiJoin);
 }
 
 AntiQuit()

@@ -1036,7 +1036,7 @@ InscribeDemonName()
     }
 
     wait 1;
-
+    
     foreach(icon in struct::get_array("aq_dg_rune_sequence_struct", "script_noteworthy"))
     {
         foreach(trig in GetEntArray("aq_dg_circle_rune_trig", "targetname"))
@@ -1254,7 +1254,7 @@ CollectWolfSouls()
             This notify will end the script checking if the player loses the wolf.
             Usually, if the player loses the wolf(wolf isn't in sight of the player for too long) it will end the quest step, and it will have to be started again by the player
         */
-        level notify("player_found_skadi");
+        level.var_52978d72 notify("player_found_skadi");
 
         if(!IsDefined(level.var_e6d07014) && !level flag::get("wolf_howl_escort")) //This is a fail safe, in the case the quest step gets killed. It will allow the script to be ran again when the step is restarted
         {
