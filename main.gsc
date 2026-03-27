@@ -14,6 +14,8 @@
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
+    New Apparition Discord Server: discord.gg/apparitionbo3
+
     Menu Source & Current Update: https://github.com/CF4x99/Apparition
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
