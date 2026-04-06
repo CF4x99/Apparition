@@ -155,12 +155,14 @@ play_mooncomp_vox(alias, digger)
         }
     }
     else
+    {
         num = "";
+    }
 
     if(!IsDefined(level.mooncomp_is_speaking))
         level.mooncomp_is_speaking = 0;
 
-    if(level.mooncomp_is_speaking == 0)
+    if(!level.mooncomp_is_speaking)
     {
         level.mooncomp_is_speaking = 1;
         level do_mooncomp_vox(alias + num);
@@ -226,5 +228,7 @@ FastExcavators()
         }
     }
     else
+    {
         level notify("EndFastExcavators");
+    }
 }

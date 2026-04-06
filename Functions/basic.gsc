@@ -25,7 +25,7 @@ PopulateBasicScripts(menu, player)
                 self addOpt("Visual Effects", ::newMenu, "Visual Effects");
                 self addOptSlider("Set Vision", ::PlayerSetVision, Array("Default", "zombie_last_stand", "zombie_death"), player);
                 self addOptSlider("Zombie Charms", ::ZombieCharms, Array("None", "Orange", "Green", "Purple", "Blue"), player);
-                self addOptSlider("Custom Crosshairs", ::CustomCrosshairs, Array("Disable", "+", "@", "x", "o", "> <", "CF4_99", "Extinct", "Daltax", "GBP", "ItsFebiven", "Apparition", CleanName(player getName())), player);
+                self addOptSlider("Custom Crosshairs", ::CustomCrosshairs, Array("Disable", "+", "@", "x", "o", "> <", "CF4_99", "Extinct", "Daltax", "GBP", "ItsFebiven", GetMenuName(), CleanName(player getName())), player);
                 self addOptBool(player.NoExplosiveDamage, "No Explosive Damage", ::NoExplosiveDamage, player);
                 self addOptIncSlider("Character Model Index", ::SetCharacterModelIndex, 0, player.characterIndex, 8, 1, player);
                 self addOptBool(player.LoopCharacterModelIndex, "Random Character Model Index", ::LoopCharacterModelIndex, player);
@@ -457,7 +457,9 @@ GivePlayerGobblegum(name, player)
                 }
             }
             else
+            {
                 player zm_weapons::switch_back_primary_weapon(curWeapon);
+            }
             
             player util::waittill_any_timeout(1, "weapon_change_complete");
 

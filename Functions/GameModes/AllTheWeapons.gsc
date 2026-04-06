@@ -79,7 +79,9 @@ initAllTheWeapons(type)
     while(level.indexAllTheWeapons < (weaponArray.size - 1))
     {
         if(!IsDefined(player.weaponKillsCounter))
+        {
             player.weaponKillsCounter = player LUI_createText("Kills: " + level.killsAllTheWeapons + "/" + level.killGoalAllTheWeapons, 2, 0, 55, 255, (1, 1, 1));
+        }
         else
         {
             if(player GetLUIMenuData(player.weaponKillsCounter, "text") != "Kills: " + level.killsAllTheWeapons + "/" + level.killGoalAllTheWeapons)

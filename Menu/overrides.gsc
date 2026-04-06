@@ -136,7 +136,7 @@ DamageFeedBack()
             if(Is_True(self.hud_damagefeedback.RGBFade))
                 self.hud_damagefeedback.RGBFade = BoolVar(self.hud_damagefeedback.RGBFade);
             
-            self.hud_damagefeedback.color = self.HitMarkerColor;
+            self.hud_damagefeedback.color = GetColorVec(self.HitMarkerColor);
         }
     }
     

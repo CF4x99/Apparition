@@ -116,6 +116,8 @@ PlayerBeastMode(player)
     
     if(IsDefined(player.is_drinking) && player.is_drinking)
         player.is_drinking = 0;
+    
+    player.beastModeExecution = undefined;
 }
 
 function_a27a52af(name)

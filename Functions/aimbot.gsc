@@ -63,7 +63,7 @@ Aimbot(player)
             if(player.AimbotVisibilityRequirement == "Damageable" && enemy DamageConeTrace(player GetEye(), player) < 0.1)
                 enemy = undefined;
             
-            if(player.AimbotVisibilityRequirement == "Visible" && !player IsVisible(enemy))
+            if(player.AimbotVisibilityRequirement == "Visible" && !player IsVisible(enemy, player.AimBoneTag))
                 enemy = undefined;
         }
         
@@ -116,7 +116,9 @@ Aimbot(player)
                         player.snapsRemaining--;
                     }
                     else
+                    {
                         player SetPlayerAngles(VectorToAngles(origin - player GetEye())); //After it has finished the smooth snap to the target, it will stay locked on
+                    }
 
                     if(Is_True(player.AutoFire) && player.snapsRemaining <= 1)
                         player FireGun();
@@ -163,13 +165,13 @@ GetClosestTarget()
 
     for(a = 0; a < zombies.size; a++)
     {
-        if(!IsDefined(zombies[a]) || !IsAlive(zombies[a]) || Is_True(self.AimbotDistanceCheck) && Distance(self.origin, zombies[a].origin) > self.AimbotDistance || self.AimbotVisibilityRequirement == "Damageable" && zombies[a] DamageConeTrace(self GetEye(), self) < 0.1 || self.AimbotVisibilityRequirement == "Visible" && !self IsVisible(zombies[a]) || Is_True(self.PlayableAreaCheck) && zombies[a].archetype == "zombie" && !zm_behavior::inplayablearea(zombies[a]))
+        if(!IsDefined(zombies[a]) || !IsAlive(zombies[a]) || Is_True(self.AimbotDistanceCheck) && Distance(self.origin, zombies[a].origin) > self.AimbotDistance || self.AimbotVisibilityRequirement == "Damageable" && zombies[a] DamageConeTrace(self GetEye(), self) < 0.1 || self.AimbotVisibilityRequirement == "Visible" && !self IsVisible(zombies[a], self.AimBoneTag) || Is_True(self.PlayableAreaCheck) && zombies[a].archetype == "zombie" && !zm_behavior::inplayablearea(zombies[a]))
             continue;
         
         if(!IsDefined(enemy))
             enemy = zombies[a];
         
-        if(enemy == zombies[a] || !Closer(self.origin, zombies[a].origin, enemy.origin) || self.AimbotVisibilityRequirement == "Damageable" && zombies[a] DamageConeTrace(self GetEye(), self) < 0.1 || self.AimbotVisibilityRequirement == "Visible" && !self IsVisible(zombies[a]) || Is_True(self.AimbotDistanceCheck) && Distance(self.origin, zombies[a].origin) > self.AimbotDistance)
+        if(enemy == zombies[a] || !Closer(self.origin, zombies[a].origin, enemy.origin) || self.AimbotVisibilityRequirement == "Damageable" && zombies[a] DamageConeTrace(self GetEye(), self) < 0.1 || self.AimbotVisibilityRequirement == "Visible" && !self IsVisible(zombies[a], self.AimBoneTag) || Is_True(self.AimbotDistanceCheck) && Distance(self.origin, zombies[a].origin) > self.AimbotDistance)
             continue;
         
         enemy = zombies[a];
@@ -178,9 +180,17 @@ GetClosestTarget()
     return enemy;
 }
 
-IsVisible(enemy)
+IsVisible(enemy, tag)
 {
-    return VectorDot(AnglesToForward(self GetTagAngles("tag_weapon_right")), VectorNormalize(enemy GetEye() - self GetWeaponMuzzlePoint())) > Cos(40) && BulletTracePassed(self GetEye(), enemy GetEye(), false, self);
+    if(!IsDefined(enemy))
+        return false;
+    
+    if(!IsDefined(tag))
+        tag = enemy GetEye();
+    else
+        tag = enemy GetTagOrigin(tag);
+    
+    return VectorDot(AnglesToForward(self GetTagAngles("tag_weapon_right")), VectorNormalize(tag - self GetWeaponMuzzlePoint())) > Cos(40) && BulletTracePassed(self GetEye(), tag, false, self);
 }
 
 isFiring1()

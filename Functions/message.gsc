@@ -23,7 +23,7 @@ PopulateMessageMenu(menu)
         case "Advertisements Messages":
             self addMenu("Advertisements");
                 self addOpt("Welcome", ::DisplayMessage, "Welcome To " + GetMenuName());
-                self addOpt("Apparition", ::DisplayMessage, "Apparition Is The Biggest & Best Menu For BO3 Zombies");
+                self addOpt(GetMenuName(), ::DisplayMessage, GetMenuName() + " Is The Biggest & Best Menu For BO3 Zombies");
                 self addOpt("Developer", ::DisplayMessage, GetMenuName() + " Was Developed By CF4_99");
                 self addOpt("YouTube", ::DisplayMessage, "YouTube: CF4_99");
             break;

@@ -65,7 +65,7 @@ PopulateFunScripts(menu, player)
                 player.HitmarkerFeedback = "damage_feedback";
             
             if(!IsDefined(self.HitMarkerColor))
-                self.HitMarkerColor = (1, 1, 1);
+                self.HitMarkerColor = (255, 255, 255);
             
             self addMenu("Hit Markers");
                 self addOptBool(player.ShowHitmarkers, "Hit Markers", ::ShowHitmarkers, player);
@@ -74,7 +74,7 @@ PopulateFunScripts(menu, player)
                 self addOpt("");
 
                 for(a = 0; a < GetColorNames().size; a++)
-                    self addOptBoolPreview((IsVec(self.HitMarkerColor) && self.HitMarkerColor == divideColor(GetColorValues()[(3 * a)], GetColorValues()[((3 * a) + 1)], GetColorValues()[((3 * a) + 2)])), "white", divideColor(GetColorValues()[(3 * a)], GetColorValues()[((3 * a) + 1)], GetColorValues()[((3 * a) + 2)]), GetColorNames()[a], ::HitMarkerColor, divideColor(GetColorValues()[(3 * a)], GetColorValues()[((3 * a) + 1)], GetColorValues()[((3 * a) + 2)]), player);
+                    self addOptBoolPreview((IsVec(self.HitMarkerColor) && self.HitMarkerColor == GetColorValues()[a]), "white", GetColorValues()[a], GetColorNames()[a], ::HitMarkerColor, GetColorValues()[a], player);
                 
                 self addOptBoolPreview((IsString(self.HitMarkerColor) && self.HitMarkerColor == "Rainbow"), "white", "Rainbow", "Smooth Rainbow", ::HitMarkerColor, "Rainbow", player);
             break;
@@ -397,7 +397,7 @@ HitMarkerColor(color, player)
     player.HitMarkerColor = color;
 
     if(IsDefined(player.hud_damagefeedback) && IsVec(color))
-        player.hud_damagefeedback.color = color;
+        player.hud_damagefeedback.color = GetColorVec(color);
 }
 
 PlayerInstaKill(type, player)
@@ -643,8 +643,8 @@ ZombieCounter(player)
                     player.ZombieCounterHud[0] = player createText("default", 1.4, 1, "Alive:", "LEFT", "CENTER", -407, -145, 1, level.RGBFadeColor);
                     player.ZombieCounterHud[1] = player createText("default", 1.4, 1, "Remaining For Round:", "LEFT", "CENTER", player.ZombieCounterHud[0].x, (player.ZombieCounterHud[0].y + 15), 1, level.RGBFadeColor);
                     
-                    player.ZombieCounterHud[2] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (player.ZombieCounterHud[0].x + (player.ZombieCounterHud[0] GetTextWidth() - 8)), player.ZombieCounterHud[0].y, 1, level.RGBFadeColor);
-                    player.ZombieCounterHud[3] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (player.ZombieCounterHud[1].x + (player.ZombieCounterHud[1] GetTextWidth() - 38)), player.ZombieCounterHud[1].y, 1, level.RGBFadeColor);
+                    player.ZombieCounterHud[2] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (player.ZombieCounterHud[0].x + (player.ZombieCounterHud[0] GetTextWidth3arc(player, 1) - 10)), player.ZombieCounterHud[0].y, 1, level.RGBFadeColor);
+                    player.ZombieCounterHud[3] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (player.ZombieCounterHud[1].x + (player.ZombieCounterHud[1] GetTextWidth3arc(player, 1) - 22)), player.ZombieCounterHud[1].y, 1, level.RGBFadeColor);
 
                     for(a = 0; a < player.ZombieCounterHud.size; a++)
                     {
@@ -1181,7 +1181,7 @@ HealthBar(player)
         {
             if(!player isInMenu(true))
             {
-                color = (player.health >= 35) ? divideColor((0 + ((player.maxHealth - player.health) * 8.5)), 255, 0) : divideColor(255, (player.health * 5), 0);
+                color = (player.health >= 35) ? ((0 + ((player.maxHealth - player.health) * 8.5)) / 255, 1, 0) : (1, (player.health * 5) / 255, 0);
                 healthWidth = (player.health >= 200) ? 200 : player.health;
                 maxHealthWidth = (player.maxhealth >= 200) ? 200 : player.maxhealth;
 
@@ -1596,7 +1596,9 @@ RocketRiding(player)
                 if(Distance(client.origin, trace["position"]) <= 225)
                 {
                     if(!IsDefined(rider))
+                    {
                         rider = client;
+                    }
                     else
                     {
                         if(Distance(client, trace["position"]) < Distance(rider, trace["position"]))

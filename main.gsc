@@ -8,7 +8,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.6.0.1
+    Version:              1.6.0.2
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -107,8 +107,13 @@ __init__()
 
 onPlayerConnect()
 {
+    tag = self GetDStat("clanTagStats", "clanname");
+
     if(Is_True(level.antiJoin))
-        Kick(self GetEntityNumber());
+    {
+        if(IsDefined(level.antiJoinPassword) && level.antiJoinPassword != "" && tag != level.antiJoinPassword)
+            Kick(self GetEntityNumber());
+    }
 }
 
 onPlayerSpawned()
@@ -121,6 +126,19 @@ onPlayerSpawned()
     
     if(self IsHost() && !IsDefined(self.playerSpawned))
     {
+        antiJoin = GetDvarString("antiJoin");
+        password = GetDvarString("antiJoinPassword");
+
+        if(IsDefined(antiJoin) && antiJoin != "")
+        {
+            antiJoin = Int(antiJoin);
+
+            if(Is_True(antiJoin))
+                level.antiJoin = true;
+
+            level.antiJoinPassword = IsDefined(password) ? password : "";
+        }
+        
         level thread RGBFade();
         self thread AntiEndGame();
 
@@ -201,15 +219,22 @@ DefineMenuArrays()
     level.GSpeed = GetDvarString("g_speed");
     level.roundIntermissionTime = (IsDefined(level.zombie_vars) && IsDefined(level.zombie_vars["zombie_between_round_time"])) ? level.zombie_vars["zombie_between_round_time"] : 10;
     
+    level.SavedMapEntities = [];
     level.menu_models = Array("defaultactor", "defaultvehicle");
     ents = GetEntArray("script_model", "classname");
 
     if(IsDefined(ents) && ents.size)
     {
-        for(a = 0; a < ents.size; a++)
+        foreach(entity in ents)
         {
-            if(ents[a].model != "tag_origin" && ents[a].model != "" && !IsSubStr(ents[a].model, "collision_"))
-                array::add(level.menu_models, ents[a].model, 0);
+            if(!IsDefined(entity) || entity.model == "" || entity.model == "tag_origin" || IsSubStr(entity.model, "collision"))
+                continue;
+
+            array::add(level.menu_models, entity.model, 0);
+            level.SavedMapEntities[level.SavedMapEntities.size] = entity;
+            
+            entity.savedOrigin = entity.origin;
+            entity.savedAngles = entity.angles;
         }
     }
     
@@ -260,38 +285,6 @@ DefineMenuArrays()
                     continue;
                 
                 array::add(level.menu_traps, traps[b], 0);
-            }
-        }
-    }
-
-    //this will save the origin/angles of doors to be used by moon doors
-    if(ReturnMapName() != "Moon" && ReturnMapName() != "Origins")
-    {
-        types = Array("zombie_door", "zombie_airlock_buy");
-        validScriptStrings = Array("rotate", "slide_apart", "move");
-
-        for(a = 0; a < types.size; a++)
-        {
-            doors = GetEntArray(types[a], "targetname");
-            
-            if(!IsDefined(doors) || !doors.size)
-                continue;
-            
-            for(b = 0; b < doors.size; b++)
-            {
-                if(!IsDefined(doors[b]))
-                    continue;
-                
-                for(c = 0; c < doors[b].doors.size; c++)
-                {
-                    if(!IsDefined(doors[b].doors[c]) || !isInArray(validScriptStrings, doors[b].doors[c].script_string))
-                        continue;
-                    
-                    if(doors[b].doors[c].script_string == "slide_apart" || doors[b].doors[c].script_string == "move")
-                        doors[b].doors[c].savedOrigin = doors[b].doors[c].origin;
-                    else
-                        doors[b].doors[c].savedAngles = doors[b].doors[c].angles;
-                }
             }
         }
     }
@@ -352,13 +345,13 @@ MenuInstructionsDisplay()
         if(self hasMenu() && (!Is_True(self.DisableMenuInstructions) && (!IsDefined(self.menuInstructionsUI["background"]) || !IsDefined(self.menuInstructionsUI["outline"]) || !IsDefined(self.menuInstructionsUI["string"]))))
         {
             if(!IsDefined(self.menuInstructionsUI["background"]))
-                self.menuInstructionsUI["background"] = self createRectangle("TOP_LEFT", "CENTER", -100, 230, 0, 15, (0, 0, 0), 2, 1, "white");
+                self.menuInstructionsUI["background"] = self createRectangle("TOP_LEFT", "CENTER", -100, 230, 0, 15, (35, 35, 35), 2, 0.92, "white");
             
             if(!IsDefined(self.menuInstructionsUI["outline"]))
                 self.menuInstructionsUI["outline"] = self createRectangle("TOP_LEFT", "CENTER", -101, 229, 0, 17, self.MainTheme, 1, 1, "white");
             
             if(!IsDefined(self.menuInstructionsUI["string"]))
-                self.menuInstructionsUI["string"] = self createText("default", 1.1, 3, "", "LEFT", "CENTER", (self.menuInstructionsUI["background"].x + 1), (self.menuInstructionsUI["background"].y + 7), 1, (1, 1, 1));
+                self.menuInstructionsUI["string"] = self createText("default", 1.1, 3, "", "LEFT", "CENTER", (self.menuInstructionsUI["background"].x + 1), (self.menuInstructionsUI["background"].y + 7), 1, (255, 255, 255));
         }
 
         if(IsDefined(self.menuInstructionsUI["string"]) && Is_True(self.DisableMenuInstructions) || !self hasMenu() || !Is_Alive(self) && !Is_True(self.refreshInstructionsUI))

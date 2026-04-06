@@ -9,7 +9,7 @@ PopulateServerModifications(menu)
                 self addOptBool((GetDvarString("g_speed") == "500"), "Super Speed", ::SuperSpeed);
                 self addOptIncSlider("Timescale", ::ServerSetTimeScale, 0.5, GetDvarInt("timescale"), 5, 0.5);
                 self addOpt("Set Round", ::NumberPad, ::SetRound);
-                self addOptBool(level.antiJoin, "Anti-Join", ::AntiJoin);
+                self addOpt("Anti-Join", ::newMenu, "Anti-Join");
                 self addOptBool(level.AntiQuit, "Anti-Quit", ::AntiQuit);
                 self addOptBool(level.AutoRevive, "Auto-Revive", ::AutoRevive);
                 self addOptBool(level.AutoRespawn, "Auto-Respawn", ::AutoRespawn);
@@ -36,6 +36,18 @@ PopulateServerModifications(menu)
                 
                 self addOpt("Change Map", ::newMenu, "Change Map");
                 self addOpt("Restart Game", ::ServerRestartGame);
+            break;
+        
+        case "Anti-Join":
+            if(!IsDefined(level.antiJoinPassword))
+                level.antiJoinPassword = "";
+
+            password = (level.antiJoinPassword == "") ? "^1Not Set" : level.antiJoinPassword;
+
+            self addMenu("Anti-Join");
+                self addOptBool(level.antiJoin, "Anti-Join", ::AntiJoin);
+                self addOpt("ClanTag Password: " + password, ::Keyboard, ::SetAntiJoinPassword);
+                self addOpt("Clear Password", ::ClearAntiJoinPassword);
             break;
         
         case "Doheart Options":
@@ -247,6 +259,28 @@ SetRound(round)
 AntiJoin()
 {
     level.antiJoin = BoolVar(level.antiJoin);
+
+    value = Is_True(level.antiJoin) ? "1" : "0";
+    SetDvar("antiJoin", "" + value);
+}
+
+SetAntiJoinPassword(password = "")
+{
+    if(password == level.antiJoinPassword)
+        return;
+    
+    if(password.size > 4)
+        return self iPrintlnBold("^1ERROR: ^7Password Can't Be Greater Than 4 Chars");
+    
+    level.antiJoinPassword = password;
+    SetDvar("antiJoinPassword", password);
+}
+
+ClearAntiJoinPassword()
+{
+    level.antiJoinPassword = "";
+    SetDvar("antiJoinPassword", "");
+    self RefreshMenu(self getCurrent(), self getCursor());
 }
 
 AntiQuit()

@@ -742,7 +742,6 @@ LightningChargeBeacons()
         level.var_f8d1dc16 thread LightningMissileCharger();
     }
 
-
     bTrigs = GetEntArray("aq_es_beacon_trig", "script_noteworthy");
 
     for(a = 0; a < bTrigs.size; a++)

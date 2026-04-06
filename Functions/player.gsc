@@ -51,6 +51,7 @@ PopulatePlayerOptions(menu, player)
                 self addOpt("Open Pause Menu", ::PlayerOpenPauseMenu, player);
                 self addOpt("Disable Actions", ::newMenu, "Disable Actions");
                 self addOptSlider("Set Stance", ::SetPlayerStance, Array("Prone", "Crouch", "Stand"), player);
+                self addOptSlider("Loop Stance", ::LoopStance, Array("Disable", "Prone", "Crouch", "Stand"), player);
                 self addOpt("Launch", ::LaunchPlayer, player);
                 self addOpt("Mortar Strike", ::MortarStrikePlayer, player);
 
@@ -259,6 +260,19 @@ DisableWeaps(player)
 SetPlayerStance(stance, player)
 {
     player SetStance(ToLower(stance));
+}
+
+LoopStance(stance = "Disable", player)
+{
+    player notify("EndLoopStance");
+    player endon("EndLoopStance");
+    player endon("disconnect");
+    
+    while(stance != "Disable")
+    {
+        player SetStance(ToLower(stance));
+        wait 0.01;
+    }
 }
 
 LaunchPlayer(player)

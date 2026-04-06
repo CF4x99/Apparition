@@ -15,28 +15,20 @@ PopulateMapChallenges(menu)
                 self addOptSlider("Player", ::SetMapChallengesPlayer, playerArray);
                 self addOpt("");
 
-                mapChallenge = [];
-
                 if(IsDefined(self.mapChallengesPlayer._challenges))
-                {
-                    mapChallenge[0] = self.mapChallengesPlayer._challenges.challenge_1;
-                    mapChallenge[1] = self.mapChallengesPlayer._challenges.challenge_2;
-                    mapChallenge[2] = self.mapChallengesPlayer._challenges.challenge_3;
-                }
+                    mapChallenge = Array(self.mapChallengesPlayer._challenges.challenge_1, self.mapChallengesPlayer._challenges.challenge_2, self.mapChallengesPlayer._challenges.challenge_3);
                 else if(IsDefined(self.mapChallengesPlayer.s_challenges))
-                {
-                    mapChallenge[0] = self.mapChallengesPlayer.s_challenges.a_challenge_1;
-                    mapChallenge[1] = self.mapChallengesPlayer.s_challenges.a_challenge_2;
-                    mapChallenge[2] = self.mapChallengesPlayer.s_challenges.a_challenge_3;
-                }
-                else
-                    self addOpt("Map Challenges Not Supported");
+                    mapChallenge = Array(self.mapChallengesPlayer.s_challenges.a_challenge_1, self.mapChallengesPlayer.s_challenges.a_challenge_2, self.mapChallengesPlayer.s_challenges.a_challenge_3);
 
 
                 if(IsDefined(mapChallenge) && mapChallenge.size)
                 {
                     for(a = 0; a < mapChallenge.size; a++)
                         self addOptBool(self.mapChallengesPlayer flag::get("flag_player_completed_challenge_" + mapChallenge[a].n_index), ReturnMapChallengeIString(mapChallenge[a].str_notify), ::MapCompleteChallenge, mapChallenge[a], self.mapChallengesPlayer);
+                }
+                else
+                {
+                    self addOpt("Map Challenges Not Supported");
                 }
             break;
     }

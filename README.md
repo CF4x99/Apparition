@@ -7,7 +7,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.6.0.1
+    Version:              1.6.0.2
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -32,6 +32,34 @@
 
 
 ## Changelog
+<details>
+    <summary>
+        Version 1.6.0.2
+    </summary>
+
+    - Added: Menu Customization -- Menu Design Selection (Apparition / Native / AIO)
+    - Added: Menu Customization -- Menu Width Editor
+    - Added: Menu Customization -- Option to change bool display (Boxes / Text / Text Color)
+    - Added: Menu Customization -- Stealth UI -- This will set option display count to 5(due to hud limitation) and disable bool box display type -- menu ui will be completely hidden from anyone spectating you
+    - Added: Menu Customization -- Quick Exit -- When enabled, you can hold your melee button down for 1 second and the menu will close and save where you're at
+    - Added: Menu Customization -- Spotlight cursor -- Dims the opacity for all options except the cursor
+    - Added: Menu Customization -- Toggle for Large cursor
+    - Added: Host Menu -- Field Of View Slider -- There is no way of setting fov for all clients, so it will stay in Host Menu
+    - Added: Player Malicious Options -- Loop Stance
+    - Added: Entity Options -- Lists all entities on the map and allows you to select a specific entity, or all entities, to control
+    - Added: Server Modifications -- Anti-Join -- Added an optional custom input clan tag password(saves through games)
+    - Added: Color Selection -- Several new colors
+
+    - Changed: Menu Base -- Option display count = 10 -- disable instructions = count + 1 -- set bool display to text or text color = count + 2 -- Both together = count + 4 -- max possible option count will be 14
+    - Changed: Menu Base -- Menu cursor now saves at any position again instead of resetting if you didn't scroll past a certain point
+    - Changed: Menu Base -- Scrolling System -- Minimalized the scrolling system
+    - Changed: Scroller for the keyboard and numberpad is now the main theme color to make it easier to see
+    - Changed: Color Selection -- Updated/improved the approach of color selection
+    - Changed: Keyboard/Numberpad -- Both should now align perfectly with the menu, based on menu width
+
+    - Fixed: Shadows Of Evil Scripts -- Bug With toggling beast mode for players(again)
+</details>
+
 <details>
     <summary>
         Version 1.6.0.1

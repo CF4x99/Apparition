@@ -359,7 +359,9 @@ ControllableZombie(team)
         }
     }
     else
+    {
         self iPrintlnBold("^1ERROR: ^7Couldn't Spawn Zombie");
+    }
     
     wait 0.1;
 

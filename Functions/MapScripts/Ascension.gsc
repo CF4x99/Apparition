@@ -702,7 +702,9 @@ play_cosmo_announcer_vox(alias, alarm_override, wait_override)
         level.cosmann_is_speaking = 0;
     }
     else if(wait_override == 1)
+    {
         level zm_utility::really_play_2d_sound(alias);
+    }
 }
 
 play_gersh_vox(alias)

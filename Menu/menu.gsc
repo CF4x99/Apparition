@@ -3,7 +3,7 @@ RunMenuOptions(menu)
     switch(menu)
     {
         case "Main":
-            self addMenu(GetMenuName());
+            self addMenu((self.MenuDesign == "Native") ? "Main Menu" : GetMenuName());
                 self addOpt("Basic Scripts", ::newMenu, "Basic Scripts");
                 self addOpt("Menu Customization", ::newMenu, "Menu Customization");
                 self addOpt("Message Menu", ::newMenu,"Message Menu");
@@ -22,6 +22,7 @@ RunMenuOptions(menu)
                     if(self getVerification() > 3) //Admin
                     {
                         self addOpt("Forge Options", ::newMenu, "Forge Options");
+                        self addOpt("Entity Options", ::newMenu, "Entity Options");
                         self addOpt("Advanced Scripts", ::newMenu, "Advanced Scripts");
 
                         if(ReturnMapName() != "Unknown")
@@ -78,12 +79,8 @@ RunMenuOptions(menu)
         
         case "Menu Customization":
         case "Open Controls":
-        case "Design Preferences":
         case "Main Design Color":
-        case "Title Color":
-        case "Options Color":
-        case "Toggled Option Color":
-        case "Scrolling Option Color":
+        case "Menu Preferences":
             self PopulateMenuCustomization(menu);
             break;
         
@@ -110,6 +107,28 @@ RunMenuOptions(menu)
         case "Spawn Script Model":
         case "Rotate Script Model":
             self PopulateForgeOptions(menu);
+            break;
+        
+        case "Entity Options":
+        case "Entity Editing List":
+        case "Entity Editor":
+        case "Entity Rotation":
+        case "Entities Rotation":
+
+            if((!IsDefined(level.SavedMapEntities) || !level.SavedMapEntities.size) && menu != "Entity Options")
+            {
+                self.menu_parent = Array("Main");
+                menu = "Entity Options";
+            }
+            
+            if((menu == "Entity Editor" || menu == "Entity Rotation") && !IsDefined(level.SavedMapEntities[self.EntityEditorNumber]))
+            {
+                self.menu_parent = Array("Main", "Entity Options");
+                menu = "Entity Editing List";
+            }
+
+            self.currentMenu = menu;
+            self PopulateEntityOptions(menu);
             break;
         
         case "The Giant Scripts":
@@ -239,6 +258,7 @@ RunMenuOptions(menu)
             break;
         
         case "Server Modifications":
+        case "Anti-Join":
         case "Doheart Options":
         case "Lobby Timer Options":
         case "Zombie Craftables":
@@ -276,6 +296,7 @@ RunMenuOptions(menu)
                 self addOpt("Disconnect", ::disconnect);
                 self addOpt("Player Info", ::newMenu, "Player Info");
                 self addOpt("Custom Map Spawns", ::newMenu, "Custom Map Spawns");
+                self addOptIncSlider("Field Of View", ::FieldOfView, 65, GetDvarFloat("cg_fov_default"), 120, 1);
                 self addOptBool(self.ShowOrigin, "Show Origin", ::ShowOrigin);
                 self addOptBool(level.AntiEndGame, "Anti-End Game", ::AntiEndGame);
                 self addOptBool((GetDvarInt("migration_forceHost") == 1), "Force Host", ::ForceHost);
