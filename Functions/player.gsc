@@ -16,7 +16,7 @@ PopulatePlayerOptions(menu, player)
             break;
         
         case "Verification":
-            self addMenu("Verification");
+            self addMenu(menu);
                 self addOpt("Save Verification", ::SavePlayerVerification, player);
 
                 for(a = 1; a < (GetAccessLevels().size - 2); a++)
@@ -27,7 +27,7 @@ PopulatePlayerOptions(menu, player)
             if(!IsDefined(self.playerAttachBone))
                 self.playerAttachBone = "j_head";
 
-            self addMenu("Model Attachment");
+            self addMenu(menu);
                 
                 if(IsDefined(level.menu_models) && level.menu_models.size)
                 {
@@ -47,7 +47,7 @@ PopulatePlayerOptions(menu, player)
             if(!IsDefined(player.ShellShockTime))
                 player.ShellShockTime = 1;
             
-            self addMenu("Malicious Options");
+            self addMenu(menu);
                 self addOpt("Open Pause Menu", ::PlayerOpenPauseMenu, player);
                 self addOpt("Disable Actions", ::newMenu, "Disable Actions");
                 self addOptSlider("Set Stance", ::SetPlayerStance, Array("Prone", "Crouch", "Stand"), player);
@@ -75,7 +75,7 @@ PopulatePlayerOptions(menu, player)
             break;
         
         case "Disable Actions":
-            self addMenu("Disable Actions");
+            self addMenu(menu);
                 self addOptBool(player.DisableAiming, "Aiming", ::DisableAiming, player);
                 self addOptBool(player.DisableJumping, "Jumping", ::DisableJumping, player);
                 self addOptBool(player.DisableSprinting, "Sprinting", ::DisableSprinting, player);

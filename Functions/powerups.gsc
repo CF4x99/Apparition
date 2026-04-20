@@ -8,7 +8,7 @@ PopulatePowerupMenu(menu)
             
             powerups = GetArrayKeys(level.zombie_include_powerups);
             
-            self addMenu("Power-Up Menu");
+            self addMenu(menu);
                 
                 if(IsDefined(powerups) && powerups.size)
                 {

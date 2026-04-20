@@ -3,7 +3,7 @@ PopulateSOEScripts(menu)
     switch(menu)
     {
         case "Shadows Of Evil Scripts":
-            self addMenu("Shadows Of Evil Scripts");
+            self addMenu(menu);
                 self addOpt("Beast Mode", ::newMenu, "Beast Mode");
                 self addOpt("Fumigator", ::newMenu, "SOE Fumigator");
                 self addOpt("Smashables", ::newMenu, "SOE Smashables");
@@ -17,7 +17,7 @@ PopulateSOEScripts(menu)
             break;
 
         case "Beast Mode":
-            self addMenu("Beast Mode");
+            self addMenu(menu);
 
                 foreach(player in level.players)
                     self addOptBool(player.beastmode, CleanName(player getName()), ::PlayerBeastMode, player);
@@ -63,7 +63,7 @@ PopulateSOEScripts(menu)
             break;
 
         case "Snakeskin Boots":
-            self addMenu("Snakeskin Boots");
+            self addMenu(menu);
 
                 foreach(index, radio in GetEntArray("hs_radio", "targetname"))
                 {

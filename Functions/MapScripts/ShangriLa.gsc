@@ -3,7 +3,7 @@ PopulateShangriLaScripts(menu)
     switch(menu)
     {
         case "Shangri-La Scripts":
-            self addMenu("Shangri-La Scripts");
+            self addMenu(menu);
                 self addOptBool(level flag::get("power_on"), "Turn On Power", ::ActivatePower);
                 self addOptBool(level flag::get("snd_zhdegg_completed"), "Samantha's Hide & Seek", ::ShangHideAndSeekSong);
                 

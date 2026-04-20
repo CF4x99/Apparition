@@ -3,7 +3,7 @@ PopulateZetsubouNoShimaScripts(menu)
     switch(menu)
     {
         case "Zetsubou No Shima Scripts":
-            self addMenu("Zetsubou No Shima Scripts");
+            self addMenu(menu);
                 self addOptBool(level flag::get("power_on"), "Turn On Power", ::ZNS_ActivatePower);
                 self addOptBool(self HasWeapon(level.w_controllable_spider), "Controllable Spider", ::GiveControllableSpider);
                 self addOpt("Pack 'a' Punch Quest Parts", ::newMenu, "Pack 'a' Punch Quest Parts");
@@ -15,7 +15,7 @@ PopulateZetsubouNoShimaScripts(menu)
             break;
         
         case "Pack 'a' Punch Quest Parts":
-            self addMenu("Pack 'a' Punch Quest Parts");
+            self addMenu(menu);
                 self addOptBool(level flag::get("valve1_found"), "Gauge", ::ZNS_PaPQuest, 1);
                 self addOptBool(level flag::get("valve2_found"), "Wheel", ::ZNS_PaPQuest, 2);
                 self addOptBool(level flag::get("valve3_found"), "Whistle", ::ZNS_PaPQuest, 3);
@@ -31,7 +31,7 @@ PopulateZetsubouNoShimaScripts(menu)
         case "Skulltar Teleports":
             skulltars = GetEntArray("mdl_skulltar", "targetname");
 
-            self addMenu("Skulltar Teleports");
+            self addMenu(menu);
 
                 for(a = 0; a < skulltars.size; a++)
                     self addOpt("Skulltar " + (a + 1), ::TeleportPlayer, skulltars[a].origin, self);

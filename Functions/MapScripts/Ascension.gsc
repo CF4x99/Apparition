@@ -3,7 +3,7 @@ PopulateAscensionScripts(menu)
     switch(menu)
     {
         case "Ascension Scripts":
-            self addMenu("Ascension Scripts");
+            self addMenu(menu);
                 self addOptBool(level flag::get("power_on"), "Turn On Power", ::ActivatePower);
                 self addOpt("Control Lunar Lander", ::ControlLunarLander);
                 self addOpt("");

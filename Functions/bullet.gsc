@@ -3,7 +3,7 @@ PopulateBulletMenu(menu, player)
     switch(menu)
     {
         case "Bullet Menu":
-            self addMenu("Bullet Menu");
+            self addMenu(menu);
                 self addOpt("Projectiles", ::newMenu, "Weapon Projectiles");
                 self addOpt("Equipment", ::newMenu, "Equipment Bullets");
                 self addOpt("Effects", ::newMenu, "Bullet Effects");
@@ -115,7 +115,7 @@ PopulateBulletMenu(menu, player)
             if(!IsDefined(player.ExplosiveBulletsDamage))
                 player.ExplosiveBulletsDamage = 100;
             
-            self addMenu("Explosive Bullets");
+            self addMenu(menu);
                 self addOptBool(player.ExplosiveBullets, "Explosive Bullets", ::ExplosiveBullets, player);
                 self addOptBool(player.ExplosiveBulletEffect, "Effect", ::ExplosiveBulletEffect, player);
                 self addOptIncSlider("Range", ::ExplosiveBulletRange, 25, 250, 500, 25, player);

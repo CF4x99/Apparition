@@ -3,7 +3,7 @@ PopulateZombieOptions(menu)
     switch(menu)
     {
         case "Zombie Options":
-            self addMenu("Zombie Options");
+            self addMenu(menu);
                 self addOpt("Spawner", ::newMenu, "AI Spawner");
                 self addOpt("Prioritize", ::newMenu, "Prioritize Players");
                 self addOpt("Death Effect", ::newMenu, "Zombie Death Effect");
@@ -106,7 +106,7 @@ PopulateZombieOptions(menu)
             break;
         
         case "Prioritize Players":
-            self addMenu("Prioritize Players");
+            self addMenu(menu);
             
                 foreach(player in level.players)
                     self addOptBool(player.AIPrioritizePlayer, CleanName(player getName()), ::AIPrioritizePlayer, player);

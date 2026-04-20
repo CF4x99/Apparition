@@ -49,7 +49,7 @@ RunMenuOptions(menu)
             break;
         
         case "Quick Menu":
-            self addMenu("Quick Menu H4X");
+            self addMenu(menu);
 
                 if(Is_Alive(self))
                 {
@@ -79,6 +79,7 @@ RunMenuOptions(menu)
         
         case "Menu Customization":
         case "Open Controls":
+        case "Menu Instructions":
         case "Main Design Color":
         case "Menu Preferences":
             self PopulateMenuCustomization(menu);
@@ -292,10 +293,11 @@ RunMenuOptions(menu)
             break;
         
         case "Host Menu":
-            self addMenu("Host Menu");
+            self addMenu(menu);
                 self addOpt("Disconnect", ::disconnect);
                 self addOpt("Player Info", ::newMenu, "Player Info");
                 self addOpt("Custom Map Spawns", ::newMenu, "Custom Map Spawns");
+                self addOpt("Player Score & Overhead Name Color", ::newMenu, "Player Score & Overhead Name Color");
                 self addOptIncSlider("Field Of View", ::FieldOfView, 65, GetDvarFloat("cg_fov_default"), 120, 1);
                 self addOptBool(self.ShowOrigin, "Show Origin", ::ShowOrigin);
                 self addOptBool(level.AntiEndGame, "Anti-End Game", ::AntiEndGame);
@@ -312,19 +314,52 @@ RunMenuOptions(menu)
             break;
         
         case "Player Info":
-            self addMenu("Player Info");
+            self addMenu(menu);
                 self addOptBool(level.DisablePlayerInfo, "Disable", ::DisablePlayerInfo);
                 self addOptBool(level.IncludeIPInfo, "Include IP", ::IncludeIPInfo);
             break;
         
         case "Custom Map Spawns":
-            self addMenu("Custom Map Spawns");
+            self addMenu(menu);
                 self addOptSlider("Set Map Spawn Location", ::SetMapSpawn, Array("Player 1", "Player 2", "Player 3", "Player 4"), "Set");
                 self addOptSlider("Clear Map Spawn Location", ::SetMapSpawn, Array("Player 1", "Player 2", "Player 3", "Player 4"), "Clear");
             break;
         
+        case "Player Score & Overhead Name Color":
+
+            if(!IsDefined(self.PlayerScoreIndex))
+                self.PlayerScoreIndex = 0;
+            
+            colorVar = [];
+            colorVec = [];
+
+            for(a = 0; a < 4; a++)
+            {
+                colorVar[a] = GetDvarString("scoreColor" + a);
+
+                if(IsDefined(colorVar[a]) && colorVar[a] != "")
+                {
+                    vect = GetDvarVector1("scoreColor" + a);
+
+                    if(IsDefined(vect))
+                        colorVec[a] = (Int(vect[0]), Int(vect[1]), Int(vect[2]));
+                }
+                else
+                {
+                    colorVec[a] = (255, 255, 255);
+                }
+            }
+
+            self addMenu(menu);
+                self addOptIncSlider("Player Index", ::PlayerScoreIndex, 1, 1, 4, 1);
+                self addOpt("");
+
+                for(a = 0; a < GetColorNames().size; a++)
+                    self addOptBool((IsDefined(colorVar[self.PlayerScoreIndex]) && IsDefined(colorVec[self.PlayerScoreIndex]) && colorVec[self.PlayerScoreIndex] == GetColorValues()[a]), GetColorNames()[a], ::PlayerScoreColor, GetColorValues()[a], self.PlayerScoreIndex);
+            break;
+        
         case "Players":
-            self addMenu("Players");
+            self addMenu(menu);
 
                 foreach(player in level.players)
                 {
@@ -345,7 +380,7 @@ RunMenuOptions(menu)
             break;
         
         case "Game Modes":
-            self addMenu("Game Modes");
+            self addMenu(menu);
                 self addOptSlider("Sharpshooter", ::initSharpshooter, Array("Base Weapons", "Upgraded Weapons", "Both"));
                 self addOptSlider("All The Weapons", ::initAllTheWeapons, Array("Base Weapons", "Upgraded Weapons", "Both"));
             break;
@@ -417,7 +452,7 @@ MenuOptionsPlayer(menu, player)
         case "Clan Tag Options":
         case "Custom Stats":
         case "General Stats":
-        case "Gobblegum Stats":
+        case "Gobblegum Uses":
         case "Map Stats":
         case "EE Stats":
             self PopulateProfileManagement(menu, player);

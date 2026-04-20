@@ -7,7 +7,7 @@ PopulateTeleportMenu(menu, player)
             MenuSpawnPoints = ArrayCombine(struct::get_array("player_respawn_point_arena", "targetname"), struct::get_array("player_respawn_point", "targetname"), 0, 1);
             mapStr = ReturnMapName();
             
-            self addMenu("Teleport Menu");
+            self addMenu(menu);
                 self addOptBool(player.DisableTeleportEffect, "Disable Teleport Effect", ::DisableTeleportEffect, player);
                 
                 if(IsDefined(MenuSpawnPoints) && MenuSpawnPoints.size)
@@ -31,7 +31,7 @@ PopulateTeleportMenu(menu, player)
             break;
         
         case "Entity Teleports":            
-            self addMenu("Entity Teleports");
+            self addMenu(menu);
 
                 if(IsDefined(level.chests[level.chest_index]))
                     self addOpt("Mystery Box", ::EntityTeleport, "Mystery Box", player);

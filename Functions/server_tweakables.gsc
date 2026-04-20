@@ -9,7 +9,7 @@ PopulateServerTweakables(menu)
             for(a = 0; a < perks.size; a++)
                 array::add(MenuPerks, perks[a], 0);
 
-            self addMenu("Server Tweakables");
+            self addMenu(menu);
                 self addOpt("Enabled Power-Ups", ::newMenu, "Enabled Power-Ups");
                 self addOptIncSlider("Pack 'a' Punch Camo Index", ::SetPackCamoIndex, 0, level.pack_a_punch_camo_index, 138, 1);
                 self addOptIncSlider("Player Weapon Limit", ::SetPlayerWeaponLimit, 2, 2, 15, 1);
@@ -32,7 +32,7 @@ PopulateServerTweakables(menu)
         case "Enabled Power-Ups":
             powerups = GetArrayKeys(level.zombie_include_powerups);
 
-            self addMenu("Enabled Power-Ups");
+            self addMenu(menu);
 
                 for(a = 0; a < powerups.size; a++)
                 {

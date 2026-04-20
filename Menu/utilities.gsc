@@ -91,6 +91,26 @@ createRectangle(align, relative, x, y, width, height, color, sort, alpha, shader
     return uiElement;
 }
 
+LUI_createRectangle(align, x, y, width, height, color, shader, alpha)
+{
+    boxElem = self OpenLUIMenu("HudElementImage");
+
+    //0 - LEFT | 1 - RIGHT | 2 - CENTER
+    self SetLUIMenuData(boxElem, "alignment", align);
+    self SetLUIMenuData(boxElem, "x", x);
+    self SetLUIMenuData(boxElem, "y", y);
+    self SetLUIMenuData(boxElem, "width", width);
+    self SetLUIMenuData(boxElem, "height", height);
+    self SetLUIMenuData(boxElem, "alpha", alpha);
+    self SetLUIMenuData(boxElem, "material", shader);
+
+    self SetLUIMenuData(boxElem, "red", color[0]);
+    self SetLUIMenuData(boxElem, "green", color[1]);
+    self SetLUIMenuData(boxElem, "blue", color[2]);
+
+    return boxElem;
+}
+
 createServerRectangle(align, relative, x, y, width, height, color, sort, alpha, shader)
 {
     uiElement = NewHudElem();
@@ -839,8 +859,8 @@ Keyboard(func, player)
         for(b = 0; b < lettersTok[a].size; b++)
             letters[a] += lettersTok[a][b] + "\n";
     }
-    
-    self.menuUI["kbString"] = self createText("objective", 1.1, 5, "", "CENTER", "CENTER", self.menuX + (self.menuUI["background"].width / 2), self.menuUI["separator"].y + (self.menuUI["separator"].height + 12), 1, (1, 1, 1));
+
+    self.menuUI["kbString"] = self createText("objective", 1.1, 5, "", "CENTER", "CENTER", self.menuX + (self.menuUI["background"].width / 2), (self.menuUI["background"].y + 12), 1, (1, 1, 1));
 
     for(a = 0; a < letters.size; a++)
         self.menuUI["kbKeys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", self.menuX + (self.menuUI["background"].width / 2) - (((lettersTok.size - 1) * 15) / 2) + (a * 15), (self.menuUI["kbString"].y + 20), 1, (1, 1, 1));
@@ -979,7 +999,7 @@ NumberPad(func, player, param)
     for(a = 0; a < 10; a++)
         letters[a] = a;
     
-    self.menuUI["kbString"] = self createText("objective", 1.2, 5, 0, "CENTER", "CENTER", self.menuX + (self.menuUI["background"].width / 2), self.menuUI["separator"].y + (self.menuUI["separator"].height + 12), 1, (1, 1, 1));
+    self.menuUI["kbString"] = self createText("objective", 1.2, 5, 0, "CENTER", "CENTER", self.menuX + (self.menuUI["background"].width / 2), (self.menuUI["background"].y + 12), 1, (1, 1, 1));
 
     for(a = 0; a < letters.size; a++)
         self.menuUI["kbKeys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", self.menuX + (self.menuUI["background"].width / 2) - (((letters.size - 1) * 15) / 2) + (a * 15), (self.menuUI["kbString"].y + 20), 1, (1, 1, 1));
@@ -1084,6 +1104,7 @@ RGBFade()
         return;
 
     hue = RandomFloatRange(0, 1);
+    value = 0.95;
 
     while(1)
     {
@@ -1093,27 +1114,27 @@ RGBFade()
         switch(step)
         {
             case 0:
-                level.RGBFadeColor = (1, (scaled - step), 0);
+                level.RGBFadeColor = (value, ((scaled - step) * value), 0);
                 break;
             
             case 1:
-                level.RGBFadeColor = ((1 - (scaled - step)), 1, 0);
+                level.RGBFadeColor = (((1 - (scaled - step)) * value), value, 0);
                 break;
             
             case 2:
-                level.RGBFadeColor = (0, 1, (scaled - step));
+                level.RGBFadeColor = (0, value, ((scaled - step) * value));
                 break;
             
             case 3:
-                level.RGBFadeColor = (0, (1 - (scaled - step)), 1);
+                level.RGBFadeColor = (0, ((1 - (scaled - step)) * value), value);
                 break;
             
             case 4:
-                level.RGBFadeColor = ((scaled - step), 0, 1);
+                level.RGBFadeColor = (((scaled - step) * value), 0, value);
                 break;
             
             default:
-                level.RGBFadeColor = (1, 0, (1 - (scaled - step)));
+                level.RGBFadeColor = (value, 0, ((1 - (scaled - step)) * value));
                 break;
         }
 
@@ -1444,8 +1465,7 @@ TriggerUniTrigger(struct, trigger_notify, time) //For Basic Uni Triggers
     }
     else
     {
-        trigger = struct;
-        trigger notify(trigger_notify);
+        struct notify(trigger_notify);
     }
 }
 
@@ -1695,7 +1715,7 @@ MenuCredits()
     self endon("disconnect");
     
     self SoftLockMenu(220, true);
-    MenuTextStartCredits = Array("^1" + GetMenuName(), "The Biggest & Best Menu For ^1Black Ops 3 Zombies", "Developed By: ^1CF4_99", " ", "^1Extinct", "Ideas", "Suggestions", "Constructive Criticism", "His Spec-Nade", " ", "^1ItsFebiven", "Ideas And Suggestions", "Nautaremake Style", " ", "^1CraftyCritter", "BO3 GSC Compiler", " ", "^1Joel", "Bug Reporting", "Testing", "Breaking Shit", " ", "^1Thanks For Choosing " + GetMenuName(), "YouTube: ^1CF4_99", "Discord: ^1cf4_99");
+    MenuTextStartCredits = Array("^1" + GetMenuName(), "The Biggest & Best Menu For ^1Black Ops 3 Zombies", "Developed By: ^1CF4_99", " ", "^1Extinct", "Ideas", "Suggestions", "Constructive Criticism", "His Spec-Nade", " ", "^1ItsFebiven", "Ideas", "Suggestions", " ", "^1CraftyCritter", "BO3 GSC Compiler", " ", "^1Joel", "Testing", "Breaking Shit", "Bug Reporting", " ", "^1Thanks For Choosing " + GetMenuName(), "YouTube: ^1CF4_99", "Discord: ^1cf4_99");
     
     self thread MenuCreditsStart(MenuTextStartCredits);
     self SetMenuInstructions("[{+melee}] - Exit Menu Credits");
@@ -1758,7 +1778,7 @@ CreditsFadeIn(hud, text, moveTime, fadeTime)
     self thread credits_delete(hud);
     hud SetTextString(text);
     hud thread hudFade(1, fadeTime);
-    hud thread hudMoveY(self.menuUI["separator"].y + (self.menuUI["separator"].height + 8), moveTime);
+    hud thread hudMoveY((self.menuUI["background"].y + 12), moveTime);
     
     wait (moveTime - fadeTime);
     
@@ -1968,9 +1988,9 @@ GetDvarVector1(vecVar)
     if(!IsDefined(vecVar) || vecVar == "")
         return (0, 0, 0);
 
-    for(a = 1; a < vecVar.size; a++)
+    for(a = 0; a < vecVar.size; a++)
     {
-        if(vecVar[a] != " " && vecVar[a] != ")")
+        if(vecVar[a] != "(" && vecVar[a] != " " && vecVar[a] != ")")
             dvar += vecVar[a];
     }
     
@@ -1983,8 +2003,29 @@ GetDvarVector1(vecVar)
     return (vals[0], vals[1], vals[2]);
 }
 
+PlayerScoreIndex(index)
+{
+    self.PlayerScoreIndex = (index - 1);
+    self RefreshMenu(self getCurrent(), self getCursor());
+}
+
+PlayerScoreColor(color, index = 1)
+{
+    if(!IsDefined(color) || !IsVec(color))
+        color = (1, 1, 1);
+    
+    SetDvar("scoreColor" + index, "" + color);
+    
+    color = GetColorVec(color);
+    SetDvar("cg_scorescolor_gamertag_" + index, color[0] + " " + color[1] + " " + color[2] + " 1");
+    self RefreshMenu(self getCurrent(), self getCursor());
+
+    self iPrintlnBold("^1" + ToUpper(GetMenuName()) + ": ^7Score Color Will Update At The Start Of Your Next Match");
+}
+
 FieldOfView(value)
 {
+    SetDvar("cg_fov", value);
     SetDvar("cg_fov_default", value);
 }
 

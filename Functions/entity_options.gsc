@@ -3,7 +3,7 @@ PopulateEntityOptions(menu)
     switch(menu)
     {
         case "Entity Options":
-            self addMenu("Entity Options");
+            self addMenu(menu);
                 
                 if(IsDefined(level.SavedMapEntities) && level.SavedMapEntities.size)
                 {
@@ -18,7 +18,7 @@ PopulateEntityOptions(menu)
             break;
 
         case "Entity Editing List":
-            self addMenu("Entity Editing List");
+            self addMenu(menu);
 
                 if(IsDefined(level.SavedMapEntities) && level.SavedMapEntities.size)
                 {

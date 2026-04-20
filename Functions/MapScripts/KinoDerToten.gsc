@@ -3,7 +3,7 @@ PopulateKinoScripts(menu)
     switch(menu)
     {
         case "Kino Der Toten Scripts":
-            self addMenu("Kino Der Toten Scripts");
+            self addMenu(menu);
                 self addOptBool(level flag::get("power_on"), "Turn On Power", ::ActivatePower);
                 self addOptBool(level flag::get("snd_zhdegg_activate"), "Door Knocking Combination", ::CompleteDoorKnockingCombination);
                 self addOptBool(level flag::get("snd_zhdegg_completed"), "Samantha's Hide & Seek", ::SamanthasHideAndSeekSong);

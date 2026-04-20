@@ -6,7 +6,7 @@ PopulateSpawnables(menu)
             if(!IsDefined(level.spawnable))
                 level.spawnable = [];
 
-            self addMenu("Spawnables");
+            self addMenu(menu);
                 self addOptSlider("Skybase", ::SpawnSystem, Array("Spawn", "Dismantle", "Delete"), "Skybase", ::SpawnSkybase);
 
                 if(Is_True(level.spawnable["Skybase_Spawned"]))

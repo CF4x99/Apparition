@@ -7,13 +7,13 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.6.0.2
+    Version:              1.6.0.3
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
-    New Apparition Discord Server: discord.gg/apparitionbo3
+    Apparition Discord Server: https://discord.gg/apparitionbo3
 
     Menu Source & Current Update: https://github.com/CF4x99/Apparition
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
@@ -22,7 +22,7 @@
         - CF4_99 ~ Project Developer
         - Extinct ~ Ideas, Suggestions, Constructive Criticism, and His Spec-Nade
         - CraftyCritter ~ BO3 Compiler
-        - ItsFebiven ~ Ideas, Suggestions, and Nautaremake Style
+        - ItsFebiven ~ Ideas and Suggestions
         - Joel ~ Suggestions, Bug Reports, and Testing The Unique String Crash Protection
 
     If you find any bugs, or come across something that you feel isn't working as it should, please message me on discord.
@@ -32,6 +32,39 @@
 
 
 ## Changelog
+
+<details>
+    <summary>
+        Version 1.6.0.3
+    </summary>
+
+    - Added: Menu Customization -- 'Classic' Menu Design -- Classic Apparition Design
+    - Added: Menu Customization -- Bool box location -- Change where the bool boxes display(Right Side / Left Side)
+    - Added: Menu Customization -- Custom Scroll Animation Time(ms) -- Lower number = faster scrolling -- Higher number = slower scrolling
+    - Added: Menu Customization -- Option Counter -- This will remove 2 options from max option display count -- Not available for AIO design
+    - Added: Menu Customization -- Menu Instructions -- Adaptive Position -- Instructions will appear below the menu and change position based on the menu position, width, and height
+    - Added: Menu Customization -- Menu Instructions -- Reposition -- Set a custom position for menu instructions(credit to Dehabify for the suggestion)
+    - Added: Host Menu -- Custom player score colors -- Select the player index(1 - player count) and set the color for that scorecard -- Also changes overhead name color -- Only shows for you(the host) upon the start of a new match
+
+    - Changed: Menu Designs -- Decreased the space between menu options
+    - Changed: Native Design -- Lowered the opacity of the scroller & banner
+    - Changed: RGB Fade -- Dimmed the brightness of colors
+    - Changed: Basic Scripts -- Custom Crosshairs -- Switched to LUI hud and fixed the issue with color not updating
+    - Changed: Fun Scripts -- Effect Man Options -- If you select the effect that is currently being used, it will disable effect man
+    - Changed: Fun Scripts -- Nuke Nades -- The nuke model that is attached to the grenade will now have the powerup glow effect
+    - Changed: Fun Scripts -- Force Field Options -- You can now adjust the force field size for all types
+    - Changed: Fun Scripts -- Health Bar -- Switch to LUI hud -- Shown in the bottom left under your score -- It will now show regardless of whether you're in the menu or not
+    - Changed: Fun Scripts -- Zombie Counter -- Switched to LUI hud to avoid hud limitation issues -- Now in top left
+
+    - Fixed: Menu Designs -- Rebuilt all designs and corrected several issues
+    - Fixed: Menu Base -- Text Bool Display(ON / OFF) alignment -- The math used for the position had a typo
+    - Fixed: Menu Base -- Potential crash when closing the quick menu while having instructions disabled -- Rare, but possible
+    - Fixed: Player Info -- Player Info was hidden behind the menu
+    - Fixed: Basic Scripts -- Issue with Unlimited equipment not refilling both tactical and lethal equipment
+    - Fixed: Fun Scripts -- Light Protector -- Bug with the light fx not showing
+    - Fixed: Der Eisendrache Scripts -- Fire Bow -- Issue with undefined flag
+</details>
+
 <details>
     <summary>
         Version 1.6.0.2

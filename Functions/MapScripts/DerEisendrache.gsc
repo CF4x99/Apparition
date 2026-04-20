@@ -3,7 +3,7 @@ PopulateDerEisendracheScripts(menu)
     switch(menu)
     {
         case "Der Eisendrache Scripts":
-            self addMenu("Der Eisendrache Scripts");
+            self addMenu(menu);
                 self addOptBool(level flag::get("power_on"), "Turn On Power", ::ActivatePower);
                 self addOptBool(level flag::get("soul_catchers_charged"), "Feed Dragons", ::FeedDragons);
                 self addOptBool(level flag::get("pap_reform_available"), "Activate Pack 'a' Punch Machine", ::CastleActivatePAP);
@@ -19,7 +19,7 @@ PopulateDerEisendracheScripts(menu)
             break;
 
         case "Bow Quests":
-            self addMenu("Bow Quests");
+            self addMenu(menu);
                 if(level flag::get("soul_catchers_charged"))
                 {
                     self addOpt("Fire", ::newMenu, "Fire Bow");
@@ -41,7 +41,9 @@ PopulateDerEisendracheScripts(menu)
                 {
                     if(IsDefined(level.var_c62829c7))
                     {
-                        self addOptBool((level flag::get("rune_prison_obelisk") && !Is_True(level.MagmaRock)), "Shoot Magma Rock", ::MagmaRock);
+                        magmaRock = (!IsDefined(level.MagmaRock) || !Is_True(level.MagmaRock));
+
+                        self addOptBool((level flag::get("rune_prison_obelisk") && magmaRock), "Shoot Magma Rock", ::MagmaRock);
                         self addOptBool(AllRunicCirclesCharged(), "Activate & Charge Runic Circles", ::RunicCircles);
                         self addOptBool(IsClockFireplaceComplete(), "Shoot Fireplace", ::ClockFireplaceStep);
                         self addOptBool(level flag::get("rune_prison_repaired"), "Collect Repaired Arrows", ::CollectRepairedFireArrows);
@@ -440,7 +442,7 @@ AllRunicCirclesCharged()
             if(!IsDefined(circles[a]))
                 continue;
             
-            if(!circles[a] flag::get("runic_circle_activated") || !circles[a] flag::get("runic_circle_charged"))
+            if(!circles[a] flag::exists("runic_circle_activated") || !circles[a] flag::get("runic_circle_activated") || !circles[a] flag::exists("runic_circle_charged") || !circles[a] flag::get("runic_circle_charged"))
                 return false;
         }
     }
@@ -528,12 +530,15 @@ IsClockFireplaceComplete()
 {
     magmaBall = GetEnt("aq_rp_magma_ball_tag", "targetname");
 
-    if(level flag::exists("rune_prison_golf") && level flag::get("rune_prison_golf") && (IsDefined(magmaBall) && magmaBall flag::exists("magma_ball_move_done") && magmaBall flag::get("magma_ball_move_done") || !IsDefined(magmaBall)))
-        return true;
+    if(level flag::exists("rune_prison_golf") && level flag::get("rune_prison_golf"))
+    {
+        if(!IsDefined(magmaBall))
+            return true;
+        
+        if(IsDefined(magmaBall) && magmaBall flag::exists("magma_ball_move_done") && magmaBall flag::get("magma_ball_move_done"))
+            return true;
+    }
 
-    if(!IsDefined(magmaBall))
-        return false;
-    
     return false;
 }
 

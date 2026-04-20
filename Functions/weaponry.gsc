@@ -5,7 +5,7 @@ PopulateWeaponry(menu, player)
         case "Weaponry":
             weapons = Array("Assault Rifles", "Sub Machine Guns", "Light Machine Guns", "Sniper Rifles", "Shotguns", "Pistols", "Launchers", "Specials");
 
-            self addMenu("Weaponry");
+            self addMenu(menu);
 
                 if(!IsVerkoMap())
                 {

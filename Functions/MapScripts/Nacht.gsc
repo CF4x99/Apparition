@@ -3,7 +3,7 @@ PopulateNachtScripts(menu)
     switch(menu)
     {
         case "Nacht Der Untoten Scripts":
-            self addMenu("Nacht Der Untoten Scripts");
+            self addMenu(menu);
                 self addOptBool(level flag::get("snd_zhdegg_completed"), "Samantha's Hide & Seek", ::SamanthasHideAndSeekSong);
                 self addOptBool(level.NachtUndoneSong, "Undone Song", ::NachtUndoneSong);
             break;

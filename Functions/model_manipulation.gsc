@@ -3,7 +3,7 @@ PopulateModelManipulation(menu, player)
     switch(menu)
     {
         case "Model Manipulation":            
-            self addMenu("Model Manipulation");
+            self addMenu(menu);
                 self addOptBool(player.ThirdPerson, "Third Person", ::ThirdPerson, player);
                 self addOpt("Reset", ::ResetPlayerModel, player);
                 self addOpt("");

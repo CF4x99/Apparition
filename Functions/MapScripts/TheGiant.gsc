@@ -3,7 +3,7 @@ PopulateTheGiantScripts(menu)
     switch(menu)
     {
         case "The Giant Scripts":
-            self addMenu("The Giant Scripts");
+            self addMenu(menu);
                 self addOptBool(level flag::get("power_on"), "Turn On Power", ::ActivatePower);
                 self addOpt("Link Teleporters", ::newMenu, "The Giant Teleporters");
                 self addOptBool(level flag::get("snow_ee_completed"), "Complete Sixth Perk", ::GiantCompleteSixthPerk);
@@ -12,7 +12,7 @@ PopulateTheGiantScripts(menu)
             break;
 
         case "The Giant Teleporters":
-            self addMenu("The Giant Teleporters");
+            self addMenu("Link Teleporters");
                 self addOptBool((level.active_links == 3), "Link All", ::GiantLinkAllTeleporters);
 
                 for(a = 0; a < 3; a++)

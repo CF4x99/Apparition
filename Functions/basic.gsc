@@ -3,7 +3,7 @@ PopulateBasicScripts(menu, player)
     switch(menu)
     {
         case "Basic Scripts":
-            self addMenu("Basic Scripts");
+            self addMenu(menu);
                 self addOptBool(player.playerGodmode, "God Mode", ::Godmode, player);
                 self addOptBool(player.PlayerDemiGod, "Demi-God", ::DemiGod, player);
                 self addOptBool(player.Noclip, "Noclip", ::Noclip1, player);
@@ -25,7 +25,7 @@ PopulateBasicScripts(menu, player)
                 self addOpt("Visual Effects", ::newMenu, "Visual Effects");
                 self addOptSlider("Set Vision", ::PlayerSetVision, Array("Default", "zombie_last_stand", "zombie_death"), player);
                 self addOptSlider("Zombie Charms", ::ZombieCharms, Array("None", "Orange", "Green", "Purple", "Blue"), player);
-                self addOptSlider("Custom Crosshairs", ::CustomCrosshairs, Array("Disable", "+", "@", "x", "o", "> <", "CF4_99", "Extinct", "Daltax", "GBP", "ItsFebiven", GetMenuName(), CleanName(player getName())), player);
+                self addOptSlider("Custom Crosshairs", ::CustomCrosshairs, Array("Disable", "+", "@", "x", "o", "> <", "CF4_99", "Extinct", "Daltax", "GBP", "AOC", GetMenuName(), CleanName(player getName())), player);
                 self addOptBool(player.NoExplosiveDamage, "No Explosive Damage", ::NoExplosiveDamage, player);
                 self addOptIncSlider("Character Model Index", ::SetCharacterModelIndex, 0, player.characterIndex, 8, 1, player);
                 self addOptBool(player.LoopCharacterModelIndex, "Random Character Model Index", ::LoopCharacterModelIndex, player);
@@ -43,7 +43,7 @@ PopulateBasicScripts(menu, player)
             for(a = 0; a < perks.size; a++)
                 array::add(MenuPerks, perks[a], 0);
 
-            self addMenu("Perk Menu");
+            self addMenu(menu);
             
                 if(IsDefined(MenuPerks) && MenuPerks.size)
                 {
@@ -62,7 +62,7 @@ PopulateBasicScripts(menu, player)
             for(a = 0; a < bgb.size; a++)
                 array::add(MenuBGB, bgb[a], 0);
 
-            self addMenu("Gobblegum Menu");
+            self addMenu(menu);
 
                 if(IsDefined(MenuBGB) && MenuBGB.size)
                 {
@@ -80,7 +80,7 @@ PopulateBasicScripts(menu, player)
             invalid = Array("none", "__none", "last_stand", "_death", "thrasher");
             visuals = [];
 
-            self addMenu("Visual Effects");
+            self addMenu(menu);
 
                 for(a = 0; a < types.size; a++)
                 {
@@ -294,10 +294,24 @@ UnlimitedEquipment(player)
 
     while(Is_True(player.UnlimitedEquipment))
     {
-        offhand = player GetCurrentOffhand();
+        lethal = player zm_utility::get_player_lethal_grenade();
+        tactical = player zm_utility::get_player_tactical_grenade();
 
-        if(IsDefined(offhand) && offhand != level.weaponnone)
-            player GiveMaxAmmo(offhand);
+        if(IsDefined(lethal) && lethal != level.weaponnone)
+        {
+            if(!player HasWeapon(lethal))
+                player GiveWeapon(lethal);
+            
+            player GiveMaxAmmo(lethal);
+        }
+        
+        if(IsDefined(tactical) && tactical != level.weaponnone)
+        {
+            if(!player HasWeapon(tactical))
+                player GiveWeapon(tactical);
+            
+            player GiveMaxAmmo(tactical);
+        }
         
         player waittill("grenade_fire");
     }
@@ -747,7 +761,7 @@ CustomCrosshairs(text, player)
             return;
 
         if(IsDefined(player.CustomCrosshairsUI))
-            player.CustomCrosshairsUI DestroyHud();
+            player CloseLUIMenu(player.CustomCrosshairsUI);
         
         player.CustomCrosshairsUI = undefined;
         player.CustomCrosshairs = BoolVar(player.CustomCrosshairs);
@@ -755,12 +769,12 @@ CustomCrosshairs(text, player)
     }
 
     if(Is_True(player.CustomCrosshairs) && IsDefined(player.CustomCrosshairsUI))
-        return player.CustomCrosshairsUI SetTextString(text);
+        return player SetLUIMenuData(player.CustomCrosshairsUI, "text", text);
 
     player.CustomCrosshairs = true;
 
     if(!IsDefined(player.CustomCrosshairsUI))
-        player.CustomCrosshairsUI = player createText("default", 1.2, 1, text, "CENTER", "CENTER", 0, 0, 1, level.RGBFadeColor);
+        player.CustomCrosshairsUI = player LUI_createText(text, 2, 513, 345, 255, self.MainTheme);
 }
 
 NoExplosiveDamage(player)

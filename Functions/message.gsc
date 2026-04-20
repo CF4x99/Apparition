@@ -3,7 +3,7 @@ PopulateMessageMenu(menu)
     switch(menu)
     {
         case "Message Menu":
-            self addMenu("Message Menu");
+            self addMenu(menu);
                 self addOptSlider("Display Type", ::MessageDisplay, Array("Notify", "Print Bold"));
                 self addOpt("Custom Message", ::Keyboard, ::DisplayMessage);
                 self addOpt("Miscellaneous", ::newMenu, "Miscellaneous Messages");

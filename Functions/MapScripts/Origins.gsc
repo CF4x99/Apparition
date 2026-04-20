@@ -3,7 +3,7 @@ PopulateOriginsScripts(menu)
     switch(menu)
     {
         case "Origins Scripts":
-            self addMenu("Origins Scripts");
+            self addMenu(menu);
                 self addOptSlider("Weather", ::OriginsSetWeather, Array("None", "Rain", "Snow"));
                 self addOpt("Generators", ::newMenu, "Origins Generators");
                 self addOpt("Gateways", ::newMenu, "Origins Gateways");
@@ -66,7 +66,7 @@ PopulateOriginsScripts(menu)
         case "Soul Boxes":
             boxes = GetEntArray("foot_box", "script_noteworthy");
 
-            self addMenu("Soul Boxes");
+            self addMenu(menu);
 
                 if(IsDefined(boxes) && boxes.size)
                 {

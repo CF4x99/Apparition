@@ -3,7 +3,7 @@ PopulateShinoScripts(menu)
     switch(menu)
     {
         case "Shi No Numa Scripts":
-            self addMenu("Shi No Numa Scripts");
+            self addMenu(menu);
                 self addOptBool(level flag::get("snd_zhdegg_completed"), "Samantha's Hide & Seek", ::ShinoHideAndSeek);
                 self addOptBool(level.ShinoTheOneSong, "The One Song", ::ShinoTheOneSong);
             break;

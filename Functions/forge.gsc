@@ -9,7 +9,7 @@ PopulateForgeOptions(menu)
             if(!IsDefined(self.forgeModelScale))
                 self.forgeModelScale = 1;
             
-            self addMenu("Forge Options");
+            self addMenu(menu);
                 self addOpt("Spawn", ::newMenu, "Spawn Script Model");
                 self addOptIncSlider("Scale", ::ForgeModelScale, 0.5, 1, 10, 0.5);
                 self addOpt("Place", ::ForgePlaceModel);

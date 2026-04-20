@@ -3,7 +3,7 @@ PopulateAdvancedScripts(menu)
     switch(menu)
     {
         case "Advanced Scripts":
-            self addMenu("Advanced Scripts");
+            self addMenu(menu);
                 self addOpt("Rain Options", ::newMenu, "Rain Options");
                 self addOpt("Custom Sentry", ::newMenu, "Custom Sentry");
                 self addOptSlider("Controllable Zombie", ::ControllableZombie, Array("Friendly", "Enemy"));
@@ -25,7 +25,7 @@ PopulateAdvancedScripts(menu)
             break;
         
         case "Rain Options":
-            self addMenu("Rain Options");
+            self addMenu(menu);
                 self addOpt("Disable", ::DisableLobbyRain);
                 self addOpt("Models", ::newMenu, "Rain Models");
                 self addOpt("Effects", ::newMenu, "Rain Effects");
@@ -86,7 +86,7 @@ PopulateAdvancedScripts(menu)
             if(!IsDefined(self.CustomSentryWeapon))
                 self.CustomSentryWeapon = GetWeapon("minigun");
 
-            self addMenu("Custom Sentry");
+            self addMenu(menu);
                 self addOptBool(self.CustomSentry, "Custom Sentry", ::CustomSentry);
                 self addOpt("");
                 self addOptBool((self.CustomSentryWeapon == GetWeapon("minigun")), "Death Machine", ::SetCustomSentryWeapon, GetWeapon("minigun"));

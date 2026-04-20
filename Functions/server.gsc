@@ -3,7 +3,7 @@ PopulateServerModifications(menu)
     switch(menu)
     {
         case "Server Modifications":
-            self addMenu("Server Modifications");
+            self addMenu(menu);
                 self addOptBool(level.SuperJump, "Super Jump", ::SuperJump);
                 self addOptBool((GetDvarInt("bg_gravity") == 200), "Low Gravity", ::LowGravity);
                 self addOptBool((GetDvarString("g_speed") == "500"), "Super Speed", ::SuperSpeed);
@@ -44,7 +44,7 @@ PopulateServerModifications(menu)
 
             password = (level.antiJoinPassword == "") ? "^1Not Set" : level.antiJoinPassword;
 
-            self addMenu("Anti-Join");
+            self addMenu(menu);
                 self addOptBool(level.antiJoin, "Anti-Join", ::AntiJoin);
                 self addOpt("ClanTag Password: " + password, ::Keyboard, ::SetAntiJoinPassword);
                 self addOpt("Clear Password", ::ClearAntiJoinPassword);
@@ -57,7 +57,7 @@ PopulateServerModifications(menu)
             if(!IsDefined(level.DoheartSavedText))
                 level.DoheartSavedText = CleanName(bot::get_host_player() getName());
             
-            self addMenu("Doheart Options");
+            self addMenu(menu);
                 self addOptBool(level.Doheart, "Doheart", ::Doheart);
                 self addOptSlider("Text", ::DoheartTextPass, Array(CleanName(bot::get_host_player() getName()), GetMenuName(), "CF4_99", "Custom"));
                 self addOptSlider("Style", ::SetDoheartStyle, Array("Pulsing", "Pulse Effect", "Type Writer", "Moving", "Fade Effect"));
@@ -67,13 +67,13 @@ PopulateServerModifications(menu)
             if(!IsDefined(level.LobbyTime))
                 level.LobbyTime = 10;
             
-            self addMenu("Lobby Timer Options");
+            self addMenu(menu);
                 self addOptBool(level.LobbyTimer, "Lobby Timer", ::LobbyTimer);
                 self addOptIncSlider("Set Lobby Timer", ::SetLobbyTimer, 1, 10, 30, 1);
             break;
         
         case "Mystery Box Options":
-            self addMenu("Mystery Box Options");
+            self addMenu(menu);
                 self addOptBool(level.chests[level.chest_index].old_cost != 950, "Custom Price", ::NumberPad, ::SetBoxPrice);
                 self addOptBool((GetDvarString("magic_chest_movable") == "0"), "Never Moves", ::BoxNeverMoves);
                 self addOptBool(AllBoxesActive(), "Show All", ::ShowAllChests);
@@ -151,7 +151,7 @@ PopulateServerModifications(menu)
             break;
         
         case "Joker Model":
-            self addMenu("Joker Model");
+            self addMenu(menu);
                 self addOptBool((level.chest_joker_model == level.saved_jokerModel), "Reset", ::SetBoxJokerModel, level.saved_jokerModel);
                 self addOpt("");
 
@@ -180,7 +180,7 @@ PopulateServerModifications(menu)
             break;
         
         case "Zombie Traps":
-            self addMenu("Zombie Traps");
+            self addMenu(menu);
 
                 if(IsDefined(level.menu_traps) && level.menu_traps.size)
                 {
@@ -197,7 +197,7 @@ PopulateServerModifications(menu)
         case "Change Map":
             mapNames = Array("zm_zod", "zm_factory", "zm_castle", "zm_island", "zm_stalingrad", "zm_genesis", "zm_prototype", "zm_asylum", "zm_sumpf", "zm_theater", "zm_cosmodrome", "zm_temple", "zm_moon", "zm_tomb");
 
-            self addMenu("Change Map");
+            self addMenu(menu);
 
                 for(a = 0; a < mapNames.size; a++)
                     self addOptBool((level.script == mapNames[a]), ReturnMapName(mapNames[a]), ::ServerChangeMap, mapNames[a]);

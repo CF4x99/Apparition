@@ -3,7 +3,7 @@ PopulateRevelationsScripts(menu)
     switch(menu)
     {
         case "Revelations Scripts":
-            self addMenu("Revelations Scripts");
+            self addMenu(menu);
                 self addOpt("Challenges", ::newMenu, "Map Challenges");
                 self addOpt("Keeper Companion Parts", ::newMenu, "Revelations Keeper Companion");
                 self addOptBool(level flag::get("all_power_on"), "Corrupt All Generators", ::RevelationsPowerOn);

@@ -6,7 +6,7 @@ PopulateFunScripts(menu, player)
             if(!IsDefined(player.DamagePointsMultiplier))
                 player.DamagePointsMultiplier = 1;
             
-            self addMenu("Fun Scripts");
+            self addMenu(menu);
                 self addOpt("Earthquake", ::SendEarthquake, player);
                 self addOpt("Adventure Time", ::AdventureTime, player);
                 self addOpt("Force Field Options", ::newMenu, "Force Field Options");
@@ -51,7 +51,7 @@ PopulateFunScripts(menu, player)
             if(!IsDefined(player.EffectManTag))
                 player.EffectManTag = "j_head";
 
-            self addMenu("Effects Man Options");
+            self addMenu(menu);
                 self addOptBool(!IsDefined(player.EffectMan), "Disable", ::DisableEffectMan, player);
                 self addOptSlider("Tag", ::SetEffectManTag, Array("j_head", "j_neck", "j_spine4", "j_spinelower", "j_mainroot", "pelvis", "j_ankle_ri", "j_ankle_le"), player);
                 self addOpt("");
@@ -67,16 +67,16 @@ PopulateFunScripts(menu, player)
             if(!IsDefined(self.HitMarkerColor))
                 self.HitMarkerColor = (255, 255, 255);
             
-            self addMenu("Hit Markers");
+            self addMenu(menu);
                 self addOptBool(player.ShowHitmarkers, "Hit Markers", ::ShowHitmarkers, player);
                 self addOptSlider("Hit Marker Sound", ::HitmarkerSound, Array("None", "fly_melee_lunge_victim_bat", "fly_melee_lunge_victim_pistol", "fly_melee_lunge_rifle", "fly_melee_lunge_victim_knife", "fly_melee_lunge_victim_nunchucks"), player);
                 self addOptSlider("Feedback", ::HitmarkerFeedback, Array("damage_feedback", "damage_feedback_glow_orange", "damage_feedback_flak", "damage_feedback_tac", "damage_feedback_armor"), player);
                 self addOpt("");
 
                 for(a = 0; a < GetColorNames().size; a++)
-                    self addOptBoolPreview((IsVec(self.HitMarkerColor) && self.HitMarkerColor == GetColorValues()[a]), "white", GetColorValues()[a], GetColorNames()[a], ::HitMarkerColor, GetColorValues()[a], player);
+                    self addOptBool((IsVec(self.HitMarkerColor) && self.HitMarkerColor == GetColorValues()[a]), GetColorNames()[a], ::HitMarkerColor, GetColorValues()[a], player);
                 
-                self addOptBoolPreview((IsString(self.HitMarkerColor) && self.HitMarkerColor == "Rainbow"), "white", "Rainbow", "Smooth Rainbow", ::HitMarkerColor, "Rainbow", player);
+                self addOptBool((IsString(self.HitMarkerColor) && self.HitMarkerColor == "Rainbow"), "Smooth Rainbow", ::HitMarkerColor, "Rainbow", player);
             break;
         
         case "Sound/Music":
@@ -85,7 +85,7 @@ PopulateFunScripts(menu, player)
             foreach(category, sound in level.sndplayervox)
                 array::add(MenuVOXCategory, CleanString(category, true), 0);
 
-            self addMenu("Sound/Music");
+            self addMenu(menu);
                 self addOpt("Perk Jingles & Quotes", ::newMenu, "Perk Jingles & Quotes");
 
                 for(a = 0; a < MenuVOXCategory.size; a++)
@@ -96,7 +96,7 @@ PopulateFunScripts(menu, player)
             perkArray = [];
             vendings = GetEntArray("zombie_vending", "targetname");
 
-            self addMenu("Perk Jingles & Quotes");
+            self addMenu(menu);
                 
                 for(a = 0; a < vendings.size; a++)
                 {
@@ -117,14 +117,14 @@ PopulateFunScripts(menu, player)
         
         case "Force Field Options":
             if(!IsDefined(player.ForceFieldSize))
-                player.ForceFieldSize = 250;
+                player.ForceFieldSize = 90;
             
             if(!IsDefined(player.ForceFieldType))
                 player.ForceFieldType = "Invisible";
             
-            self addMenu("Force Field Options");
+            self addMenu(menu);
                 self addOptBool(player.ForceField, "Force Field", ::ForceField, player);
-                self addOptIncSlider("Size", ::ForceFieldSize, 250, player.ForceFieldSize, 500, 25, player);
+                self addOptIncSlider("Size", ::ForceFieldSize, 90, player.ForceFieldSize, 500, 10, player);
                 self addOptSlider("Type", ::ForceFieldType, Array("Invisible", "Death Skulls", "Light"), player);
             break;
         
@@ -215,7 +215,7 @@ ForceField(player)
             
             for(a = 0; a < 4; a++)
             {
-                player.ForceFieldEnts[player.ForceFieldEnts.size] = SpawnScriptModel(player.origin + (Cos(a * 90) * 90, Sin(a * 90) * 90, 30), (player.ForceFieldType == "Death Skulls") ? level.zombie_powerups["insta_kill"].model_name : "tag_origin", (0, (a * 90), 0));
+                player.ForceFieldEnts[player.ForceFieldEnts.size] = SpawnScriptModel(player.origin + (Cos(a * 90) * player.ForceFieldSize, Sin(a * 90) * player.ForceFieldSize, 30), (player.ForceFieldType == "Death Skulls") ? level.zombie_powerups["insta_kill"].model_name : "tag_origin", (0, (a * 90), 0));
                 player.ForceFieldEnts[(player.ForceFieldEnts.size - 1)] clientfield::set("powerup_fx", Int(color));
                 player.ForceFieldEnts[(player.ForceFieldEnts.size - 1)] LinkTo(player.ForceFieldLinker);
 
@@ -282,10 +282,16 @@ ForceFieldLinker()
 
 ForceFieldSize(num, player)
 {
-    if(player.ForceFieldType != "Invisible")
-        return self iPrintlnBold("^1ERROR: ^7This Force Field Type Doesn't Support Custom Sizes");
-    
     player.ForceFieldSize = num;
+
+    if(Is_True(player.ForceField))
+    {
+        for(a = 0; a < 2; a++)
+        {
+            ForceField(player);
+            wait 0.1;
+        }
+    }
 }
 
 ForceFieldType(type, player)
@@ -314,6 +320,12 @@ ForceFieldType(type, player)
 
 EffectMan(fx, player)
 {
+    if(IsDefined(player.SavedFX) && player.SavedFX == fx)
+    {
+        DisableEffectMan(player);
+        return;
+    }
+
     player notify("EndEffectMan");
     player endon("EndEffectMan");
     player endon("disconnect");
@@ -628,53 +640,46 @@ ZombieCounter(player)
     
     if(Is_True(player.ZombieCounter))
     {
-        if(player isInMenu(true))
-            player iPrintlnBold("^1NOTE: ^7The Zombie Counter Is Only Visible While The Menu Is Closed");
-
-        while(Is_True(player.ZombieCounter))
+        while(Is_True(player.ZombieCounter) && Is_Alive(player))
         {
-            if(!player isInMenu(true))
+            if(!IsDefined(player.ZombieCounterHud) || !player.ZombieCounterHud.size)
             {
-                if(!IsDefined(player.ZombieCounterHud) || !player.ZombieCounterHud.size)
-                {
-                    if(!IsDefined(player.ZombieCounterHud))
-                        player.ZombieCounterHud = [];
-                    
-                    player.ZombieCounterHud[0] = player createText("default", 1.4, 1, "Alive:", "LEFT", "CENTER", -407, -145, 1, level.RGBFadeColor);
-                    player.ZombieCounterHud[1] = player createText("default", 1.4, 1, "Remaining For Round:", "LEFT", "CENTER", player.ZombieCounterHud[0].x, (player.ZombieCounterHud[0].y + 15), 1, level.RGBFadeColor);
-                    
-                    player.ZombieCounterHud[2] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (player.ZombieCounterHud[0].x + (player.ZombieCounterHud[0] GetTextWidth3arc(player, 1) - 10)), player.ZombieCounterHud[0].y, 1, level.RGBFadeColor);
-                    player.ZombieCounterHud[3] = player createText("default", 1.4, 1, 0, "LEFT", "CENTER", (player.ZombieCounterHud[1].x + (player.ZombieCounterHud[1] GetTextWidth3arc(player, 1) - 22)), player.ZombieCounterHud[1].y, 1, level.RGBFadeColor);
+                if(!IsDefined(player.ZombieCounterHud))
+                    player.ZombieCounterHud = [];
+                
+                xPos = 24;
+                yPos = 35;
 
-                    for(a = 0; a < player.ZombieCounterHud.size; a++)
-                    {
-                        if(IsDefined(player.ZombieCounterHud[a]))
-                            player.ZombieCounterHud[a] thread HudRGBFade();
-                    }
-                }
-                else
-                {
-                    player.ZombieCounterHud[2] SetValue(zombie_utility::get_current_zombie_count());
-                    player.ZombieCounterHud[3] SetValue(level.zombie_total);
-                }
+                player.ZombieCounterHud[0] = player LUI_createRectangle(0, (xPos - 3), (yPos - 1), 227, 49, GetColorVec(self.MainTheme), "white", 1);
+                player.ZombieCounterHud[1] = player LUI_createRectangle(0, (xPos - 2), yPos, (player GetLUIMenuData(player.ZombieCounterHud[0], "width") - 2), (player GetLUIMenuData(player.ZombieCounterHud[0], "height") - 2), (0, 0, 0), "white", 0.8);
+                
+                player.ZombieCounterHud[2] = player LUI_createText("Alive: ", 0, xPos, yPos, 41, (1, 1, 1));
+                player.ZombieCounterHud[3] = player LUI_createText("Remaining For Round: ", 0, xPos, (yPos + 20), 154, (1, 1, 1));
+
+                player.ZombieCounterHud[4] = player LUI_createText(zombie_utility::get_current_zombie_count(), 0, player GetLUIMenuData(player.ZombieCounterHud[2], "x") + player GetLUIMenuData(player.ZombieCounterHud[2], "width"), player GetLUIMenuData(player.ZombieCounterHud[2], "y"), 255, (1, 1, 1));
+                player.ZombieCounterHud[5] = player LUI_createText(level.zombie_total, 0, player GetLUIMenuData(player.ZombieCounterHud[3], "x") + player GetLUIMenuData(player.ZombieCounterHud[3], "width"), player GetLUIMenuData(player.ZombieCounterHud[3], "y"), 255, (1, 1, 1));
             }
             else
             {
-                if(IsDefined(player.ZombieCounterHud) && player.ZombieCounterHud.size)
-                {
-                    destroyAll(player.ZombieCounterHud);
-                    player.ZombieCounterHud = [];
-                }
+                player SetLUIMenuData(player.ZombieCounterHud[4], "text", zombie_utility::get_current_zombie_count());
+                player SetLUIMenuData(player.ZombieCounterHud[5], "text", level.zombie_total);
             }
 
             wait 0.01;
         }
 
-        player.ZombieCounterHud = undefined;
+        if(Is_True(player.ZombieCounter)) //LUI hud destroys on death, so we need to disable zombie counter on death
+            ZombieCounter(player);
     }
     else
     {
-        destroyAll(player.ZombieCounterHud);
+        for(a = 0; a < player.ZombieCounterHud.size; a++)
+        {
+            if(IsDefined(player.ZombieCounterHud[a]))
+                player CloseLUIMenu(player.ZombieCounterHud[a]);
+        }
+
+        player.ZombieCounterHud = undefined;
     }
 }
 
@@ -688,9 +693,7 @@ LightProtector(player)
     if(Is_True(player.LightProtector))
     {
         player.LightProtect = SpawnScriptModel(player GetTagOrigin("j_head") + (0, 0, 45), "tag_origin");
-
-        if(IsDefined(player.LightProtect))
-            PlayFXOnTag(level._effect["powerup_on"], player.LightProtect, "tag_origin");
+        player.LightProtect clientfield::set("powerup_fx", Int(Pow(2, RandomInt(3))));
 
         while(Is_True(player.LightProtector) && IsDefined(player.LightProtect))
         {
@@ -995,6 +998,7 @@ NukeNade()
         return;
     
     nukeModel = SpawnScriptModel(self.origin, "p7_zm_power_up_nuke", self.angles);
+    nukeModel clientfield::set("powerup_fx", Int(Pow(2, RandomInt(3))));
 
     if(IsDefined(nukeModel))
         nukeModel LinkTo(self);
@@ -1174,62 +1178,42 @@ HealthBar(player)
     {
         player endon("disconnect");
 
-        if(player isInMenu(true))
-            player iPrintlnBold("^1NOTE: ^7The Health Bar Is Only Visible While The Menu Is Closed");
-
-        while(is_True(player.HealthBar))
+        while(is_True(player.HealthBar) && Is_Alive(player))
         {
-            if(!player isInMenu(true))
+            healthWidth = player.health;
+            maxHealthWidth = player.maxhealth;
+
+            if(maxHealthWidth > 150)
             {
-                color = (player.health >= 35) ? ((0 + ((player.maxHealth - player.health) * 8.5)) / 255, 1, 0) : (1, (player.health * 5) / 255, 0);
-                healthWidth = (player.health >= 200) ? 200 : player.health;
-                maxHealthWidth = (player.maxhealth >= 200) ? 200 : player.maxhealth;
+                healthWidth = Int((healthWidth / maxHealthWidth) * 150);
+                maxHealthWidth = 150;
+            }
 
-                if(!IsDefined(player.HealthBarUI) || !player.HealthBarUI.size)
-                {
-                    health = player.health;
-                    player.HealthBarUI = [];
+            if(!IsDefined(player.HealthBarUI) || !player.HealthBarUI.size)
+            {
+                player.HealthBarUI = [];
 
-                    player.HealthBarUI[0] = player createRectangle("LEFT", "CENTER", -100, -200, (maxHealthWidth + 4), 19, (0, 0, 0), 1, 0.8, "white");
-                    player.HealthBarUI[1] = player createRectangle("LEFT", "CENTER", (player.HealthBarUI[0].x + 2), player.HealthBarUI[0].y, healthWidth, 17, color, 2, 1, "white");
-                    player.HealthBarUI[2] = player createText("default", 1.2, 3, healthWidth, "CENTER", "CENTER", (player.HealthBarUI[0].x + ((player.maxhealth + 4) / 2)), player.HealthBarUI[0].y, 1, (1, 1, 1));
-                }
-                else
-                {
-                    if(player.HealthBarUI[0].width != maxHealthWidth)
-                        player.HealthBarUI[0] SetShaderValues(undefined, maxHealthWidth + 4);
-                    
-                    if(player.HealthBarUI[1].color != color)
-                        player.HealthBarUI[1].color = color;
-                    
-                    if(player.HealthBarUI[1].width != healthWidth)
-                        player.HealthBarUI[1] SetShaderValues(undefined, healthWidth);
-                    
-                    if(player.HealthBarUI[2].x != (player.HealthBarUI[0].x + ((player.maxhealth + 4) / 2)))
-                        player.HealthBarUI[2].x = (player.HealthBarUI[0].x + ((player.maxhealth + 4) / 2));
-
-                    player.HealthBarUI[2] SetValue(player.health);
-                }
+                player.HealthBarUI[0] = player LUI_createRectangle(0, 24, 600, (maxHealthWidth + 2), 14, (0, 0, 0), "white", 1);
+                player.HealthBarUI[1] = player LUI_createRectangle(0, 25, 601, healthWidth, 12, (1, 1, 1), "white", 0.9);
             }
             else
             {
-                if(IsDefined(player.HealthBarUI) && player.HealthBarUI.size)
-                {
-                    destroyAll(player.HealthBarUI);
-                    player.HealthBarUI = undefined;
-                }
+                player SetLUIMenuData(player.HealthBarUI[0], "width", (maxHealthWidth + 2));
+                player SetLUIMenuData(player.HealthBarUI[1], "width", healthWidth);
             }
 
             wait 0.01;
         }
 
-        player.HealthBarUI = undefined;
+        if(Is_True(player.HealthBar))
+            HealthBar(player);
     }
     else
     {
         if(IsDefined(player.HealthBarUI) && player.HealthBarUI.size)
         {
-            destroyAll(player.HealthBarUI);
+            player CloseLUIMenu(player.HealthBarUI[0]);
+            player CloseLUIMenu(player.HealthBarUI[1]);
             player.HealthBarUI = undefined;
         }
     }

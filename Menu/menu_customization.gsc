@@ -3,11 +3,12 @@ PopulateMenuCustomization(menu)
     switch(menu)
     {
         case "Menu Customization":
-            self addMenu("Menu Customization");
+            self addMenu(menu);
                 self addOpt("Menu Credits", ::MenuCredits);
                 self addOpt("Open Controls", ::newMenu, "Open Controls");
                 self addOpt("Width Editor", ::MenuWidthEditor);
                 self addOpt("Reposition Menu", ::RepositionMenu);
+                self addOpt("Menu Instructions", ::newMenu, "Menu Instructions");
                 self addOpt("Main Design Color", ::newMenu, "Main Design Color");
                 self addOpt("Menu Preferences", ::newMenu, "Menu Preferences");
             break;
@@ -22,7 +23,7 @@ PopulateMenuCustomization(menu)
             buttons = Array("+actionslot 1", "+actionslot 2", "+actionslot 3", "+actionslot 4", "+melee", "+speed_throw", "+attack", "+breath_sprint", "+activate", "+frag", "+smoke", "+stance");
             type = (self.OpenControlType == GetMenuName()) ? self.OpenControls : self.QuickControls;
 
-            self addMenu("Open Controls");
+            self addMenu(menu);
                 self addOptSlider("Menu", ::OpenControlType, Array(GetMenuName(), "Quick Menu"));
                 self addOptIncSlider("Bind Slot", ::OpenControlIndex, 1, 1, 3, 1); //If you want to allow more buttons to be chosen, change the '3' to whatever number you want.
                 self addOpt("");
@@ -34,25 +35,34 @@ PopulateMenuCustomization(menu)
                     self addOptBool((IsDefined(type[(self.OpenControlIndex - 1)]) && type[(self.OpenControlIndex - 1)] == button), "[{" + button + "}]", ::SetOpenButtons, self.OpenControlType, button);
             break;
         
+        case "Menu Instructions":
+            self addMenu(menu);
+                self addOptBool(self.DisableMenuInstructions, "Disable", ::DisableMenuInstructions);
+                self addOptBool(self.AdaptiveMenuInstructions, "Adaptive Position", ::AdaptiveMenuInstructions);
+                self addOpt("Reposition", ::RepositionMenuInstructions);
+            break;
+        
         case "Main Design Color":
-            self addMenu("Main Design Color");
+            self addMenu(menu);
                 
                 for(a = 0; a < GetColorNames().size; a++)
-                    self addOptBoolPreview((!Is_True(self.SmoothRainbowTheme) && self.MainTheme == GetColorValues()[a]), "white", GetColorValues()[a], GetColorNames()[a], ::MenuTheme, GetColorValues()[a]);
+                    self addOptBool((!Is_True(self.SmoothRainbowTheme) && self.MainTheme == GetColorValues()[a]), GetColorNames()[a], ::MenuTheme, GetColorValues()[a]);
                 
-                self addOptBoolPreview(self.SmoothRainbowTheme, "white", "Rainbow", "Smooth Rainbow", ::SmoothRainbowTheme);
+                self addOptBool(self.SmoothRainbowTheme, "Smooth Rainbow", ::SmoothRainbowTheme);
             break;
         
         case "Menu Preferences":
-            self addMenu("Menu Preferences");
-                self addOptSlider("Design", ::MenuDesign, Array(GetMenuName(), "Native", "AIO"));
+            self addMenu(menu);
+                self addOptSlider("Design", ::MenuDesign, Array(GetMenuName(), "Classic", "Native", "AIO"));
                 self addOptSlider("Bool Display", ::BoolDisplay, Array("Boxes", "Text", "Text Color"));
+                self addOptSlider("Bool Box Location", ::BoolLocation, Array("Right", "Left"));
+                self addOptIncSlider("Scroll Animation Time (ms)", ::ScrollAnimationTime, 10, Int(self.ScrollAnimationTime * 100), 25, 1);
                 self addOptBool(self.QuickExit, "Quick Exit [ Hold [{+melee}] ]", ::QuickExit);
-                self addOptBool(self.DisableMenuInstructions, "Disable Instructions", ::DisableMenuInstructions);
                 self addOptBool(self.DisableQM, "Disable Quick Menu", ::DisableQuickMenu);
                 self addOptBool(self.SpotlightCursor, "Spotlight Cursor", ::SpotlightCursor);
                 self addOptBool(self.ColoredCursor, "Colored Cursor", ::ColoredCursor);
                 self addOptBool(self.LargeCursor, "Large Cursor", ::LargeCursor);
+                self addOptBool(self.OptionCounter, "Option Counter", ::OptionCounter);
                 self addOptBool(self.StealthUI, "Stealth UI", ::StealthUI);
             break;
     }
@@ -94,7 +104,7 @@ MenuTheme(color)
         if(IsDefined(self.menuUI["scroller"]) && self.MenuDesign != GetMenuName())
             self.menuUI["scroller"] hudFadeColor(color, 0.5);
 
-        if(self.MenuDesign == "Native")
+        if(self.MenuDesign == "Native" || self.MenuDesign == "Classic")
         {
             if(IsDefined(self.menuUI["banner"]))
                 self.menuUI["banner"] hudFadeColor(color, 0.5);
@@ -117,6 +127,22 @@ MenuTheme(color)
     
     if(IsDefined(self.playerInfoHud) && IsDefined(self.playerInfoHud["outline"]))
         self.playerInfoHud["outline"] hudFadeColor(color, 0.5);
+    
+    if(Is_True(self.ZombieCounter) && IsDefined(self.ZombieCounterHud) && IsDefined(self.ZombieCounterHud[0]))
+    {
+        col = GetColorVec(color);
+        self SetLUIMenuData(self.ZombieCounterHud[0], "red", col[0]);
+        self SetLUIMenuData(self.ZombieCounterHud[0], "green", col[1]);
+        self SetLUIMenuData(self.ZombieCounterHud[0], "blue", col[2]);
+    }
+
+    if(Is_True(self.CustomCrosshairs) && IsDefined(self.CustomCrosshairsUI))
+    {
+        col = GetColorVec(color);
+        self SetLUIMenuData(self.CustomCrosshairsUI, "red", col[0]);
+        self SetLUIMenuData(self.CustomCrosshairsUI, "green", col[1]);
+        self SetLUIMenuData(self.CustomCrosshairsUI, "blue", col[2]);
+    }
     
     self.MainTheme = color;
     self SaveMenuTheme();
@@ -166,7 +192,7 @@ SmoothRainbowTheme()
             if(IsDefined(self.menuUI["scroller"]) && (self.MenuDesign != GetMenuName() || IsDefined(self.menuUI["kbString"])))
                 self.menuUI["scroller"].color = color;
 
-            if(self.MenuDesign == "Native")
+            if(self.MenuDesign == "Native" || self.MenuDesign == "Classic")
             {
                 if(IsDefined(self.menuUI["banner"]))
                     self.menuUI["banner"].color = color;
@@ -189,6 +215,20 @@ SmoothRainbowTheme()
         
         if(IsDefined(self.playerInfoHud) && IsDefined(self.playerInfoHud["outline"]))
             self.playerInfoHud["outline"].color = color;
+        
+        if(Is_True(self.ZombieCounter) && IsDefined(self.ZombieCounterHud) && IsDefined(self.ZombieCounterHud[0]))
+        {
+            self SetLUIMenuData(self.ZombieCounterHud[0], "red", color[0]);
+            self SetLUIMenuData(self.ZombieCounterHud[0], "green", color[1]);
+            self SetLUIMenuData(self.ZombieCounterHud[0], "blue", color[2]);
+        }
+
+        if(Is_True(self.CustomCrosshairs) && IsDefined(self.CustomCrosshairsUI))
+        {
+            self SetLUIMenuData(self.CustomCrosshairsUI, "red", color[0]);
+            self SetLUIMenuData(self.CustomCrosshairsUI, "green", color[1]);
+            self SetLUIMenuData(self.CustomCrosshairsUI, "blue", color[2]);
+        }
         
         self.MainTheme = color;
         wait 0.01;
@@ -384,8 +424,11 @@ MenuDesign(design)
     
     self.MenuDesign = design;
 
-    if(design == "Native" && Is_True(self.ColoredCursor))
+    if((design == "Native" || design == "Classic") && Is_True(self.ColoredCursor))
         self.ColoredCursor = BoolVar(self.ColoredCursor);
+    
+    if(design == "AIO" && Is_True(self.OptionCounter))
+        self.OptionCounter = BoolVar(self.OptionCounter);
 
     self closeMenu1();
     self openMenu1();
@@ -405,6 +448,22 @@ BoolDisplay(type)
     self RefreshMenu();
 }
 
+BoolLocation(location)
+{
+    if(self.BoolLocation == location)
+        return;
+    
+    self.BoolLocation = location;
+    self SaveMenuTheme();
+    self RefreshMenu();
+}
+
+ScrollAnimationTime(time)
+{
+    self.ScrollAnimationTime = (time * 0.01);
+    self SaveMenuTheme();
+}
+
 QuickExit()
 {
     self.QuickExit = BoolVar(self.QuickExit);
@@ -421,6 +480,101 @@ DisableMenuInstructions()
         self thread MenuInstructionsDisplay();
 }
 
+AdaptiveMenuInstructions()
+{
+    self.AdaptiveMenuInstructions = BoolVar(self.AdaptiveMenuInstructions);
+    self SaveMenuTheme();
+}
+
+RepositionMenuInstructions()
+{
+    if(Is_True(self.DisableMenuInstructions))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Reposition Instructions While Instructions Are Disabled");
+
+    self endon("disconnect");
+    
+    adjX = self.instructionsX;
+    adjY = self.instructionsY;
+    
+    self closeMenu1();
+    self.DisableMenuControls = true;
+    self SetMenuInstructions("[{+melee}] - Exit\n[{+activate}] - Save Position\n[{+actionslot 1}] - Move Up\n[{+actionslot 2}] - Move Down\n[{+actionslot 3}] - Move Left\n[{+actionslot 4}] - Move Right");
+
+    wait 0.1;
+    self.RepositionMenuInstructions = true;
+    
+    while(1)
+    {
+        if(self ActionSlotOneButtonPressed() || self ActionSlotTwoButtonPressed())
+        {
+            incValue = self ActionSlotTwoButtonPressed() ? 8 : -8;
+            
+            foreach(key in GetArrayKeys(self.menuInstructionsUI))
+            {
+                if(!IsDefined(self.menuInstructionsUI[key]))
+                    continue;
+                
+                if(IsArray(self.menuInstructionsUI[key]))
+                {
+                    for(a = 0; a < self.menuInstructionsUI[key].size; a++)
+                    {
+                        if(IsDefined(self.menuInstructionsUI[key][a]))
+                            self.menuInstructionsUI[key][a].y += incValue;
+                    }
+                }
+                else
+                {
+                    self.menuInstructionsUI[key].y += incValue;
+                }
+            }
+            
+            adjY += incValue;
+        }
+        else if(self ActionSlotThreeButtonPressed() || self ActionSlotFourButtonPressed())
+        {
+            incValue = self ActionSlotFourButtonPressed() ? 8 : -8;
+            
+            foreach(key in GetArrayKeys(self.menuInstructionsUI))
+            {
+                if(!IsDefined(self.menuInstructionsUI[key]))
+                    continue;
+                
+                if(IsArray(self.menuInstructionsUI[key]))
+                {
+                    for(a = 0; a < self.menuInstructionsUI[key].size; a++)
+                    {
+                        if(IsDefined(self.menuInstructionsUI[key][a]))
+                            self.menuInstructionsUI[key][a].x += incValue;
+                    }
+                }
+                else
+                {
+                    self.menuInstructionsUI[key].x += incValue;
+                }
+            }
+            
+            adjX += incValue;
+        }
+        else if(self UseButtonPressed())
+        {
+            self.instructionsX = adjX;
+            self.instructionsY = adjY;
+        }
+        else if(self MeleeButtonPressed())
+        {
+            break;
+        }
+        
+        wait 0.025;
+    }
+    
+    self.DisableMenuControls = undefined;
+    self.RepositionMenuInstructions = undefined;
+    self SetMenuInstructions();
+    self SaveMenuTheme();
+    self openMenu1();
+}
+
 DisableQuickMenu()
 {
     self.DisableQM = BoolVar(self.DisableQM);
@@ -431,24 +585,32 @@ SpotlightCursor()
 {
     self.SpotlightCursor = BoolVar(self.SpotlightCursor);
     self SaveMenuTheme();
-    self RefreshMenu();
 }
 
 ColoredCursor()
 {
-    if(self.MenuDesign == "Native")
-        return self iPrintlnBold("^1ERROR: ^7You Can't Use Colored Cursor With The Native Design");
+    if(self.MenuDesign == "Native" || self.MenuDesign == "Classic")
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use Colored Cursor With This Design");
     
     self.ColoredCursor = BoolVar(self.ColoredCursor);
     self SaveMenuTheme();
-    self RefreshMenu();
 }
 
 LargeCursor()
 {
     self.LargeCursor = BoolVar(self.LargeCursor);
     self SaveMenuTheme();
-    self RefreshMenu();
+}
+
+OptionCounter()
+{
+    if(Is_True(self.StealthUI))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use The Option Counter While Stealth UI Is Enabled");
+    
+    self.OptionCounter = BoolVar(self.OptionCounter);
+    self closeMenu1();
+    self openMenu1();
+    self SaveMenuTheme();
 }
 
 StealthUI()
@@ -457,15 +619,21 @@ StealthUI()
 
     if(Is_True(self.StealthUI) && self.BoolDisplay == "Boxes")
         self.BoolDisplay = "Text";
+    
+    if(Is_True(self.OptionCounter))
+    {
+        self.OptionCounter = undefined;
+        self closeMenu1();
+        self openMenu1();
+    }
 
     self SaveMenuTheme();
-    self RefreshMenu();
 }
 
 SaveMenuTheme()
 {
-    variables = Array("menuSaved", "menuX", "menuY", "MenuWidth", "MainTheme", "MenuDesign", "OpenControls", "QuickControls", "QuickExit", "BoolDisplay", "DisableMenuInstructions", "DisableQM", "SpotlightCursor", "ColoredCursor", "LargeCursor", "StealthUI");
-    values    = Array(1, self.menuX, self.menuY, self.MenuWidth, self.MainTheme, self.MenuDesign, self.OpenControls, self.QuickControls, self.QuickExit, self.BoolDisplay, self.DisableMenuInstructions, self.DisableQM, self.SpotlightCursor, self.ColoredCursor, self.LargeCursor, self.StealthUI);
+    variables = Array("menuSaved", "menuX", "menuY", "instructionsX", "instructionsY", "MenuWidth", "DisableMenuInstructions", "AdaptiveMenuInstructions", "MainTheme", "MenuDesign", "OpenControls", "QuickControls", "QuickExit", "BoolDisplay", "BoolLocation", "ScrollAnimationTime", "DisableQM", "SpotlightCursor", "ColoredCursor", "LargeCursor", "OptionCounter", "StealthUI");
+    values    = Array(1, self.menuX, self.menuY, self.instructionsX, self.instructionsY, self.MenuWidth, self.DisableMenuInstructions, self.AdaptiveMenuInstructions, self.MainTheme, self.MenuDesign, self.OpenControls, self.QuickControls, self.QuickExit, self.BoolDisplay, self.BoolLocation, (self.ScrollAnimationTime * 100), self.DisableQM, self.SpotlightCursor, self.ColoredCursor, self.LargeCursor, self.OptionCounter, self.StealthUI);
     
     foreach(index, variable in variables)
     {
@@ -510,31 +678,41 @@ GetSavedVariable(variable)
 LoadMenuVars()
 {
     self.menuX = -176; //Keep in mind that the position is close to the center to ensure the menu is visible on any resolution(use the menu position editor to place it where it best fits your liking)
-    self.menuY = -185;
+    self.menuY = -161;
+    self.instructionsX = -100;
+    self.instructionsY = 230;
     self.MenuWidth = 260;
     self.MainTheme = (57, 152, 254);
     self.MenuDesign = GetMenuName();
     self.BoolDisplay = "Boxes";
+    self.BoolLocation = "Right";
     self.OpenControls = Array("+speed_throw", "+melee");
     self.QuickControls = Array("+speed_throw", "+smoke");
+    self.ScrollAnimationTime = 0.13;
     self.ColoredCursor = true;
-    self.LargeCursor = true;
+    self.SpotlightCursor = true;
     saved = Int(self GetSavedVariable("menuSaved"));
     
     if(Is_True(saved))
     {
-        self.menuX                   = Int(self GetSavedVariable("menuX"));
-        self.menuY                   = Int(self GetSavedVariable("menuY"));
-        self.MenuWidth               = Int(self GetSavedVariable("MenuWidth"));
-        self.MenuDesign              = self GetSavedVariable("MenuDesign");
-        self.BoolDisplay             = self GetSavedVariable("BoolDisplay");
-        self.QuickExit               = returnBool(Int(self GetSavedVariable("QuickExit")));
-        self.DisableMenuInstructions = returnBool(Int(self GetSavedVariable("DisableMenuInstructions")));
-        self.DisableQM               = returnBool(Int(self GetSavedVariable("DisableQM")));
-        self.SpotlightCursor         = returnBool(Int(self GetSavedVariable("SpotlightCursor")));
-        self.ColoredCursor           = returnBool(Int(self GetSavedVariable("ColoredCursor")));
-        self.LargeCursor             = returnBool(Int(self GetSavedVariable("LargeCursor")));
-        self.StealthUI               = returnBool(Int(self GetSavedVariable("StealthUI")));
+        self.menuX                    = Int(self GetSavedVariable("menuX"));
+        self.menuY                    = Int(self GetSavedVariable("menuY"));
+        self.instructionsX            = Int(self GetSavedVariable("instructionsX"));
+        self.instructionsY            = Int(self GetSavedVariable("instructionsY"));
+        self.MenuWidth                = Int(self GetSavedVariable("MenuWidth"));
+        self.DisableMenuInstructions  = returnBool(Int(self GetSavedVariable("DisableMenuInstructions")));
+        self.AdaptiveMenuInstructions = returnBool(Int(self GetSavedVariable("AdaptiveMenuInstructions")));
+        self.MenuDesign               = self GetSavedVariable("MenuDesign");
+        self.BoolDisplay              = self GetSavedVariable("BoolDisplay");
+        self.BoolLocation             = self GetSavedVariable("BoolLocation");
+        self.ScrollAnimationTime      = (Int(self GetSavedVariable("ScrollAnimationTime")) * 0.01);
+        self.QuickExit                = returnBool(Int(self GetSavedVariable("QuickExit")));
+        self.DisableQM                = returnBool(Int(self GetSavedVariable("DisableQM")));
+        self.SpotlightCursor          = returnBool(Int(self GetSavedVariable("SpotlightCursor")));
+        self.ColoredCursor            = returnBool(Int(self GetSavedVariable("ColoredCursor")));
+        self.LargeCursor              = returnBool(Int(self GetSavedVariable("LargeCursor")));
+        self.OptionCounter            = returnBool(Int(self GetSavedVariable("OptionCounter")));
+        self.StealthUI                = returnBool(Int(self GetSavedVariable("StealthUI")));
 
         self.OpenControls = [];
         btnToks = StrTok(self GetSavedVariable("OpenControls"), ",");
@@ -581,6 +759,9 @@ GetMaxOptions()
         if(Is_True(self.DisableMenuInstructions))
             MaxOptions++;
     }
+
+    if(Is_True(self.OptionCounter))
+        MaxOptions -= 2;
     
     return MaxOptions;
 }

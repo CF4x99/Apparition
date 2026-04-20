@@ -8,13 +8,13 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.6.0.2
+    Version:              1.6.0.3
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
     Initial Release Date: 1/29/23
 
-    New Apparition Discord Server: discord.gg/apparitionbo3
+    Apparition Discord Server: https://discord.gg/apparitionbo3
 
     Menu Source & Current Update: https://github.com/CF4x99/Apparition
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
@@ -345,10 +345,10 @@ MenuInstructionsDisplay()
         if(self hasMenu() && (!Is_True(self.DisableMenuInstructions) && (!IsDefined(self.menuInstructionsUI["background"]) || !IsDefined(self.menuInstructionsUI["outline"]) || !IsDefined(self.menuInstructionsUI["string"]))))
         {
             if(!IsDefined(self.menuInstructionsUI["background"]))
-                self.menuInstructionsUI["background"] = self createRectangle("TOP_LEFT", "CENTER", -100, 230, 0, 15, (35, 35, 35), 2, 0.92, "white");
+                self.menuInstructionsUI["background"] = self createRectangle("TOP_LEFT", "CENTER", self.instructionsX, self.instructionsY, 0, 15, (35, 35, 35), 2, 0.92, "white");
             
             if(!IsDefined(self.menuInstructionsUI["outline"]))
-                self.menuInstructionsUI["outline"] = self createRectangle("TOP_LEFT", "CENTER", -101, 229, 0, 17, self.MainTheme, 1, 1, "white");
+                self.menuInstructionsUI["outline"] = self createRectangle("TOP_LEFT", "CENTER", (self.instructionsX - 1), (self.instructionsY - 1), 0, 17, self.MainTheme, 1, 1, "white");
             
             if(!IsDefined(self.menuInstructionsUI["string"]))
                 self.menuInstructionsUI["string"] = self createText("default", 1.1, 3, "", "LEFT", "CENTER", (self.menuInstructionsUI["background"].x + 1), (self.menuInstructionsUI["background"].y + 7), 1, (255, 255, 255));
@@ -411,21 +411,7 @@ MenuInstructionsDisplay()
             if(self.menuInstructionsUI["string"].text != str)
                 self.menuInstructionsUI["string"] SetTextString(str);
             
-            width = self.menuInstructionsUI["string"] GetTextWidth3arc(self);
-            height = IsSubStr(str, "\n") ? (CorrectNL_BGHeight(str) - 5) : CorrectNL_BGHeight(str);
-            
-            if(self.menuInstructionsUI["background"].width != width || self.menuInstructionsUI["background"].height != height)
-            {
-                self.menuInstructionsUI["background"] SetShaderValues(undefined, width, height);
-                self.menuInstructionsUI["outline"] SetShaderValues(undefined, (width + 2), (height + 2));
-            }
-
-            if(self.menuInstructionsUI["background"].y != (230 - height))
-            {
-                self.menuInstructionsUI["background"].y = (230 - height);
-                self.menuInstructionsUI["outline"].y = (229 - height);
-                self.menuInstructionsUI["string"].y = (self.menuInstructionsUI["background"].y + 6);
-            }
+            self SetInstructionsPosition(str);
         }
 
         wait 0.1;
@@ -435,6 +421,76 @@ MenuInstructionsDisplay()
         self.MenuInstructionsDisplay = BoolVar(self.MenuInstructionsDisplay);
     
     self DestroyInstructions();
+}
+
+SetInstructionsPosition(str)
+{
+    if(!IsDefined(self.menuInstructionsUI) || !IsDefined(self.menuInstructionsUI["string"]) || !IsDefined(self.menuInstructionsUI["background"]))
+        return;
+    
+    switch(self.MenuDesign)
+    {
+        case "Classic":
+            yOffset = 5;
+            xOffset = 0;
+            widthOffset = 0;
+            break;
+        
+        case "AIO":
+            yOffset = 30;
+            xOffset = -1;
+            widthOffset = 2;
+            break;
+        
+        case "Native":
+            yOffset = 5;
+            xOffset = 1;
+            widthOffset = -2;
+            break;
+        
+        default:
+            yOffset = 18;
+            xOffset = 1;
+            widthOffset = -2;
+            break;
+    }
+
+    width = self.menuInstructionsUI["string"] GetTextWidth3arc(self);
+    height = IsSubStr(str, "\n") ? (CorrectNL_BGHeight(str) - 5) : CorrectNL_BGHeight(str);
+
+    if(self isInMenu(true) && Is_True(self.AdaptiveMenuInstructions))
+    {
+        menuWidth = (IsDefined(self.menuUI) && IsDefined(self.menuUI["background"])) ? (self.menuUI["background"].width + widthOffset) : (self.MenuWidth + widthOffset);
+
+        if(width < menuWidth)
+            width = menuWidth;
+    }
+    
+    if(self.menuInstructionsUI["background"].width != width || self.menuInstructionsUI["background"].height != height)
+    {
+        self.menuInstructionsUI["background"] SetShaderValues(undefined, width, height);
+        self.menuInstructionsUI["outline"] SetShaderValues(undefined, (width + 2), (height + 2));
+    }
+
+    if(Is_True(self.RepositionMenuInstructions))
+        return;
+
+    xPos = (self isInMenu(true) && Is_True(self.AdaptiveMenuInstructions)) ? (IsDefined(self.menuUI) && IsDefined(self.menuUI["background"])) ? (self.menuUI["background"].x + xOffset) : (self.menuX + xOffset) : self.instructionsX;
+    yPos = (self isInMenu(true) && Is_True(self.AdaptiveMenuInstructions) && IsDefined(self.menuUI) && IsDefined(self.menuUI["background"])) ? ((self.menuUI["background"].y + self.menuUI["background"].height) + yOffset) : (self.instructionsY - height);
+
+    if(self.menuInstructionsUI["background"].y != yPos)
+    {
+        self.menuInstructionsUI["background"].y = yPos;
+        self.menuInstructionsUI["outline"].y = (yPos - 1);
+        self.menuInstructionsUI["string"].y = (yPos + 6);
+    }
+
+    if(self.menuInstructionsUI["background"].x != xPos)
+    {
+        self.menuInstructionsUI["background"].x = xPos;
+        self.menuInstructionsUI["outline"].x = (xPos - 1);
+        self.menuInstructionsUI["string"].x = (xPos + 1);
+    }
 }
 
 DestroyInstructions()

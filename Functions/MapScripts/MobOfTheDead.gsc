@@ -3,7 +3,7 @@ PopulateMOTDScripts(menu)
     switch(menu)
     {
         case "Mob Of The Dead Scripts":
-            self addMenu("Mob Of The Dead Scripts");
+            self addMenu(menu);
                 self addOptBool((level.soul_catchers_charged >= level.soul_catchers.size), "Feed Devil Dogs", ::FeedDevilDogs);
                 self addOpt("Power Generators", ::newMenu, "MOTD Power Generators");
                 self addOpt("Modify After Life Lives", ::newMenu, "Modify After Life Lives");
@@ -24,7 +24,7 @@ PopulateMOTDScripts(menu)
             break;
 
         case "Modify After Life Lives":
-            self addMenu("Modify After Life Lives");
+            self addMenu(menu);
                 
                 foreach(player in level.players)
                     self addOptIncSlider(CleanName(player getName()) + " [ Lives: " + player.lives + " ]", ::ModifyPlayerAfterLives, -1, 1, 1, 1, player);

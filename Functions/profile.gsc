@@ -3,7 +3,7 @@ PopulateProfileManagement(menu, player)
     switch(menu)
     {
         case "Profile Management":
-            self addMenu("Profile Management");
+            self addMenu(menu);
                 self addOptBool(player.LiquidsLoop, "Liquid Divinium", ::LiquidsLoop, player);
                 self addOptSlider("Challenges", ::AllChallenges, Array("Unlock", "Lock"), player);
                 self addOptSlider("Weapon Ranks", ::PlayerWeaponRanks, Array("Max", "Reset"), player);
@@ -17,7 +17,7 @@ PopulateProfileManagement(menu, player)
             break;
         
         case "Clan Tag Options":
-            self addMenu("Clan Tag Options");
+            self addMenu(menu);
                 self addOpt("Reset", ::SetClanTag, "", player);
                 self addOpt("Invisible Name", ::SetClanTag, "^Hä", player);
                 self addOpt("@CF4", ::SetClanTag, "@CF4", player);
@@ -33,13 +33,13 @@ PopulateProfileManagement(menu, player)
             if(!IsDefined(player.CustomStatsArray))
                 player.CustomStatsArray = [];
             
-            self addMenu("Custom Stats");
+            self addMenu(menu);
                 self addOpt("Clear Selected Stats", ::ClearCustomStats, player);
                 self addOpt("Custom Value: " + Int(player.CustomStatsValue), ::NumberPad, ::CustomStatsValue, player);
                 self addOpt("Send Selected Stats", ::SetCustomStats, player);
                 self addOpt("");
                 self addOpt("General", ::newMenu, "General Stats");
-                self addOpt("Gobblegum Uses", ::newMenu, "Gobblegum Stats");
+                self addOpt("Gobblegum Uses", ::newMenu, "Gobblegum Uses");
                 self addOpt("Maps", ::newMenu, "Map Stats");
             break;
         
@@ -52,14 +52,14 @@ PopulateProfileManagement(menu, player)
                     self addOptBool(isInArray(player.CustomStatsArray, stats[a]), CleanString(stats[a]), ::AddToCustomStats, stats[a], player);
             break;
         
-        case "Gobblegum Stats":
+        case "Gobblegum Uses":
             MenuBGB = [];
             bgb = GetArrayKeys(level.bgb);
 
             for(a = 0; a < bgb.size; a++)
                 array::add(MenuBGB, bgb[a], 0);
             
-            self addMenu("Gobblegum Uses");
+            self addMenu(menu);
                 self addOptBool(player IsAllBGBStatsEnabled(), "Enable All", ::AllBGBStats, player);
                 self addOpt("");
 
@@ -73,7 +73,7 @@ PopulateProfileManagement(menu, player)
         case "Map Stats":
             mapNames = Array("zm_zod", "zm_factory", "zm_castle", "zm_island", "zm_stalingrad", "zm_genesis", "zm_prototype", "zm_asylum", "zm_sumpf", "zm_theater", "zm_cosmodrome", "zm_temple", "zm_moon", "zm_tomb");
             
-            self addMenu("Map Stats");
+            self addMenu(menu);
 
                 for(a = 0; a < mapNames.size; a++)
                     self addOpt(ReturnMapName(mapNames[a]), ::newMenu, "Map Stats " + mapNames[a]);
@@ -82,7 +82,7 @@ PopulateProfileManagement(menu, player)
         case "EE Stats":
             stats = Array("DARKOPS_ZOD_EE", "DARKOPS_FACTORY_EE", "DARKOPS_CASTLE_EE", "DARKOPS_ISLAND_EE", "DARKOPS_STALINGRAD_EE", "DARKOPS_GENESIS_EE", "DARKOPS_ZOD_SUPER_EE", "DARKOPS_FACTORY_SUPER_EE", "DARKOPS_CASTLE_SUPER_EE", "DARKOPS_ISLAND_SUPER_EE", "DARKOPS_STALINGRAD_SUPER_EE", "DARKOPS_GENESIS_SUPER_EE");
 
-            self addMenu("EE Stats");
+            self addMenu(menu);
 
             for(a = 0; a < stats.size; a++)
             {
@@ -116,7 +116,7 @@ LiquidsLoop(player)
             if(reports % 2000)
                 player iPrintlnBold(reports + " ^BBUTTON_ZM_VIAL_ICON^ Reported");
 
-            wait 0.1;
+            wait 1;
         }
     }
 }
