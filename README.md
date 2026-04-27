@@ -7,7 +7,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.6.0.3
+    Version:              1.6.0.4
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -32,6 +32,34 @@
 
 
 ## Changelog
+
+<details>
+    <summary>
+        Version 1.6.0.4
+    </summary>
+
+    - You should now be able to compile this source for PS4 with no changes needed
+    - With the new additions for 'Zetsubou No Shima' you should be able to easily complete the EE within 10 minutes :P
+
+    - Added: Menu Customization -- Physics 'n' Flex Menu Design -- This design will always have a max option count of 6
+    - Added: Menu Customization -- Menu Instructions -- Reset Position
+    - Added: Teleport Menu -- Entity Teleports -- Crafting Tables -- obviously this will only show for maps that have crafting tables
+    - Added: Teleport Menu -- Zetsubou No Shima Teleports -- Easter Egg Room
+    - Added: Zetsubou No Shima -- Skulltar Teleports -- Added 'Podium' to teleport back to the skull podium
+    - Added: Zetsubou No Shima -- Flak Gun Bullet -- This will collect a flak gun bullet for you so you don't have to collect it from a plant
+    - Added: Zetsubou No Shima -- KT-4 Upgrade Parts -- You can now collect the vial and plant for the KT-4 upgrade -- The spider fang is a fast and easy step...So I'm not making a script for it
+    - Added: Zetsubou No Shima -- Mesmerize Map -- This step is needed to complete steps in the EE, so figured I would add it
+    - Added: Der Eisendrache -- Side Easter Eggs -- Complete Plunger Side Easter Egg
+
+    - Changed: Unlimited Special Weapon Has Been moved from 'Fun Scripts' To 'Basic Scripts'
+    - Changed: Menu Base -- Increased distance between options and bool boxes when bool box location is set to the left side
+
+    - Fixed: LUI Hud -- Fixed possible color issue when creating LUI hud
+    - Fixed: Reposition Menu Instructions -- Issue that caused a dev error when exiting the position editor
+    - Fixed: Advanced Scripts -- AC130 -- Players were able to use noclip while AC130 was active
+    - Fixed: Zetsubou No Shima -- Controllable Spider -- Undefined sessionstate check that was throwing errors
+    - Fixed: Fun Scripts -- Force Field -- Bug with radius for death skull and light types
+</details>
 
 <details>
     <summary>

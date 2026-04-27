@@ -38,6 +38,26 @@ PopulateTeleportMenu(menu, player)
                 
                 if(IsDefined(level.bgb_machines) && level.bgb_machines.size)
                     self addOptIncSlider("BGB Machine", ::EntityTeleport, 0, 0, (level.bgb_machines.size - 1), 1, player, "BGB Machine");
+                
+                tables = level.a_uts_craftables;
+
+                if(IsDefined(tables) && tables.size)
+                {
+                    valid = [];
+
+                    for(a = 0; a < tables.size; a++)
+                    {
+                        if(IsDefined(tables[a]) && IsDefined(tables[a].targetname))
+                        {
+                            if(tables[a].targetname != "open_craftable_trigger")
+                                continue;
+                            
+                            valid[valid.size] = a;
+                        }
+                    }
+
+                    self addOptIncSlider("Crafting Table", ::EntityTeleport, 0, 0, (valid.size - 1), 1, player, "Table");
+                }
 
                 perks = GetEntArray("zombie_vending", "targetname");
 
@@ -124,6 +144,9 @@ EntityTeleport(entity, player, eEntity)
     {
         if(entity == "Mystery Box")
         {
+            if(!IsDefined(level.chests) || !level.chests.size || !IsDefined(level.chests[level.chest_index]))
+                return;
+            
             ent = level.chests[level.chest_index];
             entAngleDir = (AnglesToRight(ent.angles) * -1);
         }
@@ -134,11 +157,10 @@ EntityTeleport(entity, player, eEntity)
         {
             foreach(perk in perks)
             {
-                if(IsString(entity) && entity == perk.script_noteworthy)
+                if(IsDefined(perk) && IsString(entity) && entity == perk.script_noteworthy)
                 {
                     ent = perk.machine;
                     entAngleDir = AnglesToRight(ent.angles);
-
                     break;
                 }
             }
@@ -146,8 +168,42 @@ EntityTeleport(entity, player, eEntity)
     }
     else if(IsInt(entity) && IsDefined(eEntity) && eEntity == "BGB Machine")
     {
+        if(!IsDefined(level.bgb_machines) || !level.bgb_machines.size)
+            return;
+        
         ent = level.bgb_machines[entity];
+
+        if(!IsDefined(ent))
+            return;
+        
         entAngleDir = AnglesToRight(ent.angles);
+    }
+    else if(IsInt(entity) && IsDefined(eEntity) && eEntity == "Table")
+    {
+        tables = level.a_uts_craftables;
+
+        if(!IsDefined(tables) || !tables.size)
+            return;
+        
+        valid = [];
+
+        for(a = 0; a < tables.size; a++)
+        {
+            if(IsDefined(tables[a]) && IsDefined(tables[a].targetname))
+            {
+                if(tables[a].targetname != "open_craftable_trigger")
+                    continue;
+                
+                valid[valid.size] = a;
+            }
+        }
+        
+        ent = tables[valid[entity]];
+
+        if(!IsDefined(ent))
+            return;
+
+        entAngleDir = AnglesToForward(ent.angles);
     }
 
     if(!IsDefined(ent) || !IsDefined(entAngleDir))
@@ -274,7 +330,7 @@ GenerateMapTeleports()
                 break;
             
             case "Zetsubou No Shima":
-                locations = Array("Spawn", (393.455, -3181.32, -501.117), "Power", (-1475.2, 3456.67, -426.877), "Pack 'a' Punch", (246.815, 3818.53, -503.875), "Prison", (2608, 1135, -175.875));
+                locations = Array("Spawn", (393.455, -3181.32, -501.117), "Power", (-1475.2, 3456.67, -426.877), "Pack 'a' Punch", (246.815, 3818.53, -503.875), "Easter Egg Room", (-1974.675, 767.305, 276.125), "Prison", (2608, 1135, -175.875));
                 break;
             
             case "Gorod Krovi":

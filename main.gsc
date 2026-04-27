@@ -8,7 +8,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.6.0.3
+    Version:              1.6.0.4
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -50,6 +50,7 @@
 #include scripts\zm\_zm_equipment;
 #include scripts\zm\_zm_laststand;
 #include scripts\zm\_zm_unitrigger;
+#include scripts\zm\_zm_melee_weapon;
 #include scripts\zm\_zm_placeable_mine;
 #include scripts\zm\gametypes\_globallogic;
 #include scripts\zm\bgbs\_zm_bgb_reign_drops;

@@ -308,7 +308,7 @@ drawText(showAnim = false)
     if(!IsDefined(self.menuUI["StringSlider"])) self.menuUI["StringSlider"] = [];
     if(!IsDefined(self.menuUI["invalidOption"])) self.menuUI["invalidOption"] = [];
 
-    offset = (self.MenuDesign == "Classic") ? 11 : (self.MenuDesign == "AIO") ? 15 : 8;
+    offset = (self.MenuDesign == "Classic") ? 11 : (self.MenuDesign == "AIO") ? 15 : (self.MenuDesign == "Physics 'n' Flex") ? 24 : 8;
     startY = (self.menuUI["background"].y + offset);
 
     for(a = 0; a < numOpts; a++)
@@ -340,7 +340,7 @@ drawText(showAnim = false)
 
     if(IsDefined(self.menuUI) && IsDefined(self.menuUI["text"]) && self.menuUI["text"].size)
     {
-        heightOffset = (self.MenuDesign == "Classic") ? 25 : (self.MenuDesign == "AIO") ? 31 : 18;
+        heightOffset = (self.MenuDesign == "Classic") ? 25 : (self.MenuDesign == "AIO") ? 31 : (self.MenuDesign == "Physics 'n' Flex") ? 34 : 18;
 
         if(IsDefined(self.menuUI["background"]))
             self.menuUI["background"] SetShaderValues(undefined, undefined, (heightOffset + (18 * (self.menuUI["text"].size - 1))));
@@ -384,7 +384,7 @@ createOption(index = 0, optY = 0, selected = false, fadeIn = false)
     optIncSlider = self GetOption(index, OPT_INCSLIDER);
     sliderValues = self GetOption(index, OPT_SLIDERVALUES);
 
-    fontColor = (!selected || self.MenuDesign == "Native" || !Is_True(self.ColoredCursor)) ? (1, 1, 1) : self.MainTheme;
+    fontColor = (!selected || self.MenuDesign == "Native" || self.MenuDesign == "Classic" || self.MenuDesign == "Physics 'n' Flex" || !Is_True(self.ColoredCursor)) ? (1, 1, 1) : self.MainTheme;
     fontScale = (Is_True(self.LargeCursor) && selected) ? 1.2 : 1;
     alpha = Is_True(fadeIn) ? 0 : (Is_True(self.SpotlightCursor) && !selected) ? 0.4 : 1;
     optX = (self.menuUI["background"].x + 4);
@@ -399,7 +399,7 @@ createOption(index = 0, optY = 0, selected = false, fadeIn = false)
             self.menuUI["BoolOpt"][index] = self createRectangle("CENTER", "CENTER", boxX, optY, 8, 8, Is_True(boolVal) ? self.MainTheme : (0, 0, 0), 6, alpha, "white");
             
             if(self.BoolLocation == "Left")
-                optX = ((self.menuUI["BoolBack"][index].x + (self.menuUI["BoolBack"][index].width / 2)) + 2);
+                optX = ((self.menuUI["BoolBack"][index].x + (self.menuUI["BoolBack"][index].width / 2)) + 4);
         }
         else
         {
@@ -545,7 +545,7 @@ ScrollingSystem(dir, OldCurs)
                 boolVal = self GetOption(a, OPT_BOOL);
                 boolOpt = self GetOption(a, OPT_BOOLOPT);
 
-                self.menuUI[hud[b]][a] hudFadeColor((self.BoolDisplay == "Text Color" && Is_True(boolOpt) && Is_True(boolVal)) ? (0, 1, 0) : (curs != a || self.MenuDesign == "Native" || !Is_True(self.ColoredCursor)) ? (1, 1, 1) : self.MainTheme, time);
+                self.menuUI[hud[b]][a] hudFadeColor((self.BoolDisplay == "Text Color" && Is_True(boolOpt) && Is_True(boolVal)) ? (0, 1, 0) : (curs != a || self.MenuDesign == "Native" || self.MenuDesign == "Classic" || self.MenuDesign == "Physics 'n' Flex" || !Is_True(self.ColoredCursor)) ? (1, 1, 1) : self.MainTheme, time);
                 self.menuUI[hud[b]][a] ChangeFontscaleOverTime1((Is_True(self.LargeCursor) && curs == a) ? 1.2 : 1, time);
             }
 

@@ -40,6 +40,7 @@ PopulateMenuCustomization(menu)
                 self addOptBool(self.DisableMenuInstructions, "Disable", ::DisableMenuInstructions);
                 self addOptBool(self.AdaptiveMenuInstructions, "Adaptive Position", ::AdaptiveMenuInstructions);
                 self addOpt("Reposition", ::RepositionMenuInstructions);
+                self addOpt("Reset Position", ::ResetMenuInstructions);
             break;
         
         case "Main Design Color":
@@ -53,7 +54,7 @@ PopulateMenuCustomization(menu)
         
         case "Menu Preferences":
             self addMenu(menu);
-                self addOptSlider("Design", ::MenuDesign, Array(GetMenuName(), "Classic", "Native", "AIO"));
+                self addOptSlider("Design", ::MenuDesign, Array(GetMenuName(), "Classic", "Native", "AIO", "Physics 'n' Flex"));
                 self addOptSlider("Bool Display", ::BoolDisplay, Array("Boxes", "Text", "Text Color"));
                 self addOptSlider("Bool Box Location", ::BoolLocation, Array("Right", "Left"));
                 self addOptIncSlider("Scroll Animation Time (ms)", ::ScrollAnimationTime, 10, Int(self.ScrollAnimationTime * 100), 25, 1);
@@ -104,7 +105,7 @@ MenuTheme(color)
         if(IsDefined(self.menuUI["scroller"]) && self.MenuDesign != GetMenuName())
             self.menuUI["scroller"] hudFadeColor(color, 0.5);
 
-        if(self.MenuDesign == "Native" || self.MenuDesign == "Classic")
+        if(self.MenuDesign == "Native" || self.MenuDesign == "Classic" || self.MenuDesign == "Physics 'n' Flex")
         {
             if(IsDefined(self.menuUI["banner"]))
                 self.menuUI["banner"] hudFadeColor(color, 0.5);
@@ -192,7 +193,7 @@ SmoothRainbowTheme()
             if(IsDefined(self.menuUI["scroller"]) && (self.MenuDesign != GetMenuName() || IsDefined(self.menuUI["kbString"])))
                 self.menuUI["scroller"].color = color;
 
-            if(self.MenuDesign == "Native" || self.MenuDesign == "Classic")
+            if(self.MenuDesign == "Native" || self.MenuDesign == "Classic" || self.MenuDesign == "Physics 'n' Flex")
             {
                 if(IsDefined(self.menuUI["banner"]))
                     self.menuUI["banner"].color = color;
@@ -424,10 +425,10 @@ MenuDesign(design)
     
     self.MenuDesign = design;
 
-    if((design == "Native" || design == "Classic") && Is_True(self.ColoredCursor))
+    if((design == "Native" || design == "Classic" || design == "Physics 'n' Flex") && Is_True(self.ColoredCursor))
         self.ColoredCursor = BoolVar(self.ColoredCursor);
     
-    if(design == "AIO" && Is_True(self.OptionCounter))
+    if((design == "AIO" || design == "Physics 'n' Flex") && Is_True(self.OptionCounter))
         self.OptionCounter = BoolVar(self.OptionCounter);
 
     self closeMenu1();
@@ -489,7 +490,7 @@ AdaptiveMenuInstructions()
 RepositionMenuInstructions()
 {
     if(Is_True(self.DisableMenuInstructions))
-        return self iPrintlnBold("^1ERROR: ^7You Can't Reposition Instructions While Instructions Are Disabled");
+        return self iPrintlnBold("^1ERROR: ^7You Can't Reposition Instructions While They're Disabled");
 
     self endon("disconnect");
     
@@ -568,11 +569,19 @@ RepositionMenuInstructions()
         wait 0.025;
     }
     
+    wait 0.1;
     self.DisableMenuControls = undefined;
     self.RepositionMenuInstructions = undefined;
     self SetMenuInstructions();
     self SaveMenuTheme();
     self openMenu1();
+}
+
+ResetMenuInstructions()
+{
+    self.instructionsX = -100;
+    self.instructionsY = 230;
+    self SaveMenuTheme();
 }
 
 DisableQuickMenu()
@@ -589,7 +598,7 @@ SpotlightCursor()
 
 ColoredCursor()
 {
-    if(self.MenuDesign == "Native" || self.MenuDesign == "Classic")
+    if(self.MenuDesign == "Native" || self.MenuDesign == "Classic" || self.MenuDesign == "Physics 'n' Flex")
         return self iPrintlnBold("^1ERROR: ^7You Can't Use Colored Cursor With This Design");
     
     self.ColoredCursor = BoolVar(self.ColoredCursor);
@@ -606,6 +615,9 @@ OptionCounter()
 {
     if(Is_True(self.StealthUI))
         return self iPrintlnBold("^1ERROR: ^7You Can't Use The Option Counter While Stealth UI Is Enabled");
+    
+    if(self.MenuDesign == "AIO" || self.MenuDesign == "Physics 'n' Flex")
+        return self iPrintlnBold("^1ERROR: ^7You Can't Use The Option Counter With This Design");
     
     self.OptionCounter = BoolVar(self.OptionCounter);
     self closeMenu1();
@@ -688,7 +700,7 @@ LoadMenuVars()
     self.BoolLocation = "Right";
     self.OpenControls = Array("+speed_throw", "+melee");
     self.QuickControls = Array("+speed_throw", "+smoke");
-    self.ScrollAnimationTime = 0.13;
+    self.ScrollAnimationTime = 0.12;
     self.ColoredCursor = true;
     self.SpotlightCursor = true;
     saved = Int(self GetSavedVariable("menuSaved"));
@@ -744,6 +756,9 @@ returnBool(boolVar)
 
 GetMaxOptions()
 {
+    if(self.MenuDesign == "Physics 'n' Flex")
+        return 6;
+    
     if(Is_True(self.StealthUI))
         return 5;
     

@@ -41,6 +41,7 @@ SetPlayerModel(model, player)
     wait 0.1;
 
     player.spawnedPlayerModel = Spawn("script_model", player.origin);
+    player.spawnedPlayerModel.angles = player.angles;
     player.spawnedPlayerModel SetModel(model);
     player.spawnedPlayerModel NotSolid();
     

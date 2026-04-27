@@ -16,6 +16,7 @@ PopulateDerEisendracheScripts(menu)
             self addMenu("Side Easter Eggs");
                 self addOptBool(level flag::get("ee_disco_inferno"), "Disco Inferno", ::DiscoInferno);
                 self addOptBool(level flag::get("ee_claw_hat"), "Claw Hat", ::ClawHat);
+                self addOptBool(self HasWeapon(GetWeapon("knife_plunger")), "Plunger Melee", ::PlungerMelee);
             break;
 
         case "Bow Quests":
@@ -293,6 +294,101 @@ ClawHat()
     
     self RefreshMenu(menu, curs);
 }
+
+PlungerMelee()
+{
+    if(self HasWeapon(GetWeapon("knife_plunger")))
+        return;
+    
+    if(Is_True(level.completingPlungerEE))
+        return;
+    
+    level.completingPlungerEE = true;
+    
+    curs = self getCursor();
+    menu = self getCurrent();
+    
+    plunger_ent = struct::get("ee_plunger_pickup");
+
+    if(IsDefined(plunger_ent))
+        trig_stub = plunger_ent.unitrigger_stub.stub;
+
+    zm_spawner::register_zombie_death_event_callback(::plunger_zombie_kill);
+
+    foreach(player in level.activePlayers)
+    {
+        if(IsDefined(player) && Is_Alive(player))
+            player thread award_player_plunger();
+    }
+
+    callback::on_spawned(::award_player_plunger);
+
+    if(IsDefined(trig_stub))
+        trig_stub zm_unitrigger::run_visibility_function_for_all_triggers();
+    
+    while(!self HasWeapon(GetWeapon("knife_plunger")))
+        wait 0.1;
+    
+    self RefreshMenu(menu, curs);
+    level.completingPlungerEE = undefined;
+}
+
+plunger_zombie_kill(e_attacker)
+{
+    m_weap = GetWeapon("knife_plunger");
+
+    if(m_weap == self.damageWeapon)
+    {
+        self zombie_utility::zombie_head_gib();
+        return true;
+    }
+
+    return false;
+}
+
+award_player_plunger()
+{
+    self.widows_wine_knife_override = ::function_9ce92341;
+    self zm_melee_weapon::award_melee_weapon("knife_plunger");
+    self thread function_9daec9e3();
+    self thread function_1fcb04d7();
+}
+
+function_9ce92341(){}
+
+function_9daec9e3()
+{
+    self endon("disconnect");
+
+    m_weap = GetWeapon("knife_plunger");
+
+    while(1)
+    {
+        self waittill("weapon_melee", weapon);
+        
+        if(weapon == m_weap && IsDefined(self.var_ea5424ae) && self.var_ea5424ae > 0)
+            self clientfield::increment_to_player("plunger_charged_strike");
+    }
+}
+
+function_1fcb04d7()
+{
+    self endon("disconnect");
+
+    self waittill("bled_out");
+    self.widows_wine_knife_override = undefined;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 

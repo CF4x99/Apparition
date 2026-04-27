@@ -182,8 +182,9 @@ RunMenuOptions(menu)
             break;
         
         case "Zetsubou No Shima Scripts":
-        case "Pack 'a' Punch Quest Parts":
-        case "Zetsubou No Shima KT-4 Parts":
+        case "Pack 'a' Punch Parts":
+        case "KT-4 Parts":
+        case "KT-4 Upgrade Parts":
         case "Skulltar Teleports":
         case "ZNS Bucket Water":
             self PopulateZetsubouNoShimaScripts(menu);

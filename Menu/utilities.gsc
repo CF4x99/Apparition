@@ -34,6 +34,8 @@ LUI_createText(text, align, x, y, width, color)
     self SetLUIMenuData(textElem, "y", y);
     self SetLUIMenuData(textElem, "width", width);
     
+    color = GetColorVec(color);
+
     self SetLUIMenuData(textElem, "red", color[0]);
     self SetLUIMenuData(textElem, "green", color[1]);
     self SetLUIMenuData(textElem, "blue", color[2]);
@@ -103,6 +105,8 @@ LUI_createRectangle(align, x, y, width, height, color, shader, alpha)
     self SetLUIMenuData(boxElem, "height", height);
     self SetLUIMenuData(boxElem, "alpha", alpha);
     self SetLUIMenuData(boxElem, "material", shader);
+
+    color = GetColorVec(color);
 
     self SetLUIMenuData(boxElem, "red", color[0]);
     self SetLUIMenuData(boxElem, "green", color[1]);
@@ -1159,7 +1163,7 @@ isDown()
 
 Is_Alive(player)
 {
-    return (IsAlive(player) && player.sessionstate != "spectator");
+    return (IsAlive(player) && IsDefined(player.sessionstate) && player.sessionstate != "spectator");
 }
 
 isPlayerLinked(exclude)

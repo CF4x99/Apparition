@@ -540,8 +540,8 @@ AC130(type)
 
     self endon("disconnect");
 
-    self.DisableMenuControls = true;
     self closeMenu1();
+    self.DisableMenuControls = true;
     
     if(type == "Fly")
     {

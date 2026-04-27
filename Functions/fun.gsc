@@ -31,7 +31,6 @@ PopulateFunScripts(menu, player)
                 self addOptBool(player.Jetpack, "Jetpack", ::Jetpack, player);
                 self addOptBool(player.HealthBar, "Health Bar", ::HealthBar, player);
                 self addOptBool(player.ClusterGrenades, "Cluster Grenades", ::ClusterGrenades, player);
-                self addOptBool(player.UnlimitedSpecialist, "Unlimited Specialist", ::UnlimitedSpecialist, player);
                 self addOptBool(player.ElectricFireCherry, "Electric Fire Cherry", ::ElectricFireCherry, player);
                 self addOptBool(player.HumanCentipede, "Human Centipede", ::HumanCentipede, player);    
                 self addOptBool(player.ShootPowerUps, "Shoot Power-Ups", ::ShootPowerUps, player);
@@ -45,6 +44,19 @@ PopulateFunScripts(menu, player)
                 self addOptBool(player.PowerUpMagnet, "Power-Up Magnet", ::PowerUpMagnet, player);
                 self addOptBool(player.DisableEarningPoints, "Disable Earning Points", ::DisableEarningPoints, player);
                 self addOptIncSlider("Points Multiplier", ::DamagePointsMultiplier, 1, 1, 10, 0.5, player);
+            break;
+        
+        case "Force Field Options":
+            if(!IsDefined(player.ForceFieldSize))
+                player.ForceFieldSize = 90;
+            
+            if(!IsDefined(player.ForceFieldType))
+                player.ForceFieldType = "Invisible";
+            
+            self addMenu(menu);
+                self addOptBool(player.ForceField, "Force Field", ::ForceField, player);
+                self addOptIncSlider("Size", ::ForceFieldSize, 90, player.ForceFieldSize, 500, 10, player);
+                self addOptSlider("Type", ::ForceFieldType, Array("Invisible", "Death Skulls", "Light"), player);
             break;
         
         case "Effects Man Options":
@@ -113,19 +125,6 @@ PopulateFunScripts(menu, player)
 
                     perkArray[perkArray.size] = perkName;
                 }
-            break;
-        
-        case "Force Field Options":
-            if(!IsDefined(player.ForceFieldSize))
-                player.ForceFieldSize = 90;
-            
-            if(!IsDefined(player.ForceFieldType))
-                player.ForceFieldType = "Invisible";
-            
-            self addMenu(menu);
-                self addOptBool(player.ForceField, "Force Field", ::ForceField, player);
-                self addOptIncSlider("Size", ::ForceFieldSize, 90, player.ForceFieldSize, 500, 10, player);
-                self addOptSlider("Type", ::ForceFieldType, Array("Invisible", "Death Skulls", "Light"), player);
             break;
         
         default:
@@ -226,7 +225,6 @@ ForceField(player)
 
         while(Is_True(player.ForceField))
         {
-            radius = (player.ForceFieldType == "Invisible") ? player.ForceFieldSize : 90;
             zombies = GetAITeamArray(level.zombie_team);
 
             for(a = 0; a < zombies.size; a++)
@@ -242,7 +240,7 @@ ForceField(player)
                         kill = true;
                 }
 
-                if(Distance(player.origin, zombies[a].origin) <= radius && zombies[a] DamageConeTrace(player GetEye(), player) > 0.1 || kill)
+                if(Distance(player.origin, zombies[a].origin) <= player.ForceFieldSize && zombies[a] DamageConeTrace(player GetEye(), player) > 0.1 || kill)
                 {
                     zombies[a].ZombieFling = true;
                     zombies[a] DoDamage((zombies[a].health + 666), player.origin);
@@ -1257,23 +1255,6 @@ GetRandomThrowSpeed()
     pitch = RandomFloatRange(65, 85);
     
     return (((Cos(yaw) * Cos(pitch)), (Sin(yaw) * Cos(pitch)), Sin(pitch)) * RandomFloatRange(400, 600));
-}
-
-UnlimitedSpecialist(player)
-{
-    player endon("disconnect");
-
-    player.UnlimitedSpecialist = BoolVar(player.UnlimitedSpecialist);
-
-    while(Is_True(player.UnlimitedSpecialist))
-    {
-        if(player GadgetIsActive(0))
-            player GadgetPowerSet(0, 99);
-        else if(player GadgetPowerGet(0) < 100)
-            player GadgetPowerSet(0, 100);
-
-        wait 0.01;
-    }
 }
 
 ElectricFireCherry(player)

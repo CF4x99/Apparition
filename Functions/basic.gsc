@@ -11,6 +11,7 @@ PopulateBasicScripts(menu, player)
                 self addOptBool(player.UFOMode, "UFO Mode", ::UFOMode, player);
                 self addOptSlider("Unlimited Ammo", ::UnlimitedAmmo, Array("Continuous", "Reload", "Disable"), player);
                 self addOptBool(player.UnlimitedEquipment, "Unlimited Equipment", ::UnlimitedEquipment, player);
+                self addOptBool(player.UnlimitedSpecial, "Unlimited Special Weapon", ::UnlimitedSpecial, player);
                 self addOptSlider("Modify Score", ::ModifyScore, Array("1000000", "100000", "10000", "1000", "100", "10", "0", "-10", "-100", "-1000", "-10000", "-100000", "-1000000"), player);
                 self addOpt("Perk Menu", ::newMenu, "Perk Menu");
                 self addOpt("Gobblegum Menu", ::newMenu, "Gobblegum Menu");
@@ -314,6 +315,23 @@ UnlimitedEquipment(player)
         }
         
         player waittill("grenade_fire");
+    }
+}
+
+UnlimitedSpecial(player)
+{
+    player endon("disconnect");
+
+    player.UnlimitedSpecial = BoolVar(player.UnlimitedSpecial);
+
+    while(Is_True(player.UnlimitedSpecial))
+    {
+        if(player GadgetIsActive(0))
+            player GadgetPowerSet(0, 99);
+        else if(player GadgetPowerGet(0) < 100)
+            player GadgetPowerSet(0, 100);
+
+        wait 0.01;
     }
 }
 

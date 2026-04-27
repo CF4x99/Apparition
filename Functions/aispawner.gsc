@@ -23,16 +23,18 @@ ServerSpawnAI(amount, spawner)
     if(!IsDefined(spawner) || !IsFunctionPtr((spawner)))
         return;
 
+    location = self GetAISpawnLocation();
+
     for(a = 0; a < amount; a++)
     {
-        self thread [[ spawner ]]();
+        self thread [[ spawner ]](location);
         wait 0.1;
     }
 }
 
 
 //Zombies
-ServerSpawnZombie()
+ServerSpawnZombie(target)
 {
     spawner = ArrayGetClosest(level.zombie_spawners, self.origin);
     zombie = zombie_utility::spawn_zombie(spawner);
@@ -43,7 +45,6 @@ ServerSpawnZombie()
 
         wait 0.1;
         zombie StopAnimScripted(0);
-        target = self GetAISpawnLocation();
 
         linker = Spawn("script_origin", zombie.origin);
         linker.origin = zombie.origin;
@@ -67,33 +68,17 @@ ServerSpawnZombie()
 
 
 //Hellhounds
-ServerSpawnDog()
+ServerSpawnDog(location)
 {
     favorite_enemy = dogs_get_favorite_enemy();
+    spawn_loc = IsDefined(level.dog_spawn_func) ? [[ level.dog_spawn_func ]](level.dog_spawners, favorite_enemy) : dog_spawn_factory_logic(favorite_enemy);
+    ai = zombie_utility::spawn_zombie(level.dog_spawners[0]);
 
-    if(IsDefined(level.dog_spawn_func))
+    if(IsDefined(ai))
     {
-        spawn_loc = [[ level.dog_spawn_func ]](level.dog_spawners, favorite_enemy);
-        ai = zombie_utility::spawn_zombie(level.dog_spawners[0]);
-
-        if(IsDefined(ai))
-        {
-            ai.favoriteenemy = favorite_enemy;
-            self thread dog_spawn_fx(ai, spawn_loc);
-            level flag::set("dog_clips");
-        }
-    }
-    else
-    {
-        spawn_point = dog_spawn_factory_logic(favorite_enemy);
-        ai = zombie_utility::spawn_zombie(level.dog_spawners[0]);
-
-        if(IsDefined(ai))
-        {
-            ai.favoriteenemy = favorite_enemy;
-            self thread dog_spawn_fx(ai, spawn_point);
-            level flag::set("dog_clips");
-        }
+        ai.favoriteenemy = favorite_enemy;
+        self thread dog_spawn_fx(ai, spawn_loc, location);
+        level flag::set("dog_clips");
     }
 }
 
@@ -125,11 +110,11 @@ dogs_get_favorite_enemy()
     return least_hunted;
 }
 
-dog_spawn_fx(ai, ent)
+dog_spawn_fx(ai, ent, location)
 {
     ai endon("death");
 
-    target = (self.AISpawnLocation == "Crosshairs" || self.AISpawnLocation == "Self") ? self GetAISpawnLocation() : ent.origin;
+    target = (IsDefined(location) && IsVec(location)) ? location : ent.origin;
     ai SetFreeCameraLockOnAllowed(0);
     PlayFX(level._effect["lightning_dog_spawn"], target);
     PlaySoundAtPosition("zmb_hellhound_prespawn", target);
@@ -2236,14 +2221,13 @@ function_b8671cc0(s_spot)
 
 
 //Thrasher
-ServerSpawnThrasher()
+ServerSpawnThrasher(location)
 {
-    s_loc = self GetAISpawnLocation();
-    var_e3372b59 = zombie_utility::spawn_zombie(level.var_feebf312[0], "thrasher", s_loc);
+    var_e3372b59 = zombie_utility::spawn_zombie(level.var_feebf312[0], "thrasher", location);
 
-    if(IsDefined(var_e3372b59) && IsDefined(s_loc))
+    if(IsDefined(var_e3372b59) && IsDefined(location))
     {
-        var_e3372b59 Forceteleport(s_loc);
+        var_e3372b59 Forceteleport(location);
         PlaySoundAtPosition("zmb_vocals_thrash_spawn", var_e3372b59.origin);
 
         if(!var_e3372b59 zm_utility::in_playable_area())
@@ -2300,13 +2284,13 @@ function_89976d94(v_pos)
 
 
 //Spiders
-ServerSpawnSpider()
+ServerSpawnSpider(location)
 {
     ai = zombie_utility::spawn_zombie(level.var_c38a4fee[0]);
 
     if(IsDefined(ai))
     {
-        thread function_49e57a3b(ai);
+        thread function_49e57a3b(ai, location);
         level.zombie_total--;
         level flag::set("spider_clips");
     }
@@ -2340,16 +2324,15 @@ spider_get_favorite_enemy()
     return e_least_hunted;
 }
 
-function_49e57a3b(var_c79d3f71)
+function_49e57a3b(var_c79d3f71, location)
 {
     var_c79d3f71 endon("death");
 
     var_c79d3f71 ai::set_ignoreall(1);
-    spawn_location = self GetAISpawnLocation();
     var_c79d3f71 Ghost();
     var_c79d3f71 util::delay(0.2, "death", ::Show);
     var_c79d3f71 util::delay_notify(0.2, "visible", "death");
-    var_c79d3f71.origin = spawn_location;
+    var_c79d3f71.origin = location;
     var_c79d3f71 vehicle_ai::set_state("scripted");
 
     if(IsAlive(var_c79d3f71))
@@ -2384,10 +2367,9 @@ function_49e57a3b(var_c79d3f71)
 
 
 //Fury
-ServerSpawnFury()
+ServerSpawnFury(location)
 {
-    s_loc = self GetAISpawnLocation();
-    var_33504256 = SpawnActor("spawner_zm_genesis_apothicon_fury", s_loc, (0, 0, 0), undefined, 1, 1);
+    var_33504256 = SpawnActor("spawner_zm_genesis_apothicon_fury", location, (0, 0, 0), undefined, 1, 1);
 
     if(IsDefined(var_33504256))
     {
@@ -2477,12 +2459,11 @@ function_1be68e3f()
 
 
 //Quad Zombie(Nova Gas Zombie)
-ServerSpawnNovaZombie()
+ServerSpawnNovaZombie(location)
 {
     spawn_array = IsDefined(level.quad_spawners) ? level.quad_spawners : GetEntArray("quad_zombie_spawner", "script_noteworthy");
     spawn_point = spawn_array[RandomInt(spawn_array.size)];
     ai = zombie_utility::spawn_zombie(spawn_point);
-    s_loc = self GetAISpawnLocation();
 
     if(IsDefined(ai))
     {
@@ -2495,7 +2476,7 @@ ServerSpawnNovaZombie()
         linker.angles = ai.angles;
 
         ai LinkTo(linker);
-        linker MoveTo(s_loc, 0.01);
+        linker MoveTo(location, 0.01);
 
         linker waittill("movedone");
 

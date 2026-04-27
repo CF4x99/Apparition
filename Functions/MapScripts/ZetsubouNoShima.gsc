@@ -5,45 +5,82 @@ PopulateZetsubouNoShimaScripts(menu)
         case "Zetsubou No Shima Scripts":
             self addMenu(menu);
                 self addOptBool(level flag::get("power_on"), "Turn On Power", ::ZNS_ActivatePower);
-                self addOptBool(self HasWeapon(level.w_controllable_spider), "Controllable Spider", ::GiveControllableSpider);
-                self addOpt("Pack 'a' Punch Quest Parts", ::newMenu, "Pack 'a' Punch Quest Parts");
-                self addOpt("KT-4 Parts", ::newMenu, "Zetsubou No Shima KT-4 Parts");
+                self addOptBool(self clientfield::get_to_player("bucket_held"), "Collect Bucket", ::ZNSGrabWaterBucket);
+                self addOpt("Bucket Water", ::newMenu, "ZNS Bucket Water");
+                
+                if(!level flag::get("valve1_found") || !level flag::get("valve2_found") || !level flag::get("valve3_found"))
+                    self addOpt("Pack 'a' Punch Parts", ::newMenu, "Pack 'a' Punch Parts");
+
+                if(!level flag::get("ww1_found") && !level flag::get("ww2_found") && !level flag::get("ww3_found"))
+                    self addOpt("KT-4 Parts", ::newMenu, "KT-4 Parts");
+                
+                if(!level flag::get("wwup1_found") || !level flag::get("wwup3_found"))
+                    self addOpt("KT-4 Upgrade Parts", ::newMenu, "KT-4 Upgrade Parts");
+                
                 self addOpt("Skulltar Teleports", ::newMenu, "Skulltar Teleports");
                 self addOpt("Challenges", ::newMenu, "Map Challenges");
-                self addOptBool(self clientfield::get_to_player("bucket_held"), "Collect Bucket", ::ZNSGrabWaterBucket);
-                self addOpt("Bucket Water Type", ::newMenu, "ZNS Bucket Water");
+                self addOptBool((level flag::exists("trilogy_released") && level flag::get("trilogy_released")), "Mesmerize Map", ::MesmerizeMap);
+                self addOptBool((level flag::exists("player_has_aa_gun_ammo") && level flag::get("player_has_aa_gun_ammo")), "Flak Gun Bullet", ::ZNSFlakBullet);
+                self addOptBool(self HasWeapon(level.w_controllable_spider), "Controllable Spider", ::GiveControllableSpider);
             break;
         
-        case "Pack 'a' Punch Quest Parts":
-            self addMenu(menu);
-                self addOptBool(level flag::get("valve1_found"), "Gauge", ::ZNS_PaPQuest, 1);
-                self addOptBool(level flag::get("valve2_found"), "Wheel", ::ZNS_PaPQuest, 2);
-                self addOptBool(level flag::get("valve3_found"), "Whistle", ::ZNS_PaPQuest, 3);
-            break;
-
-        case "Zetsubou No Shima KT-4 Parts":
-            self addMenu("KT-4 Parts");
-                self addOptBool(level flag::get("ww1_found"), "Vial", ::CollectKT4Parts, "ww1_found");
-                self addOptBool(level flag::get("ww2_found"), "Plant", ::CollectKT4Parts, "ww2_found");
-                self addOptBool(level flag::get("ww3_found"), "Venom", ::CollectKT4Parts, "ww3_found");
-            break;
-
-        case "Skulltar Teleports":
-            skulltars = GetEntArray("mdl_skulltar", "targetname");
-
+        case "KT-4 Parts":
             self addMenu(menu);
 
-                for(a = 0; a < skulltars.size; a++)
-                    self addOpt("Skulltar " + (a + 1), ::TeleportPlayer, skulltars[a].origin, self);
+                if(!level flag::get("ww1_found"))
+                    self addOpt("Vial", ::CollectKT4Parts, "ww1_found");
+                
+                if(!level flag::get("ww2_found"))
+                    self addOpt("Plant", ::CollectKT4Parts, "ww2_found");
+                
+                if(!level flag::get("ww3_found"))
+                    self addOpt("Venom", ::CollectKT4Parts, "ww3_found");
             break;
+        
+        case "KT-4 Upgrade Parts":
+            self addMenu(menu);
 
+                if(!level flag::get("wwup1_found"))
+                    self addOpt("Vial", ::CollectKT4UpgradeParts, "wwup1_found");
+                
+                //Step is fast and easy...so I'm not making a script for it
+                //if(!level flag::get("wwup2_found"))
+                    //self addOpt("Spider Fang", ::CollectKT4UpgradeParts, "wwup2_found");
+                
+                if(!level flag::get("wwup3_found"))
+                    self addOpt("Plant", ::CollectKT4UpgradeParts, "wwup3_found");
+            break;
+        
         case "ZNS Bucket Water":
-            self addMenu("Bucket Water Type");
+            self addMenu("Bucket Water");
 
                 foreach(source in GetEntArray("water_source", "targetname"))
                     self addOptBool(self.var_c6cad973 == source.script_int, ZNSReturnWaterType(source.script_int), ::ZNSFillBucket, source);
 
                 self addOptBool(self.var_c6cad973 == GetEnt("water_source_ee", "targetname").script_int, "Rainbow", ::ZNSFillBucket, GetEnt("water_source_ee", "targetname"));
+            break;
+        
+        case "Pack 'a' Punch Parts":
+            self addMenu(menu);
+
+                if(!level flag::get("valve1_found"))
+                    self addOptBool(level flag::get("valve1_found"), "Gauge", ::ZNS_PaPQuest, 1);
+                
+                if(!level flag::get("valve2_found"))
+                    self addOptBool(level flag::get("valve2_found"), "Wheel", ::ZNS_PaPQuest, 2);
+                
+                if(!level flag::get("valve3_found"))
+                    self addOptBool(level flag::get("valve3_found"), "Whistle", ::ZNS_PaPQuest, 3);
+            break;
+        
+        case "Skulltar Teleports":
+            skulltars = GetEntArray("mdl_skulltar", "targetname");
+
+            self addMenu(menu);
+                self addOpt("Podium", ::TeleportPlayer, (2439.987, -1223.967, -375.875), self);
+
+                for(a = 0; a < skulltars.size; a++)
+                    self addOpt("Skulltar " + (a + 1), ::TeleportPlayer, skulltars[a].origin, self);
             break;
     }
 }
@@ -57,9 +94,6 @@ CollectKT4Parts(part)
 
     curs = self getCursor();
     menu = self getCurrent();
-
-    //All parts of the KT-4 craftable have to be collected in different ways.
-    //With that being said, these craftables aren't found in the craftable array(i.e. shield)
 
     switch(part)
     {
@@ -149,10 +183,134 @@ CollectKT4Parts(part)
             break;
 
         default:
-        break;
+            break;
     }
 
     self RefreshMenu(menu, curs);
+}
+
+CollectKT4UpgradeParts(part)
+{
+    if(level flag::get(part))
+        return;
+    
+    if(!level flag::get("ww_obtained"))
+        return self iPrintlnBold("^1ERROR: ^7You Need To Build The KT-4 First");
+
+    self endon("disconnect");
+
+    curs = self getCursor();
+    menu = self getCurrent();
+
+    switch(part)
+    {
+        case "wwup1_found":
+            if(Is_True(level.find_wwup1))
+                return self iPrintlnBold("^1ERROR: ^7Part Is Currently Being Collected");
+            
+            level.find_wwup1 = true;
+            
+            partStruct = struct::get("wweapon_up_part_wwup1");
+
+            if(IsDefined(partStruct) && !level flag::get(part))
+            {
+                ents = GetEntArray("script_model", "classname");
+
+                foreach(ent in ents)
+                {
+                    if(!IsDefined(ent) || ent.origin != partStruct.origin)
+                        continue;
+                    
+                    vial = ent;
+                }
+
+                if(IsDefined(vial))
+                {
+                    if(IsDefined(vial.trigger))
+                        vial.trigger notify("trigger", self);
+                }
+            }
+
+            if(Is_True(level.find_wwup1))
+                level.find_wwup1 = BoolVar(level.find_wwup1);
+            break;
+        
+        case "wwup2_found":
+            //Step is fast and easy...so I'm not making a script for it
+            break;
+        
+        case "wwup3_found":
+            if(Is_True(level.find_wwup3))
+                return self iPrintlnBold("^1ERROR: ^7Part Is Currently Being Collected");
+            
+            level.find_wwup3 = true;
+
+            partStruct = struct::get("ee_planting_spot", "script_noteworthy");
+            level flag::set("ww_upgrade_spawned_from_plant");
+            wait 0.5;
+
+            if(IsDefined(partStruct) && !level flag::get(part))
+            {
+                ents = GetEntArray("script_model", "classname");
+
+                foreach(ent in ents)
+                {
+                    if(!IsDefined(ent) || ent.origin != partStruct.origin)
+                        continue;
+                    
+                    plant = ent;
+                }
+
+                if(IsDefined(plant))
+                {
+                    if(IsDefined(plant.trigger))
+                        plant.trigger notify("trigger", self);
+                }
+            }
+
+            if(Is_True(level.find_wwup3))
+                level.find_wwup3 = BoolVar(level.find_wwup3);
+            break;
+        
+        default:
+            break;
+    }
+
+    wait 0.5;
+    self RefreshMenu(menu, curs);
+}
+
+MesmerizeMap()
+{
+    if(level flag::exists("trilogy_released") && level flag::get("trilogy_released"))
+        return;
+    
+    map = GetEnt("mdl_main_ee_map", "targetname");
+
+    foreach(player in level.players)
+    {
+        if(map == player.var_abd1c759)
+        {
+            player.var_abd1c759 = undefined;
+            player notify("someone_revealed_" + map.targetname);
+        }
+    }
+
+    map.var_f0b65c0a = self;
+    PlaySoundAtPosition("zmb_wpn_skullgun_discover", map.origin);
+    self notify("skullweapon_revealed_location");
+
+    map clientfield::set("do_fade_material", 1);
+	level flag::set("trilogy_released");
+	exploder::exploder("lgt_elevator");
+}
+
+ZNSFlakBullet()
+{
+    if(level flag::exists("player_has_aa_gun_ammo") && level flag::get("player_has_aa_gun_ammo"))
+        return;
+    
+    level flag::set("player_has_aa_gun_ammo");
 }
 
 ZNSGrabWaterBucket()
@@ -362,13 +520,13 @@ zone_occupied_func(zone_name)
         {
             if(IsDefined(players[j].var_59bd3c5a))
             {
-                if(players[j].var_59bd3c5a IsTouching(zone.volumes[i]) && players[j].var_59bd3c5a.sessionstate != "spectator")
+                if(players[j].var_59bd3c5a IsTouching(zone.volumes[i]) && (IsDefined(players[j].var_59bd3c5a.sessionstate) && players[j].var_59bd3c5a.sessionstate != "spectator" || !IsDefined(players[j].var_59bd3c5a.sessionstate)))
                     return true;
 
                 continue;
             }
 
-            if(players[j] IsTouching(zone.volumes[i]) && players[j].sessionstate != "spectator")
+            if(players[j] IsTouching(zone.volumes[i]) && (IsDefined(players[j].sessionstate) && players[j].sessionstate != "spectator" || !IsDefined(players[j].sessionstate)))
                 return true;
         }
     }
