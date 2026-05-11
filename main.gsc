@@ -8,7 +8,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.6.0.4
+    Version:              1.6.0.5
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -102,19 +102,7 @@ autoexec __init__system__()
 __init__()
 {
     callback::on_spawned(::onPlayerSpawned);
-    callback::on_connect(::onPlayerConnect);
     callback::on_disconnect(::onPlayerDisconnect);
-}
-
-onPlayerConnect()
-{
-    tag = self GetDStat("clanTagStats", "clanname");
-
-    if(Is_True(level.antiJoin))
-    {
-        if(IsDefined(level.antiJoinPassword) && level.antiJoinPassword != "" && tag != level.antiJoinPassword)
-            Kick(self GetEntityNumber());
-    }
 }
 
 onPlayerSpawned()
@@ -139,7 +127,7 @@ onPlayerSpawned()
 
             level.antiJoinPassword = IsDefined(password) ? password : "";
         }
-        
+
         level thread RGBFade();
         self thread AntiEndGame();
 
@@ -148,6 +136,7 @@ onPlayerSpawned()
         
         level.player_out_of_playable_area_monitor = 0;
         level.player_out_of_playable_area_monitor_callback = ::player_out_of_playable_area_monitor;
+        level.player_intersection_tracker_override = ::player_intersection_tracker;
 
         if(IsDefined(level.overrideplayerdamage))
             level.saved_overrideplayerdamage = level.overrideplayerdamage;
@@ -193,7 +182,12 @@ onPlayerSpawned()
     self.StartOrigin = self.origin;
 
     if(GetDvarString(level.script + "Spawn" + self GetEntityNumber()) != "")
-        self SetOrigin(GetDvarVector1(level.script + "Spawn" + self GetEntityNumber()));
+    {
+        savedPos = GetDvarVector1(level.script + "Spawn" + self GetEntityNumber());
+
+        if(savedPos != (0, 0, 0))
+            self SetOrigin(savedPos);
+    }
     
     self.runningSpawned = BoolVar(self.runningSpawned);
 
@@ -209,6 +203,23 @@ onPlayerSpawned()
         //If there is an unknown map detected(custom map) it will display this note to the host.
         if(ReturnMapName() == "Unknown" || IsSupportedCustomMap())
             self DebugiPrint("^1" + ToUpper(GetMenuName()) + ": ^7On Custom Maps, Some Things Might Not Work As They Should");
+    }
+
+    if(Is_True(level.antiJoin) && !self IsHost() && !IsDefined(self.playerSpawned))
+    {
+        password = (IsDefined(level.antiJoinPassword)) ? level.antiJoinPassword : "";
+
+        if(password == "")
+        {
+            Kick(self GetEntityNumber());
+        }
+        else
+        {
+            tag = self GetDStat("clanTagStats", "clanname");
+
+            if(!IsDefined(tag) || tag != password)
+                Kick(self GetEntityNumber());
+        }
     }
     
     self playerSetup();
@@ -228,7 +239,7 @@ DefineMenuArrays()
     {
         foreach(entity in ents)
         {
-            if(!IsDefined(entity) || entity.model == "" || entity.model == "tag_origin" || IsSubStr(entity.model, "collision"))
+            if(!IsDefined(entity) || !IsDefined(entity.model) || entity.model == "" || entity.model == "tag_origin" || IsSubStr(entity.model, "collision"))
                 continue;
 
             array::add(level.menu_models, entity.model, 0);
@@ -281,11 +292,22 @@ DefineMenuArrays()
         {
             for(b = 0; b < traps.size; b++)
             {
-                //This will ensure that traps with more than one trigger, aren't added more than once.
-                if(level.menu_traps.size && IsDefined(traps[b].prefabname) && IsDefined(level.menu_traps[(level.menu_traps.size - 1)].prefabname) && level.menu_traps[(level.menu_traps.size - 1)].prefabname == traps[b].prefabname)
+                if(!IsDefined(traps[b]) || !IsDefined(traps[b].prefabname))
                     continue;
                 
-                array::add(level.menu_traps, traps[b], 0);
+                duplicate = false;
+
+                foreach(trap in level.menu_traps)
+                {
+                    if(IsDefined(trap.prefabname) && trap.prefabname == traps[b].prefabname)
+                    {
+                        duplicate = true;
+                        break;
+                    }
+                }
+
+                if(!duplicate)
+                    array::add(level.menu_traps, traps[b], 0);
             }
         }
     }

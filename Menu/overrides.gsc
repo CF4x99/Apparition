@@ -1,6 +1,6 @@
-override_player_damage(einflictor, eattacker, idamage, idflags, smeansofdeath, weapon, vpoint, vdir, shitloc, psoffsettime)
+override_player_damage(eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, weapon, vPoint, vDir, sHitLoc, psOffsetTime)
 {
-    if(Is_True(self.playerGodmode) || Is_True(self.PlayerDemiGod) || Is_True(self.NoExplosiveDamage) && zm_utility::is_explosive_damage(smeansofdeath) || IsDefined(level.AllPlayersTeleporting) && IsPlayer(level.AllPlayersTeleporting) && self != level.AllPlayersTeleporting && !self IsHost() && !self isDeveloper() || Is_True(self.ControllableZombie) || Is_True(self.AC130) || Is_True(self.lander))
+    if(Is_True(self.playerGodmode) || Is_True(self.PlayerDemiGod) || Is_True(self.NoExplosiveDamage) && zm_utility::is_explosive_damage(smeansofdeath) || Is_True(self.ControllableZombie) || Is_True(self.AC130) || Is_True(self.lander))
     {
         if(Is_True(self.PlayerDemiGod))
             self FakeDamageFrom(vdir);
@@ -39,7 +39,7 @@ CommonDamageOverride(mod, hit_location, hit_origin, player, amount, team, weapon
 {
     if(IsDefined(self))
     {
-        if(Is_True(level.ZombiesDamageEffect) && IsDefined(level.ZombiesDamageFX))
+        if(IsDefined(level.ZombiesDamageFX))
             thread DisplayZombieEffect(level.ZombiesDamageFX, hit_origin);
         
         if(IsDefined(player) && IsPlayer(player))
@@ -70,7 +70,7 @@ override_actor_killed(einflictor, attacker, idamage, smeansofdeath, weapon, vdir
     if(game["state"] == "postgame")
         return;
     
-    if(Is_True(level.ZombiesDeathEffect) && IsDefined(level.ZombiesDeathFX))
+    if(IsDefined(level.ZombiesDeathFX))
         thread DisplayZombieEffect(level.ZombiesDeathFX, self.origin);
     
     if(IsDefined(attacker) && IsPlayer(attacker))
@@ -115,7 +115,7 @@ override_actor_killed(einflictor, attacker, idamage, smeansofdeath, weapon, vdir
 override_player_points(damage_weapon, player_points)
 {
     if(IsDefined(level.saved_player_score_override)) //Der Eisendrache and some custom maps use this override as well
-        self [[ level.saved_player_score_override ]](damage_weapon, player_points);
+        player_points = self [[ level.saved_player_score_override ]](damage_weapon, player_points);
     
     if(IsDefined(self.DamagePointsMultiplier) || Is_True(self.DisableEarningPoints))
         player_points = (IsDefined(self.DamagePointsMultiplier) && !Is_True(self.DisableEarningPoints)) ? (player_points * self.DamagePointsMultiplier) : 0;
@@ -151,15 +151,12 @@ DamageFeedBack()
 
 DisplayZombieEffect(fx, origin)
 {
-    impactfx = SpawnFX(level._effect[fx], origin);
-
-    if(IsDefined(impactfx))
-    {
-        TriggerFX(impactfx);
-        
-        wait 0.5;
-        impactfx Delete();
-    }
+    if(!IsDefined(fx) || !IsString(fx) || !IsDefined(origin) || !IsVec(origin) || !IsDefined(level._effect) || !IsDefined(level._effect[fx]))
+        return;
+    
+    impactfx = SpawnScriptModel(origin, "tag_origin");
+    PlayFXOnTag(level._effect[fx], impactfx, "tag_origin");
+    impactfx deleteAfter(0.5);
 }
 
 override_game_over_hud_elem(player, game_over, survived)
@@ -252,6 +249,11 @@ player_out_of_playable_area_monitor()
     return 0;
 }
 
+player_intersection_tracker()
+{
+    return 1;
+}
+
 WatchForMaxAmmo()
 {
     if(Is_True(level.WatchForMaxAmmo))
@@ -314,7 +316,7 @@ onPlayerDisconnect()
             openMenu = player isInMenu(false);
 
             if(openMenu)
-                player thread closeMenu1();
+                player closeMenu1();
             
             player.menu_parent = [];
             player.currentMenu = "Players";
@@ -322,7 +324,7 @@ onPlayerDisconnect()
 
             if(openMenu)
             {
-                player thread openMenu1();
+                player openMenu1();
                 player iPrintlnBold("^1ERROR: ^7Player Has Disconnected");
             }
         }

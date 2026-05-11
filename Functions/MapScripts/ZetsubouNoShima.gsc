@@ -54,10 +54,21 @@ PopulateZetsubouNoShimaScripts(menu)
         case "ZNS Bucket Water":
             self addMenu("Bucket Water");
 
-                foreach(source in GetEntArray("water_source", "targetname"))
-                    self addOptBool(self.var_c6cad973 == source.script_int, ZNSReturnWaterType(source.script_int), ::ZNSFillBucket, source);
+                sources = GetEntArray("water_source", "targetname");
 
-                self addOptBool(self.var_c6cad973 == GetEnt("water_source_ee", "targetname").script_int, "Rainbow", ::ZNSFillBucket, GetEnt("water_source_ee", "targetname"));
+                if(IsDefined(sources) && sources.size)
+                {
+                    foreach(source in sources)
+                    {
+                        if(IsDefined(source))
+                            self addOptBool((IsDefined(self.var_c6cad973) && self.var_c6cad973 == source.script_int), ZNSReturnWaterType(source.script_int), ::ZNSFillBucket, source);
+                    }
+                }
+
+                rainbowEnt = GetEnt("water_source_ee", "targetname");
+
+                if(IsDefined(rainbowEnt))
+                    self addOptBool((IsDefined(self.var_c6cad973) && self.var_c6cad973 == rainbowEnt.script_int), "Rainbow", ::ZNSFillBucket, rainbowEnt);
             break;
         
         case "Pack 'a' Punch Parts":
@@ -345,7 +356,6 @@ ZNSFillBucket(source)
     self PlaySound("zmb_bucket_water_pickup");
     self.var_c6cad973 = water_type;
     self thread function_ef097ea(self.var_c6cad973, self.var_bb2fd41c, self function_89538fbb(), 1);
-    self.var_bb2fd41c = 3;
 
     if(self.var_bb2fd41c <= 0)
     {

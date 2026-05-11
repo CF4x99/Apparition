@@ -43,7 +43,7 @@ PopulateForgeOptions(menu)
 
 ForgeSpawnModel(model)
 {
-    if(IsDefined(self.ForgeShootModel))
+    if(Is_True(self.ForgeShootModel))
         self ForgeShootModel();
     
     if(!IsDefined(self.forgeSpawnedArray))

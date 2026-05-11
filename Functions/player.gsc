@@ -443,14 +443,14 @@ FakeLag(player)
 
 AttachSelfToPlayer(player)
 {
-    if(player isPlayerLinked() && !Is_True(self.AttachToPlayer))
-        return self iPrintlnBold("^1ERROR: ^7You're Linked To An Entity");
-    
     if(player == self)
         return self iPrintlnBold("^1ERROR: ^7You Can't Attach To Yourself");
     
     if(!Is_Alive(player))
         return self iPrintlnBold("^1ERROR: ^7Player Isn't Alive");
+    
+    if(self isPlayerLinked() && !Is_True(self.AttachToPlayer))
+        return self iPrintlnBold("^1ERROR: ^7You're Linked To An Entity");
     
     player endon("disconnect");
 
@@ -460,14 +460,19 @@ AttachSelfToPlayer(player)
     {
         while(Is_True(self.AttachToPlayer))
         {
+            if(!Is_Alive(player))
+            {
+                self.AttachToPlayer = undefined;
+                break;
+            }
+
             if(!self IsLinkedTo(player))
                 self PlayerLinkTo(player, "j_head");
             
-            if(!Is_Alive(player))
-                self thread AttachSelfToPlayer(player);
-
             wait 0.1;
         }
+        
+        self Unlink();
     }
     else
     {

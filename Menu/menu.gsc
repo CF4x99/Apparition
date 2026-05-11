@@ -260,6 +260,7 @@ RunMenuOptions(menu)
             break;
         
         case "Server Modifications":
+        case "Set Round":
         case "Anti-Join":
         case "Doheart Options":
         case "Lobby Timer Options":

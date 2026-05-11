@@ -118,7 +118,7 @@ SpawnSystem(action, type, func)
                             continue;
 
                         level.SkybaseTeleporters[a] Unlink();
-                        level.SkybaseTeleporters[a] Launch(VectorScale(AnglesToForward(level.SpawnableArray[type][a].angles), RandomIntRange(-255, 255)));
+                        level.SkybaseTeleporters[a] Launch(VectorScale(AnglesToForward(level.SkybaseTeleporters[a].angles), RandomIntRange(-255, 255)));
                     }
                 }
             }

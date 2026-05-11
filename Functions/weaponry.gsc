@@ -176,7 +176,10 @@ DropCurrentWeapon(type, player)
 
     if(type == "Don't Take")
     {
-        player zm_weapons::weapon_give(weapon, false, false, true);
+        newWeapon = player zm_weapons::weapon_give(weapon, false, false, true);
+    
+        if(!IsDefined(newWeapon))
+            return;
 
         if(IsDefined(weapon.savedCamo))
             SetPlayerCamo(weapon.savedCamo, player);
@@ -184,11 +187,11 @@ DropCurrentWeapon(type, player)
         if(IsDefined(aat))
             player aat::acquire(weapon, aat);
         
-        player SetWeaponAmmoClip(player GetCurrentWeapon(), clip);
-        player SetWeaponAmmoStock(player GetCurrentWeapon(), stock);
+        player SetWeaponAmmoClip(newWeapon, clip);
+        player SetWeaponAmmoStock(newWeapon, stock);
 
-        if(!IsSubStr(weapon.name, "_knife"))
-            player SetSpawnWeapon(weapon, true);
+        if(!IsSubStr(newWeapon.name, "_knife"))
+            player SetSpawnWeapon(newWeapon, true);
     }
 }
 
@@ -444,10 +447,12 @@ SaveCurrentLoadout(type, player)
             attachments = "";
 
             foreach(index, attachment in weapon.attachments)
-                attachments += (index == weapon.attachments.size) ? attachment : attachment + ";";
+                attachments += (index == (weapon.attachments.size - 1)) ? attachment : attachment + ";";
         }
         else
+        {
             attachments = "none";
+        }
         
         SetDvar("Loadout_" + type + "_" + userID, zm_weapons::get_base_weapon(weapon).name);
         SetDvar("Loadout_" + type + "_Attachments_" + userID, attachments);
@@ -472,12 +477,12 @@ SaveCurrentLoadout(type, player)
 
 ClearLoadout(player)
 {
+    userID = player GetXUID();
     saved = GetDvarInt("Apparition_Loadout_" + userID);
 
     if(!IsDefined(saved) || !saved)
         return;
     
-    userID = player GetXUID();
     types = Array("Primary", "Secondary");
 
     SetDvar("Apparition_Loadout_" + userID, 0);
@@ -491,11 +496,11 @@ ClearLoadout(player)
         SetDvar("Loadout_" + type + "_AAT_" + userID, "");
     }
 
-    types = Array("Primary Offhand", "Secondary Offhand");
+    types = Array("primary_offhand", "secondary_offhand");
 
     foreach(type in types)
         SetDvar("Loadout_" + type + "_" + userID, "");
-
+    
     self iPrintlnBold("Loadout ^2Cleared");
 }
 

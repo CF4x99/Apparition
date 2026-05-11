@@ -71,6 +71,8 @@ getVerification()
         if(self.accessLevel == GetAccessLevels()[a])
             return a;
     }
+
+    return 1;
 }
 
 hasMenu()

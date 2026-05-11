@@ -247,7 +247,7 @@ CustomSentryGetTarget()
         if(enemy == zombies[a])
             continue;
         
-        if(Closer(self.origin, zombies[a].origin, enemy.origin) && zombies[a] DamageConeTrace(self.origin, self) >= 0.1)
+        if(Closer(self.origin, zombies[a].origin, enemy.origin))
             enemy = zombies[a];
     }
 
@@ -289,9 +289,7 @@ ControllableZombie(team)
     CZSavedOrigin = self.origin;
     CZSavedAngles = self.angles;
 
-    spawner = ArrayGetClosest(level.zombie_spawners, self.origin);
-    zombie = zombie_utility::spawn_zombie(spawner);
-    
+    zombie = self ServerSpawnZombie(self.origin);
     self SetStance("stand");
     wait 0.1;
     
@@ -373,8 +371,11 @@ ControllableZombie(team)
     self EnableWeapons();
     self EnableOffhandWeapons();
 
-    viewModel Delete();
-    goalPos Delete();
+    if(IsDefined(viewModel))
+        viewModel Delete();
+    
+    if(IsDefined(goalPos))
+        goalPos Delete();
     
     self SetOrigin(CZSavedOrigin);
     self SetPlayerAngles(CZSavedAngles);
@@ -553,7 +554,17 @@ AC130(type)
         c130 = SpawnScriptModel(((linker.origin + (AnglesToRight(linker.angles) * 1800)) + (0, 0, ((self.StartOrigin[2] + 1500) - linker.origin[2]))), "tag_origin");
 
         if(!IsDefined(linker) || !IsDefined(c130))
+        {
+            if(IsDefined(linker))
+                linker Delete();
+            
+            if(IsDefined(c130))
+                c130 Delete();
+            
+            self.AC130 = undefined;
+            self.DisableMenuControls = undefined;
             return;
+        }
         
         c130.angles = VectorToAngles(linker.origin - c130.origin);
         c130 LinkTo(linker);
@@ -637,8 +648,7 @@ AC130(type)
             self Show();
     }
 
-    if(Is_True(self.DisableMenuControls))
-        self.DisableMenuControls = BoolVar(self.DisableMenuControls);
+    self.DisableMenuControls = undefined;
 
     if(Is_True(self.AC130))
         self.AC130 = BoolVar(self.AC130);
@@ -737,7 +747,10 @@ MexicanWave(size)
     if(IsDefined(self.MexicanWave) && self.MexicanWave.size)
     {
         for(a = 0; a < self.MexicanWave.size; a++)
-            self.MexicanWave[a] Delete();
+        {
+            if(IsDefined(self.MexicanWave[a]))
+                self.MexicanWave[a] Delete();
+        }
         
         self.MexicanWave = undefined;
         return;
@@ -838,7 +851,21 @@ RainPowerups()
 
     while(Is_True(level.RainPowerups))
     {
-        powerup = level CustomPowerupSpawn(GetArrayKeys(level.zombie_include_powerups)[RandomInt(level.zombie_include_powerups.size)], bot::get_host_player().origin + (RandomIntRange(-1000, 1000), RandomIntRange(-1000, 1000), RandomIntRange(750, 2000)));
+        player = bot::get_host_player();
+
+        if(!IsDefined(player) || !Is_Alive(player))
+        {
+            foreach(client in level.players)
+            {
+                if(!IsDefined(client) || !Is_Alive(client))
+                    continue;
+                
+                player = client;
+                break;
+            }
+        }
+
+        powerup = level CustomPowerupSpawn(GetArrayKeys(level.zombie_include_powerups)[RandomInt(level.zombie_include_powerups.size)], player.origin + (RandomIntRange(-1000, 1000), RandomIntRange(-1000, 1000), RandomIntRange(750, 2000)));
         
         if(IsDefined(powerup))
             powerup PhysicsLaunch(powerup.origin, (RandomIntRange(-5, 5), RandomIntRange(-5, 5), RandomIntRange(-5, 5)));
@@ -1038,7 +1065,7 @@ AnyoneNearDoor(door)
 
     foreach(player in level.players)
     {
-        if(Distance(player.origin, door.origin) <= 255)
+        if(IsDefined(player) && Is_Alive(player) && Distance(player.origin, door.origin) <= 255)
             return true;
     }
 
@@ -1057,26 +1084,11 @@ BodyGuard()
     if(Is_True(self.BodyGuard))
     {
         spawner = ArrayGetClosest(level.zombie_spawners, self.origin);
-        self.BodyGuardZombie = zombie_utility::spawn_zombie(spawner);
+        self.BodyGuardZombie = self ServerSpawnZombie(self.origin);
         wait 0.1;
         
         if(Is_True(self.BodyGuard) && IsDefined(self.BodyGuardZombie) && IsAlive(self.BodyGuardZombie))
-        {
-            self.BodyGuardZombieLinker = spawn("script_origin", self.BodyGuardZombie.origin);
-
-            self.BodyGuardZombieLinker.origin = self.BodyGuardZombie.origin;
-            self.BodyGuardZombieLinker.angles = self.BodyGuardZombie.angles;
-
-            self.BodyGuardZombie LinkTo(self.BodyGuardZombieLinker);
-            self.BodyGuardZombieLinker MoveTo(self.origin, 0.01);
-            self.BodyGuardZombieLinker waittill("movedone");
-
-            self.BodyGuardZombie Unlink();
-            self.BodyGuardZombieLinker Delete();
-            self.BodyGuardZombie.find_flesh_struct_string = "find_flesh";
-            self.BodyGuardZombie.ai_state = "find_flesh";
-            self.BodyGuardZombie notify("zombie_custom_think_done", "find_flesh");
-            
+        {            
             self.BodyGuardZombie.ignoreme = 1;
             self.BodyGuardZombie.team = self.team;
             self.BodyGuardZombie.no_gib = 1;
@@ -1179,10 +1191,10 @@ Tornado()
         
         level notify("Tornado_Stop");
         level.TornadoSpawned = BoolVar(level.TornadoSpawned);
-
         return;
     }
 
+    level endon("Tornado_Stop");
     level.TornadoSpawned = true;
     
     TornadoParts = [];
@@ -1201,6 +1213,7 @@ Tornado()
             TornadoParts[(TornadoParts.size - 1)] LinkTo(TornadoParts[0]);
             TornadoParts[(TornadoParts.size - 1)] SpawnableArray("Tornado");
             TornadoParts[(TornadoParts.size - 1)] clientfield::set("powerup_fx", color);
+            wait 0.01;
         }
     }
 
@@ -1213,12 +1226,15 @@ TornadoMovement(defaultOrigin)
     level endon("Tornado_Stop");
     self endon("EndTornadoMovement");
     
-    while(1)
+    while(IsDefined(self))
     {
         self zm_utility::create_zombie_point_of_interest(5000, 255, 10000, 1);
         self MoveTo(self.origin + (RandomIntRange(-100, 100), RandomIntRange(-100, 100), 0), 3);
         self RotateYaw(360, 3);
         wait 3;
+    
+        if(!IsDefined(self))
+            break;
 
         if(Distance(defaultOrigin, self.origin) >= 750)
         {
@@ -1238,6 +1254,9 @@ TornadoWatchEntities(TornadoParts)
 
     while(1)
     {
+        if(!IsDefined(TornadoParts) || !TornadoParts.size)
+            break;
+        
         foreach(entity in GetEntArray("script_model", "classname"))
         {
             if(!IsDefined(entity) || isInArray(TornadoParts, entity) || Is_True(entity.OnTornado) || entity.model == "tag_origin")
@@ -1245,7 +1264,7 @@ TornadoWatchEntities(TornadoParts)
             
             for(a = 1; a < TornadoParts.size; a++)
             {
-                if(Distance(TornadoParts[a].origin, entity.origin) <= 100)
+                if(IsDefined(TornadoParts[a]) && Distance(TornadoParts[a].origin, entity.origin) <= 100)
                 {
                     entity thread TornadoLaunchEntity(a, TornadoParts);
                     break;
@@ -1260,7 +1279,7 @@ TornadoWatchEntities(TornadoParts)
             
             for(a = 1; a < TornadoParts.size; a++)
             {
-                if(Distance(TornadoParts[a].origin, player.origin) <= 100)
+                if(IsDefined(TornadoParts[a]) && Distance(TornadoParts[a].origin, player.origin) <= 100)
                 {
                     player thread TornadoLaunchPlayer(a, TornadoParts);
                     break;
@@ -1275,7 +1294,7 @@ TornadoWatchEntities(TornadoParts)
             
             for(a = 1; a < TornadoParts.size; a++)
             {
-                if(Distance(TornadoParts[a].origin, zombie.origin) <= 100)
+                if(IsDefined(TornadoParts[a]) && Distance(TornadoParts[a].origin, zombie.origin) <= 100)
                 {
                     zombie thread TornadoLaunchZombie(a, TornadoParts);
                     break;
@@ -1317,7 +1336,7 @@ TornadoLaunchPlayer(a, TornadoParts)
     if(self IsOnGround())
         self SetOrigin(self.origin + (0, 0, 5));
 
-    self SetVelocity((450, 450, 850));
+    self SetVelocity(AnglesToForward(self.angles) * 3500);
     wait 1;
 
     if(!IsDefined(self) || !Is_Alive(self))
@@ -1341,7 +1360,7 @@ TornadoLaunchZombie(a, TornadoParts)
         if(!IsDefined(self) || !IsAlive(self))
             break;
         
-        if(b % 2 && IsDefined(TornadoParts[b]))
+        if(IsDefined(TornadoParts[b]) && b % 2)
         {
             self ForceTeleport(TornadoParts[b].origin);
             self LinkTo(TornadoParts[b]);

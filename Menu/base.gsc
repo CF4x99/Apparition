@@ -51,6 +51,11 @@ menuMonitor()
             {
                 if(self isInMenu(false) && !Is_Alive(self))
                     self closeMenu1();
+                
+                if(ReturnMapName() != "Origins")
+                    self SetActionSlot(3, "");
+                
+                self SetActionSlot(1, "");
 
                 menu = self getCurrent();
                 curs = self getCursor();
@@ -237,6 +242,12 @@ closeMenu1(showAnim = false)
         self.isInMenu = BoolVar(self.isInMenu);
 
     self.DisableMenuControls = undefined;
+
+    if(ReturnMapName() != "Origins")
+        self SetActionSlot(3, "altMode");
+    
+    if(IsDefined(self.bgb) && self.bgb != "none")
+        self SetActionSlot(1, "bgb");
 }
 
 openQuickMenu1()
@@ -271,6 +282,12 @@ closeQuickMenu()
         self.isInQuickMenu = BoolVar(self.isInQuickMenu);
     
     self.DisableMenuControls = undefined;
+
+    if(ReturnMapName() != "Origins")
+        self SetActionSlot(3, "altMode");
+    
+    if(IsDefined(self.bgb) && self.bgb != "none")
+        self SetActionSlot(1, "bgb");
 }
 
 drawText(showAnim = false)
@@ -437,7 +454,7 @@ ScrollingSystem(dir, OldCurs)
     {
         self setCursor((curs < 0) ? (size - 1) : 0);
 
-        curs = getCursor();
+        curs = self getCursor();
         OldCurs = curs;
 
         if(size > maxOptions)
@@ -514,7 +531,7 @@ ScrollingSystem(dir, OldCurs)
             for(a = 0; a < hud.size; a++)
             {
                 if(IsDefined(self.menuUI[hud[a]][create]))
-                    self.menuUI[hud[a]][create] thread hudFade((Is_True(self.SpotlightCursor) && a != curs || hud[a] == "invalidOption") ? 0.4 : 1, time);
+                    self.menuUI[hud[a]][create] thread hudFade((Is_True(self.SpotlightCursor) && create != curs || hud[a] == "invalidOption") ? 0.4 : 1, time);
             }
         }
     }
@@ -1041,7 +1058,7 @@ BuildInfoString()
     
     strng += "\n^7XUID: ^2" + self GetXUID();
     strng += "\n^7STEAM ID: ^2" + self GetXUID(1);
-    strng += "\n^7Controller: ^2" + self GamepadUsedLast() ? "Yes" : "No";
+    strng += "\n^7Controller: ^2" + (self GamepadUsedLast() ? "Yes" : "No");
     strng += "\n^7Weapon: ^2" + StrTok(self GetCurrentWeapon().name, "+")[0]; //Can't use the displayname
 
     return strng;
@@ -1103,6 +1120,10 @@ AreButtonsPressed(btnArray)
                 pressed = self StanceButtonPressed();
                 break;
             
+            case "+gostand":
+                pressed = self JumpButtonPressed();
+                break;
+            
             default:
                 pressed = true;
                 break;
@@ -1135,12 +1156,7 @@ SetOpenButtons(type, buttonString)
         saved = [];
 
         for(a = 0; a < buttonIndex; a++)
-        {
-            if(a == buttonIndex)
-                break;
-            
             saved[saved.size] = controlsArry[a];
-        }
 
         if(openControls)
             self.OpenControls = saved;

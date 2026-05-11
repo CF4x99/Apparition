@@ -20,7 +20,7 @@ ModeWeaponMonitor(weaponArray)
             if(!self HasWeapon(keepWeapon))
             {
                 keepWeapon = self zm_weapons::weapon_give(keepWeapon, false, false, true);
-                self GiveStartAmmo(newWeapon);
+                self GiveStartAmmo(keepWeapon);
             }
             
             self SwitchToWeapon(keepWeapon);

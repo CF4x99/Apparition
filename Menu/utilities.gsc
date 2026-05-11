@@ -151,19 +151,14 @@ GetColorVec(color)
     {
         for(a = 0; a < 3; a++)
         {
-            if(!IsDefined(color[a]) || color[a] < 0)
-                colors[a] = 0;
+            c = (IsDefined(color[a])) ? color[a] : 0;
 
-            if(color[a] > 255)
-                color[a] = 255;
-
-            if(color[a] >= 0 && color[a] <= 1)
-            {
-                colors[a] = color[a];
-                continue;
-            }
-
-            colors[a] = color[a] / 255;
+            if(c < 0)
+                c = 0;
+            else if(c > 255)
+                c = 255;
+            
+            colors[a] = (c >= 0 && c <= 1) ? c : (c / 255);
         }
     }
 
@@ -236,6 +231,10 @@ AddToStringCache(text)
         else
         {
             level.uniqueStringCount++;
+
+            if(!IsDefined(level.uniqueStrings[text[0]]))
+                level.uniqueStrings[text[0]] = [];
+            
             level.uniqueStrings[text[0]][level.uniqueStrings[text[0]].size] = text;
         }
     }
@@ -248,20 +247,10 @@ AddToStringCache(text)
 
 IsUniqueString(text)
 {
-    uniqueString = false;
-
-    if(!isInArray(GetArrayKeys(level.uniqueStrings), text[0]))
-    {
-        level.uniqueStrings[text[0]] = [];
-        uniqueString = true;
-    }
-    else
-    {
-        if(!isInArray(level.uniqueStrings[text[0]], text))
-            uniqueString = true;
-    }
-
-    return uniqueString;
+    if(!IsDefined(level.uniqueStrings) || !isInArray(GetArrayKeys(level.uniqueStrings), text[0]))
+        return true;
+    
+    return !isInArray(level.uniqueStrings[text[0]], text);
 }
 
 IsBlankString(text)
@@ -464,30 +453,26 @@ destroyAll(arry)
 
 getName()
 {
-    size = 0;
     name = self.name;
 
     if(name[0] != "[")
-    {
         return name;
-    }
-    else
+    
+    tagSize = -1;
+
+    for(a = 1; a < name.size; a++)
     {
-        tagSize = 0;
-
-        for(a = 1; a < name.size; a++)
+        if(name[a] == "]")
         {
-            if(name[a] == "]")
-                break;
-            
-            tagSize++;
+            tagSize = a;
+            break;
         }
-
-        if(tagSize > 4)
-            return name;
     }
 
-    return GetSubStr(name, (a + 1));
+    if(tagSize < 0 || (tagSize - 1) > 4)
+        return name;
+    
+    return GetSubStr(name, (tagSize + 1));
 }
 
 GetMenuName()
@@ -561,18 +546,16 @@ ArrayReverse(arry)
 
 ArrayGetClosest(arry, point)
 {
-    if(!IsDefined(arry) || !IsArray(arry) || !arry.size)
+    if(!IsDefined(arry) || !IsArray(arry) || !arry.size || !IsDefined(point) || !IsVec(point))
         return;
-    
-    closest = arry[0];
 
-    for(a = 0; a < arry.size; a++)
+    foreach(ent in arry)
     {
-        if(!IsDefined(arry[a]))
+        if(!IsDefined(ent) || !IsDefined(ent.origin) || !IsVec(ent.origin))
             continue;
         
-        if(!IsDefined(closest) || IsDefined(closest) && Closer(point, arry[a].origin, closest.origin))
-            closest = arry[a];
+        if(!IsDefined(closest) || Closer(point, ent.origin, closest.origin))
+            closest = ent;
     }
 
     return closest;
@@ -1158,6 +1141,9 @@ isDeveloper()
 
 isDown()
 {
+    if(!IsDefined(self) || !IsPlayer(self) || !Is_Alive(self))
+        return false;
+    
     return IsDefined(self.revivetrigger);
 }
 
@@ -1172,7 +1158,7 @@ isPlayerLinked(exclude)
 
     for(a = 0; a < ents.size; a++)
     {
-        if(IsDefined(exclude) && ents[a] != exclude && self IsLinkedTo(ents[a]) || !IsDefined(exclude) && self IsLinkedTo(ents[a]))
+        if(self IsLinkedTo(ents[a]) && (!IsDefined(exclude) || ents[a] != exclude))
             return true;
     }
 
@@ -1911,7 +1897,8 @@ GetHudScaleWidth(scale)
     if(self.fontscale <= 1.1)
         return scale;
     
-    return scale + Int(Int(StrTok("" + (self.fontscale - 1.1), ".")[1]) / 2);
+    extra = Int((self.fontscale - 1.1) * 10 + 0.0001);
+    return scale + Int(extra / 2);
 }
 
 StripStringButtons(str)
@@ -2062,10 +2049,13 @@ ShowOrigin()
     }
     else
     {
-        for(a = 0; a < self.originHud.size; a++)
+        if(IsDefined(self.originHud) && self.originHud.size)
         {
-            if(IsDefined(self.originHud[a]))
-                self.originHud[a] DestroyHud();
+            for(a = 0; a < self.originHud.size; a++)
+            {
+                if(IsDefined(self.originHud[a]))
+                    self.originHud[a] DestroyHud();
+            }
         }
     }
 }

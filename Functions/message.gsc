@@ -57,27 +57,33 @@ DisplayMessage(message)
 
 typeWriter(message)
 {
-    if(IsDefined(level.LobbyTypeWriterMessage))
-        EnterMessageQueue(message);
-    
-    while(IsDefined(level.LobbyTypeWriterMessage))
-        wait 0.1;
-    
-    level.LobbyTypeWriterMessage = createServerText("objective", 1.7, 1, "", "TOP", "TOP", 0, 75, 1, level.RGBFadeColor);
-    level.LobbyTypeWriterMessage thread SetTextFX((IsDefined(level.LobbyMessageQueue) && level.LobbyMessageQueue.size) ? level.LobbyMessageQueue[0] : message, 4);
-    level.LobbyTypeWriterMessage thread HudRGBFade();
+    if(!IsDefined(level.LobbyMessageQueue))
+        level.LobbyMessageQueue = [];
 
-    if(IsDefined(level.LobbyMessageQueue) && level.LobbyMessageQueue.size)
-        level.LobbyMessageQueue = ArrayRemove(level.LobbyMessageQueue, level.LobbyMessageQueue[0]);
-}
+    level.LobbyMessageQueue[level.LobbyMessageQueue.size] = message;
 
-EnterMessageQueue(message)
-{
-    if(IsDefined(level.LobbyTypeWriterMessage))
+    if(Is_True(level.LobbyTypeWriterCreating) || IsDefined(level.LobbyTypeWriterMessage))
+        return;
+
+    level.LobbyTypeWriterCreating = true;
+
+    while(level.LobbyMessageQueue.size)
     {
-        if(!IsDefined(level.LobbyMessageQueue))
-            level.LobbyMessageQueue = [];
+        next = level.LobbyMessageQueue[0];
+        newQueue = [];
+
+        for(a = 1; a < level.LobbyMessageQueue.size; a++)
+            newQueue[newQueue.size] = level.LobbyMessageQueue[a];
         
-        level.LobbyMessageQueue[level.LobbyMessageQueue.size] = message;
+        level.LobbyMessageQueue = newQueue;
+
+        level.LobbyTypeWriterMessage = createServerText("objective", 1.7, 1, "", "TOP", "TOP", 0, 75, 1, level.RGBFadeColor);
+        level.LobbyTypeWriterMessage thread SetTextFX(next, 4);
+        level.LobbyTypeWriterMessage thread HudRGBFade();
+
+        while(IsDefined(level.LobbyTypeWriterMessage))
+            wait 0.1;
     }
+
+    level.LobbyTypeWriterCreating = undefined;
 }

@@ -7,7 +7,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.6.0.4
+    Version:              1.6.0.5
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -32,6 +32,32 @@
 
 
 ## Changelog
+
+<details>
+    <summary>
+        Version 1.6.0.5
+    </summary>
+
+    - This update was mainly pointed at bug fixes and improvements
+    - This update should fix the issues with spawning zombies on maps like DE, origins, and Rev(spawned special zombies) -- Spawning zombies with the menu(including Controllable zombie and Body Guard)  should spawn the correct zombie types now
+
+    - Added: Server Modifications -- Set Round -- It is now a submenu (Custom / Next Round / Previous Round)
+
+    - Changed: You should now always be able to press and hold actionslots 1 & 3 to scroll and use sliders(Excluding actionslot 3 on origins) -- This will also disable the gobblegum bind for actionslot 1 & alt weapon in actionslot 3 while the menu is open
+    - Changed: Setting rounds should be a little better -- probably won't really be noticable though
+
+    - Fixed: Zombie Spawning -- Scripts that involve spawning zombies will now spawn the correct zombie types
+    - Fixed: isPlayerLinked -- 'isPlayerLinked' check was bad and allowed the player to link to an entity, while already linked to another
+    - Fixed: All The Weapons Gamemode -- Gamemode hud wasn't being created for all players
+
+
+    ** Credit to Daltax for These Reports **
+    - Changed: Bullet Menu -- Effects -- Effects will now only show for 1/2 a second then despawn
+
+    - Fixed: Advanced Scripts -- Tornado -- Spawning the tornado after hitting the g_spawn limit would bypass the g_spawn crash protection, and crash -- Also fixed some minor issues with tornado logic
+    - Fixed: Player Collision Damage -- Disabled player intersection(collision) tracking for damage -- This will prevent taking damage from teleporting/attaching to players
+    - Fixed: Zombie Options -- Damage/Death Effect -- Some effects would crash your game due to how I was playing the fx
+</details>
 
 <details>
     <summary>

@@ -148,7 +148,7 @@ ServerUpgradeWeaponWallbuys()
 
 ServerMaxAmmoClips()
 {
-    level.ServerMaxAmmoClips = Boolvar(level.ServerMaxAmmoClips);
+    level.ServerMaxAmmoClips = BoolVar(level.ServerMaxAmmoClips);
 
     if(Is_True(level.ServerMaxAmmoClips))
     {
@@ -165,22 +165,24 @@ IncreasedDropRate()
 {
     if(Is_True(level.DisablePowerups) && !Is_True(level.IncreasedDropRate))
         level DisablePowerups();
-    
+
     level.IncreasedDropRate = BoolVar(level.IncreasedDropRate);
 
     if(Is_True(level.IncreasedDropRate))
     {
+        if(!IsDefined(level.original_powerup_drop_max))
+            level.original_powerup_drop_max = level.zombie_vars["zombie_powerup_drop_max_per_round"];
+
         while(Is_True(level.IncreasedDropRate))
         {
-            if(IsDefined(level.powerup_drop_count) && level.powerup_drop_count > 0 || !IsDefined(level.powerup_drop_count))
-                level.powerup_drop_count = 0;
+            level.powerup_drop_count = 0;
 
             if(level.zombie_vars["zombie_drop_item"] != 1)
                 level.zombie_vars["zombie_drop_item"] = 1;
 
             if(level.zombie_vars["zombie_powerup_drop_max_per_round"] != 999)
                 level.zombie_vars["zombie_powerup_drop_max_per_round"] = 999;
-            
+
             zombies = GetAITeamArray(level.zombie_team);
 
             for(a = 0; a < zombies.size; a++)
@@ -192,9 +194,9 @@ IncreasedDropRate()
             wait 0.01;
         }
     }
-    else
+    else if(IsDefined(level.original_powerup_drop_max))
     {
-        level.zombie_vars["zombie_powerup_drop_max_per_round"] = 4;
+        level.zombie_vars["zombie_powerup_drop_max_per_round"] = level.original_powerup_drop_max;
     }
 }
 
@@ -321,6 +323,9 @@ headshots_only()
 
 EditPackAPunchPrice(price)
 {
+    if(!IsDefined(level.pack_a_punch))
+        return;
+    
     vending_weapon_upgrade_trigger = level.pack_a_punch.triggers;
 
     if(IsDefined(vending_weapon_upgrade_trigger) && vending_weapon_upgrade_trigger.size >= 1)
@@ -332,6 +337,9 @@ EditPackAPunchPrice(price)
 
 EditRepackAPunchPrice(price)
 {
+    if(!IsDefined(level.pack_a_punch))
+        return;
+    
     vending_weapon_upgrade_trigger = level.pack_a_punch.triggers;
 
     if(IsDefined(vending_weapon_upgrade_trigger) && vending_weapon_upgrade_trigger.size >= 1)

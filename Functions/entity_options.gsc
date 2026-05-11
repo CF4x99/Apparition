@@ -24,7 +24,7 @@ PopulateEntityOptions(menu)
                 {
                     for(a = 0; a < level.SavedMapEntities.size; a++)
                     {
-                        if(IsDefined(level.SavedMapEntities[a]) && level.SavedMapEntities[a].model != "")
+                        if(IsDefined(level.SavedMapEntities[a]) && IsDefined(level.SavedMapEntities[a].model) && level.SavedMapEntities[a].model != "")
                             self addOpt(CleanString(level.SavedMapEntities[a].model), ::newMenu, "Entity Editor", false, a);
                     }
                 }

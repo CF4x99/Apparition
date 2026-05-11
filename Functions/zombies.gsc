@@ -113,29 +113,21 @@ PopulateZombieOptions(menu)
             break;
         
         case "Zombie Death Effect":
-            
-            if(!IsDefined(level.ZombiesDeathFX))
-                level.ZombiesDeathFX = level.menuFX[0];
-            
             self addMenu("Death Effect");
-                self addOptBool(level.ZombiesDeathEffect, "Death Effect", ::ZombiesDeathEffect);
+                self addOptBool(!IsDefined(level.ZombiesDeathFX), "Disable", ::SetZombiesDeathEffect, "");
                 self addOpt("");
 
                 for(a = 0; a < level.menuFX.size; a++)
-                    self addOptBool((level.ZombiesDeathFX == level.menuFX[a]), CleanString(level.menuFX[a]), ::SetZombiesDeathEffect, level.menuFX[a]);
+                    self addOptBool((IsDefined(level.ZombiesDeathFX) && level.ZombiesDeathFX == level.menuFX[a]), CleanString(level.menuFX[a]), ::SetZombiesDeathEffect, level.menuFX[a]);
             break;
 
         case "Zombie Damage Effect":
-
-            if(!IsDefined(level.ZombiesDamageFX))
-                level.ZombiesDamageFX = level.menuFX[0];
-            
             self addMenu("Damage Effect");
-                self addOptBool(level.ZombiesDamageEffect, "Damage Effect", ::ZombiesDamageEffect);
+                self addOptBool(!IsDefined(level.ZombiesDamageFX), "Disable", ::SetZombiesDamageEffect, "");
                 self addOpt("");
 
                 for(a = 0; a < level.menuFX.size; a++)
-                    self addOptBool((level.ZombiesDamageFX == level.menuFX[a]), CleanString(level.menuFX[a]), ::SetZombiesDamageEffect, level.menuFX[a]);
+                    self addOptBool((IsDefined(level.ZombiesDamageFX) && level.ZombiesDamageFX == level.menuFX[a]), CleanString(level.menuFX[a]), ::SetZombiesDamageEffect, level.menuFX[a]);
             break;
         
         case "Zombie Animations":
@@ -203,24 +195,20 @@ AIPrioritizePlayer(player)
     }
 }
 
-ZombiesDeathEffect()
-{
-    level.ZombiesDeathEffect = BoolVar(level.ZombiesDeathEffect);
-}
-
 SetZombiesDeathEffect(effect)
 {
-    level.ZombiesDeathFX = effect;
-}
-
-ZombiesDamageEffect()
-{
-    level.ZombiesDamageEffect = BoolVar(level.ZombiesDamageEffect);
+    if(!IsDefined(effect) || !IsString(effect) || effect == "" || IsDefined(level.ZombiesDeathFX) && level.ZombiesDeathFX == effect)
+        level.ZombiesDeathFX = undefined;
+    else
+        level.ZombiesDeathFX = effect;
 }
 
 SetZombiesDamageEffect(effect)
 {
-    level.ZombiesDamageFX = effect;
+    if(!IsDefined(effect) || !IsString(effect) || effect == "" || IsDefined(level.ZombiesDamageFX) && level.ZombiesDamageFX == effect)
+        level.ZombiesDamageFX = undefined;
+    else
+        level.ZombiesDamageFX = effect;
 }
 
 ZombieAnimScript(anm, ntfy)
@@ -473,9 +461,9 @@ GetZombieHealthFromRound(round_number)
         if(a >= 10)
         {
             old_health = zombie_health;
-            zombie_health = zombie_health + (Int(level.zombie_health * level.zombie_vars["zombie_health_increase_multiplier"]));
+            zombie_health = zombie_health + (Int(zombie_health * level.zombie_vars["zombie_health_increase_multiplier"]));
 
-            if(level.zombie_health < old_health)
+            if(zombie_health < old_health)
                 return old_health;
         }
         else
@@ -885,7 +873,7 @@ ExplodingZombies()
 
             for(a = 0; a < zombies.size; a++)
             {
-                if(!IsAlive(zombies[a]) || Is_True(zombies[a].explodingzombie))
+                if(!IsDefined(zombies[a]) || !IsAlive(zombies[a]) || Is_True(zombies[a].explodingzombie))
                     continue;
                 
                 zombies[a].explodingzombie = true;
@@ -902,10 +890,11 @@ ExplodingZombies()
 
         for(a = 0; a < zombies.size; a++)
         {
+            if(!IsDefined(zombies[a]) || !IsAlive(zombies[a]) || !Is_True(zombies[a].explodingzombie))
+                continue;
+            
             zombies[a] clientfield::set("arch_actor_fire_fx", 0);
-
-            if(Is_True(zombies[a].explodingzombie))
-                zombies[a].explodingzombie = BoolVar(zombies[a].explodingzombie);
+            zombies[a].explodingzombie = BoolVar(zombies[a].explodingzombie);
 
             if(Is_True(zombies[a].burnplayers))
                 zombies[a].burnplayers = BoolVar(zombies[a].burnplayers);
@@ -969,13 +958,15 @@ StackZombies()
                     continue;
                 
                 bottom = zombies[a];
+                top = undefined;
 
                 for(b = 0; b < zombies.size; b++)
                 {
-                    if(!IsDefined(zombies[b]) || !IsAlive(zombies[b]) || Is_True(zombies[b].stacked) || !zombies[a] CanControl() || zombies[b] == bottom)
+                    if(!IsDefined(zombies[b]) || !IsAlive(zombies[b]) || Is_True(zombies[b].stacked) || !zombies[b] CanControl() || zombies[b] == bottom)
                         continue;
                     
                     top = zombies[b];
+                    break;
                 }
 
                 if(IsDefined(bottom) && IsDefined(top))

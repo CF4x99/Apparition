@@ -78,14 +78,17 @@ initAllTheWeapons(type)
 
     while(level.indexAllTheWeapons < (weaponArray.size - 1))
     {
-        if(!IsDefined(player.weaponKillsCounter))
+        foreach(player in level.players)
         {
-            player.weaponKillsCounter = player LUI_createText("Kills: " + level.killsAllTheWeapons + "/" + level.killGoalAllTheWeapons, 2, 0, 55, 255, (1, 1, 1));
-        }
-        else
-        {
-            if(player GetLUIMenuData(player.weaponKillsCounter, "text") != "Kills: " + level.killsAllTheWeapons + "/" + level.killGoalAllTheWeapons)
-                player SetLUIMenuData(player.weaponKillsCounter, "text", "Kills: " + level.killsAllTheWeapons + "/" + level.killGoalAllTheWeapons);
+            if(!IsDefined(player.weaponKillsCounter))
+            {
+                player.weaponKillsCounter = player LUI_createText("Kills: " + level.killsAllTheWeapons + "/" + level.killGoalAllTheWeapons, 2, 0, 55, 255, (1, 1, 1));
+            }
+            else
+            {
+                if(player GetLUIMenuData(player.weaponKillsCounter, "text") != "Kills: " + level.killsAllTheWeapons + "/" + level.killGoalAllTheWeapons)
+                    player SetLUIMenuData(player.weaponKillsCounter, "text", "Kills: " + level.killsAllTheWeapons + "/" + level.killGoalAllTheWeapons);
+            }
         }
         
         if(currentWeaponIndex != level.indexAllTheWeapons)
@@ -98,7 +101,7 @@ initAllTheWeapons(type)
                 TakePlayerWeapons(player);
                 
                 if(!IsDefined(player.weaponIndexUI))
-                    player.weaponIndexUI = LUI_createText("Weapon: " + (level.indexAllTheWeapons + 1) + "/" + weaponArray.size, 2, 0, 25, 255, (1, 1, 1));
+                    player.weaponIndexUI = player LUI_createText("Weapon: " + (level.indexAllTheWeapons + 1) + "/" + weaponArray.size, 2, 0, 25, 255, (1, 1, 1));
                 else
                     player SetLUIMenuData(player.weaponIndexUI, "text", "Weapon: " + (level.indexAllTheWeapons + 1) + "/" + weaponArray.size);
 

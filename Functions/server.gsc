@@ -8,7 +8,7 @@ PopulateServerModifications(menu)
                 self addOptBool((GetDvarInt("bg_gravity") == 200), "Low Gravity", ::LowGravity);
                 self addOptBool((GetDvarString("g_speed") == "500"), "Super Speed", ::SuperSpeed);
                 self addOptIncSlider("Timescale", ::ServerSetTimeScale, 0.5, GetDvarInt("timescale"), 5, 0.5);
-                self addOpt("Set Round", ::NumberPad, ::SetRound);
+                self addOpt("Set Round", ::newMenu, "Set Round");
                 self addOpt("Anti-Join", ::newMenu, "Anti-Join");
                 self addOptBool(level.AntiQuit, "Anti-Quit", ::AntiQuit);
                 self addOptBool(level.AutoRevive, "Auto-Revive", ::AutoRevive);
@@ -36,6 +36,13 @@ PopulateServerModifications(menu)
                 
                 self addOpt("Change Map", ::newMenu, "Change Map");
                 self addOpt("Restart Game", ::ServerRestartGame);
+            break;
+        
+        case "Set Round":
+            self addMenu(menu);
+                self addOpt("Custom", ::NumberPad, ::SetRound);
+                self addOpt("Next Round", ::SetRound, "Next");
+                self addOpt("Previous Round", ::SetRound, "Previous");
             break;
         
         case "Anti-Join":
@@ -223,37 +230,100 @@ SuperSpeed()
 
 ServerSetTimeScale(timescale)
 {
-    if(GetDvarInt("timescale") == timescale)
+    if(GetDvarFloat("timescale") == timescale)
         return;
     
     SetDvar("timescale", timescale);
 }
 
-SetRound(round)
+ChangeRoundValidation()
 {
+	if(!level flag::get("spawn_zombies"))
+		return false;
+
+	zombies = GetAITeamArray(level.zombie_team);
+
+	if(!IsDefined(zombies) || zombies.size < 1)
+		return false;
+
+	if(IsDefined(level.var_35efa94c))
+	{
+		if(![[ level.var_35efa94c ]]())
+			return false;
+	}
+
+	if(Is_True(level.var_dfd95560))
+		return false;
+
+	return true;
+}
+
+SetRound(round = 1)
+{
+    if(!ChangeRoundValidation())
+        return self iPrintlnBold("^1ERROR: ^7You Can't Change The Round Right Now");
+    
+    if(Is_True(level.var_dfd95560))
+        return self iPrintlnBold("^1ERROR: ^7The Round Is Already Being Changed");
+    
+    if(IsString(round))
+    {
+        if(round == "Previous")
+            round = level.round_number - 1;
+        else
+            round = level.round_number + 1;
+    }
+
+    level.var_dfd95560 = true;
     round--;
 
     if(round >= 255 || round <= 0)
-        round = (round >= 255) ? 254 : 1;
+        round = (round >= 255) ? 254 : 0;
     
-    level.zombie_total = 0;
+	level.zombie_total = 0;
+	zombie_utility::ai_calculate_health(round);
+
+	level.round_number = (round - 1);
     world.roundnumber = (round ^ 115);
     SetRoundsPlayed(round);
 
-    level notify("kill_round");
-    wait 1;
+	level notify("kill_round");
+	PlaySoundAtPosition("zmb_bgb_round_robbin", (0, 0, 0));
+	wait 0.1;
 
-    for(a = 0; a < 3; a++)
-    {
-        KillZombies("Head Gib");
-        wait 0.15;
-    }
+	zombies = GetAITeamArray(level.zombie_team);
+    
+	if(IsDefined(zombies))
+	{
+		e_last = undefined;
 
-    foreach(player in level.players)
-    {
-        if(player.sessionstate == "spectator")
-            player thread ServerRespawnPlayer(player);
-    }
+		foreach(zombie in zombies)
+		{
+			if(IsDefined(zombie))
+				e_last = zombie;
+		}
+
+		if(IsDefined(e_last))
+		{
+			level.last_ai_origin = e_last.origin;
+			level notify("last_ai_down", e_last);
+		}
+	}
+
+	util::wait_network_frame();
+
+	if(IsDefined(zombies))
+	{
+		foreach(zombie in zombies)
+		{
+			if(!IsDefined(zombie))
+				continue;
+
+			zombie DoDamage(zombie.health + 666, zombie.origin);
+		}
+	}
+    
+	level.var_dfd95560 = undefined;
 }
 
 AntiJoin()
@@ -297,7 +367,7 @@ AutoRevive()
     {
         foreach(player in level.players)
         {
-            if(player isDown())
+            if(IsDefined(player) && player isDown())
                 player thread PlayerRevive(player);
         }
 
@@ -313,7 +383,7 @@ AutoRespawn()
     {
         foreach(player in level.players)
         {
-            if(player.sessionstate == "spectator")
+            if(IsDefined(player) && !Is_Alive(player))
                 player thread ServerRespawnPlayer(player);
         }
 

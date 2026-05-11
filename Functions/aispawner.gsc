@@ -14,7 +14,7 @@ GetAISpawnLocation()
             return self.origin + (0, 0, 10);
 
         default:
-            return self TraceBullet();
+            return;
     }
 }
 
@@ -36,10 +36,13 @@ ServerSpawnAI(amount, spawner)
 //Zombies
 ServerSpawnZombie(target)
 {
-    spawner = ArrayGetClosest(level.zombie_spawners, self.origin);
+    if(!IsDefined(level.zombie_spawners))
+        return;
+
+    spawner = IsDefined(level.fn_custom_zombie_spawner_selection) ? [[ level.fn_custom_zombie_spawner_selection ]]() : Is_True(level.use_multiple_spawns) ? (IsDefined(level.spawner_int) && (IsDefined(level.zombie_spawn[level.spawner_int].size) && level.zombie_spawn[level.spawner_int].size)) ? array::random(level.zombie_spawn[level.spawner_int]) : array::random(level.zombie_spawners) : array::random(level.zombie_spawners);
     zombie = zombie_utility::spawn_zombie(spawner);
 
-    if(IsDefined(zombie) && (self.AISpawnLocation == "Crosshairs" || self.AISpawnLocation == "Self"))
+    if(IsDefined(zombie) && IsDefined(target) && IsVec(target))
     {
         zombie endon("death");
 
@@ -63,6 +66,8 @@ ServerSpawnZombie(target)
         zombie.ai_state = "find_flesh";
         zombie notify("zombie_custom_think_done", "find_flesh");
     }
+
+    return zombie;
 }
 
 
@@ -106,7 +111,6 @@ dogs_get_favorite_enemy()
         return undefined;
 
     least_hunted.hunted_by = (least_hunted.hunted_by + 1);
-
     return least_hunted;
 }
 

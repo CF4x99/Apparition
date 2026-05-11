@@ -98,7 +98,7 @@ play_timer_vox(digger_name)
 
     while(time_left > 0)
     {
-        time_left = (level.diggers_global_time - (GetTime() - (digger_start_time / 1000)));
+        time_left = level.diggers_global_time - ((GetTime() - digger_start_time) / 1000);
 
         if(time_left <= 180 && !played180sec)
         {

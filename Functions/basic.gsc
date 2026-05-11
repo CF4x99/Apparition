@@ -141,6 +141,7 @@ Noclip1(player)
 
         player DisableWeapons();
         player DisableOffHandWeapons();
+        player SetStance("stand");
 
         player.nocliplinker = SpawnScriptModel(player.origin, "tag_origin");
         player PlayerLinkTo(player.nocliplinker, "tag_origin");
@@ -167,7 +168,9 @@ Noclip1(player)
     else
     {
         player Unlink();
-        player.nocliplinker Delete();
+
+        if(IsDefined(player.nocliplinker))
+            player.nocliplinker Delete();
 
         player EnableWeapons();
         player EnableOffHandWeapons();
@@ -219,6 +222,7 @@ UFOMode(player)
 
         player DisableWeapons();
         player DisableOffHandWeapons();
+        player SetStance("stand");
 
         player.ufolinker = SpawnScriptModel(player.origin, "tag_origin");
         player PlayerLinkTo(player.ufolinker, "tag_origin");
@@ -250,7 +254,9 @@ UFOMode(player)
     else
     {
         player Unlink();
-        player.ufolinker Delete();
+
+        if(IsDefined(player.ufolinker))
+            player.ufolinker Delete();
 
         player EnableWeapons();
         player EnableOffHandWeapons();
@@ -432,7 +438,7 @@ GivePlayerGobblegum(name, player)
 
         if(SessionModeIsOnlineGame()) //Don't need to use the recreated function if it's a ranked game
         {
-            givebgb = player bgb::bgb_gumball_anim(name, false);
+            player bgb::bgb_gumball_anim(name, false);
 
             while(player.bgb != name)
                 wait 0.01;
@@ -461,7 +467,7 @@ GivePlayerGobblegum(name, player)
                 player zm_stats::increment_client_stat("bgbs_chewed");
                 player zm_stats::increment_player_stat("bgbs_chewed");
                 player zm_stats::increment_challenge_stat("GUM_GOBBLER_CONSUME");
-                player AddDStat("ItemStats", level.bgb[name].item_index, "stats", "used", "statValue", 1);
+                player AddDStat("ItemStats", level.bgb[name].item_index, "stats", "used", "StatValue", 1);
                 IncrementCounter("zm_bgb_consumed", 1);
             }
 
@@ -617,7 +623,6 @@ MultiJump(player)
                     wait 0.01;
                 
                 player SetVelocity(player GetVelocity() + (0, 0, 250));
-                wait 0.05;
             }
         }
         
@@ -792,7 +797,7 @@ CustomCrosshairs(text, player)
     player.CustomCrosshairs = true;
 
     if(!IsDefined(player.CustomCrosshairsUI))
-        player.CustomCrosshairsUI = player LUI_createText(text, 2, 513, 345, 255, self.MainTheme);
+        player.CustomCrosshairsUI = player LUI_createText(text, 2, 513, 345, 255, player.MainTheme);
 }
 
 NoExplosiveDamage(player)

@@ -20,7 +20,7 @@ PopulateMenuCustomization(menu)
             if(!IsDefined(self.OpenControlType))
                 self.OpenControlType = GetMenuName();
             
-            buttons = Array("+actionslot 1", "+actionslot 2", "+actionslot 3", "+actionslot 4", "+melee", "+speed_throw", "+attack", "+breath_sprint", "+activate", "+frag", "+smoke", "+stance");
+            buttons = Array("+actionslot 1", "+actionslot 2", "+actionslot 3", "+actionslot 4", "+melee", "+speed_throw", "+attack", "+breath_sprint", "+activate", "+frag", "+smoke", "+stance", "+gostand");
             type = (self.OpenControlType == GetMenuName()) ? self.OpenControls : self.QuickControls;
 
             self addMenu(menu);
@@ -761,6 +761,9 @@ GetMaxOptions()
     
     if(Is_True(self.StealthUI))
         return 5;
+    
+    if(IsDefined(self.MaxOptionsOverride))
+        return self.MaxOptionsOverride;
     
     MaxOptions = 10;
 

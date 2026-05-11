@@ -175,7 +175,7 @@ AdventureTime(player)
 
     for(a = 0; a < 10; a++)
     {
-        newOrigin = origin + (RandomInt(7500), RandomInt(7500), RandomIntRange(1000, 5500));
+        newOrigin = origin + (RandomIntRange(-7500, 7500), RandomIntRange(-7500, 7500), RandomIntRange(1000, 5500));
         model MoveTo(newOrigin, 1.5);
 
         wait 3;
@@ -536,6 +536,13 @@ PlayerMountCamera(tag, player)
     if(tag != "Disable")
     {
         player.camlinker = SpawnScriptModel(tagOrigin + (AnglesToForward(player GetPlayerAngles()) * 9), "tag_origin");
+
+        if(!IsDefined(player.camlinker))
+        {
+            player.PlayerMountCamera = undefined;
+            return;
+        }
+
         player.camlinker LinkToBlendToTag(player, tag);
 
         player CameraSetPosition(player.camlinker);
@@ -569,11 +576,17 @@ PlayerDropCamera(player)
     {
         player.camlinker = SpawnScriptModel(player GetTagOrigin("j_head"), "tag_origin");
 
+        if(!IsDefined(player.camlinker))
+        {
+            player.DropCamera = undefined;
+            return;
+        }
+
         player CameraSetLookAt(player);
         player CameraSetPosition(player.camlinker);
         player CameraActivate(true);
 
-        player.camlinker Launch(VectorScale(AnglesToForward(self GetPlayerAngles()), 10));
+        player.camlinker Launch(VectorScale(AnglesToForward(player GetPlayerAngles()), 10));
     }
     else
     {
@@ -603,6 +616,12 @@ DeadOpsView(player)
         
         tracePosition = BulletTrace(player.origin, player.origin + (0, 0, 350), 0, player)["position"];
         player.camlinker = SpawnScriptModel(tracePosition, "tag_origin", (90, 90, 0));
+
+        if(!IsDefined(player.camlinker))
+        {
+            player.DeadOpsView = undefined;
+            return;
+        }
         
         player CameraSetPosition(player.camlinker);
         player CameraSetLookat(player.camlinker);
@@ -648,7 +667,7 @@ ZombieCounter(player)
                 xPos = 24;
                 yPos = 35;
 
-                player.ZombieCounterHud[0] = player LUI_createRectangle(0, (xPos - 3), (yPos - 1), 227, 49, GetColorVec(self.MainTheme), "white", 1);
+                player.ZombieCounterHud[0] = player LUI_createRectangle(0, (xPos - 3), (yPos - 1), 227, 49, GetColorVec(player.MainTheme), "white", 1);
                 player.ZombieCounterHud[1] = player LUI_createRectangle(0, (xPos - 2), yPos, (player GetLUIMenuData(player.ZombieCounterHud[0], "width") - 2), (player GetLUIMenuData(player.ZombieCounterHud[0], "height") - 2), (0, 0, 0), "white", 0.8);
                 
                 player.ZombieCounterHud[2] = player LUI_createText("Alive: ", 0, xPos, yPos, 41, (1, 1, 1));
@@ -671,10 +690,13 @@ ZombieCounter(player)
     }
     else
     {
-        for(a = 0; a < player.ZombieCounterHud.size; a++)
+        if(IsDefined(player.ZombieCounterHud) && player.ZombieCounterHud)
         {
-            if(IsDefined(player.ZombieCounterHud[a]))
-                player CloseLUIMenu(player.ZombieCounterHud[a]);
+            for(a = 0; a < player.ZombieCounterHud.size; a++)
+            {
+                if(IsDefined(player.ZombieCounterHud[a]))
+                    player CloseLUIMenu(player.ZombieCounterHud[a]);
+            }
         }
 
         player.ZombieCounterHud = undefined;
@@ -738,7 +760,7 @@ LightProtectorMoveToTarget(target)
                 test = target GetTagOrigin(tags[a]);
 
                 if(IsDefined(test))
-                    origin = target GetTagOrigin(tags[a]);
+                    origin = test;
             }
         }
 
@@ -754,7 +776,7 @@ LightProtectorMoveToTarget(target)
 
         if(IsDefined(newTarget))
         {
-            self thread LightProtectorMoveToTarget(target);
+            self thread LightProtectorMoveToTarget(newTarget);
             return;
         }
 
@@ -996,10 +1018,12 @@ NukeNade()
         return;
     
     nukeModel = SpawnScriptModel(self.origin, "p7_zm_power_up_nuke", self.angles);
-    nukeModel clientfield::set("powerup_fx", Int(Pow(2, RandomInt(3))));
 
-    if(IsDefined(nukeModel))
-        nukeModel LinkTo(self);
+    if(!IsDefined(nukeModel))
+        return;
+
+    nukeModel clientfield::set("powerup_fx", Int(Pow(2, RandomInt(3))));
+    nukeModel LinkTo(self);
 
     while(IsDefined(self))
     {
@@ -1566,7 +1590,7 @@ RocketRiding(player)
                     }
                     else
                     {
-                        if(Distance(client, trace["position"]) < Distance(rider, trace["position"]))
+                        if(Distance(client.origin, trace["position"]) < Distance(rider.origin, trace["position"]))
                             rider = client;
                     }
                 }
@@ -1584,12 +1608,13 @@ RocketRiding(player)
             }
             
             wait 0.2;
-            rider.RidingRocket = true;
             rider.RocketRidingLinker = SpawnScriptModel(missile.origin, "tag_origin");
 
-            if(IsDefined(rider.RocketRidingLinker))
-                rider.RocketRidingLinker LinkTo(missile);
-            
+            if(!IsDefined(rider.RocketRidingLinker))
+                continue;
+
+            rider.RidingRocket = true;
+            rider.RocketRidingLinker LinkTo(missile);
             rider SetOrigin(rider.RocketRidingLinker.origin);
             rider PlayerLinkTo(rider.RocketRidingLinker);
 
@@ -1665,7 +1690,10 @@ GrapplingGun(player)
     else
     {
         if(IsDefined(player.grapplingent))
+        {
+            player Unlink();
             player.grapplingent Delete();
+        }
         
         player notify("EndGrapplingGun");
     }
@@ -1844,7 +1872,11 @@ PowerUpMagnet(player)
                 if(IsDefined(powerup) && BulletTracePassed(player GetEye(), powerup.origin, 0, player) && !Is_True(powerup.movingtoplayer))
                 {
                     powerup.movingtoplayer = true;
-                    powerup MoveTo(player GetTagOrigin("j_mainroot"), CalcDistance(1100, powerup.origin, player GetTagOrigin("j_mainroot")));
+                    mainRoot = player GetTagOrigin("j_mainroot");
+
+                    if(IsDefined(mainRoot))
+                        powerup MoveTo(mainRoot, CalcDistance(1100, powerup.origin, mainRoot));
+                    
                     wait 0.05;
 
                     if(IsDefined(powerup) && Is_True(powerup.movingtoplayer)) //making sure the powerup still exists

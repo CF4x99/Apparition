@@ -116,7 +116,7 @@ TeleportPlayer(origin, player, angles, name)
                 
                 index = RandomInt(level.players.size);
 
-                while(index == player GetEntityNumber() || !IsDefined(level.players[index]) || !IsPlayer(level.players[index]))
+                while(level.players[index] == player || !IsDefined(level.players[index]) || !IsPlayer(level.players[index]))
                     index = RandomInt(level.players.size);
                 
                 newOrigin = level.players[index].origin;

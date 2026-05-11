@@ -113,7 +113,7 @@ LiquidsLoop(player)
             player ReportLootReward("3", 200);
             reports += 200;
 
-            if(reports % 2000)
+            if(reports % 500 == 0)
                 player iPrintlnBold(reports + " ^BBUTTON_ZM_VIAL_ICON^ Reported");
 
             wait 1;

@@ -83,7 +83,7 @@ Aimbot(player)
                     test = enemy GetTagOrigin(tags[a]);
 
                     if(IsDefined(test))
-                        origin = enemy GetTagOrigin(tags[a]);
+                        origin = test;
                 }
             }
 
@@ -167,14 +167,9 @@ GetClosestTarget()
     {
         if(!IsDefined(zombies[a]) || !IsAlive(zombies[a]) || Is_True(self.AimbotDistanceCheck) && Distance(self.origin, zombies[a].origin) > self.AimbotDistance || self.AimbotVisibilityRequirement == "Damageable" && zombies[a] DamageConeTrace(self GetEye(), self) < 0.1 || self.AimbotVisibilityRequirement == "Visible" && !self IsVisible(zombies[a], self.AimBoneTag) || Is_True(self.PlayableAreaCheck) && zombies[a].archetype == "zombie" && !zm_behavior::inplayablearea(zombies[a]))
             continue;
-        
-        if(!IsDefined(enemy))
+
+        if(!IsDefined(enemy) || Closer(self.origin, zombies[a].origin, enemy.origin))
             enemy = zombies[a];
-        
-        if(enemy == zombies[a] || !Closer(self.origin, zombies[a].origin, enemy.origin) || self.AimbotVisibilityRequirement == "Damageable" && zombies[a] DamageConeTrace(self GetEye(), self) < 0.1 || self.AimbotVisibilityRequirement == "Visible" && !self IsVisible(zombies[a], self.AimBoneTag) || Is_True(self.AimbotDistanceCheck) && Distance(self.origin, zombies[a].origin) > self.AimbotDistance)
-            continue;
-        
-        enemy = zombies[a];
     }
 
     return enemy;

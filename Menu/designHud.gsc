@@ -84,7 +84,7 @@ NativeHud()
 AIOHud()
 {
     self.menuUI["background"] = self createRectangle("TOP_LEFT", "CENTER", self.menuX, self.menuY, self.MenuWidth, 300, (0, 0, 0), 3, 0.45, "white");
-    self.menuUI["separator"] = self createRectangle("TOP_LEFT", "CENTER", self.menuUI["background"].x, (self.MenuUI["background"].y - 25), self.MenuWidth, 25, self.MainTheme, 5, 1, "white");
+    self.menuUI["separator"] = self createRectangle("TOP_LEFT", "CENTER", self.menuUI["background"].x, (self.menuUI["background"].y - 25), self.MenuWidth, 25, self.MainTheme, 5, 1, "white");
     self.menuUI["bottomLine"] = self createRectangle("TOP_LEFT", "CENTER", self.menuUI["background"].x, (self.menuUI["background"].y + self.menuUI["background"].height), self.MenuWidth, 25, self.MainTheme, 5, 1, "white");
     self.menuUI["backgroundouter"] = self createRectangle("TOP_LEFT", "CENTER", (self.menuUI["background"].x - 2), (self.menuUI["separator"].y - 2), (self.MenuWidth + 4), (4 + (self.menuUI["background"].height + self.menuUI["separator"].height + self.menuUI["bottomLine"].height)), (0, 0, 0), 1, 0.3, "white");
     self.menuUI["scroller"] = self createRectangle("TOP_LEFT", "CENTER", self.menuUI["background"].x, self.menuUI["background"].y, 2, 23, self.MainTheme, 4, 1, "white");

@@ -28,27 +28,24 @@ ResetPlayerModel(player)
 SetPlayerModel(model, player)
 {
     player endon("disconnect");
-
-    if(Is_True(player.ModelManipulation))
-        player.ModelManipulation = BoolVar(player.ModelManipulation);
-    
-    wait 0.1;
-    player.ModelManipulation = true;
+    player notify("StopSetPlayerModel");
+    player endon("StopSetPlayerModel");
 
     if(IsDefined(player.spawnedPlayerModel))
         player.spawnedPlayerModel Delete();
-    
-    wait 0.1;
 
+    wait 0.05;
+
+    player.ModelManipulation = true;
     player.spawnedPlayerModel = Spawn("script_model", player.origin);
     player.spawnedPlayerModel.angles = player.angles;
     player.spawnedPlayerModel SetModel(model);
     player.spawnedPlayerModel NotSolid();
-    
+
     while(Is_True(player.ModelManipulation) && Is_Alive(player))
     {
         player Hide();
-        
+
         if(IsDefined(player.spawnedPlayerModel))
         {
             player.spawnedPlayerModel MoveTo(player.origin, 0.1);
@@ -57,7 +54,7 @@ SetPlayerModel(model, player)
 
         wait 0.1;
     }
-    
+
     if(Is_True(player.ModelManipulation))
         player ResetPlayerModel(player);
 }
