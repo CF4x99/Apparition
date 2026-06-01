@@ -560,6 +560,9 @@ PushZombies(dir)
 
 BlackBoardAttribute(entity, attributename, attributevalue)
 {
+    if(!IsDefined(entity) || !IsDefined(entity.__blackboard))
+        return;
+    
     if(IsDefined(entity.__blackboard[attributename]))
     {
         if(!IsDefined(attributevalue) && IsFunctionPtr(entity.__blackboard[attributename]))
@@ -739,9 +742,9 @@ ZombieDeathSounds()
     zombies = GetAITeamArray(level.zombie_team);
 
     if(Is_True(level.ZombieDeathSounds))
-        spawner::add_archetype_spawn_function("zombie", ::ZombieSpawnDisappearingZombie);
+        spawner::add_archetype_spawn_function("zombie", ::ZombieDeathSound);
     else
-        spawner::remove_global_spawn_function("zombie", ::ZombieSpawnDisappearingZombie);
+        spawner::remove_global_spawn_function("zombie", ::ZombieDeathSound);
     
     for(a = 0; a < zombies.size; a++)
     {

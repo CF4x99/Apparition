@@ -180,8 +180,12 @@ BulletProjectile(projectile, type, player)
             
             case "Effect":
                 impactfx = SpawnScriptModel(player TraceBullet(), "tag_origin");
-                PlayFXOnTag(level._effect[projectile], impactfx, "tag_origin");
-                impactfx thread deleteAfter(0.5);
+                
+                if(IsDefined(impactfx))
+                {
+                    PlayFXOnTag(level._effect[projectile], impactfx, "tag_origin");
+                    impactfx thread deleteAfter(0.5);
+                }
                 break;
             
             default:

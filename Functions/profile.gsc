@@ -121,7 +121,7 @@ LiquidsLoop(player)
     }
 }
 
-AllChallenges(type, player)
+AllChallenges(type = "Unlock", player)
 {
     if(Is_True(player.AllChallenges))
         return;
@@ -174,7 +174,7 @@ AllChallenges(type, player)
                 break;
 
             default:
-                if(IsDefined(stat.split) && stat.split.size)
+                if(IsDefined(stat.split) && stat.split.size && type == "Unlock")
                 {
                     toks = StrTok(stat.split, " ");
 
@@ -390,6 +390,8 @@ RemoveMapFromStat(stat)
         if(IsSubStr(stat, mapStats[a]) || mapStats[a] == stat)
             return mapStats[a];
     }
+
+    return stat;
 }
 
 IsAllBGBStatsEnabled()

@@ -143,6 +143,23 @@ createServerRectangle(align, relative, x, y, width, height, color, sort, alpha, 
     return uiElement;
 }
 
+createWaypoint(origin, shader = "damage_feedback_glow_orange", color = (1, 1, 1), alpha = 1)
+{
+    uiElement = NewClientHudElem(self);
+    uiElement.sort = 0;
+    uiElement.archived = 1;
+    uiElement.x = origin[0];
+    uiElement.y = origin[1];
+    uiElement.z = origin[2];
+    uiElement.alpha = alpha;
+    uiElement.color = color;
+    
+    uiElement SetShader("damage_feedback_glow_orange", 15, 15);
+    uiElement SetWaypoint(false);
+    
+    return uiElement;
+}
+
 GetColorVec(color)
 {
     colors = Array(0, 0, 0);
@@ -151,7 +168,7 @@ GetColorVec(color)
     {
         for(a = 0; a < 3; a++)
         {
-            c = (IsDefined(color[a])) ? color[a] : 0;
+            c = IsDefined(color[a]) ? color[a] : 0;
 
             if(c < 0)
                 c = 0;
@@ -455,6 +472,9 @@ getName()
 {
     name = self.name;
 
+    if(!IsDefined(name) || !IsString(name) || name == "")
+        return "";
+
     if(name[0] != "[")
         return name;
     
@@ -548,6 +568,8 @@ ArrayGetClosest(arry, point)
 {
     if(!IsDefined(arry) || !IsArray(arry) || !arry.size || !IsDefined(point) || !IsVec(point))
         return;
+    
+    closest = undefined;
 
     foreach(ent in arry)
     {
@@ -585,6 +607,9 @@ isConsole()
 
 CleanString(strn, onlyReplace)
 {
+    if(!IsDefined(strn) || !IsString(strn) || strn == "")
+        return "";
+    
     if(strn[0] == ToUpper(strn[0]))
     {
         if(IsSubStr(strn, " ") && !IsSubStr(strn, "_"))
@@ -617,7 +642,7 @@ CleanString(strn, onlyReplace)
 
 CleanName(name)
 {
-    if(!IsDefined(name) || name == "")
+    if(!IsDefined(name) || !IsString(name) || name == "")
         return "";
     
     str = "";
@@ -668,8 +693,11 @@ AngleNormalize180(angle)
     return angle;
 }
 
-SpawnScriptModel(origin, model, angles, time)
+SpawnScriptModel(origin, model, angles = (0, 0, 0), time)
 {
+    if(!IsDefined(origin) || !IsVec(origin))
+        return;
+    
     if(IsDefined(time))
         wait time;
 
@@ -678,9 +706,90 @@ SpawnScriptModel(origin, model, angles, time)
     if(IsDefined(model))
         ent SetModel(model);
     
-    ent.angles = IsDefined(angles) ? angles : (0, 0, 0);
+    ent.angles = angles;
 
     return ent;
+}
+
+SpawnProp(origin = (0, 0, 0), model = "defaultactor", angles = (0, 0, 0), bounce = true, glow = true, triggerFunction, hintString)
+{
+    prop = SpawnScriptModel(origin, model, angles);
+
+    if(!IsDefined(prop))
+        return;
+    
+    prop.original_origin = origin;
+
+    if(IsDefined(triggerFunction) && IsFunctionPtr(triggerFunction))
+        prop.triggerFunction = triggerFunction;
+    
+    if(IsDefined(hintString) && IsString(hintString))
+        prop.hintString = hintString;
+    
+    if(Is_True(glow))
+        prop clientfield::set("powerup_fx", Int(Pow(2, RandomInt(3))));
+    
+    if(IsDefined(prop.triggerFunction) || Is_True(bounce))
+        prop thread ActivateProp(origin, bounce);
+
+    return prop;
+}
+
+ActivateProp(origin, bounce = true)
+{
+    if(!IsDefined(self) || !IsDefined(origin) || Is_True(self.propActivated))
+        return;
+    
+    self.propActivated = true;
+    
+    self endon("death");
+
+    if(IsDefined(self.triggerFunction))
+    {
+        self MakeUsable();
+        self SetCursorHint("HINT_NOICON");
+
+        if(IsDefined(self.hintString))
+            self SetHintString(self.hintString);
+
+        self thread PropTrigger();
+    }
+    
+    if(Is_True(bounce))
+    {
+        while(IsDefined(self) && Is_True(self.propActivated))
+        {
+            for(a = 0; a < 2; a++)
+            {
+                if(!IsDefined(self) || !Is_True(self.propActivated))
+                    break;
+
+                self MoveTo(self.original_origin + (0, 0, (25 - (50 * a))), 1, 0.25, 0.25);
+                self RotateYaw(360, 1, 0.5, 0.5);
+                wait 1;
+            }
+
+            wait 0.1;
+        }
+    }
+}
+
+PropTrigger()
+{
+    if(!IsDefined(self))
+        return;
+    
+    self endon("death");
+
+    while(IsDefined(self))
+    {
+        self waittill("trigger", player);
+
+        if(!IsDefined(self) || !IsPlayer(player) || !Is_Alive(player) || player isDown() || !IsDefined(self.triggerFunction) || !Is_True(self.propActivated))
+            continue;
+
+        player thread [[ self.triggerFunction ]]();
+    }
 }
 
 deleteAfter(time)
@@ -1422,6 +1531,7 @@ IsSupportedCustomMap(map = level.script)
         case "zm_vk_tra_sur_diner":
         case "zm_vk_tra_sur_farm":
         case "zm_der_riese":
+        case "zm_leviathan":
             return true;
         
         default:
@@ -1990,6 +2100,9 @@ GetDvarVector1(vecVar)
     
     for(a = 0; a < toks.size; a++)
         vals[a] = Float(toks[a]);
+    
+    if(vals.size < 3)
+        return (0, 0, 0);
     
     return (vals[0], vals[1], vals[2]);
 }

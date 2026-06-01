@@ -1,7 +1,7 @@
 SpawnMerryGoRound()
 {
     if(Is_True(level.spawnable["Merry Go Round_Spawned"]))
-        return;
+        return false;
 
     model = GetSpawnableBaseModel("vending_three_gun");
     seatModel = isInArray(level.menu_models, "test_sphere_silver") ? "test_sphere_silver" : "defaultactor";
@@ -15,18 +15,30 @@ SpawnMerryGoRound()
 
     MerryGoRoundLinker = SpawnScriptModel(origin + (0, 0, 15), "tag_origin", (0, 0, 0));
 
-    if(IsDefined(MerryGoRoundLinker))
-        MerryGoRoundLinker SpawnableArray("Merry Go Round");
+    if(!IsDefined(MerryGoRoundLinker))
+        return false;
+
+    MerryGoRoundLinker SpawnableArray("Merry Go Round");
 
     for(a = 0; a < 2; a++)
+    {
         SeatsLinker[a] = SpawnScriptModel(origin + (0, 0, 15), "tag_origin");
+
+        if(!IsDefined(SeatsLinker[a]))
+            return false;
+    }
 
     array::thread_all(SeatsLinker, ::SpawnableArray, "Merry Go Round");
 
     for(a = 0; a < 4; a++)
     {
         for(b = 0; b < 10; b++)
+        {
             base[base.size] = SpawnScriptModel(origin + (Cos(b * 36) * 27, Sin(b * 36) * 27, ((a * 55) + 25)), model, (0, (36 * b), 0), 0.01);
+
+            if(!IsDefined(base[(base.size - 1)]))
+                return false;
+        }
     }
 
     array::thread_all(base, ::SpawnableArray, "Merry Go Round");
@@ -42,6 +54,10 @@ SpawnMerryGoRound()
                 platforms[(platforms.size - 1)] LinkTo(MerryGoRoundLinker);
                 platforms[(platforms.size - 1)] SetScale(2);
             }
+            else
+            {
+                return false;
+            }
         }
     }
 
@@ -51,6 +67,8 @@ SpawnMerryGoRound()
     {
         if(IsDefined(platforms[a]))
             platforms[a] LinkTo(MerryGoRoundLinker);
+        else
+            return false;
     }
 
     for(a = 0; a < 10; a++)
@@ -59,6 +77,9 @@ SpawnMerryGoRound()
 
         if(IsDefined(seats[(seats.size - 1)]) && seatModel != "defaultactor")
             seats[(seats.size - 1)] SetScale(6);
+        
+        if(!IsDefined(seats[(seats.size - 1)]))
+            return false;
     }
 
     array::thread_all(seats, ::SpawnableArray, "Merry Go Round");
@@ -66,11 +87,14 @@ SpawnMerryGoRound()
     for(a = 0; a < seats.size; a++)
     {
         if(!IsDefined(seats[a]))
-            continue;
+            return false;
 
         seats[a] LinkTo(SeatsLinker[a % 2 ? 0 : 1]);
     }
-
+    
+    if(!IsDefined(MerryGoRoundLinker))
+        return false;
+    
     MerryGoRoundLinker thread RotateMerryYaw();
 
     array::thread_all(SeatsLinker, ::RotateMerryYaw);
@@ -83,7 +107,13 @@ SpawnMerryGoRound()
             SeatsLinker[a] thread SeatsMove(origin[2] + 45);
             wait 0.6;
         }
+        else
+        {
+            return false;
+        }
     }
+
+    return true;
 }
 
 RotateMerryYaw()
@@ -108,6 +138,7 @@ SetMerryGoRoundSpeed(speed)
 
 SeatsMove(origin)
 {
+    self endon("death");
     level endon("Merry Go Round_Stop");
 
     while(IsDefined(self))

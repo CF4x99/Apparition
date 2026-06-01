@@ -49,7 +49,7 @@ Aimbot(player)
     {
         enemy = player GetClosestTarget();
 
-        if(Is_True(player.Noclip) || Is_True(player.UFOMode) || Is_True(player.ControllableZombie) || Is_True(player.AC130) || Is_True(player.MenuOpenCheck) && player isInMenu(true))
+        if(Is_True(player.Noclip) || Is_True(player.UFOMode) || Is_True(player.ControllableZombie) || Is_True(player.AC130) || Is_True(player.FlyableUFO) || Is_True(player.MenuOpenCheck) && player isInMenu(true))
             enemy = undefined;
 
         if(IsDefined(enemy) && Is_True(player.AimbotDistanceCheck) && Distance(player.origin, enemy.origin) > player.AimbotDistance)

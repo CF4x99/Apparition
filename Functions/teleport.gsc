@@ -56,7 +56,8 @@ PopulateTeleportMenu(menu, player)
                         }
                     }
 
-                    self addOptIncSlider("Crafting Table", ::EntityTeleport, 0, 0, (valid.size - 1), 1, player, "Table");
+                    if(valid.size)
+                        self addOptIncSlider("Crafting Table", ::EntityTeleport, 0, 0, (valid.size - 1), 1, player, "Table");
                 }
 
                 perks = GetEntArray("zombie_vending", "targetname");
@@ -160,7 +161,10 @@ EntityTeleport(entity, player, eEntity)
                 if(IsDefined(perk) && IsString(entity) && entity == perk.script_noteworthy)
                 {
                     ent = perk.machine;
-                    entAngleDir = AnglesToRight(ent.angles);
+                    
+                    if(IsDefined(ent))
+                        entAngleDir = AnglesToRight(ent.angles);
+                    
                     break;
                 }
             }
@@ -374,35 +378,35 @@ GenerateMapTeleports()
                 break;
             
             case "Mob Of The Dead":
-                locations = ["Spawn", (-2185.649, 5548.136, 2688.125), "Pack 'a' Punch(Bridge)", (-10931.269, 31045.974, 3800.125), "Roof", (115.627, 4876.537, 3052.125), "Prison", (-2744.295, 3911.298, 2792.125)];
+                locations = Array("Spawn", (-2185.649, 5548.136, 2688.125), "Pack 'a' Punch(Bridge)", (-10931.269, 31045.974, 3800.125), "Roof", (115.627, 4876.537, 3052.125), "Prison", (-2744.295, 3911.298, 2792.125));
                 break;
             
             case "Die Rise":
-                locations = ["Spawn", (-880.691, 362.408, 1808.125), "Power", (460.962, -1024.275, -287.875), "Bank Showers", (0.08, -394.350, -287.875), "Prison", (-200.960, -1127.386, 944.125)];
+                locations = Array("Spawn", (-880.691, 362.408, 1808.125), "Power", (460.962, -1024.275, -287.875), "Bank Showers", (0.08, -394.350, -287.875), "Prison", (-200.960, -1127.386, 944.125));
                 break;
             
             case "Bus Depot":
-                locations = ["Spawn", (1444.05, 4467.5, 0.125), "Power", (1272.86, 4339.175, -151.625), "Pack 'a' Punch", (3121.84, 1892.9, 21.812), "Prison", (-484.175, 260.947, 0.125)];
+                locations = Array("Spawn", (1444.05, 4467.5, 0.125), "Power", (1272.86, 4339.175, -151.625), "Pack 'a' Punch", (3121.84, 1892.9, 21.812), "Prison", (-484.175, 260.947, 0.125));
                 break;
             
             case "Tunnel":
-                locations = ["Spawn", (1490.38, -2368.4, 275.8), "Power", (3952.9, -1431.5, 72.125), "Pack 'a' Punch", (1444.7, -449.98, 103.19), "Prison", (2175, -2836.6, 320.125)];
+                locations = Array("Spawn", (1490.38, -2368.4, 275.8), "Power", (3952.9, -1431.5, 72.125), "Pack 'a' Punch", (1444.7, -449.98, 103.19), "Prison", (2175, -2836.6, 320.125));
                 break;
             
             case "Diner":
-                locations = ["Spawn", (7583.19, -12471.09, -0.625), "Power", (10258.39, -12906.60, 95.125), "Pack 'a' Punch", (5171.02, -13046.58, 0.64), "Prison", (5516.14, -19922.40, -115.875)];
+                locations = Array("Spawn", (7583.19, -12471.09, -0.625), "Power", (10258.39, -12906.60, 95.125), "Pack 'a' Punch", (5171.02, -13046.58, 0.64), "Prison", (5516.14, -19922.40, -115.875));
                 break;
             
             case "Farm":
-                locations = ["Spawn", (4924.46, -586.4, 80.92), "Power", (7154.933, 1721.47, -487.875), "Pack 'a' Punch", (6463.42, 1914.62, -487.875), "Prison", (5152.64, 2035.49, -247.875)];
+                locations = Array("Spawn", (4924.46, -586.4, 80.92), "Power", (7154.933, 1721.47, -487.875), "Pack 'a' Punch", (6463.42, 1914.62, -487.875), "Prison", (5152.64, 2035.49, -247.875));
                 break;
             
             case "Der Riese: Declassified":
-                locations = ["Spawn", (-51.78, 305.3, 98.375), "Power", (530.13, -1810.82, 61.125), "Pack 'a' Punch", (-55.18, 511, 101.125), "Prison", (5454.43, -20.8, -271.875), "Kino Der Toten", (28491.7, -1889, -323.16), "Nacht Der Untoten", (24360.625, -10584, -872.52), "Richtofen's Lab", (23457.99, 961.57, 57.21), "Samantha's Bedroom", (23346.86, -1918.75, 174.125), "Forest", (27320.9, -10309.79, -879.73), "Boss Fight", (41130, 37102.87, -1995.35)];
+                locations = Array("Spawn", (-51.78, 305.3, 98.375), "Power", (530.13, -1810.82, 61.125), "Pack 'a' Punch", (-55.18, 511, 101.125), "Prison", (5454.43, -20.8, -271.875), "Kino Der Toten", (28491.7, -1889, -323.16), "Nacht Der Untoten", (24360.625, -10584, -872.52), "Richtofen's Lab", (23457.99, 961.57, 57.21), "Samantha's Bedroom", (23346.86, -1918.75, 174.125), "Forest", (27320.9, -10309.79, -879.73), "Boss Fight", (41130, 37102.87, -1995.35));
                 break;
             
             case "Leviathan":
-                locations = ["Spawn", (-789.95, -29.18, -484.875)];
+                locations = Array("Spawn", (-789.95, -29.18, -484.875));
                 break;
         }
 

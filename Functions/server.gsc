@@ -18,7 +18,7 @@ PopulateServerModifications(menu)
                 self addOpt("Doheart Options", ::newMenu, "Doheart Options");
                 self addOpt("Lobby Timer Options", ::newMenu, "Lobby Timer Options");
 
-                if(!IsVerkoMap())
+                if(!IsVerkoMap() && IsDefined(level.chests) && level.chests.size)
                     self addOpt("Mystery Box Options", ::newMenu, "Mystery Box Options");
                 
                 self addOptBool(IsAllDoorsOpen(), "Open All Doors & Debris", ::OpenAllDoors);
@@ -361,6 +361,8 @@ AntiQuit()
 
 AutoRevive()
 {
+    level endon("game_ended");
+
     level.AutoRevive = BoolVar(level.AutoRevive);
 
     while(Is_True(level.AutoRevive))
@@ -377,6 +379,8 @@ AutoRevive()
 
 AutoRespawn()
 {
+    level endon("game_ended");
+    
     level.AutoRespawn = BoolVar(level.AutoRespawn);
     
     while(Is_True(level.AutoRespawn))
@@ -668,6 +672,9 @@ ShowAllChests()
 TriggerFix()
 {
     self endon("EndBoxFixes");
+
+    if(!IsDefined(self.zbarrier))
+        return;
     
     while(IsDefined(self))
     {

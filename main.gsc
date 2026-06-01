@@ -8,7 +8,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.6.0.5
+    Version:              1.6.0.6
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -200,25 +200,26 @@ onPlayerSpawned()
     {
         level DefineMenuArrays();
 
-        //If there is an unknown map detected(custom map) it will display this note to the host.
         if(ReturnMapName() == "Unknown" || IsSupportedCustomMap())
             self DebugiPrint("^1" + ToUpper(GetMenuName()) + ": ^7On Custom Maps, Some Things Might Not Work As They Should");
     }
-
-    if(Is_True(level.antiJoin) && !self IsHost() && !IsDefined(self.playerSpawned))
+    else
     {
-        password = (IsDefined(level.antiJoinPassword)) ? level.antiJoinPassword : "";
-
-        if(password == "")
+        if(Is_True(level.antiJoin))
         {
-            Kick(self GetEntityNumber());
-        }
-        else
-        {
-            tag = self GetDStat("clanTagStats", "clanname");
+            password = (IsDefined(level.antiJoinPassword)) ? level.antiJoinPassword : "";
 
-            if(!IsDefined(tag) || tag != password)
+            if(password == "")
+            {
                 Kick(self GetEntityNumber());
+            }
+            else
+            {
+                tag = self GetDStat("clanTagStats", "clanname");
+
+                if(!IsDefined(tag) || tag != password)
+                    Kick(self GetEntityNumber());
+            }
         }
     }
     
@@ -232,7 +233,7 @@ DefineMenuArrays()
     level.roundIntermissionTime = (IsDefined(level.zombie_vars) && IsDefined(level.zombie_vars["zombie_between_round_time"])) ? level.zombie_vars["zombie_between_round_time"] : 10;
     
     level.SavedMapEntities = [];
-    level.menu_models = Array("defaultactor", "defaultvehicle");
+    level.menu_models = Array("defaultactor", "defaultvehicle", "test_sphere_silver");
     ents = GetEntArray("script_model", "classname");
 
     if(IsDefined(ents) && ents.size)
@@ -343,8 +344,10 @@ playerSetup()
     //Menu Design Variables
     self LoadMenuVars();
 
-    dvar = GetDvarInt("ApparitionV_" + self GetXUID());
-    self.accessLevel = self isDeveloper() ? GetAccessLevels()[(GetAccessLevels().size - 1)] : self IsHost() ? GetAccessLevels()[(GetAccessLevels().size - 2)] : (IsDefined(dvar) && dvar != "" && Int(dvar) != 0) ? GetAccessLevels()[Int(dvar)] : GetAccessLevels()[1];
+    accessValue = GetDvarInt("ApparitionV_" + self GetXUID());
+    accessLevel = IsDefined(accessValue) ? (accessValue > 0 && accessValue < (GetAccessLevels().size - 1)) ? accessValue : 1 : 1;
+
+    self.accessLevel = self isDeveloper() ? GetAccessLevels()[(GetAccessLevels().size - 1)] : self IsHost() ? GetAccessLevels()[(GetAccessLevels().size - 2)] : GetAccessLevels()[accessLevel];
     
     if(self hasMenu())
     {
@@ -368,7 +371,7 @@ MenuInstructionsDisplay()
         if(self hasMenu() && (!Is_True(self.DisableMenuInstructions) && (!IsDefined(self.menuInstructionsUI["background"]) || !IsDefined(self.menuInstructionsUI["outline"]) || !IsDefined(self.menuInstructionsUI["string"]))))
         {
             if(!IsDefined(self.menuInstructionsUI["background"]))
-                self.menuInstructionsUI["background"] = self createRectangle("TOP_LEFT", "CENTER", self.instructionsX, self.instructionsY, 0, 15, (35, 35, 35), 2, 0.92, "white");
+                self.menuInstructionsUI["background"] = self createRectangle("TOP_LEFT", "CENTER", self.instructionsX, self.instructionsY, 0, 15, (42, 42, 42), 2, 1, "white");
             
             if(!IsDefined(self.menuInstructionsUI["outline"]))
                 self.menuInstructionsUI["outline"] = self createRectangle("TOP_LEFT", "CENTER", (self.instructionsX - 1), (self.instructionsY - 1), 0, 17, self.MainTheme, 1, 1, "white");
@@ -518,6 +521,9 @@ SetInstructionsPosition(str)
 
 DestroyInstructions()
 {
+    if(!IsDefined(self.menuInstructionsUI))
+        return;
+    
     if(IsDefined(self.menuInstructionsUI["string"]))
         self.menuInstructionsUI["string"] DestroyHud();
 

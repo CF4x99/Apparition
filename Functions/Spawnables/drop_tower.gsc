@@ -1,7 +1,7 @@
 SpawnDropTower()
 {
     if(Is_True(level.spawnable["Drop Tower_Spawned"]))
-        return;
+        return false;
 
     model = GetSpawnableBaseModel();
     seatModel = isInArray(level.menu_models, "test_sphere_silver") ? "test_sphere_silver" : "defaultactor";
@@ -11,12 +11,21 @@ SpawnDropTower()
     towerSeats = [];
 
     towerSeatAttach = SpawnScriptModel(origin + (0, 0, 15), "tag_origin");
+
+    if(!IsDefined(towerSeatAttach))
+        return false;
+    
     towerSeatAttach SpawnableArray("Drop Tower");
 
     for(a = 0; a < 30; a++)
     {
         for(b = 0; b < 10; b++)
+        {
             base[base.size] = SpawnScriptModel(origin + (Cos(b * 36) * 27, Sin(b * 36) * 27, (a * 80)), model, (0, (36 * b), 0), 0.01);
+
+            if(!IsDefined(base[(base.size - 1)]))
+                return false;
+        }
     }
 
     array::thread_all(base, ::SpawnableArray, "Drop Tower");
@@ -27,22 +36,35 @@ SpawnDropTower()
 
         if(IsDefined(towerSeats[(towerSeats.size - 1)]) && seatModel != "defaultactor")
             towerSeats[(towerSeats.size - 1)] SetScale(6);
+        
+        if(!IsDefined(towerSeats[(towerSeats.size - 1)]))
+            return false;
     }
 
     array::thread_all(towerSeats, ::SpawnableArray, "Drop Tower");
 
-    foreach(seat in towerSeats)
-        seat LinkTo(towerSeatAttach);
+    if(IsDefined(towerSeatAttach))
+    {
+        foreach(seat in towerSeats)
+            seat LinkTo(towerSeatAttach);
 
-    towerSeatAttach thread startDropMovement();
+        towerSeatAttach thread startDropMovement();
+    }
+    else
+    {
+        return false;
+    }
+
     array::thread_all(towerSeats, ::SeatSystem, "Drop Tower");
+    return true;
 }
 
 startDropMovement()
 {
+    self endon("death");
     level endon("Drop Tower_Stop");
 
-    while(1)
+    while(IsDefined(self))
     {
         wait 5;
         self MoveTo(self.origin + (0, 0, 2385), 20);

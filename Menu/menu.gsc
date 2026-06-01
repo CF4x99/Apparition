@@ -96,10 +96,6 @@ RunMenuOptions(menu)
             break;
         
         case "Advanced Scripts":
-        case "Rain Options":
-        case "Rain Models":
-        case "Rain Effects":
-        case "Rain Projectiles":
         case "Custom Sentry":
             self PopulateAdvancedScripts(menu);
             break;
@@ -291,6 +287,13 @@ RunMenuOptions(menu)
             break;
         
         case "Spawnables":
+        case "Rain Options":
+        case "Rain Models":
+        case "Rain Effects":
+        case "Rain Projectiles":
+        case "Small Spawnables":
+        case "Large Spawnables":
+        case "Skybase":
             self PopulateSpawnables(menu);
             break;
         
@@ -388,7 +391,9 @@ RunMenuOptions(menu)
             break;
         
         default:
-            craftables = GetArrayKeys(level.zombie_include_craftables);
+            
+            if(IsDefined(level.zombie_include_craftables) && level.zombie_include_craftables.size)
+                craftables = GetArrayKeys(level.zombie_include_craftables);
 
             if(IsDefined(craftables) && craftables.size && isInArray(craftables, menu))
             {
@@ -408,14 +413,17 @@ RunMenuOptions(menu)
                                 self addOpt("Collect All", ::CollectCraftableParts, craftable);
                                 self addOpt("");
                             }
-
-                            foreach(part in level.zombie_include_craftables[craftable].a_piecestubs)
+                            
+                            if(IsDefined(level.zombie_include_craftables[craftable].a_piecestubs))
                             {
-                                if(IsPartCollected(part))
-                                    continue;
-                                
-                                if(IsDefined(part.pieceSpawn.model))
-                                    self addOpt(CleanString(part.pieceSpawn.piecename), ::CollectCraftablePart, part);
+                                foreach(part in level.zombie_include_craftables[craftable].a_piecestubs)
+                                {
+                                    if(IsPartCollected(part))
+                                        continue;
+                                    
+                                    if(IsDefined(part.pieceSpawn.model))
+                                        self addOpt(CleanString(part.pieceSpawn.piecename), ::CollectCraftablePart, part);
+                                }
                             }
                         }
                     }

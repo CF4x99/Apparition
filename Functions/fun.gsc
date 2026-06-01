@@ -76,8 +76,8 @@ PopulateFunScripts(menu, player)
             if(!IsDefined(player.HitmarkerFeedback))
                 player.HitmarkerFeedback = "damage_feedback";
             
-            if(!IsDefined(self.HitMarkerColor))
-                self.HitMarkerColor = (255, 255, 255);
+            if(!IsDefined(player.HitMarkerColor))
+                player.HitMarkerColor = (255, 255, 255);
             
             self addMenu(menu);
                 self addOptBool(player.ShowHitmarkers, "Hit Markers", ::ShowHitmarkers, player);
@@ -433,7 +433,6 @@ SpawnDeathSkull(action, player)
                 player.DeathSkullEnts[player.DeathSkullEnts.size] = SpawnScriptModel(player.origin + (Cos(a * 90) * 35, Sin(a * 90) * 35, 45), level.zombie_powerups["insta_kill"].model_name, (0, (a * 90), 0));
                 player.DeathSkullEnts[(player.DeathSkullEnts.size - 1)] clientfield::set("powerup_fx", Int(color));
                 player.DeathSkullEnts[(player.DeathSkullEnts.size - 1)] LinkTo(player.DeathSkullEnts[linkerIndex]);
-                PlayFXOnTag(level._effect["tesla_bolt"], player.DeathSkullEnts[(player.DeathSkullEnts.size - 1)], "tag_origin");
 
                 linkedSkulls[linkedSkulls.size] = player.DeathSkullEnts[(player.DeathSkullEnts.size - 1)];
             }
@@ -468,7 +467,19 @@ DeathSkullLinker(skulls, player)
     
     while(IsDefined(self))
     {
+        if(IsDefined(player.DeathSkullEnts) && player.DeathSkullEnts.size && IsDefined(level._effect["tesla_bolt"]))
+        {
+            for(a = 1; a < player.DeathSkullEnts.size; a++)
+            {
+                if(!IsDefined(player.DeathSkullEnts[a]))
+                    continue;
+                
+                PlayFXOnTag(level._effect["tesla_bolt"], player.DeathSkullEnts[a], "tag_origin");
+            }
+        }
+
         self MoveZ(25, 5);
+
         for(a = 0; a < 20; a++)
         {
             self RotateYaw(360, 0.25);
@@ -600,7 +611,7 @@ PlayerDropCamera(player)
 DeadOpsView(player)
 {
     if(!Is_Alive(player) && !Is_True(player.DeadOpsView))
-        return iPrintlnBold("^1ERROR: ^7Player Needs To Be Alive To Enable Dead Ops View");
+        return self iPrintlnBold("^1ERROR: ^7Player Needs To Be Alive To Enable Dead Ops View");
     
     if(Is_True(player.SpecNade) && !Is_True(player.DeadOpsView))
         return self iPrintlnBold("^1ERROR: ^7You Can't Use This Option While Spec-Nade Is Enabled");
@@ -624,7 +635,7 @@ DeadOpsView(player)
         }
         
         player CameraSetPosition(player.camlinker);
-        player CameraSetLookat(player.camlinker);
+        player CameraSetLookAt(player.camlinker);
         player CameraActivate(true);
         
         while(Is_True(player.DeadOpsView))
@@ -668,7 +679,7 @@ ZombieCounter(player)
                 yPos = 35;
 
                 player.ZombieCounterHud[0] = player LUI_createRectangle(0, (xPos - 3), (yPos - 1), 227, 49, GetColorVec(player.MainTheme), "white", 1);
-                player.ZombieCounterHud[1] = player LUI_createRectangle(0, (xPos - 2), yPos, (player GetLUIMenuData(player.ZombieCounterHud[0], "width") - 2), (player GetLUIMenuData(player.ZombieCounterHud[0], "height") - 2), (0, 0, 0), "white", 0.8);
+                player.ZombieCounterHud[1] = player LUI_createRectangle(0, (xPos - 2), yPos, (player GetLUIMenuData(player.ZombieCounterHud[0], "width") - 2), (player GetLUIMenuData(player.ZombieCounterHud[0], "height") - 2), GetColorVec((42, 42, 42)), "white", 1);
                 
                 player.ZombieCounterHud[2] = player LUI_createText("Alive: ", 0, xPos, yPos, 41, (1, 1, 1));
                 player.ZombieCounterHud[3] = player LUI_createText("Remaining For Round: ", 0, xPos, (yPos + 20), 154, (1, 1, 1));
@@ -793,6 +804,11 @@ LightProtectorMoveToTarget(target)
 GetLightProtectorTarget(distance)
 {
     zombies = GetAITeamArray(level.zombie_team);
+
+    if(!IsDefined(zombies) || !zombies.size)
+        return;
+
+    enemy = undefined;
 
     for(a = 0; a < zombies.size; a++)
     {
@@ -1200,7 +1216,7 @@ HealthBar(player)
     {
         player endon("disconnect");
 
-        while(is_True(player.HealthBar) && Is_Alive(player))
+        while(Is_True(player.HealthBar) && Is_Alive(player))
         {
             healthWidth = player.health;
             maxHealthWidth = player.maxhealth;
@@ -1532,6 +1548,9 @@ ShootPowerUps(player)
 {
     player endon("disconnect");
     player endon("EndShootPowerUps");
+
+    if(!IsDefined(level.zombie_include_powerups) || !level.zombie_include_powerups.size)
+        return;
 
     player.ShootPowerUps = BoolVar(player.ShootPowerUps);
     

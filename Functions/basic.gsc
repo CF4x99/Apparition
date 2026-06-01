@@ -83,26 +83,32 @@ PopulateBasicScripts(menu, player)
 
             self addMenu(menu);
 
-                for(a = 0; a < types.size; a++)
+                if(IsDefined(level.vsmgr) && level.vsmgr.size)
                 {
-                    foreach(key in GetArrayKeys(level.vsmgr[types[a]].info))
+                    for(a = 0; a < types.size; a++)
                     {
-                        if(isInArray(visuals, key) || isInArray(invalid, key))
-                            continue;
-                        
-                        skip = false;
-
-                        for(b = 0; b < invalid.size; b++)
+                        if(IsDefined(level.vsmgr[types[a]]) && IsDefined(level.vsmgr[types[a]].info))
                         {
-                            if(IsSubStr(key, invalid[b]))
-                                skip = true;
+                            foreach(key in GetArrayKeys(level.vsmgr[types[a]].info))
+                            {
+                                if(isInArray(visuals, key) || isInArray(invalid, key))
+                                    continue;
+                                
+                                skip = false;
+
+                                for(b = 0; b < invalid.size; b++)
+                                {
+                                    if(IsSubStr(key, invalid[b]))
+                                        skip = true;
+                                }
+                                
+                                if(skip)
+                                    continue;
+                                
+                                visuals[visuals.size] = key;
+                                self addOptBool(player GetVisualEffectState(key), CleanString(key), ::SetClientVisualEffects, key, player);
+                            }
                         }
-                        
-                        if(skip)
-                            continue;
-                        
-                        visuals[visuals.size] = key;
-                        self addOptBool(player GetVisualEffectState(key), CleanString(key), ::SetClientVisualEffects, key, player);
                     }
                 }
             break;
@@ -151,6 +157,9 @@ Noclip1(player)
         
         while(Is_True(player.Noclip) && Is_Alive(player) && !player isPlayerLinked(player.nocliplinker))
         {
+            if(player GetStance() != "stand")
+                player SetStance("stand");
+
             if(player AttackButtonPressed())
                 player.nocliplinker.origin = player.nocliplinker.origin + AnglesToForward(player GetPlayerAngles()) * 60;
             else if(player AdsButtonPressed())
@@ -232,6 +241,9 @@ UFOMode(player)
         
         while(Is_True(player.UFOMode) && Is_Alive(player) && !player isPlayerLinked(player.ufolinker))
         {
+            if(player GetStance() != "stand")
+                player SetStance("stand");
+            
             player.ufolinker.angles = (player.ufolinker.angles[0], player GetPlayerAngles()[1], player.ufolinker.angles[2]);
 
             if(player AttackButtonPressed())
@@ -531,6 +543,9 @@ SetMovementSpeed(scale, player)
 
 ThirdPerson(player)
 {
+    if(Is_True(self.AC130) || Is_True(self.FlyableUFO))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Enable Third Person For This Player Right Now");
+    
     player.ThirdPerson = BoolVar(player.ThirdPerson);
     player SetClientThirdPerson(Is_True(player.ThirdPerson));
 }
@@ -601,6 +616,7 @@ MultiJump(player)
     player endon("disconnect");
 
     player.MultiJump = BoolVar(player.MultiJump);
+    firstJump = true;
 
     while(Is_True(player.MultiJump))
     {

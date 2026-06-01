@@ -27,8 +27,11 @@ PopulateForgeOptions(menu)
         case "Spawn Script Model":
             self addMenu("Spawn");
 
-                for(a = 0; a < level.menu_models.size; a++)
-                    self addOpt(CleanString(level.menu_models[a]), ::ForgeSpawnModel, level.menu_models[a]);
+                if(IsDefined(level.menu_models) && level.menu_models.size)
+                {
+                    for(a = 0; a < level.menu_models.size; a++)
+                        self addOpt(CleanString(level.menu_models[a]), ::ForgeSpawnModel, level.menu_models[a]);
+                }
             break;
         
         case "Rotate Script Model":

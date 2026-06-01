@@ -80,7 +80,7 @@ PopulateWeaponry(menu, player)
             {
                 for(a = 0; a < 44; a++)
                 {
-                    if(!isInArray(weapon.supportedAttachments, ReturnAttachment(a)) || ReturnAttachment(a) == "none" || ReturnAttachment(a) == "dw")
+                    if(!IsDefined(weapon.supportedAttachments) || !weapon.supportedAttachments.size || !isInArray(weapon.supportedAttachments, ReturnAttachment(a)) || !IsDefined(weapon.attachments) || ReturnAttachment(a) == "none" || ReturnAttachment(a) == "dw")
                         continue;
                     
                     attachments[attachments.size] = ReturnAttachment(a);
@@ -328,7 +328,12 @@ VerkoPackCurrentWeapon(type, player)
     wait 0.05;
 
     if(type == "Mastery")
-        player thread aat::acquire(newWeapon, VerkoGetAAT(level.var_fc480cef[weaponIndex]));
+    {
+        aatName = VerkoGetAAT(level.var_fc480cef[weaponIndex]);
+
+        if(aatName != "undefined")
+            player thread aat::acquire(newWeapon, aatName);
+    }
 }
 
 VerkoGetAAT(aat)
@@ -352,6 +357,9 @@ VerkoGetAAT(aat)
         
         case "aethercollapse":
             return "zm_aat_aethercollapse";
+        
+        default:
+            return "undefined";
     }
 }
 
@@ -506,6 +514,8 @@ ClearLoadout(player)
 
 GivePlayerLoadout()
 {
+    self endon("disconnect");
+
     userID = self GetXUID();
     
     if(GetDvarInt("Apparition_Loadout_" + userID))
@@ -599,6 +609,10 @@ GivePlayerLoadout()
 SetPlayerCamo(camo, player)
 {
     weap = player GetCurrentWeapon();
+
+    if(!IsDefined(weap) || weap == level.weaponnone)
+        return;
+
     weapon = player CalcWeaponOptions(camo, 0, 0);
     NewWeapon = player GetBuildKitAttachmentCosmeticVariantIndexes(weap, zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()));
     
@@ -627,6 +641,9 @@ FlashingCamo(player)
 GiveWeaponAAT(aat, player)
 {
     player endon("disconnect");
+
+    if(!IsDefined(player.aat))
+        player.aat = [];
     
     if(!IsDefined(player.aat[player aat::get_nonalternate_weapon(player GetCurrentWeapon())]) || player.aat[player aat::get_nonalternate_weapon(player GetCurrentWeapon())] != aat)
     {

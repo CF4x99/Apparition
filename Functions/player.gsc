@@ -318,6 +318,7 @@ SyncPlayerVelocity(player)
     if(player == self && !Is_True(player.SyncPlayerVelocity))
         return self iPrintlnBold("^1ERROR: ^7You Can't Sync Velocity With Yourself");
     
+    self endon("disconnect");
     player endon("disconnect");
 
     player.SyncPlayerVelocity = BoolVar(player.SyncPlayerVelocity);
@@ -334,6 +335,7 @@ SyncPlayerAngles(player)
     if(player == self && !Is_True(player.SyncPlayerAngles))
         return self iPrintlnBold("^1ERROR: ^7You Can't Sync Angles With Yourself");
     
+    self endon("disconnect");
     player endon("disconnect");
 
     player.SyncPlayerAngles = BoolVar(player.SyncPlayerAngles);
@@ -413,8 +415,10 @@ BlackScreenPlayer(player)
 
     if(Is_True(player.BlackScreen))
     {
-        if(!IsDefined(player.BlackScreenHud))
-            player.BlackScreenHud = [];
+        if(IsDefined(player.BlackScreenHud) && player.BlackScreenHud.size)
+            destroyAll(player.BlackScreenHud);
+        
+        player.BlackScreenHud = [];
 
         for(a = 0; a < 2; a++)
             player.BlackScreenHud[player.BlackScreenHud.size] = player createRectangle("CENTER", "CENTER", 0, 0, 5000, 5000, (0, 0, 0), 0, 1, "black");

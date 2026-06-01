@@ -1,60 +1,8 @@
 SpawnSkybase()
 {
     if(Is_True(level.spawnable["Skybase_Spawned"]))
-        return;
-
-    model = GetSpawnableBaseModel("vending_doubletap");
-
-    self closeMenu1();
-    wait 0.25;
-
-    distance = 500;
-    goalPos = SpawnScriptModel(GetGroundPos(self TraceBullet()), "tag_origin");
-    PlayFXOnTag(level._effect["powerup_on"], goalPos, "tag_origin");
-
-    self.DisableMenuControls = true;
-    self SetMenuInstructions("[{+attack}] - Increase Distance\n[{+speed_throw}] - Decrease Distance\n[{+activate}] - Confirm Location");
-
-    while(1)
-    {
-        trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), distance), 0, self);
-        goalPos.origin = trace["position"];
-
-        if(self AttackButtonPressed())
-        {
-            distance += 25;
-        }
-        else if(self AdsButtonPressed())
-        {
-            distance -= 25;
-        }
-        else if(self UseButtonPressed() || self MeleeButtonPressed())
-        {
-            origin = trace["position"];
-            level.SkybaseOrigin = origin;
-            break;
-        }
-
-        if(distance < 100)
-            distance = 100;
-        else if(distance > 2500)
-            distance = 2500;
-
-        wait 0.01;
-    }
-
-    goalPos Delete();
+        return false;
     
-    if(Is_True(self.DisableMenuControls))
-        self.DisableMenuControls = BoolVar(self.DisableMenuControls);
-    
-    self SetMenuInstructions();
-
-    floor = [];
-    roof = [];
-    walls = [];
-    corners = [];
-
     //These values control the size of the base
     x = 10;
     y = 5;
@@ -63,10 +11,138 @@ SpawnSkybase()
     width = 51;
     height = 90;
 
+    model = GetSpawnableBaseModel("vending_doubletap");
+    location = (ReturnMapName() == "Unknown" || IsSupportedCustomMap() || !IsDefined(level.SkybaseLocation)) ? "Custom" : level.SkybaseLocation;
+
+    if(location == "Custom")
+    {
+        self closeMenu1();
+
+        cancel = false;
+        distance = 650;
+        cfIndex = Int(Pow(2, RandomInt(3)));
+        trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), distance), 0, self)["position"];
+
+        goalPos = SpawnScriptModel(trace, "tag_origin");
+        goalPos clientfield::set("powerup_fx", cfIndex);
+
+        if(!IsDefined(goalPos))
+            return false;
+
+        self.DisableMenuControls = true;
+        self SetMenuInstructions("[{+attack}] - Increase Distance\n[{+speed_throw}] - Decrease Distance\n[{+activate}] - Confirm Location\n[{+melee}] - Cancel");
+
+        preview = [];
+
+        for(a = 0; a < x; a++)
+        {
+            for(b = 0; b < y; b++)
+            {
+                preview[preview.size] = SpawnScriptModel(trace + ((a * width), (b * height), 0), "tag_origin", (0, 0, 0));
+
+                if(IsDefined(preview[(preview.size - 1)]))
+                {
+                    preview[(preview.size - 1)] clientfield::set("powerup_fx", cfIndex);
+                    preview[(preview.size - 1)] LinkTo(goalPos);
+                }
+                else
+                {
+                    return false;
+                }
+
+                wait 0.01;
+            }
+        }
+
+        while(1)
+        {
+            if(!IsDefined(goalPos))
+            {
+                cancel = true;
+                break;
+            }
+            
+            trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), distance), 0, self)["position"];
+            goalPos.origin = trace;
+
+            if(self AttackButtonPressed())
+            {
+                distance += 25;
+            }
+            else if(self AdsButtonPressed())
+            {
+                distance -= 25;
+            }
+            else if(self UseButtonPressed())
+            {
+                origin = trace;
+                break;
+            }
+            else if(self MeleeButtonPressed())
+            {
+                cancel = true;
+                break;
+            }
+
+            if(distance < 100)
+                distance = 100;
+            else if(distance > 2500)
+                distance = 2500;
+
+            wait 0.01;
+        }
+
+        if(IsDefined(goalPos))
+            goalPos Delete();
+        
+        if(IsDefined(preview) && preview.size)
+        {
+            for(a = 0; a < preview.size; a++)
+            {
+                if(IsDefined(preview[a]))
+                    preview[a] Delete();
+            }
+        }
+        
+        if(Is_True(self.DisableMenuControls))
+            self.DisableMenuControls = BoolVar(self.DisableMenuControls);
+        
+        self SetMenuInstructions();
+
+        if(Is_True(cancel))
+            return false;
+    }
+    else
+    {
+        origin = GetSkybaseOriginForMap();
+    }
+
+    if(!IsDefined(origin) || !IsVec(origin) || origin == (0, 0, 0))
+        return false;
+    
+    level.SkybaseOrigin = origin;
+    level.skybaseLinker = SpawnScriptModel(origin, "tag_origin");
+
+    if(!IsDefined(level.skybaseLinker))
+        return false;
+
+    floor = [];
+    roof = [];
+    walls = [];
+    corners = [];
+
     for(a = 0; a < x; a++)
     {
         for(b = 0; b < y; b++)
+        {
             floor[floor.size] = SpawnScriptModel(origin + ((a * width), (b * height), 0), model, (0, 0, 90), 0.01);
+
+            if(!IsDefined(floor[(floor.size - 1)]))
+                return false;
+            
+            if(IsDefined(level.skybaseLinker))
+                floor[(floor.size - 1)] LinkTo(level.skybaseLinker);
+        }
     }
 
     array::thread_all(floor, ::SpawnableArray, "Skybase");
@@ -74,7 +150,15 @@ SpawnSkybase()
     for(a = 0; a < x; a++)
     {
         for(b = 0; b < y; b++)
+        {
             roof[roof.size] = SpawnScriptModel(origin + ((a * width), (b * height), (height + 35)), model, (180, 0, 90), 0.01);
+
+            if(!IsDefined(roof[(roof.size - 1)]))
+                return false;
+            
+            if(IsDefined(level.skybaseLinker))
+                roof[(roof.size - 1)] LinkTo(level.skybaseLinker);
+        }
     }
 
     array::thread_all(roof, ::SpawnableArray, "Skybase");
@@ -82,13 +166,29 @@ SpawnSkybase()
     for(a = 0; a < 2; a++)
     {
         for(b = 0; b < y; b++)
-            walls[walls.size] = SpawnScriptModel(origin + (-25 + ((width * x) * a) + (10 * a), (b * height), 20), model, (90 - (180 * a), 0, 90), 0.01);
+        {
+            walls[walls.size] = SpawnScriptModel(origin + (-25 + ((width * x) * a) + (10 * a), (b * height), 19), model, (90 - (180 * a), 0, 90), 0.01);
+
+            if(!IsDefined(walls[(walls.size - 1)]))
+                return false;
+            
+            if(IsDefined(level.skybaseLinker))
+                walls[(walls.size - 1)] LinkTo(level.skybaseLinker);
+        }
     }
 
     for(a = 0; a < 2; a++)
     {
         for(b = 0; b < (x - 4); b++)
-            walls[walls.size] = SpawnScriptModel(origin + (5 + width + (b * height), (height * -1) + ((height * y) * a), 20), model, (-90 + (180 * a), 0, 0 - (180 * a)), 0.01);
+        {
+            walls[walls.size] = SpawnScriptModel(origin + (5 + width + (b * height), (height * -1) + ((height * y) * a), 19), model, (-90 + (180 * a), 0, 0 - (180 * a)), 0.01);
+
+            if(!IsDefined(walls[(walls.size - 1)]))
+                return false;
+            
+            if(IsDefined(level.skybaseLinker))
+                walls[(walls.size - 1)] LinkTo(level.skybaseLinker);
+        }
     }
 
     array::thread_all(walls, ::SpawnableArray, "Skybase");
@@ -96,64 +196,47 @@ SpawnSkybase()
     for(a = 0; a < 2; a++)
     {
         for(b = 0; b < 2; b++)
+        {
             corners[corners.size] = SpawnScriptModel(origin + (0 - (((25 * b) + (25 * a)) - ((50 * a) * b)), (height * -1) + (15 * b) + (((height * y) - 15) * a), 44), model, (0, 0 - ((b * 90) + (a * 90)), 0), 0.01);
+
+            if(!IsDefined(corners[(corners.size - 1)]))
+                return false;
+            
+            if(IsDefined(level.skybaseLinker))
+                corners[(corners.size - 1)] LinkTo(level.skybaseLinker);
+        }
     }
 
     for(a = 0; a < 2; a++)
     {
         for(b = 0; b < 2; b++)
+        {
             corners[corners.size] = SpawnScriptModel(origin + ((width * (x - 1)) + (((36 * b) + (36 * a)) - ((72 * a) * b)), (height * -1) + (15 * b) + (((height * y) - 15) * a), 44), model, (0, 0 + ((b * 90) + (a * 90)), 0), 0.01);
+
+            if(!IsDefined(corners[(corners.size - 1)]))
+                return false;
+            
+            if(IsDefined(level.skybaseLinker))
+                corners[(corners.size - 1)] LinkTo(level.skybaseLinker);
+        }
     }
 
     array::thread_all(corners, ::SpawnableArray, "Skybase");
-    bottle = SpawnGlowingPerk(origin + (10, (55 * (y + 1)), 55));
 
-    if(IsDefined(bottle))
-        bottle SpawnableArray("Skybase");
-}
-
-SpawnGlowingPerk(origin)
-{
-    if(!IsDefined(origin))
-        origin = self.origin + (0, 0, 55);
-
-    bottle = SpawnScriptModel(origin, GetSpawnableBottle());
+    //SpawnProp(origin = (0, 0, 0), model = "defaultactor", angles = (0, 0, 0), bounce = true, glow = true, triggerFunction, hintString)
+    bottle = SpawnProp(origin + (10, (55 * (y + 1)), 55), GetSpawnablePerkBottle(), (0, 0, 0), true, true, ::SkybasePerkTrigger, "Press [{+activate}] For All Perks");
 
     if(!IsDefined(bottle))
-        return;
+        return false;
+
+    level.skybaseProps = Array(bottle);
+    array::thread_all(level.skybaseProps, ::SpawnableArray, "Skybase");
     
-    PlayFXOnTag(level._effect["powerup_on"], bottle, "tag_origin");
-    PlayFXOnTag(level._effect["tesla_bolt"], bottle, "tag_origin");
 
-    bottle thread ActivateGlowingPerk(origin);
-    return bottle;
+    return true;
 }
 
-ActivateGlowingPerk(origin)
-{
-    level endon("Skybase_Stop");
-
-    self MakeUsable();
-    self SetCursorHint("HINT_NOICON");
-    self SetHintString("Press [{+activate}] For All Perks");
-
-    self thread BottleTrigger();
-
-    while(IsDefined(self))
-    {
-        for(a = 0; a < 2; a++)
-        {
-            self MoveTo(origin + (0, 0, (25 - (50 * a))), 1, 0.25, 0.25);
-            self RotateYaw(360, 1, 0.5, 0.5);
-
-            wait 1;
-        }
-
-        wait 0.1;
-    }
-}
-
-BottleTrigger()
+SkybasePerkTrigger()
 {
     MenuPerks = [];
     perks = GetArrayKeys(level._custom_perks);
@@ -161,26 +244,10 @@ BottleTrigger()
     for(a = 0; a < perks.size; a++)
         array::add(MenuPerks, perks[a], 0);
     
-    while(IsDefined(self))
-    {
-        self waittill("trigger", player);
-
-        if(!IsDefined(self) || player isDown() || IsDefined(player.perks_active) && player.perks_active.size == MenuPerks.size)
-            continue;
-
-        PlayerAllPerks(player);
-    }
-}
-
-GetSpawnableBottle()
-{
-    for(a = 0; a < level.menu_models.size; a++)
-    {
-        if(IsSubStr(level.menu_models[a], "perk_bottle"))
-            return level.menu_models[a];
-    }
+    if(IsDefined(self.perks_active) && self.perks_active.size == MenuPerks.size)
+        return;
     
-    return level.zombie_powerups["insta_kill"].model_name; //If there is no perk bottle found on the map, then we will just use the insta-kill model
+    PlayerAllPerks(self);
 }
 
 SpawnSkybaseTeleporter()
@@ -207,5 +274,138 @@ SpawnSkybaseTeleporter()
             teleporter Delete();
 
         level.SkybaseTeleporters = undefined;
+    }
+}
+
+SkybaseLocation(location)
+{
+    level.SkybaseLocation = location;
+}
+
+GetSkybaseOriginForMap()
+{
+    map = ReturnMapName();
+
+    switch(map)
+    {
+        case "Shadows Of Evil":
+            return (2546, -5263, 450);
+
+        case "The Giant":
+            return (-930, 1145, 535);
+        
+        case "Der Eisendrache":
+            return (-304, -2008, 1452);
+
+        case "Zetsubou No Shima":
+            return (949, -5955, 393);
+        
+        case "Gorod Krovi":
+            return (2146, -273, 1013);
+
+        case "Revelations":
+            return (-3863, -2676, 563);
+
+        case "Nacht Der Untoten":
+            return (-2093, -303, 496);
+
+        case "Verruckt":
+            return (-96, -139, 518);
+
+        case "Shi No Numa":
+            return (9430, -1730, -190);
+
+        case "Kino Der Toten":
+            return (-1835, -1785, 475);
+
+        case "Ascension":
+            return (2285, 1445, 2055);
+
+        case "Shangri-La":
+            return (565, -3085, 920);
+
+        case "Moon":
+            return (22035, -36675, 35);
+
+        case "Origins":
+            return (-2015, -1935, 730);
+        
+        default:
+            return "invalid";
+    }
+}
+
+MoveSkybase(amount = 0, axis = "X")
+{
+    if(Is_True(level.spawnable["Skybase_Building"]))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Move The Skybase While It's Being Built");
+    
+    if(!Is_True(level.spawnable["Skybase_Spawned"]))
+        return self iPrintlnBold("^1ERROR: ^7The Skybase Hasn't Been Spawned Yet");
+    
+    if(Is_True(level.spawnable["Skybase_Dismantle"]) || Is_True(level.spawnable["Skybase_Deleted"]))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Move The Skybase Right Now");
+    
+    if(!IsDefined(level.skybaseLinker))
+        return self iPrintlnBold("^1ERROR: ^7Failed To Move Skybase");
+    
+    switch(axis)
+    {
+        case "X":
+            level.skybaseLinker.origin += (amount, 0, 0);
+
+            if(IsDefined(level.SkybaseOrigin))
+                level.SkybaseOrigin += (amount, 0, 0);
+
+            for(a = 0; a < level.skybaseProps.size; a++)
+            {
+                if(IsDefined(level.skybaseProps[a]))
+                {
+                    level.skybaseProps[a].origin += (amount, 0, 0);
+
+                    if(IsDefined(level.skybaseProps[a].original_origin) && IsVec(level.skybaseProps[a].original_origin))
+                        level.skybaseProps[a].original_origin += (amount, 0, 0);
+                }
+            }
+            break;
+        
+        case "Y":
+            level.skybaseLinker.origin += (0, amount, 0);
+
+            if(IsDefined(level.SkybaseOrigin))
+                level.SkybaseOrigin += (0, amount, 0);
+
+            for(a = 0; a < level.skybaseProps.size; a++)
+            {
+                if(IsDefined(level.skybaseProps[a]))
+                {
+                    level.skybaseProps[a].origin += (0, amount, 0);
+
+                    if(IsDefined(level.skybaseProps[a].original_origin) && IsVec(level.skybaseProps[a].original_origin))
+                        level.skybaseProps[a].original_origin += (0, amount, 0);
+                }
+            }
+            break;
+        
+        case "Z":
+            level.skybaseLinker.origin += (0, 0, amount);
+
+            if(IsDefined(level.SkybaseOrigin))
+                level.SkybaseOrigin += (0, 0, amount);
+
+            for(a = 0; a < level.skybaseProps.size; a++)
+            {
+                if(IsDefined(level.skybaseProps[a]))
+                {
+                    level.skybaseProps[a].origin += (0, 0, amount);
+
+                    if(IsDefined(level.skybaseProps[a].original_origin) && IsVec(level.skybaseProps[a].original_origin))
+                        level.skybaseProps[a].original_origin += (0, 0, amount);
+                }
+            }
+            break;
+        
+        default:
+            break;
     }
 }

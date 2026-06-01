@@ -8,8 +8,11 @@ PopulateModelManipulation(menu, player)
                 self addOpt("Reset", ::ResetPlayerModel, player);
                 self addOpt("");
 
-                for(a = 0; a < level.menu_models.size; a++)
-                    self addOpt(CleanString(level.menu_models[a]), ::SetPlayerModel, level.menu_models[a], player);
+                if(IsDefined(level.menu_models) && level.menu_models.size)
+                {
+                    for(a = 0; a < level.menu_models.size; a++)
+                        self addOpt(CleanString(level.menu_models[a]), ::SetPlayerModel, level.menu_models[a], player);
+                }
             break;
     }
 }

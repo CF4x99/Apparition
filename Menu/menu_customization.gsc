@@ -65,6 +65,7 @@ PopulateMenuCustomization(menu)
                 self addOptBool(self.LargeCursor, "Large Cursor", ::LargeCursor);
                 self addOptBool(self.OptionCounter, "Option Counter", ::OptionCounter);
                 self addOptBool(self.StealthUI, "Stealth UI", ::StealthUI);
+                self addOptBool(self.MenuNoTarget, "No Target While In Menu", ::MenuNoTarget);
             break;
     }
 }
@@ -642,10 +643,18 @@ StealthUI()
     self SaveMenuTheme();
 }
 
+MenuNoTarget()
+{
+    self.MenuNoTarget = BoolVar(self.MenuNoTarget);
+
+    if(!Is_True(self.MenuNoTarget) && !Is_True(self.playerIgnoreMe))
+        self.ignoreme = false;
+}
+
 SaveMenuTheme()
 {
-    variables = Array("menuSaved", "menuX", "menuY", "instructionsX", "instructionsY", "MenuWidth", "DisableMenuInstructions", "AdaptiveMenuInstructions", "MainTheme", "MenuDesign", "OpenControls", "QuickControls", "QuickExit", "BoolDisplay", "BoolLocation", "ScrollAnimationTime", "DisableQM", "SpotlightCursor", "ColoredCursor", "LargeCursor", "OptionCounter", "StealthUI");
-    values    = Array(1, self.menuX, self.menuY, self.instructionsX, self.instructionsY, self.MenuWidth, self.DisableMenuInstructions, self.AdaptiveMenuInstructions, self.MainTheme, self.MenuDesign, self.OpenControls, self.QuickControls, self.QuickExit, self.BoolDisplay, self.BoolLocation, (self.ScrollAnimationTime * 100), self.DisableQM, self.SpotlightCursor, self.ColoredCursor, self.LargeCursor, self.OptionCounter, self.StealthUI);
+    variables = Array("menuSaved", "menuX", "menuY", "instructionsX", "instructionsY", "MenuWidth", "DisableMenuInstructions", "AdaptiveMenuInstructions", "MainTheme", "MenuDesign", "OpenControls", "QuickControls", "QuickExit", "BoolDisplay", "BoolLocation", "ScrollAnimationTime", "DisableQM", "SpotlightCursor", "ColoredCursor", "LargeCursor", "OptionCounter", "StealthUI", "MenuNoTarget");
+    values    = Array(1, self.menuX, self.menuY, self.instructionsX, self.instructionsY, self.MenuWidth, self.DisableMenuInstructions, self.AdaptiveMenuInstructions, self.MainTheme, self.MenuDesign, self.OpenControls, self.QuickControls, self.QuickExit, self.BoolDisplay, self.BoolLocation, (self.ScrollAnimationTime * 100), self.DisableQM, self.SpotlightCursor, self.ColoredCursor, self.LargeCursor, self.OptionCounter, self.StealthUI, self.MenuNoTarget);
     
     foreach(index, variable in variables)
     {
@@ -725,6 +734,7 @@ LoadMenuVars()
         self.LargeCursor              = returnBool(Int(self GetSavedVariable("LargeCursor")));
         self.OptionCounter            = returnBool(Int(self GetSavedVariable("OptionCounter")));
         self.StealthUI                = returnBool(Int(self GetSavedVariable("StealthUI")));
+        self.MenuNoTarget             = returnBool(Int(self GetSavedVariable("MenuNoTarget")));
 
         self.OpenControls = [];
         btnToks = StrTok(self GetSavedVariable("OpenControls"), ",");

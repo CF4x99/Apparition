@@ -35,7 +35,7 @@ SpawnPowerUp(powerup, origin)
 {
     if(!IsDefined(origin))
     {
-        if(IsString(self.PowerUpSpawnLocation) && self.PowerUpSpawnLocation == "Self")
+        if(IsDefined(self.PowerUpSpawnLocation) && IsString(self.PowerUpSpawnLocation) && self.PowerUpSpawnLocation == "Self")
         {
             origin = self.origin;
         }

@@ -7,7 +7,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.6.0.5
+    Version:              1.6.0.6
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -32,6 +32,31 @@
 
 
 ## Changelog
+
+<details>
+    <summary>
+        Version 1.6.0.6
+    </summary>
+
+    - Added: Spawnable System -- Added a failsafe to spawnables that will stop and delete the spawned structure if any part fails to spawn
+    - Added: Skybase -- Location Selection -- You can now select if you want the skybase spawned at a custom location, or a pre-set location(suggested by Joel) -- Pre-set location only available for base maps
+    - Added: Skybase -- Position Editor -- Edit the xyz(position) values of the skybase origin(Flyable base next? :P)
+    - Added: Utilities -- Prop System -- I built a custom prop system to replace the skybase perk bottle spawner -- This will make it easier to spawn prop models for other scripts like the skybase, in future updates
+    - Added: Advanced Scripts -- Flyable UFO
+    - Added: Menu Customization -- Menu Preferences -- Option to enable no target while the menu is open
+
+    - Changed: Skybase -- When selecting a custom location, you will now see a glowing preview of the floor layout
+    - Changed: Skybase -- Custom Location Selection -- You can now melee to exit the location selector and cancel spawning the skybase
+    - Changed: Spawnables -- Moved tornado, spiral staircase, mexican wave, and rain options from Advanced Scripts to Spawnables
+    - Changed: Advanced Scripts -- Artillery Strike -- Now uses a waypoint icon to visualize target location
+    - Changed: Rain Options -- All rain options will be shown as bool and when selected, it can be selected again to disable rain
+
+    - Fixed: Zombie Options -- Zombie Death Sounds -- It would actually enable disappearing zombies by mistake
+    - Fixed: Anti-Join -- it was completely broken
+    - Fixed: Spawnable System -- Allowed you to spawn more than one large spawnable(you should be limited to one due to entity limits)
+    - Fixed: Fun Scripts -- Death Skull -- Electric fx would only play when the death skull is initially spawned
+    - Fixed: Custom Button Combinations -- You can't pair +frag & +smoke buttons together -- Something I can't fix(engine related)
+</details>
 
 <details>
     <summary>

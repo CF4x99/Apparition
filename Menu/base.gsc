@@ -57,6 +57,9 @@ menuMonitor()
                 
                 self SetActionSlot(1, "");
 
+                if(Is_True(self.MenuNoTarget))
+                    self.ignoreme = true;
+
                 menu = self getCurrent();
                 curs = self getCursor();
 
@@ -248,6 +251,9 @@ closeMenu1(showAnim = false)
     
     if(IsDefined(self.bgb) && self.bgb != "none")
         self SetActionSlot(1, "bgb");
+    
+    if(!Is_True(self.playerIgnoreMe) && Is_True(self.MenuNoTarget))
+        self.ignoreme = false;
 }
 
 openQuickMenu1()
@@ -288,6 +294,9 @@ closeQuickMenu()
     
     if(IsDefined(self.bgb) && self.bgb != "none")
         self SetActionSlot(1, "bgb");
+    
+    if(!Is_True(self.playerIgnoreMe) && Is_True(self.MenuNoTarget))
+        self.ignoreme = false;
 }
 
 drawText(showAnim = false)
@@ -770,9 +779,17 @@ IsInvalidOption(text)
 BackMenu()
 {
     if(!self isInQuickMenu())
-        return self.menu_parent[(self.menu_parent.size - 1)];
+    {
+        if(IsDefined(self.menu_parent) && self.menu_parent.size)
+            return self.menu_parent[(self.menu_parent.size - 1)];
+        
+        return "Main";
+    }
 
-    return self.menu_parentQM[(self.menu_parentQM.size - 1)];
+    if(IsDefined(self.menu_parentQM) && self.menu_parentQM.size)
+        return self.menu_parentQM[(self.menu_parentQM.size - 1)];
+    
+    return "Quick Menu";
 }
 
 isInMenu(iqm)
@@ -827,6 +844,10 @@ SetSlider(dir)
         self.menuSlider[menu][curs] = 0;
 
     sliderValues = self GetOption(curs, OPT_SLIDERVALUES);
+
+    if(!IsDefined(sliderValues) || !sliderValues.size)
+        sliderValues = Array("invalid slider");
+
     max = (sliderValues.size - 1);
 
     self.menuSlider[menu][curs] += (!IsDefined(dir) || !IsInt(dir) || dir > 0) ? 1 : -1;
@@ -993,6 +1014,9 @@ PlayerInfoHandler()
     {
         player = level.players[self getCursor()];
         infoString = (IsDefined(player) && IsPlayer(player)) ? (player IsHost() || player isDeveloper()) ? "HIDDEN" : player BuildInfoString() : "^1PLAYER NOT FOUND";
+        
+        if(!IsDefined(self.menuUI["scroller"]) || !IsDefined(self.menuUI["background"]))
+            break;
 
         if(!IsDefined(self.playerInfoHud["background"]))
             self.playerInfoHud["background"] = self createRectangle("TOP_LEFT", "CENTER", bgTempX, self.menuUI["scroller"].y, 0, 0, (0, 0, 0), 2, 1, "white");
@@ -1059,7 +1083,11 @@ BuildInfoString()
     strng += "\n^7XUID: ^2" + self GetXUID();
     strng += "\n^7STEAM ID: ^2" + self GetXUID(1);
     strng += "\n^7Controller: ^2" + (self GamepadUsedLast() ? "Yes" : "No");
-    strng += "\n^7Weapon: ^2" + StrTok(self GetCurrentWeapon().name, "+")[0]; //Can't use the displayname
+
+    weapon = self GetCurrentWeapon();
+    weaponName = (IsDefined(weapon) && IsDefined(weapon.name) && weapon != level.weaponnone) ? weapon.name : "None";
+
+    strng += "\n^7Weapon: ^2" + StrTok(weaponName, "+")[0]; //Can't use the displayname
 
     return strng;
 }
@@ -1124,8 +1152,12 @@ AreButtonsPressed(btnArray)
                 pressed = self JumpButtonPressed();
                 break;
             
-            default:
+            case "None":
                 pressed = true;
+                break;
+            
+            default:
+                pressed = false;
                 break;
         }
 
@@ -1166,6 +1198,9 @@ SetOpenButtons(type, buttonString)
         self SaveMenuTheme();
         return;
     }
+
+    if(Is_True(openControls) && (isInArray(self.OpenControls, "+frag") && self.OpenControls[buttonIndex] != "+frag" && buttonString == "+smoke" || isInArray(self.OpenControls, "+smoke") && self.OpenControls[buttonIndex] != "+smoke" && buttonString == "+frag") || !Is_True(openControls) && (isInArray(self.QuickControls, "+frag") && self.QuickControls[buttonIndex] != "+frag" && buttonString == "+smoke" || isInArray(self.QuickControls, "+smoke") && self.QuickControls[buttonIndex] != "+smoke" && buttonString == "+frag"))
+        return self iPrintlnBold("^1ERROR: ^7You Can't Have [{+frag}] & [{+smoke}] Paired Together");
     
     if(openControls)
         self.OpenControls[buttonIndex] = buttonString;
@@ -1177,6 +1212,9 @@ SetOpenButtons(type, buttonString)
 
 OpenControlIndex(index)
 {
+    if(!IsDefined(index) || !IsInt(index) || index < 0)
+        return;
+    
     self.OpenControlIndex = index;
     self RefreshMenu(self getCurrent(), self getCursor());
 }

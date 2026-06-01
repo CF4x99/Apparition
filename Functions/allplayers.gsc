@@ -10,7 +10,7 @@ PopulateAllPlayerOptions(menu)
                 self addOpt("Model Manipulation", ::newMenu, "All Players Model Manipulation");
                 self addOpt("Malicious Options", ::newMenu, "All Players Malicious Options");
                 self addOptBool(AllClientsGodModeCheck(), "God Mode", ::AllClientsGodMode);
-                self addOpt("Send Message", ::Keyboard, ::MessageAllPLayers);
+                self addOpt("Send Message", ::Keyboard, ::MessageAllPlayers);
                 self addOpt("Kick", ::AllPlayersFunction, ::KickPlayer);
                 self addOpt("Down", ::AllPlayersFunction, ::PlayerDeath, "Down");
                 self addOpt("Revive", ::AllPlayersFunction, ::PlayerRevive);
@@ -140,7 +140,7 @@ AllClientsGodMode()
         foreach(player in level.players)
         {
             if(!Is_True(player.playerGodmode))
-                thread Godmode(player);
+                Godmode(player);
         }
     }
     else
@@ -148,7 +148,7 @@ AllClientsGodMode()
         foreach(player in level.players)
         {
             if(Is_True(player.playerGodmode))
-                thread Godmode(player);
+                Godmode(player);
         }
     }
 }
@@ -197,7 +197,7 @@ AllClientsLiquids()
     }
 }
 
-MessageAllPLayers(msg)
+MessageAllPlayers(msg)
 {
     foreach(player in level.players)
     {

@@ -1,9 +1,9 @@
 override_player_damage(eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, weapon, vPoint, vDir, sHitLoc, psOffsetTime)
 {
-    if(Is_True(self.playerGodmode) || Is_True(self.PlayerDemiGod) || Is_True(self.NoExplosiveDamage) && zm_utility::is_explosive_damage(smeansofdeath) || Is_True(self.ControllableZombie) || Is_True(self.AC130) || Is_True(self.lander))
+    if(Is_True(self.playerGodmode) || Is_True(self.PlayerDemiGod) || Is_True(self.NoExplosiveDamage) && zm_utility::is_explosive_damage(sMeansOfDeath) || Is_True(self.ControllableZombie) || Is_True(self.AC130) || Is_True(self.lander))
     {
         if(Is_True(self.PlayerDemiGod))
-            self FakeDamageFrom(vdir);
+            self FakeDamageFrom(vDir);
         
         return 0;
     }
@@ -23,7 +23,9 @@ override_zombie_damage(mod, hit_location, hit_origin, player, amount, team, weap
         return;
     
     self CommonDamageOverride(mod, hit_location, hit_origin, player, amount, team, weapon, direction_vec, tagname, modelname, partname, dflags, inflictor, chargelevel);
-    self thread [[ level.saved_global_damage_func ]](mod, hit_location, hit_origin, player, amount, team, weapon, direction_vec, tagname, modelname, partname, dflags, inflictor, chargelevel);
+
+    if(IsDefined(level.saved_global_damage_func))
+        self thread [[ level.saved_global_damage_func ]](mod, hit_location, hit_origin, player, amount, team, weapon, direction_vec, tagname, modelname, partname, dflags, inflictor, chargelevel);
 }
 
 override_zombie_damage_ads(mod, hit_location, hit_origin, player, amount, team, weapon, direction_vec, tagname, modelname, partname, dflags, inflictor, chargelevel)
@@ -32,7 +34,9 @@ override_zombie_damage_ads(mod, hit_location, hit_origin, player, amount, team, 
         return;
     
     self CommonDamageOverride(mod, hit_location, hit_origin, player, amount, team, weapon, direction_vec, tagname, modelname, partname, dflags, inflictor, chargelevel);
-    self thread [[ level.saved_global_damage_func_ads ]](mod, hit_location, hit_origin, player, amount, team, weapon, direction_vec, tagname, modelname, partname, dflags, inflictor, chargelevel);
+
+    if(IsDefined(level.saved_global_damage_func_ads))
+        self thread [[ level.saved_global_damage_func_ads ]](mod, hit_location, hit_origin, player, amount, team, weapon, direction_vec, tagname, modelname, partname, dflags, inflictor, chargelevel);
 }
 
 CommonDamageOverride(mod, hit_location, hit_origin, player, amount, team, weapon, direction_vec, tagname, modelname, partname, dflags, inflictor, chargelevel)
@@ -44,7 +48,7 @@ CommonDamageOverride(mod, hit_location, hit_origin, player, amount, team, weapon
         
         if(IsDefined(player) && IsPlayer(player))
         {
-            if(Is_True(player.ExtraGore))
+            if(Is_True(player.ExtraGore) && IsDefined(level._effect["bloodspurt"]))
             {
                 fx = SpawnFX(level._effect["bloodspurt"], hit_origin, direction_vec);
 
@@ -53,7 +57,7 @@ CommonDamageOverride(mod, hit_location, hit_origin, player, amount, team, weapon
             }
             
             if(IsDefined(player.hud_damagefeedback) && Is_True(player.ShowHitmarkers))
-                player thread DamageFeedBack();
+                player DamageFeedBack();
 
             if(IsDefined(player.PlayerInstaKill) && (player.PlayerInstaKill == "All" || player.PlayerInstaKill == "Melee" && mod == "MOD_MELEE"))
             {
@@ -75,7 +79,7 @@ override_actor_killed(einflictor, attacker, idamage, smeansofdeath, weapon, vdir
     
     if(IsDefined(attacker) && IsPlayer(attacker))
     {
-        if(Is_True(attacker.ExtraGore))
+        if(Is_True(attacker.ExtraGore) && IsDefined(level._effect["bloodspurt"]))
         {
             fx = SpawnFX(level._effect["bloodspurt"], self.origin, vdir);
 
@@ -84,7 +88,7 @@ override_actor_killed(einflictor, attacker, idamage, smeansofdeath, weapon, vdir
         }
 
         if(IsDefined(attacker.hud_damagefeedback) && Is_True(attacker.ShowHitmarkers))
-            attacker thread DamageFeedBack();
+            attacker DamageFeedBack();
         
         if(Is_True(level.initAllTheWeapons))
         {
@@ -101,7 +105,7 @@ override_actor_killed(einflictor, attacker, idamage, smeansofdeath, weapon, vdir
         }
     }
     
-    if(Is_True(self.explodingzombie) || Is_True(self.ZombieFling) || Is_True(level.ZombieRagdoll))
+    if(Is_True(self.explodingzombie) || Is_True(self.ZombieFling) || Is_True(level.ZombieRagdoll) || IsDefined(idamage) && IsInt(idamage) && idamage == 690)
     {
         self thread zm_spawner::zombie_ragdoll_then_explode(VectorScale(vdir, 145), attacker);
 
@@ -109,7 +113,8 @@ override_actor_killed(einflictor, attacker, idamage, smeansofdeath, weapon, vdir
             self MagicGrenadeType(GetWeapon("frag_grenade"), self GetTagOrigin("j_mainroot"), (0, 0, 0), 0.01);
     }
     
-    self thread [[ level.saved_callbackactorkilled ]](einflictor, attacker, idamage, smeansofdeath, weapon, vdir, shitloc, psoffsettime);
+    if(IsDefined(level.saved_callbackactorkilled))
+        self thread [[ level.saved_callbackactorkilled ]](einflictor, attacker, idamage, smeansofdeath, weapon, vdir, shitloc, psoffsettime);
 }
 
 override_player_points(damage_weapon, player_points)
@@ -125,6 +130,9 @@ override_player_points(damage_weapon, player_points)
 
 DamageFeedBack()
 {
+    if(!IsDefined(self.hud_damagefeedback))
+        return;
+    
     if(IsDefined(self.HitMarkerColor))
     {
         if(IsString(self.HitMarkerColor) && self.HitMarkerColor == "Rainbow")
@@ -155,8 +163,12 @@ DisplayZombieEffect(fx, origin)
         return;
     
     impactfx = SpawnScriptModel(origin, "tag_origin");
-    PlayFXOnTag(level._effect[fx], impactfx, "tag_origin");
-    impactfx deleteAfter(0.5);
+
+    if(IsDefined(impactfx))
+    {
+        PlayFXOnTag(level._effect[fx], impactfx, "tag_origin");
+        impactfx deleteAfter(0.5);
+    }
 }
 
 override_game_over_hud_elem(player, game_over, survived)
