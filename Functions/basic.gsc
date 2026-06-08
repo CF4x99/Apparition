@@ -26,7 +26,7 @@ PopulateBasicScripts(menu, player)
                 self addOpt("Visual Effects", ::newMenu, "Visual Effects");
                 self addOptSlider("Set Vision", ::PlayerSetVision, Array("Default", "zombie_last_stand", "zombie_death"), player);
                 self addOptSlider("Zombie Charms", ::ZombieCharms, Array("None", "Orange", "Green", "Purple", "Blue"), player);
-                self addOptSlider("Custom Crosshairs", ::CustomCrosshairs, Array("Disable", "+", "@", "x", "o", "> <", "CF4_99", "Extinct", "Daltax", "GBP", "AOC", GetMenuName(), CleanName(player getName())), player);
+                self addOptSlider("Custom Crosshairs", ::CustomCrosshairs, Array("Disable", "+", "@", "x", "o", "> <", "CF4_99", "Extinct", "Daltax", "GBP", "AOC", GetMenuName(), "discord.gg/apparitionbo3", CleanName(player getName())), player);
                 self addOptBool(player.NoExplosiveDamage, "No Explosive Damage", ::NoExplosiveDamage, player);
                 self addOptIncSlider("Character Model Index", ::SetCharacterModelIndex, 0, player.characterIndex, 8, 1, player);
                 self addOptBool(player.LoopCharacterModelIndex, "Random Character Model Index", ::LoopCharacterModelIndex, player);
@@ -152,8 +152,7 @@ Noclip1(player)
         player.nocliplinker = SpawnScriptModel(player.origin, "tag_origin");
         player PlayerLinkTo(player.nocliplinker, "tag_origin");
         player.DisableMenuControls = true;
-
-        player SetMenuInstructions("[{+attack}] - Move Forward\n[{+speed_throw}] - Move Backwards\n[{+melee}] - Exit");
+        player SetMenuInstructions(Array("[{+attack}] - Move Forward", "[{+speed_throw}] - Move Backwards", "[{+melee}] - Exit"));
         
         while(Is_True(player.Noclip) && Is_Alive(player) && !player isPlayerLinked(player.nocliplinker))
         {
@@ -236,8 +235,7 @@ UFOMode(player)
         player.ufolinker = SpawnScriptModel(player.origin, "tag_origin");
         player PlayerLinkTo(player.ufolinker, "tag_origin");
         player.DisableMenuControls = true;
-
-        player SetMenuInstructions("[{+attack}] - Move Up\n[{+speed_throw}] - Move Down\n[{+frag}] - Move Forward\n[{+melee}] - Exit");
+        player SetMenuInstructions(Array("[{+attack}] - Move Up", "[{+speed_throw}] - Move Down", "[{+frag}] - Move Forward", "[{+melee}] - Exit"));
         
         while(Is_True(player.UFOMode) && Is_Alive(player) && !player isPlayerLinked(player.ufolinker))
         {

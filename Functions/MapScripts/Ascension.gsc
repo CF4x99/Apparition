@@ -98,7 +98,7 @@ ControlLander(lander)
     level endon("KillLanderControls");
 
     base = GetEnt("lander_base", "script_noteworthy");
-    self SetMenuInstructions("[{+attack}] - Move Forward\n[{+melee}] - Exit");
+    self SetMenuInstructions(Array("[{+attack}] - Move Forward", "[{+melee}] - Exit"));
 
     while(1)
     {

@@ -1,9 +1,10 @@
 //Sharpshooter game mode developed by CF4_99
 initSharpshooter(type)
 {
-    if(Is_True(level.initSharpshooter))
+    if(Is_True(level.initSharpshooter) || Is_True(level.GameModeSelected))
         return;
     level.initSharpshooter = true;
+    level.GameModeSelected = true;
 
     level endon("game_ended");
     

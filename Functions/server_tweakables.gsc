@@ -10,7 +10,7 @@ PopulateServerTweakables(menu)
                 array::add(MenuPerks, perks[a], 0);
 
             self addMenu(menu);
-                self addOpt("Enabled Power-Ups", ::newMenu, "Enabled Power-Ups");
+                self addOpt("Edit Power-Ups", ::newMenu, "Edit Power-Ups");
                 self addOptIncSlider("Pack 'a' Punch Camo Index", ::SetPackCamoIndex, 0, level.pack_a_punch_camo_index, 138, 1);
                 self addOptIncSlider("Player Weapon Limit", ::SetPlayerWeaponLimit, 2, 2, 15, 1);
                 self addOptIncSlider("Player Perk Limit", ::SetPlayerPerkLimit, 0, 0, MenuPerks.size, 1);
@@ -20,19 +20,19 @@ PopulateServerTweakables(menu)
                 self addOptBool((level.zombie_vars["zombie_between_round_time"] == 0.1), "Fast Round Intermission", ::FastRoundIntermission);
                 self addOptBool(level.UpgradeWeaponWallbuys, "Upgrade Weapon Wallbuys", ::ServerUpgradeWeaponWallbuys);
                 self addOptBool(level.ServerMaxAmmoClips, "Max Ammo Powerups Fill Clips", ::ServerMaxAmmoClips);
-                self addOptBool(level.IncreasedDropRate, "Increased Power-Up Drop Rate", ::IncreasedDropRate);
-                self addOptBool(level.PowerupsNeverLeave, "Power-Ups Never Leave", ::PowerupsNeverLeave);
-                self addOptBool(level.DisablePowerups, "Disable Power-Ups", ::DisablePowerups);
                 self addOptBool(level.ShootToRevive, "Shoot To Revive", ::ShootToRevive);
                 self addOptBool(level.headshots_only, "Headshots Only", ::headshots_only);
                 self addOpt("Pack 'a' Punch Price", ::NumberPad, ::EditPackAPunchPrice);
                 self addOpt("Repack 'a' Punch Price", ::NumberPad, ::EditRepackAPunchPrice);
             break;
         
-        case "Enabled Power-Ups":
+        case "Edit Power-Ups":
             powerups = GetArrayKeys(level.zombie_include_powerups);
 
             self addMenu(menu);
+                self addOptBool(level.DisablePowerups, "Disable Power-Ups", ::DisablePowerups);
+                self addOptBool(level.IncreasedDropRate, "Increased Power-Up Drop Rate", ::IncreasedDropRate);
+                self addOptBool(level.PowerupsNeverLeave, "Power-Ups Never Leave", ::PowerupsNeverLeave);
 
                 for(a = 0; a < powerups.size; a++)
                 {
@@ -274,7 +274,12 @@ PlayerShootToRevive()
     {
         self waittill("weapon_fired");
 
-        trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), true, self);
+        start = self GetWeaponMuzzlePoint();
+
+        if(!IsDefined(start) || !IsVec(start))
+            start = self GetEye();
+
+        trace = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), true, self);
 
         traceEntity = trace["entity"];
         tracePosition = trace["position"];

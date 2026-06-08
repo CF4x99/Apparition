@@ -84,14 +84,17 @@ CustomSentry(origin)
             zombie = self.sentrygun_weapon CustomSentryGetTarget();
             v_target_pos = !IsDefined(zombie) ? (self.sentrygun_weapon.origin + VectorScale(AnglesToForward((0, RandomIntRange(0, 360), 0)), 40)) : zombie GetTagOrigin("j_head");
 
-            if(IsDefined(zombie) && !IsDefined(v_target_pos)) //Needed for AI that don't have the targeted bone tag(i.e. Spiders)
+            if(IsDefined(zombie) && !IsDefined(v_target_pos))
                 v_target_pos = zombie GetTagOrigin("tag_body");
             
-            self.sentrygun_weapon.angles = VectorToAngles(v_target_pos - self.sentrygun_weapon.origin);
-            self.sentrygun_weapon DontInterpolate();
+            if(IsDefined(v_target_pos) && IsVec(v_target_pos))
+            {
+                self.sentrygun_weapon.angles = VectorToAngles(v_target_pos - self.sentrygun_weapon.origin);
+                self.sentrygun_weapon DontInterpolate();
 
-            if(IsDefined(zombie))
-                MagicBullet(sentrygun, self.sentrygun_weapon GetTagOrigin("tag_flash"), v_target_pos, self.sentrygun_weapon);
+                if(IsDefined(zombie))
+                    MagicBullet(sentrygun, self.sentrygun_weapon GetTagOrigin("tag_flash"), v_target_pos, self.sentrygun_weapon);
+            }
 
             util::wait_network_frame();
         }
@@ -120,6 +123,9 @@ CustomSentryGetTarget()
     for(a = 0; a < zombies.size; a++)
     {
         if(!IsDefined(zombies[a]) || !IsAlive(zombies[a]) || zombies[a] DamageConeTrace(self.origin, self) < 0.1)
+            continue;
+        
+        if(zombies[a].archetype == "zombie" && !Is_True(zombies[a].zombie_think_done) || zombies[a].archetype != "zombie" && Is_True(zombies[a].ignoreme))
             continue;
         
         if(!IsDefined(enemy))
@@ -192,7 +198,7 @@ ControllableZombie(team)
         zombie.team = (team == "Friendly") ? self.team : level.zombie_team;
         zombie thread zombie_utility::set_zombie_run_cycle("sprint");
 
-        while(!zombie CanControl() && IsAlive(zombie))
+        while(!CanControl(zombie) && IsAlive(zombie))
         {
             if(self MeleeButtonPressed())
                 zombie DoDamage(zombie.health + 666, zombie GetTagOrigin("j_head"));
@@ -206,13 +212,13 @@ ControllableZombie(team)
         goalPos SetInvisibleToAll();
         goalPos SetVisibleToPlayer(self);
         
-        while(IsAlive(zombie))
+        while(IsDefined(zombie) && IsAlive(zombie))
         {
             zombie.ignore_find_flesh = 1;
             zombie.ignoreme = 1;
             goalPos.origin = self TraceBullet();
             
-            if(IsDefined(zombie) && IsAlive(zombie) && zombie CanControl())
+            if(CanControl(zombie))
             {
                 if(Distance(zombie.origin, goalPos.origin) >= 100)
                 {
@@ -269,23 +275,6 @@ ControllableZombie(team)
 
     if(Is_True(self.ignoreme))
         self.ignoreme = false;
-}
-
-CanControl()
-{
-    if(Is_True(self.is_traversing))
-        return false;
-    
-    if(Is_True(self.is_leaping))
-        return false;
-    
-    if(Is_True(self.barricade_enter))
-        return false;
-    
-    if(!zm_behavior::inplayablearea(self))
-        return false;
-    
-    return true;
 }
 
 ZombieAttack()
@@ -590,7 +579,7 @@ FlyableUFO()
 
     self PlayerLinkTo(playerLinker, "tag_origin");
     hud = self createWaypoint(self TraceBullet());
-    self SetMenuInstructions("[{+attack}] - Fire Orb\n[{+speed_throw}] - Move Forward\n[{+frag}] - Move Up\n[{+smoke}] - Move Down\n[{+melee}] - Exit");
+    self SetMenuInstructions(Array("[{+attack}] - Fire Orb", "[{+speed_throw}] - Move Forward", "[{+frag}] - Move Up", "[{+smoke}] - Move Down", "[{+melee}] - Exit"));
     
     while(1)
     {
@@ -614,14 +603,7 @@ FlyableUFO()
         playerLinker.angles = (playerLinker.angles[0], self GetPlayerAngles()[1], playerLinker.angles[2]);
 
         if(self AttackButtonPressed())
-        {
-            trace = BulletTrace(base[0].origin, base[0].origin + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, base[0]);
-            surface = trace["surfacetype"];
-            endOrigin = trace["position"];
-            
-            if(surface != "none" && surface != "default")
-                self thread UFOShoot((base[0].origin + (AnglesToUp(base[0].angles) * -10)), endOrigin);
-        }
+            self thread UFOShoot((base[0].origin + (AnglesToUp(base[0].angles) * -10)), base[0].origin, 350, true, base[0]);
 
         if(self AdsButtonPressed())
             playerLinker.origin = playerLinker.origin + AnglesToForward(playerLinker.angles) * 25;
@@ -693,10 +675,24 @@ UFOSpin()
     }
 }
 
-UFOShoot(startOrigin, endOrigin)
+UFOShoot(startOrigin, endOrigin, range = 350, runTrace = false, ignoreEnt)
 {
     if(Is_True(self.UFOShoot) || !IsDefined(startOrigin) || !IsVec(startOrigin) || !IsDefined(endOrigin) || !IsVec(endOrigin))
         return;
+    
+    if(Is_True(runTrace))
+    {
+        if(!IsDefined(ignoreEnt) || !IsEntity(ignoreEnt))
+            ignoreEnt = self;
+
+        trace = BulletTrace(endOrigin, endOrigin + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, ignoreEnt);
+        surface = trace["surfacetype"];
+        endOrigin = trace["position"];
+
+        if(surface == "none" || surface == "default")
+            return;
+    }
+
     self.UFOShoot = true;
 
     self endon("disconnect");
@@ -710,7 +706,7 @@ UFOShoot(startOrigin, endOrigin)
         if(IsDefined(level._effect["tesla_bolt"]))
             PlayFXOnTag(level._effect["tesla_bolt"], bullet, "tag_origin");
 
-        time = 0.5;
+        time = 0.35;
         bullet MoveTo(endOrigin, time);
         wait (time / 2);
 
@@ -721,7 +717,7 @@ UFOShoot(startOrigin, endOrigin)
             bullet Delete();
         
         Earthquake(0.75, 2, endOrigin, 255);
-        RadiusDamage(endOrigin, 350, 690, 690, self);
+        RadiusDamage(endOrigin, 350, 699, 699, self);
 
         if(IsDefined(level._effect["raps_impact"]))
             PlayFX(level._effect["raps_impact"], endOrigin);
@@ -1044,12 +1040,17 @@ ArtilleryStrike()
     wait 0.25;
 
     self.DisableMenuControls = true;
-    self SetMenuInstructions("[{+attack}] - Confirm Location\n[{+melee}] - Cancel");
+    self SetMenuInstructions(Array("[{+attack}] - Confirm Location", "[{+melee}] - Cancel"));
     hud = createWaypoint(self TraceBullet());
     
     while(1)
     {
-        trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+        start = self GetWeaponMuzzlePoint();
+
+        if(!IsDefined(start) || !IsVec(start))
+            start = self GetEye();
+        
+        trace = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
         
         origin = trace["position"];
         surface = trace["surfacetype"];
@@ -1096,7 +1097,7 @@ ArtilleryStrike()
         {
             for(b = 0; b < 5; b++)
             {
-                MagicBullet(GetWeapon("launcher_standard"), targetPos, targetPos - (0, b * (a * 25), 2500), self);
+                MagicBullet(GetWeapon("launcher_standard"), targetPos, targetPos - (0, b * (a * 25), 2500));
                 wait 0.25;
             }
         }
@@ -1105,7 +1106,7 @@ ArtilleryStrike()
         {
             for(b = 0; b < 5; b++)
             {
-                MagicBullet(GetWeapon("launcher_standard"), targetPos, targetPos - (b * (a * 25), 0, 2500), self);
+                MagicBullet(GetWeapon("launcher_standard"), targetPos, targetPos - (b * (a * 25), 0, 2500));
                 wait 0.25;
             }
         }

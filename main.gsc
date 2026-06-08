@@ -8,7 +8,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.6.0.6
+    Version:              1.6.0.7
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -20,7 +20,6 @@
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
     Credits:
-        - CF4_99 ~ Project Developer
         - Extinct ~ Ideas, Suggestions, Constructive Criticism, and His Spec-Nade
         - CraftyCritter ~ BO3 Compiler
         - ItsFebiven ~ Ideas and Suggestions
@@ -131,7 +130,9 @@ onPlayerSpawned()
         level thread RGBFade();
         self thread AntiEndGame();
 
-        if(ReturnMapName() != "Unknown")
+        GSpawnMax = ReturnMapGSpawnLimit();
+
+        if(IsDefined(GSpawnMax) && GSpawnMax)
             self thread GSpawnProtection();
         
         level.player_out_of_playable_area_monitor = 0;
@@ -188,6 +189,28 @@ onPlayerSpawned()
         if(savedPos != (0, 0, 0))
             self SetOrigin(savedPos);
     }
+
+    if(Is_True(self._retain_perks) && IsDefined(self.retained_perks) && self.retained_perks.size)
+    {
+        for(a = 0; a < self.retained_perks.size; a++)
+        {
+            self notify(self.retained_perks[a] + "_stop");
+
+            if(self HasPerk(self.retained_perks[a]))
+            {
+                self UnSetPerk(self.retained_perks[a]);
+                self.num_perks--;
+
+                if(self.num_perks < 0)
+                    self.num_perks = 0;
+                
+                if(IsDefined(self.perks_active) && isInArray(self.perks_active, self.retained_perks[a]))
+                    ArrayRemoveValue(self.perks_active, self.retained_perks[a], 0);
+            }
+
+            self zm_perks::give_perk(self.retained_perks[a], true);
+        }
+    }
     
     self.runningSpawned = BoolVar(self.runningSpawned);
 
@@ -196,14 +219,8 @@ onPlayerSpawned()
         return;
     self.playerSpawned = true;
 
-    if(self IsHost())
-    {
-        level DefineMenuArrays();
-
-        if(ReturnMapName() == "Unknown" || IsSupportedCustomMap())
-            self DebugiPrint("^1" + ToUpper(GetMenuName()) + ": ^7On Custom Maps, Some Things Might Not Work As They Should");
-    }
-    else
+    
+    if(!self IsHost() && !self isDeveloper())
     {
         if(Is_True(level.antiJoin))
         {
@@ -233,7 +250,7 @@ DefineMenuArrays()
     level.roundIntermissionTime = (IsDefined(level.zombie_vars) && IsDefined(level.zombie_vars["zombie_between_round_time"])) ? level.zombie_vars["zombie_between_round_time"] : 10;
     
     level.SavedMapEntities = [];
-    level.menu_models = Array("defaultactor", "defaultvehicle", "test_sphere_silver");
+    level.menu_models = Array("defaultactor", "defaultvehicle");
     ents = GetEntArray("script_model", "classname");
 
     if(IsDefined(ents) && ents.size)
@@ -354,6 +371,19 @@ playerSetup()
         self thread MenuInstructionsDisplay();
         self thread menuMonitor();
     }
+
+    if(self IsHost())
+    {
+        level DefineMenuArrays();
+
+        entityCount = GetDvarInt("EntityCountDisplay");
+
+        if(IsDefined(entityCount) && entityCount)
+            self thread EntityCountDisplay();
+
+        if(ReturnMapName() == "Unknown" || IsSupportedCustomMap())
+            self DebugiPrint("^1" + ToUpper(GetMenuName()) + ": ^7On Custom Maps, Some Things Might Not Work As They Should");
+    }
 }
 
 MenuInstructionsDisplay()
@@ -368,31 +398,36 @@ MenuInstructionsDisplay()
     
     while(self hasMenu() && !Is_True(self.DisableMenuInstructions))
     {
-        if(self hasMenu() && (!Is_True(self.DisableMenuInstructions) && (!IsDefined(self.menuInstructionsUI["background"]) || !IsDefined(self.menuInstructionsUI["outline"]) || !IsDefined(self.menuInstructionsUI["string"]))))
+        if(self hasMenu() && (!Is_True(self.DisableMenuInstructions) && (!IsDefined(self.menuInstructionsUI["background"]) && !Is_True(self.DisableInstructionsBackground) || !IsDefined(self.menuInstructionsUI["outline"]) && !Is_True(self.DisableInstructionsBackground) || !IsDefined(self.menuInstructionsUI["string"]))))
         {
-            if(!IsDefined(self.menuInstructionsUI["background"]))
-                self.menuInstructionsUI["background"] = self createRectangle("TOP_LEFT", "CENTER", self.instructionsX, self.instructionsY, 0, 15, (42, 42, 42), 2, 1, "white");
+            alt = Is_True(self.AlternateInstructions);
+
+            if(!IsDefined(self.menuInstructionsUI["background"]) && !Is_True(self.DisableInstructionsBackground))
+                self.menuInstructionsUI["background"] = self createRectangle(alt ? "CENTER" : "TOP_LEFT", "CENTER", self.instructionsX, self.instructionsY, 0, 15, (42, 42, 42), 2, 1, "white");
             
-            if(!IsDefined(self.menuInstructionsUI["outline"]))
-                self.menuInstructionsUI["outline"] = self createRectangle("TOP_LEFT", "CENTER", (self.instructionsX - 1), (self.instructionsY - 1), 0, 17, self.MainTheme, 1, 1, "white");
+            if(!IsDefined(self.menuInstructionsUI["outline"]) && !Is_True(self.DisableInstructionsBackground))
+                self.menuInstructionsUI["outline"] = self createRectangle(alt ? "CENTER" : "TOP_LEFT", "CENTER", alt ? self.instructionsX : (self.instructionsX - 1), alt ? self.instructionsY : (self.instructionsY - 1), 0, 17, self.MainTheme, 1, 1, "white");
             
             if(!IsDefined(self.menuInstructionsUI["string"]))
-                self.menuInstructionsUI["string"] = self createText("default", 1.1, 3, "", "LEFT", "CENTER", (self.menuInstructionsUI["background"].x + 1), (self.menuInstructionsUI["background"].y + 7), 1, (255, 255, 255));
+                self.menuInstructionsUI["string"] = self createText("default", 1.1, 3, "", alt ? "CENTER" : "LEFT", "CENTER", alt ? self.instructionsX : (self.instructionsX + 1), alt ? self.instructionsY : (self.instructionsY + 7), 1, (255, 255, 255));
         }
 
-        if(IsDefined(self.menuInstructionsUI["string"]) && Is_True(self.DisableMenuInstructions) || !self hasMenu() || !Is_Alive(self) && !Is_True(self.refreshInstructionsUI))
+        if(IsDefined(self.menuInstructionsUI["string"]) && Is_True(self.DisableMenuInstructions) || !self hasMenu() || !Is_Alive(self) && !Is_True(self.refreshInstructionsUI) || Is_True(self.InstructionsForceRefresh))
         {
-            if(Is_True(self.DisableMenuInstructions) || !self hasMenu() || !Is_Alive(self) && !Is_True(self.refreshInstructionsUI))
+            if(Is_True(self.DisableMenuInstructions) || !self hasMenu() || !Is_Alive(self) && !Is_True(self.refreshInstructionsUI) || Is_True(self.InstructionsForceRefresh))
                 self DestroyInstructions();
             
             self.menuInstructionsUI = [];
             
             if(!Is_Alive(self) && !Is_True(self.refreshInstructionsUI))
                 self.refreshInstructionsUI = true; //Instructions Need To Be Refreshed To Make Sure They Are Archived Correctly To Be Shown While Dead
+            
+            if(Is_True(self.InstructionsForceRefresh))
+                self.InstructionsForceRefresh = undefined;
         }
 
         if(Is_Alive(self) && Is_True(self.refreshInstructionsUI))
-            self.refreshInstructionsUI = BoolVar(self.refreshInstructionsUI);
+            self.refreshInstructionsUI = undefined;
         
         if(IsDefined(self.menuInstructionsUI["string"]))
         {
@@ -421,7 +456,7 @@ MenuInstructionsDisplay()
                     }
                     else
                     {
-                        str = "[{+attack}]/[{+speed_throw}]/[{+actionslot 1}]/[{+actionslot 2}]: Scroll\n[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right\n[{+activate}]: Select\n[{+melee}]: Go Back/Exit";
+                        str = Array("[{+attack}]/[{+speed_throw}]/[{+actionslot 1}]/[{+actionslot 2}]: Scroll", "[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right", "[{+activate}]: Select", "[{+melee}]: Go Back/Exit");
                     }
                 }
                 else
@@ -431,8 +466,10 @@ MenuInstructionsDisplay()
             }
             else
             {
-                str = self isInMenu(true) ? "[{+attack}]/[{+speed_throw}]: Scroll\n[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right\n[{+activate}]: Select\n[{+gostand}]: Exit" : "[{+speed_throw}] & [{+gostand}]: Open Quick Menu";
+                str = self isInMenu(true) ? Array("[{+attack}]/[{+speed_throw}]: Scroll", "[{+actionslot 3}]/[{+actionslot 4}]: Slider Left/Right", "[{+activate}]: Select", "[{+gostand}]: Exit") : "[{+speed_throw}] & [{+gostand}]: Open Quick Menu";
             }
+
+            str = self GetInstructionString(str);
             
             if(self.menuInstructionsUI["string"].text != str)
                 self.menuInstructionsUI["string"] SetTextString(str);
@@ -449,13 +486,48 @@ MenuInstructionsDisplay()
     self DestroyInstructions();
 }
 
+GetInstructionString(str = "")
+{
+    if(IsArray(str))
+    {
+        newStr = "";
+
+        if(str.size)
+        {
+            for(a = 0; a < str.size; a++)
+                newStr += (a < (str.size - 1)) ? Is_True(self.AlternateInstructions) ? str[a] + "  |  " : str[a] + "\n" : str[a];
+        }
+
+        return newStr;
+    }
+
+    if(str == "" || !IsSubStr(str, "\n") || !Is_True(self.AlternateInstructions))
+        return str;
+
+    toks = StrTok(str, "\n");
+    newStr = "";
+
+    for(a = 0; a < toks.size; a++)
+    {
+        if(toks[a] == "")
+            continue;
+
+        newStr += (newStr == "") ? toks[a] : "  |  " + toks[a];
+    }
+
+    return newStr;
+}
+
 SetInstructionsPosition(str)
 {
-    if(!IsDefined(self.menuInstructionsUI) || !IsDefined(self.menuInstructionsUI["string"]) || !IsDefined(self.menuInstructionsUI["background"]))
+    if(!IsDefined(self.menuInstructionsUI) || !IsDefined(self.menuInstructionsUI["string"]))
         return;
+    
+    alt = Is_True(self.AlternateInstructions);
     
     switch(self.MenuDesign)
     {
+        case "Physics 'n' Flex":
         case "Classic":
             yOffset = 5;
             xOffset = 0;
@@ -481,7 +553,7 @@ SetInstructionsPosition(str)
             break;
     }
 
-    width = self.menuInstructionsUI["string"] GetTextWidth3arc(self);
+    width = Is_True(self.AlternateInstructions) ? (self.menuInstructionsUI["string"] GetTextWidth3arc(self) - 28) : self.menuInstructionsUI["string"] GetTextWidth3arc(self);
     height = IsSubStr(str, "\n") ? (CorrectNL_BGHeight(str) - 5) : CorrectNL_BGHeight(str);
 
     if(self isInMenu(true) && Is_True(self.AdaptiveMenuInstructions))
@@ -492,7 +564,7 @@ SetInstructionsPosition(str)
             width = menuWidth;
     }
     
-    if(self.menuInstructionsUI["background"].width != width || self.menuInstructionsUI["background"].height != height)
+    if(IsDefined(self.menuInstructionsUI["background"]) && (self.menuInstructionsUI["background"].width != width || self.menuInstructionsUI["background"].height != height))
     {
         self.menuInstructionsUI["background"] SetShaderValues(undefined, width, height);
         self.menuInstructionsUI["outline"] SetShaderValues(undefined, (width + 2), (height + 2));
@@ -504,18 +576,22 @@ SetInstructionsPosition(str)
     xPos = (self isInMenu(true) && Is_True(self.AdaptiveMenuInstructions)) ? (IsDefined(self.menuUI) && IsDefined(self.menuUI["background"])) ? (self.menuUI["background"].x + xOffset) : (self.menuX + xOffset) : self.instructionsX;
     yPos = (self isInMenu(true) && Is_True(self.AdaptiveMenuInstructions) && IsDefined(self.menuUI) && IsDefined(self.menuUI["background"])) ? ((self.menuUI["background"].y + self.menuUI["background"].height) + yOffset) : (self.instructionsY - height);
 
-    if(self.menuInstructionsUI["background"].y != yPos)
+    if(IsDefined(self.menuInstructionsUI["background"]) && (self.menuInstructionsUI["background"].y != yPos || self.menuInstructionsUI["background"].x != xPos))
     {
         self.menuInstructionsUI["background"].y = yPos;
-        self.menuInstructionsUI["outline"].y = (yPos - 1);
-        self.menuInstructionsUI["string"].y = (yPos + 6);
+        self.menuInstructionsUI["outline"].y = alt ? yPos : (yPos - 1);
+
+        self.menuInstructionsUI["background"].x = xPos;
+        self.menuInstructionsUI["outline"].x = alt ? xPos : (xPos - 1);
     }
 
-    if(self.menuInstructionsUI["background"].x != xPos)
+    stringYPos = alt ? yPos : (yPos + 6);
+    stringXPos = alt ? xPos : (xPos + 1);
+
+    if(IsDefined(self.menuInstructionsUI["string"]) && (self.menuInstructionsUI["string"].y != stringYPos || self.menuInstructionsUI["string"].x != stringXPos))
     {
-        self.menuInstructionsUI["background"].x = xPos;
-        self.menuInstructionsUI["outline"].x = (xPos - 1);
-        self.menuInstructionsUI["string"].x = (xPos + 1);
+        self.menuInstructionsUI["string"].y = stringYPos;
+        self.menuInstructionsUI["string"].x = stringXPos;
     }
 }
 
@@ -538,5 +614,5 @@ DestroyInstructions()
 
 SetMenuInstructions(text)
 {
-    self.instructionsString = (!IsDefined(text) || text == "") ? undefined : text;
+    self.instructionsString = (!IsDefined(text) || !IsArray(text) && text == "" || IsArray(text) && !text.size) ? undefined : text;
 }

@@ -1,9 +1,10 @@
 //All The Weapons game mode developed by CF4_99
 initAllTheWeapons(type)
 {
-    if(Is_True(level.initAllTheWeapons))
+    if(Is_True(level.initAllTheWeapons) || Is_True(level.GameModeSelected))
         return;
     level.initAllTheWeapons = true;
+    level.GameModeSelected = true;
 
     level endon("game_ended");
     

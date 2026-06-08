@@ -29,10 +29,11 @@ SpawnDropTower()
     }
 
     array::thread_all(base, ::SpawnableArray, "Drop Tower");
+    seatsCount = 8;
 
-    for(a = 0; a < 8; a++)
+    for(a = 0; a < seatsCount; a++)
     {
-        towerSeats[towerSeats.size] = SpawnScriptModel(origin + (Cos(a * (360 / 8)) * 75, Sin(a * (360 / 8)) * 75, 5), seatModel, (0, ((360 / 8) * a), 0), 0.01);
+        towerSeats[towerSeats.size] = SpawnScriptModel(origin + (Cos(a * (360 / seatsCount)) * 75, Sin(a * (360 / seatsCount)) * 75, 5), seatModel, (0, ((360 / seatsCount) * a), 0), 0.01);
 
         if(IsDefined(towerSeats[(towerSeats.size - 1)]) && seatModel != "defaultactor")
             towerSeats[(towerSeats.size - 1)] SetScale(6);

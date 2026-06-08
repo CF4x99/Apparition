@@ -20,7 +20,7 @@ PopulateBulletMenu(menu, player)
                 player.ProjectileSpreadMultiplier = 1;
             
             self addMenu("Projectiles");
-                self addOptIncSlider("Projectile Multiplier", ::ProjectileMultiplier, 1, 1, 5, 1, player);
+                self addOptIncSlider("Projectile Multiplier", ::ProjectileMultiplier, 1, 1, 3, 1, player);
                 self addOptIncSlider("Spread Multiplier", ::ProjectileSpreadMultiplier, 1, 1, 50, 1, player);
                 self addOpt("");
 
@@ -156,16 +156,21 @@ BulletProjectile(projectile, type, player)
 
         if(!IsDefined(start) || !IsVec(start))
             start = player GetEye();
+        
+        fwdDir = player GetWeaponForwardDir();
+        
+        if(!IsDefined(fwdDir) || !IsVec(fwdDir))
+            fwdDir = AnglesToForward(player GetPlayerAngles());
 
         switch(type)
         {
             case "Projectile":
                 for(a = 0; a < player.ProjectileMultiplier; a++)
-                    MagicBullet(projectile, start, BulletTrace(start, start + player GetWeaponForwardDir() * 100, 0, undefined)["position"] + (RandomFloatRange((-1 * player.ProjectileSpreadMultiplier), player.ProjectileSpreadMultiplier), RandomFloatRange((-1 * player.ProjectileSpreadMultiplier), player.ProjectileSpreadMultiplier), RandomFloatRange((-1 * player.ProjectileSpreadMultiplier), player.ProjectileSpreadMultiplier)), player);
+                    MagicBullet(projectile, start, BulletTrace(start, start + fwdDir * 100, 0, undefined)["position"] + (RandomFloatRange((-1 * player.ProjectileSpreadMultiplier), player.ProjectileSpreadMultiplier), RandomFloatRange((-1 * player.ProjectileSpreadMultiplier), player.ProjectileSpreadMultiplier), RandomFloatRange((-1 * player.ProjectileSpreadMultiplier), player.ProjectileSpreadMultiplier)), player);
                 break;
             
             case "Equipment":
-                player MagicGrenadeType(projectile, start, VectorScale(VectorNormalize(AnglesToForward(player GetPlayerAngles())), 3000), 1);
+                player MagicGrenadeType(projectile, start, VectorScale(fwdDir, 3000), 1);
                 break;
             
             case "Spawnable":

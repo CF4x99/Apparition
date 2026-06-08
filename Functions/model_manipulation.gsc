@@ -25,7 +25,8 @@ ResetPlayerModel(player)
     if(IsDefined(player.spawnedPlayerModel))
         player.spawnedPlayerModel Delete();
     
-    player Show();
+    if(!Is_True(player.Invisibility))
+        player Show();
 }
 
 SetPlayerModel(model, player)

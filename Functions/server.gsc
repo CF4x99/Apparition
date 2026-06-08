@@ -66,7 +66,7 @@ PopulateServerModifications(menu)
             
             self addMenu(menu);
                 self addOptBool(level.Doheart, "Doheart", ::Doheart);
-                self addOptSlider("Text", ::DoheartTextPass, Array(CleanName(bot::get_host_player() getName()), GetMenuName(), "CF4_99", "Custom"));
+                self addOptSlider("Text", ::DoheartTextPass, Array(CleanName(bot::get_host_player() getName()), GetMenuName(), "CF4_99", "discord.gg/apparitionbo3", "Custom"));
                 self addOptSlider("Style", ::SetDoheartStyle, Array("Pulsing", "Pulse Effect", "Type Writer", "Moving", "Fade Effect"));
             break;
         
@@ -81,6 +81,7 @@ PopulateServerModifications(menu)
         
         case "Mystery Box Options":
             self addMenu(menu);
+                self addOptBool(level.DisableMysteryBox, "Disable", ::DisableMysteryBox);
                 self addOptBool(level.chests[level.chest_index].old_cost != 950, "Custom Price", ::NumberPad, ::SetBoxPrice);
                 self addOptBool((GetDvarString("magic_chest_movable") == "0"), "Never Moves", ::BoxNeverMoves);
                 self addOptBool(AllBoxesActive(), "Show All", ::ShowAllChests);
@@ -422,7 +423,7 @@ Newsbar()
         level.NewsbarBG = level createServerRectangle("CENTER", "CENTER", 0, -232, 5000, 18, (0, 0, 0), 1, 0.6, "white");
         level.NewsbarText = level createServerText("default", 1, 3, "", "CENTER", "CENTER", 0, -255, 1, (1, 1, 1));
         
-        strings = Array("Welcome To ^1" + GetMenuName() + " ^7Developed By ^1CF4_99", "Your Host Today Is ^1" + CleanName(bot::get_host_player() getName()), "[{+speed_throw}] & [{+melee}] To Open ^1" + GetMenuName(), "YouTube.Com/^1CF4_99", "^5Enjoy Your Stay!");
+        strings = Array("Welcome To ^1" + GetMenuName() + " ^7Developed By ^2CF4_99", "Your Host Today Is ^6" + CleanName(bot::get_host_player() getName()), "[{+speed_throw}] & [{+melee}] To Open ^1" + GetMenuName(), "YouTube.Com/^3CF4_99", "Discord.gg/^6apparitionbo3", "^5Enjoy Your Stay!");
         
         while(Is_True(level.Newsbar))
         {
@@ -593,6 +594,35 @@ SetLobbyTimer(time)
         for(a = 0; a < 2; a++)
             LobbyTimer();
     }
+}
+
+DisableMysteryBox()
+{
+    level.DisableMysteryBox = BoolVar(level.DisableMysteryBox);
+
+    foreach(chest in level.chests)
+    {
+        if(!IsDefined(chest) || !IsDefined(chest.unitrigger_stub))
+            continue;
+        
+        if(Is_True(level.DisableMysteryBox))
+        {
+            if(IsDefined(chest.unitrigger_stub.prompt_and_visibility_func))
+                chest.savedFunction = chest.unitrigger_stub.prompt_and_visibility_func;
+            
+            chest.unitrigger_stub.prompt_and_visibility_func = ::overrideChestFunction;
+        }
+        else
+        {
+            if(IsDefined(chest.savedFunction))
+                chest.unitrigger_stub.prompt_and_visibility_func = chest.savedFunction;
+        }
+    }
+}
+
+overrideChestFunction(player)
+{
+    return false;
 }
 
 SetBoxPrice(price)

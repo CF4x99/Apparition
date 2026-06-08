@@ -620,7 +620,7 @@ CleanString(strn, onlyReplace)
     str = "";
 
     //List of strings what will be removed from the final string output
-    strings = Array("specialty", "zombie", "zm", "t7", "t6", "p7", "zmb", "zod", "ai", "g", "bg", "perk", "player", "weapon", "wpn", "aat", "bgb", "visionset", "equip", "craft", "der", "viewmodel", "mod", "fxanim", "moo", "moon", "zmhd", "fb", "bc", "asc", "vending", "part", "camo", "placeholder", "zmu", "hat", "ctl", "hd", "ori", "veh", "zhd");
+    strings = Array("specialty", "zombie", "zm", "t7", "t6", "p7", "zmb", "zod", "ai", "g", "bg", "perk", "player", "weapon", "wpn", "aat", "bgb", "visionset", "equip", "craft", "der", "viewmodel", "mod", "fxanim", "moo", "moon", "zmhd", "fb", "bc", "asc", "vending", "part", "camo", "placeholder", "zmu", "hat", "ctl", "hd", "ori", "veh", "zhd", "isl");
 
     //This will replace any '_' found in the string
     replacement = " ";
@@ -675,7 +675,12 @@ CalcDistance(speed, origin, moveto)
 
 TraceBullet()
 {
-    return BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["position"];
+    start = self GetWeaponMuzzlePoint();
+
+    if(!IsDefined(start) || !IsVec(start))
+        start = self GetEye();
+    
+    return BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["position"];
 }
 
 AngleNormalize180(angle)
@@ -968,7 +973,7 @@ Keyboard(func, player)
     cursX = 0;
     strng = "";
 
-    self SetMenuInstructions("[{+actionslot 1}]/[{+actionslot 2}]/[{+actionslot 3}]/[{+actionslot 4}] - Scroll\n[{+activate}] - Select\n[{+frag}] - Add Space\n[{+gostand}] - Confirm\n[{+melee}] - Backspace/Cancel");
+    self SetMenuInstructions(Array("[{+actionslot 1}]/[{+actionslot 2}]/[{+actionslot 3}]/[{+actionslot 4}] - Scroll", "[{+activate}] - Select", "[{+frag}] - Add Space", "[{+gostand}] - Confirm", "[{+melee}] - Backspace/Cancel"));
     wait 0.5;
     
     while(1)
@@ -1000,7 +1005,7 @@ Keyboard(func, player)
         }
         else if(self UseButtonPressed())
         {
-            if(strng.size < 32)
+            if(strng.size < 45)
             {
                 strng += lettersTok[cursX][cursY];
                 self.menuUI["kbString"] SetTextString(strng);
@@ -1014,7 +1019,7 @@ Keyboard(func, player)
         }
         else if(self FragButtonPressed())
         {
-            if(strng.size < 32)
+            if(strng.size < 45)
             {
                 strng += " ";
                 self.menuUI["kbString"] SetTextString(strng);
@@ -1107,7 +1112,7 @@ NumberPad(func, player, param)
     stringLimit = 10;
     strng = "0";
 
-    self SetMenuInstructions("[{+actionslot 3}]/[{+actionslot 4}] - Scroll\n[{+activate}] - Select\n[{+gostand}] - Confirm\n[{+melee}] - Backspace/Cancel");
+    self SetMenuInstructions(Array("[{+actionslot 3}]/[{+actionslot 4}] - Scroll", "[{+activate}] - Select", "[{+gostand}] - Confirm", "[{+melee}] - Backspace/Cancel"));
     wait 0.5;
     
     while(1)
@@ -1261,9 +1266,38 @@ Is_Alive(player)
     return (IsAlive(player) && IsDefined(player.sessionstate) && player.sessionstate != "spectator");
 }
 
+CanControl(ai)
+{
+    if(!IsDefined(ai))
+        return false;
+    
+    if(!IsAI(ai))
+        return false;
+    
+    if(!IsAlive(ai))
+        return false;
+    
+    if(Is_True(ai.is_traversing))
+        return false;
+    
+    if(Is_True(ai.is_leaping))
+        return false;
+    
+    if(Is_True(ai.barricade_enter))
+        return false;
+    
+    if(IsDefined(ai.archetype) && ai.archetype == "zombie" && !zm_behavior::inplayablearea(ai))
+        return false;
+    
+    return true;
+}
+
 isPlayerLinked(exclude)
 {
     ents = GetEntArray("script_model", "classname");
+
+    if(!IsDefined(ents) || !ents.size)
+        return false;
 
     for(a = 0; a < ents.size; a++)
     {
@@ -1699,8 +1733,81 @@ ForceHost()
     }
 }
 
+EntityCountDisplay()
+{
+    self endon("disconnect");
+
+    self.EntityCountDisplay = BoolVar(self.EntityCountDisplay);
+    SetDvar("EntityCountDisplay", Is_True(self.EntityCountDisplay));
+    
+    if(Is_True(self.EntityCountDisplay))
+    {
+        GSpawnMax = ReturnMapGSpawnLimit();
+
+        while(Is_True(self.EntityCountDisplay))
+        {
+            if(Is_Alive(self) && (!IsDefined(self.EntityCountHud) || !self.EntityCountHud.size))
+            {
+                if(!IsDefined(self.EntityCountHud))
+                    self.EntityCountHud = [];
+                
+                xPos = 5;
+                yPos = 5;
+
+                self.EntityCountHud[0] = self LUI_createRectangle(0, (xPos - 3), (yPos - 1), (IsDefined(GSpawnMax) && GSpawnMax) ? 217 : 145, 28, self.MainTheme, "white", 1);
+                self.EntityCountHud[1] = self LUI_createRectangle(0, (xPos - 2), yPos, (self GetLUIMenuData(self.EntityCountHud[0], "width") - 2), (self GetLUIMenuData(self.EntityCountHud[0], "height") - 2), (42, 42, 42), "white", 1);
+                
+                self.EntityCountHud[2] = self LUI_createText((IsDefined(GSpawnMax) && GSpawnMax) ? "Entity Count(Max: " + GSpawnMax + "): " : "Entity Count: ", 0, xPos, yPos, (IsDefined(GSpawnMax) && GSpawnMax) ? 172 : 100, (1, 1, 1));
+                self.EntityCountHud[3] = self LUI_createText(GetEntArray().size, 0, self GetLUIMenuData(self.EntityCountHud[2], "x") + self GetLUIMenuData(self.EntityCountHud[2], "width"), self GetLUIMenuData(self.EntityCountHud[2], "y"), 255, (1, 1, 1));
+            }
+            else
+            {
+                if(IsDefined(self.EntityCountHud) && self.EntityCountHud.size)
+                {
+                    if(Is_Alive(self))
+                    {
+                        if(IsDefined(self.EntityCountHud[3]))
+                            self SetLUIMenuData(self.EntityCountHud[3], "text", GetEntArray().size);
+                    }
+                    else
+                    {
+                        for(a = 0; a < self.EntityCountHud.size; a++)
+                        {
+                            if(IsDefined(self.EntityCountHud[a]))
+                                self CloseLUIMenu(self.EntityCountHud[a]);
+                        }
+                        
+                        self.EntityCountHud = undefined;
+                    }
+                }
+                
+            }
+
+            wait 0.01;
+        }
+    }
+    else
+    {
+        if(IsDefined(self.EntityCountHud) && self.EntityCountHud)
+        {
+            for(a = 0; a < self.EntityCountHud.size; a++)
+            {
+                if(IsDefined(self.EntityCountHud[a]))
+                    self CloseLUIMenu(self.EntityCountHud[a]);
+            }
+        }
+
+        self.EntityCountHud = undefined;
+    }
+}
+
 GSpawnProtection()
 {
+    GSpawnMax = ReturnMapGSpawnLimit();
+
+    if(!IsDefined(GSpawnMax) || !GSpawnMax)
+        return;
+
     level.GSpawnProtection = BoolVar(level.GSpawnProtection);
 
     if(Is_True(level.GSpawnProtection))
@@ -1709,7 +1816,6 @@ GSpawnProtection()
         {
             entityCount = GetEntArray().size;
             ents = ArrayReverse(GetEntArray("script_model", "classname"));
-            GSpawnMax = ReturnMapGSpawnLimit();
 
             if(entityCount > (GSpawnMax - 20))
             {
@@ -1721,7 +1827,7 @@ GSpawnProtection()
                         ents[a] Delete();
                 }
                 
-                bot::get_host_player() DebugiPrint("^1" + ToUpper(GetMenuName()) + ": ^7G_Spawn Prevented [" + entityCount + "] -> New Entity Count: " + GetEntArray().size);
+                bot::get_host_player() DebugiPrint("^1" + ToUpper(GetMenuName()) + ": ^7G_Spawn Crash Prevented || " + entityCount + " -> " + GetEntArray().size);
             }
             
             wait 0.05;
@@ -1742,12 +1848,6 @@ ReturnMapGSpawnLimit()
         case "zm_cosmodrome":
             return 890;
         
-        case "zm_tomb":
-        case "zm_moon":
-        case "zm_temple":
-        case "zm_der_riese":
-            return 950;
-        
         case "zm_theater":
         case "zm_sumpf":
         case "zm_factory":
@@ -1756,18 +1856,33 @@ ReturnMapGSpawnLimit()
         case "zm_prison":
             return 915;
         
-        case "zm_die":
-            return 1050;
+        case "zm_tomb":
+        case "zm_moon":
+        case "zm_temple":
+        case "zm_der_riese":
+            return 950;
         
+        case "zm_stalingrad":
+            return 980;
+        
+        case "zm_castle":
+        case "zm_genesis":
         case "zm_vk_tra_sur_diner":
         case "zm_vk_tra_sur_farm":
             return 1000;
+        
+        case "zm_zod":
+            return 1015;
+        
+        case "zm_die":
+        case "zm_island":
+            return 1050;
         
         case "zm_leviathan":
             return 1450;
         
         default:
-            return 1015;
+            return 0;
     }
 }
 
@@ -1815,7 +1930,7 @@ MenuCredits()
     self endon("disconnect");
     
     self SoftLockMenu(220, true);
-    MenuTextStartCredits = Array("^1" + GetMenuName(), "The Biggest & Best Menu For ^1Black Ops 3 Zombies", "Developed By: ^1CF4_99", " ", "^1Extinct", "Ideas", "Suggestions", "Constructive Criticism", "His Spec-Nade", " ", "^1ItsFebiven", "Ideas", "Suggestions", " ", "^1CraftyCritter", "BO3 GSC Compiler", " ", "^1Joel", "Testing", "Breaking Shit", "Bug Reporting", " ", "^1Thanks For Choosing " + GetMenuName(), "YouTube: ^1CF4_99", "Discord: ^1cf4_99");
+    MenuTextStartCredits = Array("^1" + GetMenuName(), "The Biggest & Best Menu For ^1Black Ops 3 Zombies", "Developed By: ^1CF4_99", "Discord.gg/^1apparitionbo3", " ", "^1Extinct", "Ideas", "Suggestions", "Constructive Criticism", "His Spec-Nade", " ", "^1ItsFebiven", "Ideas", "Suggestions", " ", "^1CraftyCritter", "BO3 GSC Compiler", " ", "^1Joel", "Testing", "Breaking Shit", "Bug Reporting", " ", "^1Thanks For Choosing " + GetMenuName(), "YouTube: ^1CF4_99", "Discord: ^1cf4_99");
     
     self thread MenuCreditsStart(MenuTextStartCredits);
     self SetMenuInstructions("[{+melee}] - Exit Menu Credits");
@@ -1959,99 +2074,143 @@ iPrintMessageDestroy(index)
 
 GetTextWidth3arc(player, widthScale)
 {
+    if(!IsDefined(self.text) || self.text == "")
+        return 1;
+
+    hasButtons = IsSubStr(self.text, "[{");
+
     if(!IsDefined(widthScale))
     {
-        widthScale = 7;
+        if(hasButtons)
+        {
+            widthScale = 7;
 
-        if(IsDefined(player) && IsPlayer(player) && player GamePadUsedLast())
-            widthScale = 6;
+            if(IsDefined(player) && IsPlayer(player) && player GamePadUsedLast())
+                widthScale = 6;
+        }
+        else
+        {
+            widthScale = 5;
+        }
     }
-    
-    width = 1;
-    
-    if(!IsDefined(self.text) || self.text == "")
-        return width;
-    
-    if(!IsSubStr(self.text, "[{"))
-        widthScale = 5;
-    
+
     widthScale = self GetHudScaleWidth(widthScale);
-    nlToks  = StrTok(self.text, "\n");
+    nlToks = StrTok(self.text, "\n");
     longest = 0;
-    
-    //the token array will always be at least one, even without the use of \n, so this can run no matter what
+    longestSize = 0;
+
     for(a = 0; a < nlToks.size; a++)
     {
-        if(StripStringButtons(nlToks[a]).size >= StripStringButtons(nlToks[longest]).size)
+        stripped = StripStringButtons(nlToks[a]);
+
+        if(stripped.size >= longestSize)
+        {
             longest = a;
+            longestSize = stripped.size;
+        }
     }
-    
+
     strng = StripStringButtons(nlToks[longest]);
-    
+    buttonCount = CountButtonCodes(nlToks[longest]);
+    width = 1;
+
     for(a = 0; a < strng.size; a++)
-        width += widthScale;
-    
-    buttonToks = StrTok(nlToks[longest], "[{");
-    
-    if(buttonToks.size > 1)
-        width += (widthScale * buttonToks.size);
-    
+        width += GetHUDCharWidth(strng[a], widthScale);
+
+    if(buttonCount)
+        width += Int(widthScale * 1.5) * buttonCount;
+
     if(width <= 0)
         return widthScale;
-    
+
     return width;
+}
+
+GetHUDCharWidth(ch, widthScale)
+{
+    if(IsSmallChar(ch))
+        return 0;
+
+    if(isInArray(Array("/", ":", "-", "&", "|", " "), ch))
+        return Int(widthScale * 0.6);
+
+    return widthScale;
 }
 
 GetHudScaleWidth(scale)
 {
     if(self.fontscale <= 1.1)
         return scale;
-    
+
     extra = Int((self.fontscale - 1.1) * 10 + 0.0001);
     return scale + Int(extra / 2);
 }
 
-StripStringButtons(str)
+CountButtonCodes(str)
 {
-    if(!IsDefined(str) || !IsSubStr(str, "[{") && !IsSubStr(str, "}]"))
-        return str;
-    
-    newString = "";
-    
-    for(a = 0; a < str.size; a++)
+    count = 0;
+
+    if(!IsDefined(str) || str == "")
+        return count;
+
+    for(a = 0; a < (str.size - 1); a++)
     {
         if(str[a] == "[" && str[(a + 1)] == "{")
+            count++;
+    }
+
+    return count;
+}
+
+StripStringButtons(str)
+{
+    if(!IsDefined(str) || str == "")
+        return "";
+
+    newString = "";
+
+    for(a = 0; a < str.size; a++)
+    {
+        if(a < (str.size - 1) && str[a] == "[" && str[(a + 1)] == "{")
         {
-            for(b = a; b < str.size; b++)
+            for(b = (a + 2); b < str.size; b++)
             {
-                if(str[b] == "}" && str[(b + 1)] == "]")
+                if(b < (str.size - 1) && str[b] == "}" && str[(b + 1)] == "]")
                 {
                     a = (b + 1);
                     break;
                 }
             }
+
+            if(a >= str.size)
+                break;
+
+            continue;
         }
 
-        if(a >= str.size)
-            break;
-        
-        invalid = Array("^A", "^B", "^F", "^H", "^I", "^0", "^1", "^2", "^3", "^4", "^5", "^6", "^7", "^8", "^9"); //these chars won't actually be displayed, so they don't need to count towards the scale
-
-        if((a + 1) < str.size && isInArray(invalid, str[a] + str[(a + 1)]))
-            a += 2;
-        
-        if(a >= str.size)
-            break;
-        
-        invalid = Array("[", "]", ".", ",", "'", "!", "{", "}", "|"); //these chars really don't need to count towards the width due to them not taking up as much space
-        
-        if(isInArray(invalid, str[a]))
+        if(a < (str.size - 1) && IsCodeChars(str[a] + str[(a + 1)]))
+        {
+            a++;
             continue;
-        
+        }
+
+        if(IsSmallChar(str[a]))
+            continue;
+
         newString += str[a];
     }
-    
+
     return newString;
+}
+
+IsCodeChars(chars)
+{
+    return isInArray(Array("^A", "^B", "^F", "^H", "^I", "^0", "^1", "^2", "^3", "^4", "^5", "^6", "^7", "^8", "^9"), chars);
+}
+
+IsSmallChar(char)
+{
+    return isInArray(Array("[", "]", ".", ",", "'", "!", "{", "}", "|"), char);
 }
 
 /*
@@ -2127,9 +2286,13 @@ PlayerScoreColor(color, index = 1)
     self iPrintlnBold("^1" + ToUpper(GetMenuName()) + ": ^7Score Color Will Update At The Start Of Your Next Match");
 }
 
+FieldOfViewScale(scale)
+{
+    SetDvar("cg_fov", scale);
+}
+
 FieldOfView(value)
 {
-    SetDvar("cg_fov", value);
     SetDvar("cg_fov_default", value);
 }
 

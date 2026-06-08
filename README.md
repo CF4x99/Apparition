@@ -7,7 +7,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.6.0.6
+    Version:              1.6.0.7
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -19,7 +19,6 @@
     IF YOU USE ANY SCRIPTS FROM THIS PROJECT, OR MAKE AN EDIT, LEAVE CREDIT.
 
     Credits:
-        - CF4_99 ~ Project Developer
         - Extinct ~ Ideas, Suggestions, Constructive Criticism, and His Spec-Nade
         - CraftyCritter ~ BO3 Compiler
         - ItsFebiven ~ Ideas and Suggestions
@@ -32,6 +31,44 @@
 
 
 ## Changelog
+
+<details>
+    <summary>
+        Version 1.6.0.7
+    </summary>
+
+    - Special thank you to Joel and nemming for making reports and suggestiongs :P
+
+    - I've rewritten the weaponry system. I know the weaponry has been plagued with some weapons not being classed correctly, which would place them in the wrong weapon category in the menu.
+    - That should be mostly fixed now. You still might see that issue on custom maps, but that is 100% out of my control(they're literally classed as pistols with no way for me to tell their real class)
+
+    - Added: Host Menu -- Entity Count Display(This will not affect menu hud) -- Displays current entity count and max entity count for the map -- Bool saves through games as well
+    - Added: Menu Customization -- Menu Instructions -- Alternate Instructions Style(suggested by Joel)
+    - Added: Menu Customization -- Menu Instructions -- Option to disable instructions background(suggested by Joel)
+    - Added: Mystery Box Options -- Disable -- This will disable the mystery box trigger completely so no one can use it(suggested by nemming)
+    - Added: Game Modes -- Mod Menu Lobby
+    - Added: Host Menu -- FOV Scale Slider
+    - Added: Fun Scripts -- Shoot Power-Ups Slider(Disable / Drop / Apply Physics) -- Apply Physics will launch the power-ups like bullets -- Drop will just spawn a power-up at your bullet end position
+
+    - Changed: Light Protector -- Now shoots orbs(same as ufo orbs) at the target ai instead of moving to the target ai and killing them
+    - Changed: Skybase -- Updated skybase locations(locations found by Joel)
+    - Changed: Rapid Fire -- Switched from a burst fire to a full auto when holding down the fire button(mentioned by nemming)
+    - Changed: Keyboard Input -- Increased max string size to 45 characters
+    - Changed: Adaptive Instructions -- Better support for the Physics 'n' Flex design
+    - Changed: Artillery Strike -- You will no longer see any firing effect coming from your guns muzzle during the strike
+    - Changed: G_Spawn Crash Protection -- Better limits for SOE, DE, ZNS, GK, and Rev
+    - Changed: GetTextWidth -- Rewrote parts of my utility function 'GetTextWidth' to hopefully get a better width for shaders based on string length
+
+    - Fixed: Retain Perks -- When a player died with 'Retain Perks' enabled, the perks would never be removed from the active perk array(3arc is gay) this caused issues with giving/taking perks(reported by Joel)
+    - Fixed: Mexican Wave -- Model angles when spawned
+    - Fixed: Spawnables -- There was a possibility that perk machine cobwebs would be used as the model for spawnables(reported by Joel)
+    - Fixed: Profile Management -- Skipping from level 1, to prestige 11(master) level 1000 would skip unlocks for the players account and they won't be able to unlock anything(reported by Joel)
+    - Fixed: Weaponry -- Attachments -- Every attachment supported by your current weapon should now display(reported by Joel)
+    - Fixed: Aimbot -- Not all AI types(i.e. wasps) would be targeted when requirement is set to 'Visible'
+    - Fixed: Aimbot -- Targeting ai that isn't fully spawned yet(reported by Joel)
+    - Fixed: Light Protector -- Targeting ai that isn't fully spawned yet(reported by Joel)
+    - Fixed: Player Intersection Override -- Forgot to include a parameter for the override which would throw a dev error each time it was called(which is basically any time there is more than 1 player in the lobby)
+</details>
 
 <details>
     <summary>

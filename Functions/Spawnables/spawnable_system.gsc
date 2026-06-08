@@ -149,7 +149,12 @@ SpawnSystem(action, type, func)
 
     if(!Is_True(level.spawnable[type + "_Spawned"]) && type != "Skybase")
     {
-        traceSurface = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["surfacetype"];
+        start = self GetWeaponMuzzlePoint();
+
+        if(!IsDefined(start) || !IsVec(start))
+            start = self GetEye();
+        
+        traceSurface = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["surfacetype"];
 
         if(traceSurface == "none" || traceSurface == "default")
             return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
@@ -411,6 +416,9 @@ StopRidingSpawnable(type, seat)
 
 GetSpawnableBaseModel(favor)
 {
+    if(!IsDefined(level.menu_models) || !level.menu_models.size)
+        return "defaultactor";
+    
     //This will be a fallback for maps that don't have the favored models for spawnables
     for(a = 0; a < level.menu_models.size; a++)
     {
@@ -420,7 +428,7 @@ GetSpawnableBaseModel(favor)
     
     for(a = 0; a < level.menu_models.size; a++)
     {
-        if(IsSubStr(level.menu_models[a], "vending_doubletap") || IsSubStr(level.menu_models[a], "vending_sleight") || IsSubStr(level.menu_models[a], "vending_three_gun"))
+        if(!IsSubStr(level.menu_models[a], "web_") && (IsSubStr(level.menu_models[a], "vending_doubletap") || IsSubStr(level.menu_models[a], "vending_sleight") || IsSubStr(level.menu_models[a], "vending_three_gun")))
         {
             model = level.menu_models[a];
 
@@ -574,7 +582,7 @@ RainPowerups()
 
 CustomPowerupSpawn(powerup_name, drop_spot)
 {
-    powerup = zm_net::network_safe_spawn("powerup", 1, "script_model", (drop_spot + VectorScale((0, 0, 1), 40)));
+    powerup = zm_net::network_safe_spawn("powerup", 1, "script_model", drop_spot);
 
     if(IsDefined(powerup))
     {
@@ -617,7 +625,12 @@ Tornado()
 {
     if(!Is_True(level.TornadoSpawned))
     {
-        trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+        start = self GetWeaponMuzzlePoint();
+
+        if(!IsDefined(start) || !IsVec(start))
+            start = self GetEye();
+        
+        trace = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
         
         origin = trace["position"];
         surface = trace["surfacetype"];
@@ -884,10 +897,11 @@ MexicanWave(size)
     }
     
     self.MexicanWave = [];
+    angles = (0, self GetPlayerAngles()[1], 0);
 
     for(a = 0; a < size; a++)
     {
-        self.MexicanWave[self.MexicanWave.size] = SpawnScriptModel(self.origin + AnglesToRight(self GetPlayerAngles()) * (a * 45), "defaultactor", self GetPlayerAngles());
+        self.MexicanWave[self.MexicanWave.size] = SpawnScriptModel(self.origin + AnglesToRight(self GetPlayerAngles()) * (a * 45), "defaultactor", angles);
         self.MexicanWave[(self.MexicanWave.size - 1)] thread MexicanWaveMove(a);
     }
 }
@@ -941,7 +955,12 @@ SpiralStaircase(size)
     else
     {
         model = GetSpawnableBaseModel();
-        trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+        start = self GetWeaponMuzzlePoint();
+
+        if(!IsDefined(start) || !IsVec(start))
+            start = self GetEye();
+        
+        trace = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
 
         if(!isInArray(level.menu_models, model))
             return self iPrintlnBold("^1ERROR: ^7Couldn't Find A Valid Base Model For The Spiral Staircase");
@@ -982,7 +1001,12 @@ SpawnTeleporter(action = "Spawn", origin, skipLink = false, skipDelete = false)
 
     if(!IsDefined(origin))
     {
-        traceSurface = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["surfacetype"];
+        start = self GetWeaponMuzzlePoint();
+
+        if(!IsDefined(start) || !IsVec(start))
+            start = self GetEye();
+        
+        traceSurface = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["surfacetype"];
 
         if(traceSurface == "none" || traceSurface == "default")
             return self iPrintlnBold("^1ERROR: ^7Invalid Surface");

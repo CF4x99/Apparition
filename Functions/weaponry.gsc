@@ -74,25 +74,20 @@ PopulateWeaponry(menu, player)
         
         case "Weapon Attachments":
             weapon = player GetCurrentWeapon();
-            attachments = [];
-
-            if(IsDefined(weapon) && weapon != level.weaponnone)
-            {
-                for(a = 0; a < 44; a++)
-                {
-                    if(!IsDefined(weapon.supportedAttachments) || !weapon.supportedAttachments.size || !isInArray(weapon.supportedAttachments, ReturnAttachment(a)) || !IsDefined(weapon.attachments) || ReturnAttachment(a) == "none" || ReturnAttachment(a) == "dw")
-                        continue;
-                    
-                    attachments[attachments.size] = ReturnAttachment(a);
-                }
-            }
             
             self addMenu("Attachments");
 
-                if(attachments.size)
+                if(IsDefined(weapon.supportedAttachments) && weapon.supportedAttachments.size)
                 {
-                    foreach(attachment in attachments)
-                        self addOptBool(isInArray(weapon.attachments, attachment), ReturnAttachmentName(attachment), ::GivePlayerAttachment, attachment, player);
+                    foreach(attachment in weapon.supportedAttachments)
+                    {
+                        name = ReturnAttachmentName(attachment);
+
+                        if(!IsDefined(name) || name == "" || name == "none" || name == "dw")
+                            continue;
+                        
+                        self addOptBool((IsDefined(weapon.attachments) && isInArray(weapon.attachments, attachment)), ReturnAttachmentName(attachment), ::GivePlayerAttachment, attachment, player);
+                    }
                 }
                 else
                 {

@@ -234,7 +234,6 @@ closeMenu1(showAnim = false)
         return;
     
     self notify("menuClosed");
-
     self.CreditsPlaying = undefined;
 
     destroyAll(self.menuUI);

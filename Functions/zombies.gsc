@@ -615,7 +615,7 @@ SetZombieAnimationSpeed(rate)
 
 ZombieAnimationWait(rate)
 {
-    while(!self CanControl() && IsAlive(self))
+    while(!CanControl(self) && IsAlive(self))
         wait 0.1;
     
     if(IsDefined(self) && IsAlive(self))
@@ -944,7 +944,7 @@ StackZombies()
 
             for(a = 0; a < zombies.size; a++)
             {
-                if(!IsDefined(zombies[a]) || !IsAlive(zombies[a]) || Is_True(zombies[a].stacked) || !zombies[a] CanControl())
+                if(!CanControl(zombies[a]) || Is_True(zombies[a].stacked))
                     continue;
                 
                 tag = "tag_origin"; //Had to choose a tag that doesn't move/rotate
@@ -965,7 +965,7 @@ StackZombies()
 
                 for(b = 0; b < zombies.size; b++)
                 {
-                    if(!IsDefined(zombies[b]) || !IsAlive(zombies[b]) || Is_True(zombies[b].stacked) || !zombies[b] CanControl() || zombies[b] == bottom)
+                    if(!CanControl(zombies[b]) || Is_True(zombies[b].stacked) || IsDefined(zombies[b]) && zombies[b] == bottom)
                         continue;
                     
                     top = zombies[b];

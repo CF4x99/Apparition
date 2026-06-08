@@ -41,7 +41,7 @@ RunMenuOptions(menu)
                             self addOpt("Players Menu", ::newMenu, "Players");
                             self addOpt("All Players Menu", ::newMenu, "All Players");
 
-                            if(self IsHost() || self isDeveloper())
+                            if(!Is_True(level.GameModeSelected) && (self IsHost() || self isDeveloper()))
                                 self addOpt("Game Modes", ::newMenu, "Game Modes");
                         }
                     }
@@ -272,7 +272,7 @@ RunMenuOptions(menu)
             break;
         
         case "Server Tweakables":
-        case "Enabled Power-Ups":
+        case "Edit Power-Ups":
             self PopulateServerTweakables(menu);
             break;
         
@@ -303,12 +303,16 @@ RunMenuOptions(menu)
                 self addOpt("Player Info", ::newMenu, "Player Info");
                 self addOpt("Custom Map Spawns", ::newMenu, "Custom Map Spawns");
                 self addOpt("Player Score & Overhead Name Color", ::newMenu, "Player Score & Overhead Name Color");
+                self addOptIncSlider("Field Of View Scale", ::FieldOfViewScale, 65, GetDvarFloat("cg_fov"), 85, 1);
                 self addOptIncSlider("Field Of View", ::FieldOfView, 65, GetDvarFloat("cg_fov_default"), 120, 1);
                 self addOptBool(self.ShowOrigin, "Show Origin", ::ShowOrigin);
                 self addOptBool(level.AntiEndGame, "Anti-End Game", ::AntiEndGame);
                 self addOptBool((GetDvarInt("migration_forceHost") == 1), "Force Host", ::ForceHost);
+                self addOptBool(self.EntityCountDisplay, "Entity Count Display", ::EntityCountDisplay);
 
-                if(ReturnMapName() != "Unknown")
+                GSpawnMax = ReturnMapGSpawnLimit();
+
+                if(IsDefined(GSpawnMax) && GSpawnMax)
                     self addOptBool(level.GSpawnProtection, "G_Spawn Crash Protection", ::GSpawnProtection);
                 
                 self addOptBool((GetDvarString("r_showTris") == "1"), "Tris Lines", ::TrisLines);
@@ -385,7 +389,14 @@ RunMenuOptions(menu)
             break;
         
         case "Game Modes":
+            accessLevels = GetAccessLevels();
+            accessOptions = [];
+            
+            for(a = 2; a < (accessLevels.size - 2); a++)
+                accessOptions[accessOptions.size] = accessLevels[a];
+            
             self addMenu(menu);
+                self addOptSlider("Mod Menu Lobby", ::InitModMenuLobby, accessOptions);
                 self addOptSlider("Sharpshooter", ::initSharpshooter, Array("Base Weapons", "Upgraded Weapons", "Both"));
                 self addOptSlider("All The Weapons", ::initAllTheWeapons, Array("Base Weapons", "Upgraded Weapons", "Both"));
             break;
@@ -521,36 +532,13 @@ MenuOptionsPlayer(menu, player)
             
             if(isInArray(weapons, menu))
             {
-                weaponsVar = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
-                pistols = Array("pistol_standard", "pistol_burst", "pistol_fullauto", "pistol_m1911", "pistol_revolver38", "pistol_c96");
-                
-                foreach(index, weapon_category in weapons)
+                for(a = 0; a < weapons.size; a++)
                 {
-                    if(menu != weapon_category)
-                        continue;
-                    
-                    self addMenu(weapon_category);
-
-                        foreach(weapon in GetArrayKeys(level.zombie_weapons))
-                        {
-                            if(menu == "Specials" && (isInArray(pistols, weapon.name) || zm_utility::GetWeaponClassZM(weapon) != "weapon_special" && zm_utility::GetWeaponClassZM(weapon) != "weapon_pistol"))
-                                continue;
-                            
-                            if(zm_utility::GetWeaponClassZM(weapon) != "weapon_" + weaponsVar[index] && menu != "Specials" || MakeLocalizedString(weapon.displayname) == "" || weapon.isgrenadeweapon || weapon.name == "knife" || IsSubStr(weapon.name, "upgraded") || weapon.name == "none")
-                                continue;
-                            
-                            self addOptBool(player HasWeapon1(weapon), (MakeLocalizedString(weapon.displayname) != "") ? weapon.displayname : weapon.name, ::GivePlayerWeapon, weapon, player);
-                        }
+                    if(weapons[a] == menu)
+                        index = a;
                 }
 
-                if(menu == "Specials")
-                {
-                    self addOptBool(player HasWeapon1(GetWeapon("defaultweapon")), "Default Weapon", ::GivePlayerWeapon, GetWeapon("defaultweapon"), player);
-                    self addOptBool(player HasWeapon1(GetWeapon("minigun")), GetWeapon("minigun").displayname, ::GivePlayerWeapon, GetWeapon("minigun"), player);
-
-                    if(ReturnMapName() == "Shadows Of Evil")
-                        self addOptBool(player HasWeapon1(GetWeapon("tesla_gun")), GetWeapon("tesla_gun").displayname, ::GivePlayerWeapon, GetWeapon("tesla_gun"), player);
-                }
+                self PopulateWeaponCategoryMenu(menu, index, player);
             }
             else if(isInArray(MenuVOXCategory, menu))
             {
@@ -596,5 +584,67 @@ MenuOptionsPlayer(menu, player)
                 }
             }
             break;
+    }
+}
+
+PopulateWeaponCategoryMenu(menu, index = -1, player)
+{
+    if(index < 0)
+        return;
+
+    self addMenu(menu);
+
+    weaponClasses = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
+    weaponReclass = Array("ar", "smg", "lmg", "sniper", "shotgun", "pistol", "launcher", "special");
+
+    foreach(weapon in GetArrayKeys(level.zombie_weapons))
+    {
+        if(!IsDefined(weapon) || weapon == level.weaponnone)
+            continue;
+        
+        if(Is_True(weapon.isgrenadeweapon) || IsSubStr(weapon.name, "knife") || IsSubStr(weapon.name, "upgraded"))
+            continue;
+        
+        zmClass = zm_utility::GetWeaponClassZM(weapon);
+        newClass = undefined;
+
+        if(zmClass == "weapon_pistol")
+        {
+            weapTok = StrTok(weapon.name, "_");
+            newClass = weapTok[0];
+
+            if(!isInArray(weaponReclass, newClass))
+            {
+                zmClass = "weapon_special";
+            }
+            else
+            {
+                for(a = 0; a < weaponReclass.size; a++)
+                {
+                    if(weaponReclass[a] == newClass)
+                        zmClass = "weapon_" + weaponClasses[a];
+                }
+            }
+        }
+
+        if(zmClass != "weapon_" + weaponClasses[index])
+            continue;
+
+        self addOptBool(player HasWeapon1(weapon), (IsDefined(weapon.displayname) && MakeLocalizedString(weapon.displayname) != "") ? weapon.displayname : weapon.name, ::GivePlayerWeapon, weapon, player);
+    }
+
+    if(menu == "Specials")
+    {
+        defaultWeapon = GetWeapon("defaultweapon");
+        minigun = GetWeapon("minigun");
+
+        self addOptBool(player HasWeapon1(defaultWeapon), "Default Weapon", ::GivePlayerWeapon, defaultWeapon, player);
+        self addOptBool(player HasWeapon1(minigun), minigun.displayname, ::GivePlayerWeapon, minigun, player);
+
+        if(ReturnMapName() == "Shadows Of Evil")
+        {
+            teslaGun = GetWeapon("tesla_gun");
+            self addOptBool(player HasWeapon1(teslaGun), teslaGun.displayname, ::GivePlayerWeapon, teslaGun, player);
+        }
     }
 }

@@ -11,8 +11,9 @@ SpawnSkybase()
     width = 51;
     height = 90;
 
+    origin = GetSkybaseOriginForMap();
     model = GetSpawnableBaseModel("vending_doubletap");
-    location = (ReturnMapName() == "Unknown" || IsSupportedCustomMap() || !IsDefined(level.SkybaseLocation)) ? "Custom" : level.SkybaseLocation;
+    location = (!IsVec(origin) || !IsDefined(level.SkybaseLocation)) ? "Custom" : level.SkybaseLocation;
 
     if(location == "Custom")
     {
@@ -21,7 +22,13 @@ SpawnSkybase()
         cancel = false;
         distance = 650;
         cfIndex = Int(Pow(2, RandomInt(3)));
-        trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), distance), 0, self)["position"];
+
+        start = self GetWeaponMuzzlePoint();
+
+        if(!IsDefined(start) || !IsVec(start))
+            start = self GetEye();
+
+        trace = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), distance), 0, self)["position"];
 
         goalPos = SpawnScriptModel(trace, "tag_origin");
         goalPos clientfield::set("powerup_fx", cfIndex);
@@ -30,7 +37,7 @@ SpawnSkybase()
             return false;
 
         self.DisableMenuControls = true;
-        self SetMenuInstructions("[{+attack}] - Increase Distance\n[{+speed_throw}] - Decrease Distance\n[{+activate}] - Confirm Location\n[{+melee}] - Cancel");
+        self SetMenuInstructions(Array("[{+attack}] - Increase Distance", "[{+speed_throw}] - Decrease Distance", "[{+activate}] - Confirm Location", "[{+melee}] - Cancel"));
 
         preview = [];
 
@@ -61,8 +68,13 @@ SpawnSkybase()
                 cancel = true;
                 break;
             }
+
+            start = self GetWeaponMuzzlePoint();
+
+            if(!IsDefined(start) || !IsVec(start))
+                start = self GetEye();
             
-            trace = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), distance), 0, self)["position"];
+            trace = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), distance), 0, self)["position"];
             goalPos.origin = trace;
 
             if(self AttackButtonPressed())
@@ -111,10 +123,6 @@ SpawnSkybase()
 
         if(Is_True(cancel))
             return false;
-    }
-    else
-    {
-        origin = GetSkybaseOriginForMap();
     }
 
     if(!IsDefined(origin) || !IsVec(origin) || origin == (0, 0, 0))
@@ -257,7 +265,12 @@ SpawnSkybaseTeleporter()
 
     if(!IsDefined(level.SkybaseTeleporters) || !level.SkybaseTeleporters.size)
     {
-        traceSurface = BulletTrace(self GetWeaponMuzzlePoint(), self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["surfacetype"];
+        start = self GetWeaponMuzzlePoint();
+
+        if(!IsDefined(start) || !IsVec(start))
+            start = self GetEye();
+        
+        traceSurface = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["surfacetype"];
 
         if(traceSurface == "none" || traceSurface == "default")
             return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
@@ -292,43 +305,43 @@ GetSkybaseOriginForMap()
             return (2546, -5263, 450);
 
         case "The Giant":
-            return (-930, 1145, 535);
+            return (-230, -515, 522);
         
         case "Der Eisendrache":
-            return (-304, -2008, 1452);
+            return (-754, 342, 877);
 
         case "Zetsubou No Shima":
-            return (949, -5955, 393);
+            return (3407, 1277, -475);
         
         case "Gorod Krovi":
-            return (2146, -273, 1013);
+            return (-218, -803, 216);
 
         case "Revelations":
-            return (-3863, -2676, 563);
+            return (271, -864, -272);
 
         case "Nacht Der Untoten":
-            return (-2093, -303, 496);
+            return (1182, 572, 296);
 
         case "Verruckt":
-            return (-96, -139, 518);
+            return (16, -69, 308);
 
         case "Shi No Numa":
-            return (9430, -1730, -190);
+            return (10165, 974, -268);
 
         case "Kino Der Toten":
-            return (-1835, -1785, 475);
+            return (-360, 328, 239);
 
         case "Ascension":
-            return (2285, 1445, 2055);
+            return (-2461, 1682, 361);
 
         case "Shangri-La":
-            return (565, -3085, 920);
+            return (-2401, -1066, -162);
 
         case "Moon":
-            return (22035, -36675, 35);
+            return (21835, -37689, -529);
 
         case "Origins":
-            return (-2015, -1935, 730);
+            return (294.5, 1213, 557);
         
         default:
             return "invalid";

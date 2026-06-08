@@ -8,6 +8,32 @@ override_player_damage(eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, w
         return 0;
     }
 
+    if(iDamage > self.health)
+    {
+        self.retained_perks = [];
+
+        if(Is_True(self._retain_perks))
+        {
+            perks = GetArrayKeys(level._custom_perks);
+
+            if(IsDefined(perks) && perks.size)
+            {
+                MenuPerks = [];
+                
+                for(a = 0; a < perks.size; a++)
+                    array::add(MenuPerks, perks[a], 0);
+                
+                for(a = 0; a < MenuPerks.size; a++)
+                {
+                    if(self HasPerk(MenuPerks[a]))
+                    {
+                        self.retained_perks[self.retained_perks.size] = MenuPerks[a];
+                    }
+                }
+            }
+        }
+    }
+
     if(IsDefined(level.saved_overrideplayerdamage))
         return [[ level.saved_overrideplayerdamage ]](eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, weapon, vPoint, vDir, sHitLoc, psOffsetTime);
     
@@ -105,7 +131,7 @@ override_actor_killed(einflictor, attacker, idamage, smeansofdeath, weapon, vdir
         }
     }
     
-    if(Is_True(self.explodingzombie) || Is_True(self.ZombieFling) || Is_True(level.ZombieRagdoll) || IsDefined(idamage) && IsInt(idamage) && idamage == 690)
+    if(Is_True(self.explodingzombie) || Is_True(self.ZombieFling) || Is_True(level.ZombieRagdoll) || IsDefined(idamage) && IsInt(idamage) && idamage == 699)
     {
         self thread zm_spawner::zombie_ragdoll_then_explode(VectorScale(vdir, 145), attacker);
 
@@ -261,7 +287,7 @@ player_out_of_playable_area_monitor()
     return 0;
 }
 
-player_intersection_tracker()
+player_intersection_tracker(player)
 {
     return 1;
 }

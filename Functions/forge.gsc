@@ -245,14 +245,19 @@ ForgeShootModel()
         {
             self waittill("weapon_fired");
 
-            spawn = SpawnScriptModel(self GetWeaponMuzzlePoint() + VectorScale(AnglesToForward(self GetPlayerAngles()), 10), ent);
+            start = self GetWeaponMuzzlePoint();
+
+            if(!IsDefined(start) || !IsVec(start))
+                start = self GetEye();
+
+            spawn = SpawnScriptModel(start + VectorScale(AnglesToForward(self GetPlayerAngles()), 60), ent);
 
             if(IsDefined(spawn))
             {
                 spawn SetScale(self.forgeModelScale);
                 spawn NotSolid();
                 
-                spawn Launch(VectorScale(AnglesToForward(self GetPlayerAngles()), 15000));
+                spawn PhysicsLaunch(spawn.origin, VectorScale(AnglesToForward(self GetPlayerAngles()), 255));
                 spawn thread deleteAfter(10);
             }
         }

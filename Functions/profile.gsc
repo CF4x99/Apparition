@@ -234,6 +234,12 @@ SetPlayerPrestige(prestige, player)
     menu = self getCurrent();
     curs = self getCursor();
 
+    if(player GetDStat("PlayerStatsList", "plevel", "StatValue") == prestige)
+        return;
+
+    if(prestige == 11)
+        SetPlayerRank(35, player);
+
     player SetDStat("PlayerStatsList", "plevel", "StatValue", prestige);
     player SetRank(player rank::getRankForXp(player rank::getRankXP()), player GetDStat("PlayerStatsList", "plevel", "StatValue"));
 

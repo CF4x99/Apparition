@@ -1,6 +1,27 @@
-setVerification(a, player, msg)
+setVerification(access = 1, player, msg)
 {
-    if(player isHost() || player isDeveloper() || player getVerification() == a || player == self || player util::is_bot())
+    if(IsString(access))
+    {
+        levels = GetAccessLevels();
+
+        if(isInArray(levels, access))
+        {
+            for(a = 0; a < levels.size; a++)
+            {
+                if(levels[a] == access)
+                {
+                    access = a;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            access = 1;
+        }
+    }
+
+    if(player IsHost() || player isDeveloper() || player getVerification() == access || player == self || player util::is_bot())
     {
         if(Is_True(msg))
         {
@@ -13,8 +34,8 @@ setVerification(a, player, msg)
             if(player isDeveloper())
                 return self iPrintlnBold("^1ERROR: ^7You Can't Change The Status Of The Developer");
             
-            if(player getVerification() == a)
-                return self iPrintlnBold("^1ERROR: ^7Player's Verification Is Already Set To ^2" + GetAccessLevels()[a]);
+            if(player getVerification() == access)
+                return self iPrintlnBold("^1ERROR: ^7Player's Verification Is Already Set To ^2" + GetAccessLevels()[access]);
             
             if(player == self)
                 return self iPrintlnBold("^1ERROR: ^7You Can't Change Your Own Status");
@@ -23,7 +44,7 @@ setVerification(a, player, msg)
         return;
     }
     
-    player.accessLevel = GetAccessLevels()[a];
+    player.accessLevel = GetAccessLevels()[access];
     player iPrintlnBold("Your Status Has Been Set To ^2" + player.accessLevel);
     
     if(player isInMenu(true))
@@ -49,13 +70,34 @@ setVerification(a, player, msg)
     }
 }
 
-SetVerificationAllPlayers(a, msg)
+SetVerificationAllPlayers(access = 1, msg)
 {
+    if(IsString(access))
+    {
+        levels = GetAccessLevels();
+
+        if(isInArray(levels, access))
+        {
+            for(a = 0; a < levels.size; a++)
+            {
+                if(levels[a] == access)
+                {
+                    access = a;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            access = 1;
+        }
+    }
+
     foreach(player in level.players)
-        self thread setVerification(a, player);
+        self thread setVerification(access, player);
     
     if(Is_True(msg))
-        self iPrintlnBold("All Players Verification Set To ^2" + GetAccessLevels()[a]);
+        self iPrintlnBold("All Players Verification Set To ^2" + GetAccessLevels()[access]);
 }
 
 getVerification()

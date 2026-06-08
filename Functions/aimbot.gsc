@@ -74,20 +74,17 @@ Aimbot(player)
         {
             origin = enemy GetTagOrigin(player.AimBoneTag);
 
-            if(!IsDefined(origin)) //If the tag origin for the target tag can't be found, this will test the given tags to see if one can be used
+            if(!IsDefined(origin) || !IsVec(origin))
             {
-                tags = Array("j_ankle_ri", "j_ankle_le", "pelvis", "j_mainroot", "j_spinelower", "j_spine4", "j_neck", "j_head", "tag_body");
+                test = enemy GetTagOrigin("tag_body");
 
-                for(a = 0; a < tags.size; a++)
-                {
-                    test = enemy GetTagOrigin(tags[a]);
-
-                    if(IsDefined(test))
-                        origin = test;
-                }
+                if(!IsDefined(test) || !IsVec(test))
+                    enemy = undefined;
+                else
+                    origin = test;
             }
 
-            if(IsDefined(origin))
+            if(IsDefined(enemy) && IsDefined(origin) && IsVec(origin))
             {
                 if(player.AimbotType == "Snap")
                 {
@@ -165,10 +162,31 @@ GetClosestTarget()
 
     for(a = 0; a < zombies.size; a++)
     {
-        if(!IsDefined(zombies[a]) || !IsAlive(zombies[a]) || Is_True(self.AimbotDistanceCheck) && Distance(self.origin, zombies[a].origin) > self.AimbotDistance || self.AimbotVisibilityRequirement == "Damageable" && zombies[a] DamageConeTrace(self GetEye(), self) < 0.1 || self.AimbotVisibilityRequirement == "Visible" && !self IsVisible(zombies[a], self.AimBoneTag) || Is_True(self.PlayableAreaCheck) && zombies[a].archetype == "zombie" && !zm_behavior::inplayablearea(zombies[a]))
+        if(!IsDefined(zombies[a]) || !IsAlive(zombies[a]))
+            continue;
+        
+        if(Is_True(self.AimbotDistanceCheck) && Distance(self.origin, zombies[a].origin) > self.AimbotDistance)
+            continue;
+        
+        if(self.AimbotVisibilityRequirement == "Damageable" && zombies[a] DamageConeTrace(self GetEye(), self) < 0.1)
+            continue;
+        
+        if(self.AimbotVisibilityRequirement == "Visible" && !self IsVisible(zombies[a], self.AimBoneTag))
+            continue;
+        
+        if(Is_True(self.PlayableAreaCheck) && zombies[a].archetype == "zombie" && !zm_behavior::inplayablearea(zombies[a]))
+            continue;
+        
+        if(zombies[a].archetype == "zombie" && !Is_True(zombies[a].zombie_think_done) || zombies[a].archetype != "zombie" && Is_True(zombies[a].ignoreme))
+            continue;
+        
+        if(!IsDefined(enemy))
+            enemy = zombies[a];
+        
+        if(enemy == zombies[a])
             continue;
 
-        if(!IsDefined(enemy) || Closer(self.origin, zombies[a].origin, enemy.origin))
+        if(Closer(self.origin, zombies[a].origin, enemy.origin))
             enemy = zombies[a];
     }
 
@@ -177,15 +195,27 @@ GetClosestTarget()
 
 IsVisible(enemy, tag)
 {
-    if(!IsDefined(enemy))
+    if(!IsDefined(enemy) || !IsAlive(enemy))
         return false;
     
-    if(!IsDefined(tag))
-        tag = enemy GetEye();
-    else
-        tag = enemy GetTagOrigin(tag);
-    
-    return VectorDot(AnglesToForward(self GetTagAngles("tag_weapon_right")), VectorNormalize(tag - self GetWeaponMuzzlePoint())) > Cos(40) && BulletTracePassed(self GetEye(), tag, false, self);
+    tag = !IsDefined(tag) ? enemy GetEye() : enemy GetTagOrigin(tag);
+
+    if(!IsDefined(tag) || !IsVec(tag))
+    {
+        test = enemy GetTagOrigin("tag_body");
+        
+        if(!IsDefined(test) || IsVec(test))
+            return false;
+        
+        tag = test;
+    }
+
+    start = self GetWeaponMuzzlePoint();
+
+    if(!IsDefined(start) || !IsVec(start))
+        start = self GetEye();
+
+    return VectorDot(AnglesToForward(self GetTagAngles("tag_weapon_right")), VectorNormalize(tag - start)) > Cos(40) && BulletTracePassed(self GetEye(), tag, false, self);
 }
 
 isFiring1()
@@ -199,17 +229,20 @@ FireGun(startPosition, targetPosition, takeAmmo = false)
 
     weapon = self GetCurrentWeapon();
 
-    if(!IsDefined(weapon) || weapon.name == "none")
+    if(!IsDefined(weapon) || weapon == level.weaponnone)
         return;
     
     if(!self GetWeaponAmmoClip(weapon) || self IsReloading() || self isOnLadder() || self IsMantling() || self IsSwitchingWeapons() || self IsMeleeing() || self IsSprinting())
         return;
     
-    startLocation = IsDefined(startPosition) ? startPosition : self GetWeaponMuzzlePoint();
-    targetLocation = IsDefined(targetPosition) ? targetPosition : self TraceBullet();
-    MagicBullet(weapon, startLocation, targetLocation, self);
+    start = self GetWeaponMuzzlePoint();
+
+    if(!IsDefined(start) || !IsVec(start))
+        start = self GetEye();
     
-    if(takeAmmo)
+    MagicBullet(weapon, (IsDefined(startPosition) && IsVec(startPosition)) ? startPosition : start, IsDefined(targetPosition) ? targetPosition : self TraceBullet(), self);
+    
+    if(Is_True(takeAmmo))
         self SetWeaponAmmoClip(weapon, (self GetWeaponAmmoClip(weapon) - 1));
     
     self WeaponPlayEjectBrass();
