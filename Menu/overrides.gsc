@@ -1,3 +1,38 @@
+SetGameOverrides()
+{
+    level.player_out_of_playable_area_monitor = 0;
+    level.player_out_of_playable_area_monitor_callback = ::player_out_of_playable_area_monitor;
+    level.player_intersection_tracker_override = ::player_intersection_tracker;
+
+    if(IsDefined(level.overrideplayerdamage))
+        level.saved_overrideplayerdamage = level.overrideplayerdamage;
+
+    level.overrideplayerdamage = ::override_player_damage;
+
+    if(IsDefined(level.global_damage_func))
+        level.saved_global_damage_func = level.global_damage_func;
+    
+    level.global_damage_func = ::override_zombie_damage;
+
+    if(IsDefined(level.global_damage_func_ads))
+        level.saved_global_damage_func_ads = level.global_damage_func_ads;
+    
+    level.global_damage_func_ads = ::override_zombie_damage_ads;
+
+    if(IsDefined(level.callbackactorkilled))
+        level.saved_callbackactorkilled = level.callbackactorkilled;
+    
+    level.callbackactorkilled = ::override_actor_killed;
+
+    if(ReturnMapName() != "Unknown")
+        level.custom_game_over_hud_elem = ::override_game_over_hud_elem;
+
+    if(IsDefined(level.player_score_override))
+        level.saved_player_score_override = level.player_score_override;
+    
+    level.player_score_override = ::override_player_points;
+}
+
 override_player_damage(eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, weapon, vPoint, vDir, sHitLoc, psOffsetTime)
 {
     if(Is_True(self.playerGodmode) || Is_True(self.PlayerDemiGod) || Is_True(self.NoExplosiveDamage) && zm_utility::is_explosive_damage(sMeansOfDeath) || Is_True(self.ControllableZombie) || Is_True(self.AC130) || Is_True(self.lander))
@@ -84,6 +119,12 @@ CommonDamageOverride(mod, hit_location, hit_origin, player, amount, team, weapon
             
             if(IsDefined(player.hud_damagefeedback) && Is_True(player.ShowHitmarkers))
                 player DamageFeedBack();
+            
+            if(amount == 696969 && self.health > amount)
+            {
+                self.maxhealth = 69;
+                self.health = 69;
+            }
 
             if(IsDefined(player.PlayerInstaKill) && (player.PlayerInstaKill == "All" || player.PlayerInstaKill == "Melee" && mod == "MOD_MELEE"))
             {
@@ -131,7 +172,7 @@ override_actor_killed(einflictor, attacker, idamage, smeansofdeath, weapon, vdir
         }
     }
     
-    if(Is_True(self.explodingzombie) || Is_True(self.ZombieFling) || Is_True(level.ZombieRagdoll) || IsDefined(idamage) && IsInt(idamage) && idamage == 699)
+    if(Is_True(self.explodingzombie) || Is_True(self.ZombieFling) || Is_True(level.ZombieRagdoll) || IsDefined(idamage) && IsInt(idamage) && idamage == 696969)
     {
         self thread zm_spawner::zombie_ragdoll_then_explode(VectorScale(vdir, 145), attacker);
 

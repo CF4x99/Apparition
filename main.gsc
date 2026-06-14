@@ -8,7 +8,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.6.0.7
+    Version:              1.6.0.8
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -135,37 +135,7 @@ onPlayerSpawned()
         if(IsDefined(GSpawnMax) && GSpawnMax)
             self thread GSpawnProtection();
         
-        level.player_out_of_playable_area_monitor = 0;
-        level.player_out_of_playable_area_monitor_callback = ::player_out_of_playable_area_monitor;
-        level.player_intersection_tracker_override = ::player_intersection_tracker;
-
-        if(IsDefined(level.overrideplayerdamage))
-            level.saved_overrideplayerdamage = level.overrideplayerdamage;
-
-        level.overrideplayerdamage = ::override_player_damage;
-
-        if(IsDefined(level.global_damage_func))
-            level.saved_global_damage_func = level.global_damage_func;
-        
-        level.global_damage_func = ::override_zombie_damage;
-
-        if(IsDefined(level.global_damage_func_ads))
-            level.saved_global_damage_func_ads = level.global_damage_func_ads;
-        
-        level.global_damage_func_ads = ::override_zombie_damage_ads;
-
-        if(IsDefined(level.callbackactorkilled))
-            level.saved_callbackactorkilled = level.callbackactorkilled;
-        
-        level.callbackactorkilled = ::override_actor_killed;
-
-        if(ReturnMapName() != "Unknown")
-            level.custom_game_over_hud_elem = ::override_game_over_hud_elem;
-
-        if(IsDefined(level.player_score_override))
-            level.saved_player_score_override = level.player_score_override;
-        
-        level.player_score_override = ::override_player_points;
+        level SetGameOverrides();
     }
 
     if(IsDefined(self.overrideplayerdamage))
@@ -219,7 +189,6 @@ onPlayerSpawned()
         return;
     self.playerSpawned = true;
 
-    
     if(!self IsHost() && !self isDeveloper())
     {
         if(Is_True(level.antiJoin))
@@ -249,7 +218,7 @@ DefineMenuArrays()
     level.GSpeed = GetDvarString("g_speed");
     level.roundIntermissionTime = (IsDefined(level.zombie_vars) && IsDefined(level.zombie_vars["zombie_between_round_time"])) ? level.zombie_vars["zombie_between_round_time"] : 10;
     
-    level.SavedMapEntities = [];
+    level.menu_entities = [];
     level.menu_models = Array("defaultactor", "defaultvehicle");
     ents = GetEntArray("script_model", "classname");
 
@@ -261,7 +230,7 @@ DefineMenuArrays()
                 continue;
 
             array::add(level.menu_models, entity.model, 0);
-            level.SavedMapEntities[level.SavedMapEntities.size] = entity;
+            level.menu_entities[level.menu_entities.size] = entity;
             
             entity.savedOrigin = entity.origin;
             entity.savedAngles = entity.angles;
@@ -383,6 +352,19 @@ playerSetup()
 
         if(ReturnMapName() == "Unknown" || IsSupportedCustomMap())
             self DebugiPrint("^1" + ToUpper(GetMenuName()) + ": ^7On Custom Maps, Some Things Might Not Work As They Should");
+        
+        if(IsDefined(level.uiparent) && IsDefined(level.uiparent.children) && level.uiparent.children.size)
+        {
+            for(a = 0; a < level.uiparent.children.size; a++)
+            {
+                if(!IsDefined(level.uiparent.children[a]))
+                    continue;
+                
+                level.uiparent.children[a] hud::destroyelem();
+            }
+
+            level.uiparent.children = [];
+        }
     }
 }
 
@@ -403,13 +385,13 @@ MenuInstructionsDisplay()
             alt = Is_True(self.AlternateInstructions);
 
             if(!IsDefined(self.menuInstructionsUI["background"]) && !Is_True(self.DisableInstructionsBackground))
-                self.menuInstructionsUI["background"] = self createRectangle(alt ? "CENTER" : "TOP_LEFT", "CENTER", self.instructionsX, self.instructionsY, 0, 15, (42, 42, 42), 2, 1, "white");
+                self.menuInstructionsUI["background"] = self createRectangle(alt ? "CENTER" : "TOP_LEFT", self.instructionsX, self.instructionsY, 0, 15, (42, 42, 42), 2, 1, "white");
             
             if(!IsDefined(self.menuInstructionsUI["outline"]) && !Is_True(self.DisableInstructionsBackground))
-                self.menuInstructionsUI["outline"] = self createRectangle(alt ? "CENTER" : "TOP_LEFT", "CENTER", alt ? self.instructionsX : (self.instructionsX - 1), alt ? self.instructionsY : (self.instructionsY - 1), 0, 17, self.MainTheme, 1, 1, "white");
+                self.menuInstructionsUI["outline"] = self createRectangle(alt ? "CENTER" : "TOP_LEFT", alt ? self.instructionsX : (self.instructionsX - 1), alt ? self.instructionsY : (self.instructionsY - 1), 0, 17, self.MainTheme, 1, 1, "white");
             
             if(!IsDefined(self.menuInstructionsUI["string"]))
-                self.menuInstructionsUI["string"] = self createText("default", 1.1, 3, "", alt ? "CENTER" : "LEFT", "CENTER", alt ? self.instructionsX : (self.instructionsX + 1), alt ? self.instructionsY : (self.instructionsY + 7), 1, (255, 255, 255));
+                self.menuInstructionsUI["string"] = self createText("default", 1.1, 3, "", alt ? "CENTER" : "LEFT", alt ? self.instructionsX : (self.instructionsX + 1), alt ? self.instructionsY : (self.instructionsY + 7), 1, (255, 255, 255));
         }
 
         if(IsDefined(self.menuInstructionsUI["string"]) && Is_True(self.DisableMenuInstructions) || !self hasMenu() || !Is_Alive(self) && !Is_True(self.refreshInstructionsUI) || Is_True(self.InstructionsForceRefresh))

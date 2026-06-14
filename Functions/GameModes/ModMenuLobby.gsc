@@ -85,7 +85,7 @@ ModMenuLobbyMessage()
 
     for(a = 0; a < messages.size; a++)
     {
-        ModMenuLobbyMessage[a] = createServerText("objective", 2.1, 1, "", "CENTER", "CENTER", 0, -100 + (a * 23), 1, level.RGBFadeColor);
+        ModMenuLobbyMessage[a] = createServerText("objective", 2.1, 1, "", "CENTER", 320, 140 + (a * 23), 1, level.RGBFadeColor);
         ModMenuLobbyMessage[a] thread SetTextFX(messages[a], 10);
         ModMenuLobbyMessage[a] thread HudRGBFade();
         wait 1;

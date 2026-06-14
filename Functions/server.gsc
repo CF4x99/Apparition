@@ -420,8 +420,9 @@ Newsbar()
     {
         level endon("EndNewsBar");
 
-        level.NewsbarBG = level createServerRectangle("CENTER", "CENTER", 0, -232, 5000, 18, (0, 0, 0), 1, 0.6, "white");
-        level.NewsbarText = level createServerText("default", 1, 3, "", "CENTER", "CENTER", 0, -255, 1, (1, 1, 1));
+        level.NewsbarBG = level createServerRectangle("CENTER", 320, 8, 1000, 18, (0, 0, 0), 1, 0.6, "white");
+        level.NewsbarBG.horzalign = "fullscreen";
+        level.NewsbarText = level createServerText("default", 1, 3, "", "CENTER", 320, -15, 1, (1, 1, 1));
         
         strings = Array("Welcome To ^1" + GetMenuName() + " ^7Developed By ^2CF4_99", "Your Host Today Is ^6" + CleanName(bot::get_host_player() getName()), "[{+speed_throw}] & [{+melee}] To Open ^1" + GetMenuName(), "YouTube.Com/^3CF4_99", "Discord.gg/^6apparitionbo3", "^5Enjoy Your Stay!");
         
@@ -432,7 +433,7 @@ Newsbar()
                 if(IsDefined(level.NewsbarText))
                 {
                     level.NewsbarText SetTextString(strings[a]);
-                    level.NewsbarText hudMoveY(-232, 0.55);
+                    level.NewsbarText hudMoveY(8, 0.55);
                     level.NewsbarText ChangeFontscaleOverTime1(1.2, 0.75);
                     wait 5;
                 }
@@ -445,7 +446,7 @@ Newsbar()
                 
                 if(IsDefined(level.NewsbarText))
                 {
-                    level.NewsbarText thread hudMoveY(-255, 0.55);
+                    level.NewsbarText thread hudMoveY(-15, 0.55);
                     wait 0.55;
                 }
             }
@@ -491,7 +492,7 @@ SetDoheartText(text, refresh)
     if(IsDefined(level.DoheartText))
         level.DoheartText destroy();
 
-    level.DoheartText = level createServerText("objective", 2, 1, "", "CENTER", "CENTER", 0, -215, 1, (1, 1, 1));
+    level.DoheartText = level createServerText("objective", 2, 1, "", "CENTER", 320, 27, 1, (1, 1, 1));
     
     switch(level.DoheartStyle)
     {

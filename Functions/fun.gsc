@@ -467,14 +467,12 @@ DeathSkullLinker(skulls, player)
     
     while(IsDefined(self))
     {
-        if(IsDefined(player.DeathSkullEnts) && player.DeathSkullEnts.size && IsDefined(level._effect["tesla_bolt"]))
+        if(IsDefined(skulls) && skulls.size && IsDefined(level._effect["tesla_bolt"]))
         {
-            for(a = 1; a < player.DeathSkullEnts.size; a++)
+            for(a = 0; a < skulls.size; a++)
             {
-                if(!IsDefined(player.DeathSkullEnts[a]))
-                    continue;
-                
-                PlayFXOnTag(level._effect["tesla_bolt"], player.DeathSkullEnts[a], "tag_origin");
+                if(IsDefined(skulls[a]))
+                    PlayFXOnTag(level._effect["tesla_bolt"], skulls[a], "tag_origin");
             }
         }
 
@@ -709,8 +707,6 @@ ZombieCounter(player)
                     player CloseLUIMenu(player.ZombieCounterHud[a]);
             }
         }
-
-        player.ZombieCounterHud = undefined;
     }
 }
 
@@ -728,29 +724,15 @@ LightProtector(player)
 
         while(Is_True(player.LightProtector) && IsDefined(player.LightProtect) && Is_Alive(player))
         {
-            player.LightProtect MoveTo(player GetTagOrigin("j_head") + (0, 0, 45), 0.1);
+            player.LightProtect.origin = player GetTagOrigin("j_head") + (0, 0, 45);
             target = player GetLightProtectorTarget();
             
-            if(IsDefined(target) && CanControl(target))
+            if(IsDefined(target) && CanControl(target) && !Is_True(target.LightProtector))
             {
-                target.LightProtector = true;
-                targetOrigin = target GetTagOrigin("j_mainroot");
-
-                if(!IsDefined(targetOrigin) || !IsVec(targetOrigin))
-                {
-                    test = target GetTagOrigin("tag_body");
-
-                    if(IsDefined(test) && IsVec(test))
-                        targetOrigin = test;
-                    else
-                        target = undefined;
-                }
-
-                if(IsDefined(target) && IsDefined(targetOrigin) && IsVec(targetOrigin))
-                    player thread UFOShoot(player.LightProtect.origin, targetOrigin, 55);
+                player thread LightProtectorTarget(target);
             }
             
-            wait 0.1;
+            wait 0.01;
         }
 
         if(Is_True(player.LightProtector) && !IsDefined(player.LightProtect))
@@ -766,6 +748,36 @@ LightProtector(player)
     }
 }
 
+LightProtectorTarget(target)
+{
+    self endon("disconnect");
+    target endon("death");
+
+    if(Is_True(target.LightProtector) || !IsDefined(target) || !IsAlive(target))
+        return;
+    
+    target.LightProtector = true;
+    targetOrigin = target GetTagOrigin("j_mainroot");
+
+    if(!IsDefined(targetOrigin) || !IsVec(targetOrigin))
+    {
+        test = target GetTagOrigin("tag_body");
+
+        if(IsDefined(test) && IsVec(test))
+            targetOrigin = test;
+        else
+            target = undefined;
+    }
+
+    if(IsDefined(target) && IsDefined(targetOrigin) && IsVec(targetOrigin))
+        self thread UFOShoot(self.LightProtect.origin, targetOrigin, 100, 0.1);
+    
+    wait 1;
+
+    if(IsDefined(target) && IsAlive(target))
+        target.LightProtector = undefined;
+}
+
 GetLightProtectorTarget(distance = 500)
 {
     zombies = GetAITeamArray(level.zombie_team);
@@ -777,7 +789,7 @@ GetLightProtectorTarget(distance = 500)
     
     for(a = 0; a < zombies.size; a++)
     {
-        if(!IsDefined(zombies[a]) || !IsAlive(zombies[a]) || zombies[a] DamageConeTrace(self.origin, self) < 0.1 || Distance(self.origin, zombies[a].origin) > distance || Is_True(zombies[a].LightProtector))
+        if(!CanControl(zombies[a]) || zombies[a] DamageConeTrace(self.origin, self) < 0.1 || Distance(self.origin, zombies[a].origin) > distance || Is_True(zombies[a].LightProtector))
             continue;
         
         if(zombies[a].archetype == "zombie" && !Is_True(zombies[a].zombie_think_done) || zombies[a].archetype != "zombie" && Is_True(zombies[a].ignoreme))
@@ -1211,7 +1223,6 @@ HealthBar(player)
             if(!IsDefined(player.HealthBarUI) || !player.HealthBarUI.size)
             {
                 player.HealthBarUI = [];
-
                 player.HealthBarUI[0] = player LUI_createRectangle(0, 24, 600, (maxHealthWidth + 2), 14, (0, 0, 0), "white", 1);
                 player.HealthBarUI[1] = player LUI_createRectangle(0, 25, 601, healthWidth, 12, (1, 1, 1), "white", 0.9);
             }

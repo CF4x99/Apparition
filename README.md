@@ -7,7 +7,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.6.0.7
+    Version:              1.6.0.8
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -31,6 +31,23 @@
 
 
 ## Changelog
+
+<details>
+    <summary>
+        Version 1.6.0.8
+    </summary>
+
+    - Changed: Menu Base -- I moved the default menu position a little to the left
+    - Changed: Menu Base -- Removed the need for relative point for hud
+
+    - Fixed: Menu Base -- Critical bug with scrolling system causing hud count to be wrong and cause hud to flicker(reported by nemming - thank you)
+    - Fixed: Menu Base -- Apparition is now fully undetected by the UEM anti-cheat again
+    - Fixed: Newsbar -- Now supports ultra-wide screens
+    - Fixed: Black Screen -- Now supports ultra-wide screens
+    - Fixed: Light Protector -- A few issues with damage, radius, and targeting -- Should be perfect now
+    - Fixed: Death Skull -- Fixed an issue with the skull effects
+
+</details>
 
 <details>
     <summary>

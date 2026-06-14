@@ -112,13 +112,13 @@ RunMenuOptions(menu)
         case "Entity Rotation":
         case "Entities Rotation":
 
-            if((!IsDefined(level.SavedMapEntities) || !level.SavedMapEntities.size) && menu != "Entity Options")
+            if((!IsDefined(level.menu_entities) || !level.menu_entities.size) && menu != "Entity Options")
             {
                 self.menu_parent = Array("Main");
                 menu = "Entity Options";
             }
             
-            if((menu == "Entity Editor" || menu == "Entity Rotation") && !IsDefined(level.SavedMapEntities[self.EntityEditorNumber]))
+            if((menu == "Entity Editor" || menu == "Entity Rotation") && !IsDefined(level.menu_entities[self.EntityEditorNumber]))
             {
                 self.menu_parent = Array("Main", "Entity Options");
                 menu = "Entity Editing List";

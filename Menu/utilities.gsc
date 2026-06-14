@@ -1,17 +1,21 @@
-createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
+createText(font, fontSize, sort, text, align, x, y, alpha, color)
 {
-    textElem = self hud::CreateFontString(font, fontSize);
-
+    textElem = NewClientHudElem(self);
+    textElem.elemtype = "font";
+    
     textElem.hidewheninmenu = true;
     textElem.archived = self ShouldArchive();
     textElem.foreground = true;
     textElem.player = self;
     textElem.hidden = false;
-
+    textElem.font = font;
+    textElem.fontscale = fontSize;
     textElem.sort = sort;
     textElem.alpha = alpha;
+    textElem.width = 0;
+    textElem.height = Int(level.fontheight * fontSize);
     textElem.color = IsDefined(color) ? IsVec(color) ? GetColorVec(color) : IsString(color) ? level.RGBFadeColor : (0, 0, 0) : (0, 0, 0);
-    textElem hud::SetPoint(align, relative, x, y);
+    textElem SetPoint(align, x, y);
 
     if(IsInt(text) || IsFloat(text))
         textElem SetValue(text);
@@ -19,7 +23,6 @@ createText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
         textElem SetTextString(text);
 
     self.hud_count++;
-
     return textElem;
 }
 
@@ -43,53 +46,51 @@ LUI_createText(text, align, x, y, width, color)
     return textElem;
 }
 
-createServerText(font, fontSize, sort, text, align, relative, x, y, alpha, color)
+createServerText(font, fontSize, sort, text, align, x, y, alpha, color)
 {
-    textElem = hud::CreateServerFontString(font, fontSize);
-
+    textElem = NewHudElem();
+    textElem.elemtype = "font";
+    
     textElem.hidewheninmenu = true;
-    textElem.archived = true;
+    textElem.archived = self ShouldArchive();
     textElem.foreground = true;
+    textElem.player = self;
     textElem.hidden = false;
-
+    textElem.font = font;
+    textElem.fontscale = fontSize;
     textElem.sort = sort;
     textElem.alpha = alpha;
-    textElem.color = GetColorVec(color);
+    textElem.width = 0;
+    textElem.height = Int(level.fontheight * fontSize);
+    textElem.color = IsDefined(color) ? IsVec(color) ? GetColorVec(color) : IsString(color) ? level.RGBFadeColor : (0, 0, 0) : (0, 0, 0);
+    textElem SetPoint(align, x, y);
 
-    textElem hud::SetPoint(align, relative, x, y);
-    textElem SetTextString(text);
+    if(IsInt(text) || IsFloat(text))
+        textElem SetValue(text);
+    else
+        textElem SetTextString(text);
     
     return textElem;
 }
 
-createRectangle(align, relative, x, y, width, height, color, sort, alpha, shader)
+createRectangle(align, x, y, width, height, color, sort, alpha, shader)
 {
     uiElement = NewClientHudElem(self);
-    
     uiElement.elemType = "icon";
-    uiElement.children = [];
     
     uiElement.hidewheninmenu = true;
     uiElement.archived = self ShouldArchive();
     uiElement.foreground = true;
     uiElement.hidden = false;
     uiElement.player = self;
-
-    uiElement.align = align;
-    uiElement.relative = relative;
-    uiElement.xOffset = 0;
-    uiElement.yOffset = 0;
     uiElement.sort = sort;
-
     uiElement.color = (IsDefined(color) && IsVec(color)) ? GetColorVec(color) : IsString(color) ? level.RGBFadeColor : (0, 0, 0);
     uiElement.alpha = alpha;
     
     uiElement SetShaderValues(shader, width, height);
-    uiElement hud::SetParent(level.uiParent);
-    uiElement hud::SetPoint(align, relative, x, y);
+    uiElement SetPoint(align, x, y);
 
     self.hud_count++;
-    
     return uiElement;
 }
 
@@ -115,30 +116,21 @@ LUI_createRectangle(align, x, y, width, height, color, shader, alpha)
     return boxElem;
 }
 
-createServerRectangle(align, relative, x, y, width, height, color, sort, alpha, shader)
+createServerRectangle(align, x, y, width, height, color, sort, alpha, shader)
 {
     uiElement = NewHudElem();
-    
     uiElement.elemType = "icon";
-    uiElement.children = [];
     
     uiElement.hidewheninmenu = true;
     uiElement.archived = true;
     uiElement.foreground = true;
     uiElement.hidden = false;
-
-    uiElement.align = align;
-    uiElement.relative = relative;
-    uiElement.xOffset = 0;
-    uiElement.yOffset = 0;
     uiElement.sort = sort;
-
     uiElement.color = GetColorVec(color);
     uiElement.alpha = alpha;
     
     uiElement SetShaderValues(shader, width, height);
-    uiElement hud::SetParent(level.uiParent);
-    uiElement hud::SetPoint(align, relative, x, y);
+    uiElement SetPoint(align, x, y);
     
     return uiElement;
 }
@@ -158,6 +150,66 @@ createWaypoint(origin, shader = "damage_feedback_glow_orange", color = (1, 1, 1)
     uiElement SetWaypoint(false);
     
     return uiElement;
+}
+
+SetPoint(point = "CENTER", xpos = 0, ypos = 0)
+{
+    self.alignx = "center";
+    self.aligny = "middle";
+
+    self.x = xpos;
+    self.y = ypos;
+
+    switch(point)
+    {
+        case "TOP":
+            self.aligny = "top";
+            break;
+
+        case "BOTTOM":
+            self.aligny = "bottom";
+            break;
+
+        case "LEFT":
+            self.alignx = "left";
+            break;
+
+        case "RIGHT":
+            self.alignx = "right";
+            break;
+
+        case "TOPRIGHT":
+        case "TOP_RIGHT":
+            self.aligny = "top";
+            self.alignx = "right";
+            break;
+
+        case "TOPLEFT":
+        case "TOP_LEFT":
+            self.aligny = "top";
+            self.alignx = "left";
+            break;
+
+        case "TOPCENTER":
+            self.aligny = "top";
+            self.alignx = "center";
+            break;
+
+        case "BOTTOM RIGHT":
+        case "BOTTOM_RIGHT":
+            self.aligny = "bottom";
+            self.alignx = "right";
+            break;
+
+        case "BOTTOM LEFT":
+        case "BOTTOM_LEFT":
+            self.aligny = "bottom";
+            self.alignx = "left";
+            break;
+
+        default:
+            break;
+    }
 }
 
 GetColorVec(color)
@@ -182,12 +234,15 @@ GetColorVec(color)
     return (colors[0], colors[1], colors[2]);
 }
 
-ShouldArchive()
+ShouldArchive(count)
 {
+    if(!IsDefined(count))
+        count = self.hud_count;
+
     if(Is_True(self.StealthUI))
         return false;
     
-    if(!Is_Alive(self) || self.hud_count < 21)
+    if(!Is_Alive(self) || count < 26)
         return false;
     
     return true;
@@ -377,7 +432,7 @@ hudFade(alpha, time)
         wait time;
 }
 
-hudFadeDestroy(alpha, time)
+hudFadeDestroy(alpha = 0, time = 0)
 {
     if(!IsDefined(self))
         return;
@@ -831,12 +886,8 @@ PulseFXText(text, hud)
     
     while(IsDefined(hud))
     {
-        if(IsDefined(hud))
-        {
-            hud.color = (RandomInt(255) / 255, RandomInt(255) / 255, RandomInt(255) / 255);
-            hud SetCOD7DecodeFX(25, 2000, 500);
-        }
-
+        hud.color = (RandomInt(255) / 255, RandomInt(255) / 255, RandomInt(255) / 255);
+        hud SetCOD7DecodeFX(25, 2000, 500);
         wait 3;
     }
 }
@@ -850,12 +901,8 @@ TypeWriterFXText(text, hud)
 
     while(IsDefined(hud))
     {
-        if(IsDefined(hud))
-        {
-            hud.color = (RandomInt(255) / 255, RandomInt(255) / 255, RandomInt(255) / 255);
-            hud SetTypeWriterFX(25, 2000, 500);
-        }
-
+        hud.color = (RandomInt(255) / 255, RandomInt(255) / 255, RandomInt(255) / 255);
+        hud SetTypeWriterFX(25, 2000, 500);
         wait 3;
     }
 }
@@ -869,13 +916,9 @@ RandomPosText(text, hud)
     
     while(IsDefined(hud))
     {
-        if(IsDefined(hud))
-        {
-            hud FadeOverTime(2);
-            hud.color = (RandomInt(255) / 255, RandomInt(255) / 255, RandomInt(255) / 255);
-            hud thread hudMoveXY(RandomIntRange(-300, 300), RandomIntRange(-200, 200), 2);
-        }
-        
+        hud FadeOverTime(2);
+        hud.color = (RandomInt(255) / 255, RandomInt(255) / 255, RandomInt(255) / 255);
+        hud thread hudMoveXY(hud.x + RandomIntRange(-150, 150), hud.y + RandomIntRange(-100, 100), 2);
         wait 1.98;
     }
 }
@@ -890,19 +933,14 @@ PulsingText(text, hud)
     
     while(IsDefined(hud))
     {
-        if(IsDefined(hud))
-        {
-            hud ChangeFontscaleOverTime1(savedFontScale + 0.8, 0.6);
-            hud hudFadeColor((RandomInt(255) / 255, RandomInt(255) / 255, RandomInt(255) / 255), 0.6);
-
-            wait 0.6;
-        }
+        hud ChangeFontscaleOverTime1(savedFontScale + 0.8, 0.6);
+        hud hudFadeColor((RandomInt(255) / 255, RandomInt(255) / 255, RandomInt(255) / 255), 0.6);
+        wait 0.6;
 
         if(IsDefined(hud))
         {
             hud ChangeFontscaleOverTime1(savedFontScale - 0.5, 0.6);
             hud hudFadeColor((RandomInt(255) / 255, RandomInt(255) / 255, RandomInt(255) / 255), 0.6);
-
             wait 0.6;
         }
     }
@@ -918,10 +956,7 @@ FadingTextEffect(text, hud)
 
     while(IsDefined(hud))
     {
-        if(IsDefined(hud))
-            hud hudFade(0, 1);
-        
-        //There is a wait when hudFade is used. So we need to check to make sure the hud is still defined before trying to change the color
+        hud hudFade(0, 1);
         
         if(IsDefined(hud))
             hud.color = (RandomInt(255) / 255, RandomInt(255) / 255, RandomInt(255) / 255);
@@ -961,10 +996,10 @@ Keyboard(func, player)
             letters[a] += lettersTok[a][b] + "\n";
     }
 
-    self.menuUI["kbString"] = self createText("objective", 1.1, 5, "", "CENTER", "CENTER", self.menuX + (self.menuUI["background"].width / 2), (self.menuUI["background"].y + 12), 1, (1, 1, 1));
+    self.menuUI["kbString"] = self createText("objective", 1.1, 5, "", "CENTER", self.menuX + (self.menuUI["background"].width / 2), (self.menuUI["background"].y + 12), 1, (1, 1, 1));
 
     for(a = 0; a < letters.size; a++)
-        self.menuUI["kbKeys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", self.menuX + (self.menuUI["background"].width / 2) - (((lettersTok.size - 1) * 15) / 2) + (a * 15), (self.menuUI["kbString"].y + 20), 1, (1, 1, 1));
+        self.menuUI["kbKeys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", self.menuX + (self.menuUI["background"].width / 2) - (((lettersTok.size - 1) * 15) / 2) + (a * 15), (self.menuUI["kbString"].y + 20), 1, (1, 1, 1));
     
     if(IsDefined(self.menuUI["scroller"]))
         self.menuUI["scroller"] hudMoveXY(self.menuUI["kbKeys0"].x - 8, (self.menuUI["kbKeys0"].y - 8), 0.01);
@@ -1100,10 +1135,10 @@ NumberPad(func, player, param)
     for(a = 0; a < 10; a++)
         letters[a] = a;
     
-    self.menuUI["kbString"] = self createText("objective", 1.2, 5, 0, "CENTER", "CENTER", self.menuX + (self.menuUI["background"].width / 2), (self.menuUI["background"].y + 12), 1, (1, 1, 1));
+    self.menuUI["kbString"] = self createText("objective", 1.2, 5, 0, "CENTER", self.menuX + (self.menuUI["background"].width / 2), (self.menuUI["background"].y + 12), 1, (1, 1, 1));
 
     for(a = 0; a < letters.size; a++)
-        self.menuUI["kbKeys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", "CENTER", self.menuX + (self.menuUI["background"].width / 2) - (((letters.size - 1) * 15) / 2) + (a * 15), (self.menuUI["kbString"].y + 20), 1, (1, 1, 1));
+        self.menuUI["kbKeys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", self.menuX + (self.menuUI["background"].width / 2) - (((letters.size - 1) * 15) / 2) + (a * 15), (self.menuUI["kbString"].y + 20), 1, (1, 1, 1));
     
     if(IsDefined(self.menuUI["scroller"]))
         self.menuUI["scroller"] hudMoveXY(self.menuUI["kbKeys0"].x - 7, (self.menuUI["kbKeys0"].y - 7), 0.01);
@@ -1964,7 +1999,7 @@ MenuCreditsStart(creditArray)
     {
         if(creditArray[a] != " ")
         {
-            self.menuUI["MenuCreditsHud"][a] = self createText("objective", title ? 1.4 : 1.1, 5, "", "CENTER", "CENTER", self.menuX + (self.menuUI["background"].width / 2), (self.menuUI["background"].y + (self.menuUI["background"].height - 8)), 0, (1, 1, 1));
+            self.menuUI["MenuCreditsHud"][a] = self createText("objective", title ? 1.4 : 1.1, 5, "", "CENTER", self.menuX + (self.menuUI["background"].width / 2), (self.menuUI["background"].y + (self.menuUI["background"].height - 8)), 0, (1, 1, 1));
             self thread CreditsFadeIn(self.menuUI["MenuCreditsHud"][a], creditArray[a], moveTime, 0.5);
             
             title = false;
@@ -2303,14 +2338,10 @@ ShowOrigin()
     if(Is_True(self.ShowOrigin))
     {
         self endon("disconnect");
-
-        //each value in the players origin vector(x, y, z) needs to be its own element to avoid creating a massive amount of unique strings
-        //SetValue(int / float) doesn't count towards unique strings since they're numbers
-        
         self.originHud = [];
 
         for(a = 0; a < 3; a++)
-            self.originHud[self.originHud.size] = self createText("default", 1, 1, 0, "CENTER", "CENTER", 0, 75 + (a * 16), 1, (1, 1, 1));
+            self.originHud[self.originHud.size] = self createText("default", 1, 1, 0, "CENTER", 320, 315 + (a * 16), 1, (1, 1, 1));
 
         while(Is_True(self.ShowOrigin))
         {

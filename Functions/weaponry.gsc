@@ -83,10 +83,13 @@ PopulateWeaponry(menu, player)
                     {
                         name = ReturnAttachmentName(attachment);
 
-                        if(!IsDefined(name) || name == "" || name == "none" || name == "dw")
+                        if(!IsDefined(name) || name == "" || attachment == "dw")
                             continue;
                         
-                        self addOptBool((IsDefined(weapon.attachments) && isInArray(weapon.attachments, attachment)), ReturnAttachmentName(attachment), ::GivePlayerAttachment, attachment, player);
+                        if(attachment == "none")
+                            self addOpt(name, ::GivePlayerAttachment, attachment, player);
+                        else
+                            self addOptBool((IsDefined(weapon.attachments) && isInArray(weapon.attachments, attachment)), name, ::GivePlayerAttachment, attachment, player);
                     }
                 }
                 else

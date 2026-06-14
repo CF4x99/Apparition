@@ -384,7 +384,7 @@ AC130(type)
         {
             if(!IsDefined(self.AC130Reloading))
             {
-                self.AC130Reloading = self createText("default", 1.4, 1, "RELOADING...", "CENTER", "CENTER", 0, 100, 1, (1, 1, 1));
+                self.AC130Reloading = self createText("objective", 1.4, 1, "RELOADING...", "CENTER", 320, 340, 1, (1, 1, 1));
                 self.AC130Reloading thread AC130FlashingHud();
             }
         }
@@ -509,14 +509,14 @@ RefreshAC130HUD(ammo)
     self.AC130HUD = [];
 
     weapon40MM = IsVerkoMap() ? GetWeapon("vk_tra_pis_t9_1911_rdw_lvl3") : zm_weapons::get_upgrade_weapon(level.start_weapon);
-    AC130HudValues = (ammo == GetWeapon("minigun")) ? Array("0,50,2,80", "40,0,60,2", "-40,0,60,2", "-180,151,2,50", "-155,175,50,2", "180,151,2,50", "155,175,50,2", "180,-151,2,50", "155,-175,50,2", "-180,-151,2,50", "-155,-175,50,2") : (ammo == weapon40MM) ? Array("0,80,2,120", "0,-80,2,120", "0,-46,10,1", "0,-92,10,1", "0,-140,14,1", "0,46,10,1", "0,92,10,1", "0,140,14,1", "85,0,130,2", "-85,0,130,2", "37,0,1,10", "75,0,1,10", "112,0,1,10", "150,0,1,14", "-37,0,1,10", "-75,0,1,10", "-112,0,1,10", "-150,0,1,14") : Array("0,25,51,2", "0,-25,51,2", "25,0,2,51", "-25,0,2,52", "0,50,2,51", "0,-50,2,51", "50,0,51,2", "-50,0,51,2", "225,161,2,30", "210,175,30,2", "-225,161,2,30", "-210,175,30,2", "-225,-161,2,30", "-210,-175,30,2", "225,-161,2,30", "210,-175,30,2");
+    AC130HudValues = (ammo == GetWeapon("minigun")) ? Array("320,290,2,80", "360,240,60,2", "280,240,60,2", "140,391,2,50", "165,415,50,2", "500,391,2,50", "475,415,50,2", "500,89,2,50", "475,65,50,2", "140,89,2,50", "165,65,50,2") : (ammo == weapon40MM) ? Array("320,320,2,120", "320,160,2,120", "320,194,10,1", "320,148,10,1", "320,100,14,1", "320,286,10,1", "320,332,10,1", "320,380,14,1", "405,240,130,2", "235,240,130,2", "357,240,1,10", "395,240,1,10", "432,240,1,10", "470,240,1,14", "283,240,1,10", "245,240,1,10", "208,240,1,10", "170,240,1,14") : Array("320,265,51,2", "320,215,51,2", "345,240,2,51", "295,240,2,52", "320,290,2,51", "320,190,2,51", "370,240,51,2", "270,240,51,2", "545,401,2,30", "530,415,30,2", "95,401,2,30", "110,415,30,2", "95,79,2,30", "110,65,30,2", "545,79,2,30", "530,65,30,2");
     text = (ammo == GetWeapon("minigun")) ? "25mm" : (ammo == weapon40MM) ? "40mm" : "105mm";
 
     for(a = 0; a < AC130HudValues.size; a++)
-        self.AC130HUD[self.AC130HUD.size] = self createRectangle("CENTER", "CENTER", Int(StrTok(AC130HudValues[a], ",")[0]), Int(StrTok(AC130HudValues[a], ",")[1]), Int(StrTok(AC130HudValues[a], ",")[2]), Int(StrTok(AC130HudValues[a], ",")[3]), (1, 1, 1), 1, 1, "white");
+        self.AC130HUD[self.AC130HUD.size] = self createRectangle("CENTER", Int(StrTok(AC130HudValues[a], ",")[0]), Int(StrTok(AC130HudValues[a], ",")[1]), Int(StrTok(AC130HudValues[a], ",")[2]), Int(StrTok(AC130HudValues[a], ",")[3]), (1, 1, 1), 1, 1, "white");
     
     button = self GamepadUsedLast() ? "[{+weapnext_inventory}]" : "[{+activate}]";
-    self.AC130HUD[self.AC130HUD.size] = self createText("default", 1.2, 1, text + "\n^3" + button + " ^7To Change Weapon", "LEFT", "CENTER", -400, 0, 1, (1, 1, 1));
+    self.AC130HUD[self.AC130HUD.size] = self createText("objective", 1.2, 1, text + "\n^3" + button + " ^7To Change Weapon", "LEFT", -80, 240, 1, (1, 1, 1));
 }
 
 FlyableUFO()
@@ -603,7 +603,7 @@ FlyableUFO()
         playerLinker.angles = (playerLinker.angles[0], self GetPlayerAngles()[1], playerLinker.angles[2]);
 
         if(self AttackButtonPressed())
-            self thread UFOShoot((base[0].origin + (AnglesToUp(base[0].angles) * -10)), base[0].origin, 350, true, base[0]);
+            self thread UFOShoot((base[0].origin + (AnglesToUp(base[0].angles) * -10)), base[0].origin, 350, 0.35, true, base[0]);
 
         if(self AdsButtonPressed())
             playerLinker.origin = playerLinker.origin + AnglesToForward(playerLinker.angles) * 25;
@@ -675,7 +675,7 @@ UFOSpin()
     }
 }
 
-UFOShoot(startOrigin, endOrigin, range = 350, runTrace = false, ignoreEnt)
+UFOShoot(startOrigin, endOrigin, range = 350, moveTime = 0.35, runTrace = false, ignoreEnt)
 {
     if(Is_True(self.UFOShoot) || !IsDefined(startOrigin) || !IsVec(startOrigin) || !IsDefined(endOrigin) || !IsVec(endOrigin))
         return;
@@ -706,7 +706,7 @@ UFOShoot(startOrigin, endOrigin, range = 350, runTrace = false, ignoreEnt)
         if(IsDefined(level._effect["tesla_bolt"]))
             PlayFXOnTag(level._effect["tesla_bolt"], bullet, "tag_origin");
 
-        time = 0.35;
+        time = moveTime;
         bullet MoveTo(endOrigin, time);
         wait (time / 2);
 
@@ -717,7 +717,7 @@ UFOShoot(startOrigin, endOrigin, range = 350, runTrace = false, ignoreEnt)
             bullet Delete();
         
         Earthquake(0.75, 2, endOrigin, 255);
-        RadiusDamage(endOrigin, 350, 699, 699, self);
+        RadiusDamage(endOrigin, range, 696969, 696969, self);
 
         if(IsDefined(level._effect["raps_impact"]))
             PlayFX(level._effect["raps_impact"], endOrigin);

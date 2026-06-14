@@ -604,7 +604,7 @@ CustomPowerupSpawn(powerup_name, drop_spot)
 
 custom_powerup_timeout()
 {
-    wait 15;
+    wait 5;
 
     if(!IsDefined(self))
         return;

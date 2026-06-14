@@ -421,11 +421,16 @@ BlackScreenPlayer(player)
         player.BlackScreenHud = [];
 
         for(a = 0; a < 2; a++)
-            player.BlackScreenHud[player.BlackScreenHud.size] = player createRectangle("CENTER", "CENTER", 0, 0, 5000, 5000, (0, 0, 0), 0, 1, "black");
+        {
+            index = player.BlackScreenHud.size;
+            player.BlackScreenHud[index] = player createRectangle("CENTER", 320, 240, 1000, 1000, (0, 0, 0), 0, 1, "black");
+            player.BlackScreenHud[index].horzalign = "fullscreen";
+        }
     }
     else
     {
         destroyAll(player.BlackScreenHud);
+        player.BlackScreenHud = undefined;
     }
 }
 

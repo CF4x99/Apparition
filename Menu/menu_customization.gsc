@@ -262,7 +262,7 @@ RepositionMenu()
     
     self SoftLockMenu(120, true);
     
-    self.menuUI["reposition"] = self createText("default", 1, 5, "[{+melee}] - Exit\n[{+activate}] - Save Position\n[{+actionslot 1}] - Move Up\n[{+actionslot 2}] - Move Down\n[{+actionslot 3}] - Move Left\n[{+actionslot 4}] - Move Right", "LEFT", "CENTER", self.menuX + 4, (self.menuUI["background"].y + 28), 1, (1, 1, 1));
+    self.menuUI["reposition"] = self createText("default", 1, 5, "[{+melee}] - Exit\n[{+activate}] - Save Position\n[{+actionslot 1}] - Move Up\n[{+actionslot 2}] - Move Down\n[{+actionslot 3}] - Move Left\n[{+actionslot 4}] - Move Right", self.menuX + 4, (self.menuUI["background"].y + 28), 1, (1, 1, 1));
     
     while(self isInMenu(true))
     {
@@ -347,16 +347,16 @@ MenuWidthEditor()
             self.menuUI[txtHud[a]] DestroyHud();
     }
     
-    self.menuUI["editwidth"] = self createText("default", 1, 5, "[{+melee}] - Exit\n[{+activate}] - Save Width\n[{+attack}] - Increase Width\n[{+speed_throw}] - Decrease Width\n[{+actionslot 4}] - Increase Offset Value\n[{+actionslot 3}] - Decrease Offset Value", "LEFT", "CENTER", self.menuX + 4, (self.menuUI["background"].y + 25), 1, (1, 1, 1));
+    self.menuUI["editwidth"] = self createText("default", 1, 5, "[{+melee}] - Exit\n[{+activate}] - Save Width\n[{+attack}] - Increase Width\n[{+speed_throw}] - Decrease Width\n[{+actionslot 4}] - Increase Offset Value\n[{+actionslot 3}] - Decrease Offset Value", "LEFT", self.menuX + 4, (self.menuUI["background"].y + 25), 1, (1, 1, 1));
 
     offsetY = (self.menuUI["editwidth"].y + CorrectNL_BGHeight(self.menuUI["editwidth"].text));
-    self.menuUI["offset"] = self createText("default", 1, 5, "Offset Value: ", "LEFT", "CENTER", self.menuX + 4, offsetY, 1, (1, 1, 1));
+    self.menuUI["offset"] = self createText("default", 1, 5, "Offset Value: ", "LEFT", self.menuX + 4, offsetY, 1, (1, 1, 1));
 
     hud = Array("background", "banner", "separator", "bottomLine", "backgroundouter");
     width = self.MenuWidth;
     offset = 1;
 
-    self.menuUI["offsetValue"] = self createText("default", 1, 5, offset, "LEFT", "CENTER", self.menuUI["offset"].x + (self.menuUI["editwidth"] GetTextWidth3arc(self, 2) - 4), offsetY, 1, (0, 1, 0));
+    self.menuUI["offsetValue"] = self createText("default", 1, 5, offset, "LEFT", self.menuUI["offset"].x + (self.menuUI["editwidth"] GetTextWidth3arc(self, 2) - 4), offsetY, 1, (0, 1, 0));
 
     min = 200;
     max = 500;
@@ -616,8 +616,8 @@ RepositionMenuInstructions()
 
 ResetMenuInstructions()
 {
-    self.instructionsX = Is_True(self.AlternateInstructions) ? 0 : -100;
-    self.instructionsY = 230;
+    self.instructionsX = Is_True(self.AlternateInstructions) ? 320 : 255;
+    self.instructionsY = 472;
     self SaveMenuTheme();
 }
 
@@ -734,10 +734,10 @@ GetSavedVariable(variable)
 
 LoadMenuVars()
 {
-    self.menuX = -176; //Keep in mind that the position is close to the center to ensure the menu is visible on any resolution(use the menu position editor to place it where it best fits your liking)
-    self.menuY = -161;
-    self.instructionsX = -100;
-    self.instructionsY = 230;
+    self.menuX = 0; //Keep in mind that the position is close to the center to ensure the menu is visible on any resolution(use the menu position editor to place it where it best fits your liking)
+    self.menuY = 85;
+    self.instructionsX = Is_True(self.AlternateInstructions) ? 320 : 255;
+    self.instructionsY = 472;
     self.MenuWidth = 260;
     self.MainTheme = (57, 152, 254);
     self.MenuDesign = GetMenuName();
