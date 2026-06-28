@@ -244,13 +244,8 @@ ForgeShootModel()
         while(Is_True(self.ForgeShootModel))
         {
             self waittill("weapon_fired");
-
-            start = self GetWeaponMuzzlePoint();
-
-            if(!IsDefined(start) || !IsVec(start))
-                start = self GetEye();
-
-            spawn = SpawnScriptModel(start + VectorScale(AnglesToForward(self GetPlayerAngles()), 60), ent);
+            
+            spawn = SpawnScriptModel(self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), 60), ent);
 
             if(IsDefined(spawn))
             {

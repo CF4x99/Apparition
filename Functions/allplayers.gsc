@@ -82,7 +82,7 @@ AllPlayersFunction(fnc, param, param2)
         
         if(IsDefined(param2))
             self thread [[ fnc ]](param, param2, player);
-        else if(!IsDefined(param2) && IsDefined(param))
+        else if(IsDefined(param))
             self thread [[ fnc ]](param, player);
         else
             self thread [[ fnc ]](player);

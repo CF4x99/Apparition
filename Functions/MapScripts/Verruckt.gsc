@@ -44,7 +44,7 @@ VerrucktHideAndSeekSong()
 VerrucktLullabyForADeadMan()
 {
     if(Is_True(level.VerrucktLullaby))
-        return iPrintlnBold("^1ERROR: ^7Lullaby For A Dead Man Already Activated");
+        return self iPrintlnBold("^1ERROR: ^7Lullaby For A Dead Man Already Activated");
 
     level.VerrucktLullaby = true;
     trigger = struct::get("snd_flusher", "targetname");

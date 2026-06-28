@@ -22,13 +22,7 @@ SpawnSkybase()
         cancel = false;
         distance = 650;
         cfIndex = Int(Pow(2, RandomInt(3)));
-
-        start = self GetWeaponMuzzlePoint();
-
-        if(!IsDefined(start) || !IsVec(start))
-            start = self GetEye();
-
-        trace = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), distance), 0, self)["position"];
+        trace = BulletTrace(self GetEye(), self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), distance), 0, self)["position"];
 
         goalPos = SpawnScriptModel(trace, "tag_origin");
         goalPos clientfield::set("powerup_fx", cfIndex);
@@ -68,13 +62,8 @@ SpawnSkybase()
                 cancel = true;
                 break;
             }
-
-            start = self GetWeaponMuzzlePoint();
-
-            if(!IsDefined(start) || !IsVec(start))
-                start = self GetEye();
             
-            trace = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), distance), 0, self)["position"];
+            trace = BulletTrace(self GetEye(), self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), distance), 0, self)["position"];
             goalPos.origin = trace;
 
             if(self AttackButtonPressed())
@@ -232,7 +221,7 @@ SpawnSkybase()
     array::thread_all(corners, ::SpawnableArray, "Skybase");
 
     //SpawnProp(origin = (0, 0, 0), model = "defaultactor", angles = (0, 0, 0), bounce = true, glow = true, triggerFunction, hintString)
-    bottle = SpawnProp(origin + (10, (55 * (y + 1)), 55), GetSpawnablePerkBottle(), (0, 0, 0), true, true, ::SkybasePerkTrigger, "Press [{+activate}] For All Perks");
+    bottle = SpawnProp(origin + (10, (55 * (y + 1)), 55), GetSpawnablePerkBottle(), (0, 0, 0), true, true, ::SkybasePerkTrigger, "Press ^3[{+activate}]^7 For All Perks");
 
     if(!IsDefined(bottle))
         return false;
@@ -265,12 +254,7 @@ SpawnSkybaseTeleporter()
 
     if(!IsDefined(level.SkybaseTeleporters) || !level.SkybaseTeleporters.size)
     {
-        start = self GetWeaponMuzzlePoint();
-
-        if(!IsDefined(start) || !IsVec(start))
-            start = self GetEye();
-        
-        traceSurface = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["surfacetype"];
+        traceSurface = BulletTrace(self GetEye(), self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["surfacetype"];
 
         if(traceSurface == "none" || traceSurface == "default")
             return self iPrintlnBold("^1ERROR: ^7Invalid Surface");

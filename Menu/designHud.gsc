@@ -14,8 +14,8 @@ createMenuHud()
             self AIOHud();
             break;
         
-        case "Physics 'n' Flex":
-            self PNFHud();
+        case "Basic":
+            self BasicHud();
             break;
         
         default:
@@ -23,11 +23,6 @@ createMenuHud()
             break;
     }
 }
-
-/*
-    I know the original way I was doing multiple designs was confusing and hard to understand...
-    Hopefully with everything setup like this, it should make it a little easier in case anyone wants to make edits
-*/
 
 ApparitionHud()
 {
@@ -49,7 +44,7 @@ ApparitionHud()
 
 ClassicHud()
 {
-    self.menuUI["background"] = self createRectangle("TOP_LEFT", self.menuX, self.menuY, self.MenuWidth, 300, (25, 25, 25), 3, 0.92, "white");
+    self.menuUI["background"] = self createRectangle("TOP_LEFT", self.menuX, self.menuY, self.MenuWidth, 300, (25, 25, 25), 3, 0.85, "white");
     self.menuUI["banner"] = self createRectangle("TOP_LEFT", (self.menuUI["background"].x - 1), (self.menuUI["background"].y - 13), (self.MenuWidth + 2), (self.menuUI["background"].height + 14), self.MainTheme, 2, 1, "white");
     self.menuUI["scroller"] = self createRectangle("TOP_LEFT", self.menuUI["background"].x, self.menuUI["background"].y, self.MenuWidth, 18, self.MainTheme, 4, 1, "white");
 
@@ -93,9 +88,10 @@ AIOHud()
     self.menuUI["menuName"] = self createText("default", 1.4, 7, "Status: " + self.accessLevel, "LEFT", (self.menuUI["background"].x + 2), (self.menuUI["bottomLine"].y + ((self.menuUI["bottomLine"].height / 2) - 1)), 1, (255, 255, 255));
 }
 
-PNFHud()
+BasicHud()
 {
-    self.menuUI["background"] = self createRectangle("TOP_LEFT", self.menuX, self.menuY, self.MenuWidth, 300, (0, 0, 0), 3, 0.65, "white");
-    self.menuUI["scroller"] = self createRectangle("TOP_LEFT", self.menuUI["background"].x, self.menuUI["background"].y, self.MenuWidth, 18, self.MainTheme, 4, 0.85, "white");
-    self.menuUI["title"] = self createText("default", 1.2, 7, "", "LEFT", (self.menuUI["background"].x + 4), (self.menuUI["background"].y + 6), 1, (0, 255, 0));
+    self.menuUI["background"] = self createRectangle("TOP_LEFT", self.menuX, self.menuY, self.MenuWidth, 300, (0, 0, 0), 3, 0.45, "white");
+    self.menuUI["banner"] = self createRectangle("TOP_LEFT", self.menuUI["background"].x, self.menuUI["background"].y, self.MenuWidth, 20, (0, 0, 0), 4, 1, "white");
+    self.menuUI["scroller"] = self createRectangle("TOP_LEFT", self.menuUI["background"].x, self.menuUI["background"].y, self.MenuWidth, 18, (0, 0, 0), 4, 1, "white");
+    self.menuUI["title"] = self createText("default", 1.4, 7, "", "CENTER", (self.menuUI["background"].x + (self.menuUI["background"].width / 2)), (self.menuUI["background"].y + ((self.menuUI["banner"].height / 2) - 1)), 1, self.MainTheme);
 }

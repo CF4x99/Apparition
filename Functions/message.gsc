@@ -78,7 +78,7 @@ typeWriter(message)
         
         level.LobbyMessageQueue = newQueue;
 
-        level.LobbyTypeWriterMessage = createServerText("objective", 1.7, 1, "", "TOP", 320, 75, 1, level.RGBFadeColor);
+        level.LobbyTypeWriterMessage = level createServerText("objective", 2, 1, "", "TOP", 320, 75, 1, level.RGBFadeColor);
         level.LobbyTypeWriterMessage thread SetTextFX(next, 4);
         level.LobbyTypeWriterMessage thread HudRGBFade();
 

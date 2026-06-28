@@ -35,7 +35,8 @@ PopulateServerModifications(menu)
                     self addOpt("Zombie Traps", ::newMenu, "Zombie Traps");
                 
                 self addOpt("Change Map", ::newMenu, "Change Map");
-                self addOpt("Restart Game", ::ServerRestartGame);
+                self addOptSlider("Restart Game", ::ServerRestartGame, Array("Full", "Fast"));
+                self addOpt("End Game", ::ServerEndGame);
             break;
         
         case "Set Round":
@@ -53,7 +54,7 @@ PopulateServerModifications(menu)
 
             self addMenu(menu);
                 self addOptBool(level.antiJoin, "Anti-Join", ::AntiJoin);
-                self addOpt("ClanTag Password: " + password, ::Keyboard, ::SetAntiJoinPassword);
+                self addOpt("Clan Tag Password: " + password, ::Keyboard, ::SetAntiJoinPassword);
                 self addOpt("Clear Password", ::ClearAntiJoinPassword);
             break;
         
@@ -1133,15 +1134,34 @@ ServerChangeMap(map)
     if(level.script == map)
         return;
     
+    StopAllMusic();
     Map(map);
 }
 
-ServerRestartGame()
+ServerRestartGame(type = "Full")
 {
-    mapNames = Array("zm_zod", "zm_factory", "zm_castle", "zm_island", "zm_stalingrad", "zm_genesis", "zm_prototype", "zm_asylum", "zm_sumpf", "zm_theater", "zm_cosmodrome", "zm_temple", "zm_moon", "zm_tomb");
+    StopAllMusic();
 
-    if(isInArray(mapNames, level.script))
-        Map(level.script);
+    if(type == "Full")
+    {
+        mapNames = Array("zm_zod", "zm_factory", "zm_castle", "zm_island", "zm_stalingrad", "zm_genesis", "zm_prototype", "zm_asylum", "zm_sumpf", "zm_theater", "zm_cosmodrome", "zm_temple", "zm_moon", "zm_tomb");
+
+        if(isInArray(mapNames, level.script))
+            Map(level.script);
+        else
+            MissionFailed();
+    }
     else
-        MissionFailed();
+    {
+        Map_Restart(false);
+    }
+}
+
+ServerEndGame()
+{
+    if(Is_True(level.AntiEndGame))
+        level AntiEndGame();
+    
+    StopAllMusic();
+    level thread globallogic::forceend();
 }

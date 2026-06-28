@@ -204,18 +204,13 @@ IsVisible(enemy, tag)
     {
         test = enemy GetTagOrigin("tag_body");
         
-        if(!IsDefined(test) || IsVec(test))
+        if(!IsDefined(test) || !IsVec(test))
             return false;
         
         tag = test;
     }
 
-    start = self GetWeaponMuzzlePoint();
-
-    if(!IsDefined(start) || !IsVec(start))
-        start = self GetEye();
-
-    return VectorDot(AnglesToForward(self GetTagAngles("tag_weapon_right")), VectorNormalize(tag - start)) > Cos(40) && BulletTracePassed(self GetEye(), tag, false, self);
+    return VectorDot(AnglesToForward(self GetTagAngles("tag_weapon_right")), VectorNormalize(tag - self GetEye())) > Cos(40) && BulletTracePassed(self GetEye(), tag, false, self);
 }
 
 isFiring1()

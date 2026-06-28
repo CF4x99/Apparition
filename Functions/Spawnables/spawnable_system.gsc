@@ -149,12 +149,7 @@ SpawnSystem(action, type, func)
 
     if(!Is_True(level.spawnable[type + "_Spawned"]) && type != "Skybase")
     {
-        start = self GetWeaponMuzzlePoint();
-
-        if(!IsDefined(start) || !IsVec(start))
-            start = self GetEye();
-        
-        traceSurface = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["surfacetype"];
+        traceSurface = BulletTrace(self GetEye(), self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["surfacetype"];
 
         if(traceSurface == "none" || traceSurface == "default")
             return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
@@ -625,12 +620,7 @@ Tornado()
 {
     if(!Is_True(level.TornadoSpawned))
     {
-        start = self GetWeaponMuzzlePoint();
-
-        if(!IsDefined(start) || !IsVec(start))
-            start = self GetEye();
-        
-        trace = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+        trace = BulletTrace(self GetEye(), self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
         
         origin = trace["position"];
         surface = trace["surfacetype"];
@@ -882,28 +872,54 @@ TornadoLaunchEntity(a, TornadoParts)
         self.OnTornado = BoolVar(self.OnTornado);
 }
 
-MexicanWave(size)
+MexicanWave(size = 0)
 {
-    if(IsDefined(self.MexicanWave) && self.MexicanWave.size)
+    if(Is_True(self.MexicanWaveSpawning) && size > 0)
+        return self iPrintlnBold("^1ERROR: Mexican Wave Is Currently Spawning");
+
+    if(IsDefined(self.MexicanWave) && self.MexicanWave.size || size < 1)
     {
-        for(a = 0; a < self.MexicanWave.size; a++)
+        if(IsDefined(self.MexicanWave) && self.MexicanWave.size)
         {
-            if(IsDefined(self.MexicanWave[a]))
-                self.MexicanWave[a] Delete();
+            for(a = 0; a < self.MexicanWave.size; a++)
+            {
+                if(IsDefined(self.MexicanWave[a]))
+                    self.MexicanWave[a] Delete();
+            }
         }
         
+        self.MexicanWaveSpawning = undefined;
         self.MexicanWave = undefined;
         return;
     }
+
+    trace = BulletTrace(self GetEye(), self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+    origin = trace["position"];
+    surface = trace["surfacetype"];
+
+    if(IsDefined(surface) && (surface == "none" || surface == "default"))
+        return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
     
     self.MexicanWave = [];
-    angles = (0, self GetPlayerAngles()[1], 0);
+    angles = self GetPlayerAngles();
+    self.MexicanWaveSpawning = true;
 
     for(a = 0; a < size; a++)
     {
-        self.MexicanWave[self.MexicanWave.size] = SpawnScriptModel(self.origin + AnglesToRight(self GetPlayerAngles()) * (a * 45), "defaultactor", angles);
+        self.MexicanWave[self.MexicanWave.size] = SpawnScriptModel(origin + (AnglesToRight(angles) * (a * 45)), "defaultactor", (0, angles[1], 0));
+
+        if(!IsDefined(self.MexicanWave[(self.MexicanWave.size - 1)]))
+        {
+            self MexicanWave(0);
+            self iPrintlnBold("^1ERROR: ^7Mexican Wave Failed To Spawn");
+            break;
+        }
+
         self.MexicanWave[(self.MexicanWave.size - 1)] thread MexicanWaveMove(a);
+        wait 0.1;
     }
+
+    self.MexicanWaveSpawning = undefined;
 }
 
 MexicanWaveMove(index)
@@ -924,43 +940,40 @@ MexicanWaveMove(index)
 
 SpiralStaircase(size)
 {
-    if(Is_True(level.SpiralStaircaseSpawning))
+    if(Is_True(level.SpiralStaircaseSpawning) && size > 0)
         return self iPrintlnBold("^1ERROR: ^7Spiral Staircase Is Being Built");
     
     if(Is_True(level.SpiralStaircaseDeleting))
         return self iPrintlnBold("^1ERROR: ^7Spiral Staircase Is Being Deleted");
     
-    if(IsDefined(level.SpiralStaircase) && level.SpiralStaircase.size)
+    if(IsDefined(level.SpiralStaircase) && level.SpiralStaircase.size || size < 1)
     {
+        level.SpiralStaircaseSpawning = undefined;
         level.SpiralStaircaseDeleting = true;
 
-        for(a = 0; a < level.SpiralStaircase.size; a++)
+        if(IsDefined(level.SpiralStaircase) && level.SpiralStaircase.size)
         {
-            if(IsDefined(level.SpiralStaircase[a]))
+            for(a = 0; a < level.SpiralStaircase.size; a++)
             {
-                level.SpiralStaircase[a] Launch(VectorScale(AnglesToForward(level.SpiralStaircase[a].angles), 255));
-                level.SpiralStaircase[a] NotSolid();
-                level.SpiralStaircase[a] thread deleteAfter(5);
+                if(IsDefined(level.SpiralStaircase[a]))
+                {
+                    level.SpiralStaircase[a] Launch(VectorScale(AnglesToForward(level.SpiralStaircase[a].angles), 255));
+                    level.SpiralStaircase[a] NotSolid();
+                    level.SpiralStaircase[a] thread deleteAfter(5);
 
-                wait 0.01;
+                    wait 0.01;
+                }
             }
         }
         
         wait 5;
         level.SpiralStaircase = [];
-
-        if(Is_True(level.SpiralStaircaseDeleting))
-            level.SpiralStaircaseDeleting = BoolVar(level.SpiralStaircaseDeleting);
+        level.SpiralStaircaseDeleting = undefined;
     }
     else
     {
         model = GetSpawnableBaseModel();
-        start = self GetWeaponMuzzlePoint();
-
-        if(!IsDefined(start) || !IsVec(start))
-            start = self GetEye();
-        
-        trace = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+        trace = BulletTrace(self GetEye(), self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
 
         if(!isInArray(level.menu_models, model))
             return self iPrintlnBold("^1ERROR: ^7Couldn't Find A Valid Base Model For The Spiral Staircase");
@@ -981,13 +994,16 @@ SpiralStaircase(size)
         for(a = 1; a < size; a++)
         {
             if(!IsDefined(level.SpiralStaircase[(level.SpiralStaircase.size - 1)]))
-                continue;
+            {
+                self iPrintlnBold("^1ERROR: ^7Spiral Staircase Failed To Spawn");
+                self SpiralStaircase(0);
+                return;
+            }
             
             level.SpiralStaircase[level.SpiralStaircase.size] = SpawnScriptModel((level.SpiralStaircase[(level.SpiralStaircase.size - 1)].origin + (AnglesToForward(level.SpiralStaircase[(level.SpiralStaircase.size - 1)].angles) * 10) + (0, 0, 8)), model, (level.SpiralStaircase[0].angles[0], (level.SpiralStaircase[(level.SpiralStaircase.size - 1)].angles[1] + 12), level.SpiralStaircase[0].angles[2]), 0.01);
         }
 
-        if(Is_True(level.SpiralStaircaseSpawning))
-            level.SpiralStaircaseSpawning = BoolVar(level.SpiralStaircaseSpawning);
+        level.SpiralStaircaseSpawning = undefined;
     }
 }
 
@@ -1001,12 +1017,7 @@ SpawnTeleporter(action = "Spawn", origin, skipLink = false, skipDelete = false)
 
     if(!IsDefined(origin))
     {
-        start = self GetWeaponMuzzlePoint();
-
-        if(!IsDefined(start) || !IsVec(start))
-            start = self GetEye();
-        
-        traceSurface = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["surfacetype"];
+        traceSurface = BulletTrace(self GetEye(), self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["surfacetype"];
 
         if(traceSurface == "none" || traceSurface == "default")
             return self iPrintlnBold("^1ERROR: ^7Invalid Surface");
@@ -1054,7 +1065,7 @@ AddActiveTeleporter(skipLink = false, skipDelete = false)
 
     self MakeUsable();
     self SetCursorHint("HINT_NOICON");
-    self SetHintString("Press [{+activate}] To Teleport");
+    self SetHintString("Press ^3[{+activate}]^7 To Teleport");
     self thread ActivateTeleporter();
 
     while(IsDefined(self))

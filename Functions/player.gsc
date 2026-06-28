@@ -31,7 +31,7 @@ PopulatePlayerOptions(menu, player)
                 
                 if(IsDefined(level.menu_models) && level.menu_models.size)
                 {
-                    self addOptSlider("Location", ::PlayerAttachmentBone, Array("j_head", "j_neck", "j_spine4", "j_spinelower", "j_mainroot", "pelvis", "j_ankle_ri", "j_ankle_le"));
+                    self addOptSlider("Tag", ::PlayerAttachmentBone, Array("j_head", "j_neck", "j_spine4", "j_spinelower", "j_mainroot", "pelvis", "j_ankle_ri", "j_ankle_le"));
                     self addOpt("Detach All", ::PlayerDetachModels, player);
                     self addOpt("");
 

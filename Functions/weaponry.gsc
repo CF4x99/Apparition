@@ -140,6 +140,68 @@ PopulateWeaponry(menu, player)
     }
 }
 
+PopulateWeaponCategoryMenu(menu, index, player)
+{
+    if(!IsDefined(index) || index < 0)
+        return;
+
+    self addMenu(menu);
+
+    weaponClasses = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
+    weaponReclass = Array("ar", "smg", "lmg", "sniper", "shotgun", "pistol", "launcher", "special");
+
+    foreach(weapon in GetArrayKeys(level.zombie_weapons))
+    {
+        if(!IsDefined(weapon) || weapon == level.weaponnone)
+            continue;
+        
+        if(Is_True(weapon.isgrenadeweapon) || IsSubStr(weapon.name, "knife") || IsSubStr(weapon.name, "upgraded"))
+            continue;
+        
+        zmClass = zm_utility::GetWeaponClassZM(weapon);
+        newClass = undefined;
+
+        if(zmClass == "weapon_pistol")
+        {
+            weapTok = StrTok(weapon.name, "_");
+            newClass = weapTok[0];
+
+            if(!isInArray(weaponReclass, newClass))
+            {
+                zmClass = "weapon_special";
+            }
+            else
+            {
+                for(a = 0; a < weaponReclass.size; a++)
+                {
+                    if(weaponReclass[a] == newClass)
+                        zmClass = "weapon_" + weaponClasses[a];
+                }
+            }
+        }
+
+        if(zmClass != "weapon_" + weaponClasses[index])
+            continue;
+
+        self addOptBool(player HasWeapon1(weapon), (IsDefined(weapon.displayname) && MakeLocalizedString(weapon.displayname) != "") ? weapon.displayname : weapon.name, ::GivePlayerWeapon, weapon, player);
+    }
+
+    if(menu == "Specials")
+    {
+        defaultWeapon = GetWeapon("defaultweapon");
+        minigun = GetWeapon("minigun");
+
+        self addOptBool(player HasWeapon1(defaultWeapon), "Default Weapon", ::GivePlayerWeapon, defaultWeapon, player);
+        self addOptBool(player HasWeapon1(minigun), minigun.displayname, ::GivePlayerWeapon, minigun, player);
+
+        if(ReturnMapName() == "Shadows Of Evil")
+        {
+            teslaGun = GetWeapon("tesla_gun");
+            self addOptBool(player HasWeapon1(teslaGun), teslaGun.displayname, ::GivePlayerWeapon, teslaGun, player);
+        }
+    }
+}
+
 TakeCurrentWeapon(player)
 {
     weapon = player GetCurrentWeapon();
@@ -199,7 +261,7 @@ PackCurrentWeapon(player, buildKit = true)
 
     originalWeapon = player GetCurrentWeapon();
 
-    if(!IsDefined(originalWeapon) || originalWeapon == level.weaponnone)
+    if(!IsDefined(originalWeapon) || !zm_weapons::can_upgrade_weapon(originalWeapon))
         return self iPrintlnBold("^1ERROR: ^7Invalid Weapon");
 
     newWeapon = !zm_weapons::is_weapon_upgraded(player GetCurrentWeapon()) ? zm_weapons::get_upgrade_weapon(player GetCurrentWeapon()) : zm_weapons::get_base_weapon(player GetCurrentWeapon());

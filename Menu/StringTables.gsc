@@ -32,3 +32,13 @@ ReturnAttachmentCombinations(attachment)
 {
     return TableLookup("gamedata/weapons/common/attachmenttable.csv", 4, attachment, 12);
 }
+
+ReturnMusicRaw(index)
+{
+    return TableLookup("gamedata/tables/common/music_player.csv", 0, index, 1);
+}
+
+ReturnMusicName(name)
+{
+    return TableLookup("gamedata/tables/common/music_player.csv", 1, name, 2);
+}

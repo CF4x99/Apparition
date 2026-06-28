@@ -11,7 +11,7 @@ PopulateFunScripts(menu, player)
                 self addOpt("Adventure Time", ::AdventureTime, player);
                 self addOpt("Force Field Options", ::newMenu, "Force Field Options");
                 self addOpt("Effects Man Options", ::newMenu, "Effects Man Options");
-                self addOpt("Audio Quotes", ::newMenu, "Sound/Music");
+                self addOpt("Sounds & Jingles", ::newMenu, "Sounds & Jingles");
                 self addOpt("Hit Markers", ::newMenu, "Hit Markers");
                 self addOptSlider("Insta-Kill", ::PlayerInstaKill, Array("Disable", "All", "Melee"), player);
                 self addOptSlider("Death Skull", ::SpawnDeathSkull, Array("Spawn", "Delete All"), player);
@@ -91,7 +91,7 @@ PopulateFunScripts(menu, player)
                 self addOptBool((IsString(player.HitMarkerColor) && player.HitMarkerColor == "Rainbow"), "Smooth Rainbow", ::HitMarkerColor, "Rainbow", player);
             break;
         
-        case "Sound/Music":
+        case "Sounds & Jingles":
             MenuVOXCategory = [];
 
             foreach(category, sound in level.sndplayervox)
@@ -668,16 +668,19 @@ ZombieCounter(player)
     {
         while(Is_True(player.ZombieCounter) && Is_Alive(player))
         {
+            bgAlpha = (self.MenuDesign == "Classic") ? 0.85 : 1;
+            bgColor = (self.MenuDesign == "Classic") ? (25, 25, 25) : (self.MenuDesign == "Apparition") ? (42, 42, 42) : (0, 0, 0);
+            
             if(!IsDefined(player.ZombieCounterHud) || !player.ZombieCounterHud.size)
             {
                 if(!IsDefined(player.ZombieCounterHud))
                     player.ZombieCounterHud = [];
                 
                 xPos = 5;
-                yPos = 33;
+                yPos = 5;
 
                 player.ZombieCounterHud[0] = player LUI_createRectangle(0, (xPos - 3), (yPos - 1), 227, 49, player.MainTheme, "white", 1);
-                player.ZombieCounterHud[1] = player LUI_createRectangle(0, (xPos - 2), yPos, (player GetLUIMenuData(player.ZombieCounterHud[0], "width") - 2), (player GetLUIMenuData(player.ZombieCounterHud[0], "height") - 2), (42, 42, 42), "white", 1);
+                player.ZombieCounterHud[1] = player LUI_createRectangle(0, (xPos - 2), yPos, (player GetLUIMenuData(player.ZombieCounterHud[0], "width") - 2), (player GetLUIMenuData(player.ZombieCounterHud[0], "height") - 2), bgColor, "white", bgAlpha);
                 
                 player.ZombieCounterHud[2] = player LUI_createText("Alive: ", 0, xPos, yPos, 41, (1, 1, 1));
                 player.ZombieCounterHud[3] = player LUI_createText("Remaining For Round: ", 0, xPos, (yPos + 20), 154, (1, 1, 1));
@@ -687,8 +690,28 @@ ZombieCounter(player)
             }
             else
             {
-                player SetLUIMenuData(player.ZombieCounterHud[4], "text", zombie_utility::get_current_zombie_count());
-                player SetLUIMenuData(player.ZombieCounterHud[5], "text", level.zombie_total);
+                if(IsDefined(player.ZombieCounterHud) && player.ZombieCounterHud.size)
+                {
+                    if(Is_Alive(player) && !Is_True(player.refreshZombieCounter))
+                    {
+                        if(IsDefined(player.ZombieCounterHud[4]))
+                            player SetLUIMenuData(player.ZombieCounterHud[4], "text", zombie_utility::get_current_zombie_count());
+                        
+                        if(IsDefined(player.ZombieCounterHud[5]))
+                            player SetLUIMenuData(player.ZombieCounterHud[5], "text", level.zombie_total);
+                    }
+                    else
+                    {
+                        for(a = 0; a < player.ZombieCounterHud.size; a++)
+                        {
+                            if(IsDefined(player.ZombieCounterHud[a]))
+                                player CloseLUIMenu(player.ZombieCounterHud[a]);
+                        }
+                        
+                        player.ZombieCounterHud = undefined;
+                        player.refreshZombieCounter = undefined;
+                    }
+                }
             }
 
             wait 0.01;
@@ -699,7 +722,7 @@ ZombieCounter(player)
     }
     else
     {
-        if(IsDefined(player.ZombieCounterHud) && player.ZombieCounterHud)
+        if(IsDefined(player.ZombieCounterHud) && player.ZombieCounterHud.size)
         {
             for(a = 0; a < player.ZombieCounterHud.size; a++)
             {
@@ -707,6 +730,8 @@ ZombieCounter(player)
                     player CloseLUIMenu(player.ZombieCounterHud[a]);
             }
         }
+
+        player.ZombieCounterHud = undefined;
     }
 }
 
@@ -888,12 +913,7 @@ ForgeMode(player)
 
             if(player AdsButtonPressed() && !IsDefined(grabEnt))
             {
-                start = player GetWeaponMuzzlePoint();
-
-                if(!IsDefined(start) || !IsVec(start))
-                    start = player GetEye();
-                
-                trace = BulletTrace(start, start + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 1, player);
+                trace = BulletTrace(player GetEye(), player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 1, player);
 
                 if(IsDefined(trace["entity"]) && trace["entity"].model != "tag_origin")
                     grabEnt = trace["entity"];
@@ -1085,13 +1105,8 @@ CodJumper(player)
                 }
             }
 
-            start = player GetWeaponMuzzlePoint();
-
-            if(!IsDefined(start) || !IsVec(start))
-                start = player GetEye();
-            
             color = Pow(2, RandomInt(3));
-            trace = BulletTrace(start, start + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 0, player);
+            trace = BulletTrace(player GetEye(), player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 0, player);
             
             origin = trace["position"];
             surface = trace["surfacetype"];
@@ -1553,12 +1568,7 @@ ShootPowerUps(type = "Disable", player)
     {
         player waittill("weapon_fired");
 
-        start = player GetWeaponMuzzlePoint();
-
-        if(!IsDefined(start) || !IsVec(start))
-            start = player GetEye();
-
-        trace = BulletTrace(start, start + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 0, player);
+        trace = BulletTrace(player GetEye(), player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 0, player);
         origin = trace["position"];
         surface = trace["surfacetype"];
 
@@ -1573,7 +1583,7 @@ ShootPowerUps(type = "Disable", player)
         }
         else
         {
-            powerup = level CustomPowerupSpawn(powerups[RandomInt(powerups.size)], start + VectorScale(AnglesToForward(player GetPlayerAngles()), 60));
+            powerup = level CustomPowerupSpawn(powerups[RandomInt(powerups.size)], player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 60));
         
             if(IsDefined(powerup))
                 powerup PhysicsLaunch(powerup.origin, VectorScale(AnglesToForward(player GetPlayerAngles()), 175));
@@ -1597,12 +1607,7 @@ RocketRiding(player)
             if(zm_utility::GetWeaponClassZM(weaponName) != "weapon_launcher")
                 continue;
             
-            start = player GetWeaponMuzzlePoint();
-
-            if(!IsDefined(start) || !IsVec(start))
-                start = player GetEye();
-            
-            trace = BulletTrace(start, start + VectorScale(AnglesToForward(player GetPlayerAngles()), 200), 1, player);
+            trace = BulletTrace(player GetEye(), player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 200), 1, player);
             rider = undefined;
 
             foreach(client in level.players)
@@ -1692,12 +1697,7 @@ GrapplingGun(player)
         {
             player waittill("weapon_fired");
 
-            start = player GetWeaponMuzzlePoint();
-
-            if(!IsDefined(start) || !IsVec(start))
-                start = player GetEye();
-            
-            trace = BulletTrace(start, start + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 0, player);
+            trace = BulletTrace(player GetEye(), player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 0, player);
             origin = trace["position"];
             surface = trace["surfacetype"];
 
@@ -1788,12 +1788,7 @@ GravityGun(player)
 
             if(player AdsButtonPressed() && !IsDefined(grabEnt))
             {
-                start = player GetWeaponMuzzlePoint();
-
-                if(!IsDefined(start) || !IsVec(start))
-                    start = player GetEye();
-
-                trace = BulletTrace(start, start + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 1, player);
+                trace = BulletTrace(player GetEye(), player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 1, player);
 
                 if(IsDefined(trace["entity"]) && !Is_True(trace["entity"].GravityGunLaunched) && trace["entity"].model != "tag_origin")
                     grabEnt = trace["entity"];
@@ -1838,12 +1833,7 @@ DeleteGun(player)
         {
             if(player AdsButtonPressed())
             {
-                start = player GetWeaponMuzzlePoint();
-
-                if(!IsDefined(start) || !IsVec(start))
-                    start = player GetEye();
-                
-                trace = BulletTrace(start, start + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 1, player);
+                trace = BulletTrace(player GetEye(), player GetEye() + VectorScale(AnglesToForward(player GetPlayerAngles()), 1000000), 1, player);
 
                 if(IsDefined(trace["entity"]) && !IsPlayer(trace["entity"]))
                     trace["entity"] Delete();

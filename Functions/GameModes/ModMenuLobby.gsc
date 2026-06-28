@@ -68,6 +68,8 @@ InitModMenuLobby(access)
         level thread Doheart();
     }
 
+    thread OpenAllDoors();
+
     foreach(player in level.players)
     {
         if(!Is_Alive(player))

@@ -11,19 +11,18 @@ PopulateServerTweakables(menu)
 
             self addMenu(menu);
                 self addOpt("Edit Power-Ups", ::newMenu, "Edit Power-Ups");
-                self addOptIncSlider("Pack 'a' Punch Camo Index", ::SetPackCamoIndex, 0, level.pack_a_punch_camo_index, 138, 1);
+                self addOpt("Edit Pack 'a' Punch", ::newMenu, "Edit Pack 'a' Punch");
                 self addOptIncSlider("Player Weapon Limit", ::SetPlayerWeaponLimit, 2, 2, 15, 1);
                 self addOptIncSlider("Player Perk Limit", ::SetPlayerPerkLimit, 0, 0, MenuPerks.size, 1);
                 self addOptIncSlider("Clip Size Multiplier", ::ServerSetClipSizeMultiplier, 1, 1, 10, 1);
                 self addOptIncSlider("Revive Trigger Radius", ::ServerSetReviveRadius, 0, GetDvarInt("revive_trigger_radius"), 1000, 25);
                 self addOptIncSlider("Last Stand Bleedout Time", ::ServerSetLastandTime, 0, GetDvarInt("player_lastStandBleedoutTime"), 1000, 1);
-                self addOptBool((level.zombie_vars["zombie_between_round_time"] == 0.1), "Fast Round Intermission", ::FastRoundIntermission);
-                self addOptBool(level.UpgradeWeaponWallbuys, "Upgrade Weapon Wallbuys", ::ServerUpgradeWeaponWallbuys);
                 self addOptBool(level.ServerMaxAmmoClips, "Max Ammo Powerups Fill Clips", ::ServerMaxAmmoClips);
+                self addOptBool(level.UpgradeWeaponWallbuys, "Upgrade Weapon Wallbuys", ::ServerUpgradeWeaponWallbuys);
+                self addOptBool((level.zombie_vars["zombie_between_round_time"] == 0.1), "Fast Round Intermission", ::FastRoundIntermission);
                 self addOptBool(level.ShootToRevive, "Shoot To Revive", ::ShootToRevive);
                 self addOptBool(level.headshots_only, "Headshots Only", ::headshots_only);
-                self addOpt("Pack 'a' Punch Price", ::NumberPad, ::EditPackAPunchPrice);
-                self addOpt("Repack 'a' Punch Price", ::NumberPad, ::EditRepackAPunchPrice);
+                
             break;
         
         case "Edit Power-Ups":
@@ -33,6 +32,7 @@ PopulateServerTweakables(menu)
                 self addOptBool(level.DisablePowerups, "Disable Power-Ups", ::DisablePowerups);
                 self addOptBool(level.IncreasedDropRate, "Increased Power-Up Drop Rate", ::IncreasedDropRate);
                 self addOptBool(level.PowerupsNeverLeave, "Power-Ups Never Leave", ::PowerupsNeverLeave);
+                self addOpt("");
 
                 for(a = 0; a < powerups.size; a++)
                 {
@@ -41,6 +41,13 @@ PopulateServerTweakables(menu)
                     
                     self addOptBool([[ level.zombie_powerups[powerups[a]].func_should_drop_with_regular_powerups ]](), ReturnPowerupName(powerups[a]), ::SetPowerUpState, powerups[a]);
                 }
+            break;
+        
+        case "Edit Pack 'a' Punch":
+            self addMenu(menu);
+                self addOptIncSlider("Camo Index", ::SetPackCamoIndex, 0, level.pack_a_punch_camo_index, 138, 1);
+                self addOpt("Pack 'a' Punch Price", ::NumberPad, ::EditPackAPunchPrice);
+                self addOpt("Repack 'a' Punch Price", ::NumberPad, ::EditRepackAPunchPrice);
             break;
     }
 }
@@ -274,35 +281,42 @@ PlayerShootToRevive()
     {
         self waittill("weapon_fired");
 
-        start = self GetWeaponMuzzlePoint();
-
-        if(!IsDefined(start) || !IsVec(start))
-            start = self GetEye();
-
-        trace = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), true, self);
-
+        trace = BulletTrace(self GetEye(), self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), true, self);
         traceEntity = trace["entity"];
         tracePosition = trace["position"];
         
-        /*
-            For less of a hassle for the player, I'm running two traces.
-            The first one is the case where you didn't shoot directly at the downed player, but shot near them
-            The second one is the case that you shot them directly
-        */
-
         if(!IsDefined(traceEntity) || !IsPlayer(traceEntity))
         {
             foreach(player in level.players)
             {
+                revive = false;
+
                 if(player == self || !Is_Alive(player) || !player IsDown() || Distance(tracePosition, player.origin) > 50)
                     continue;
                 
-                self thread PlayerShootRevive(player);
+                tags = Array("j_helmet", "j_head", "j_neck", "j_spine4", "j_spinelower", "j_mainroot", "pelvis", "j_ankle_le", "j_ankle_ri");
+
+                foreach(tag in tags)
+                {
+                    tagOrigin = player GetTagOrigin(tag);
+
+                    if(IsDefined(tagOrigin) && IsVec(tagOrigin))
+                    {
+                        if(Distance(tracePosition, tagOrigin) <= 10)
+                            revive = true;
+                    }
+
+                    if(revive)
+                        break;
+                }
+                
+                if(revive)
+                    self thread PlayerShootRevive(player);
             }
         }
         else
         {
-            if(!Is_Alive(traceEntity) || !traceEntity IsDown())
+            if(!IsPlayer(traceEntity) || !Is_Alive(traceEntity) || !traceEntity IsDown())
                 continue;
             
             self thread PlayerShootRevive(traceEntity);
@@ -312,7 +326,7 @@ PlayerShootToRevive()
 
 PlayerShootRevive(player)
 {
-    if(!IsDefined(player) || !IsPlayer(player))
+    if(!IsDefined(player) || !IsPlayer(player) || !Is_Alive(player) || !player isDown())
         return;
     
     if(IsDefined(self.hud_damagefeedback))

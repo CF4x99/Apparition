@@ -906,7 +906,6 @@ BodyGuard()
     
     if(Is_True(self.BodyGuard))
     {
-        spawner = ArrayGetClosest(level.zombie_spawners, self.origin);
         self.BodyGuardZombie = self ServerSpawnZombie(self.origin);
         wait 0.1;
         
@@ -1045,13 +1044,7 @@ ArtilleryStrike()
     
     while(1)
     {
-        start = self GetWeaponMuzzlePoint();
-
-        if(!IsDefined(start) || !IsVec(start))
-            start = self GetEye();
-        
-        trace = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
-        
+        trace = BulletTrace(self GetEye(), self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
         origin = trace["position"];
         surface = trace["surfacetype"];
 

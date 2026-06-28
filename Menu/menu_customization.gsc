@@ -56,7 +56,7 @@ PopulateMenuCustomization(menu)
         
         case "Menu Preferences":
             self addMenu(menu);
-                self addOptSlider("Design", ::MenuDesign, Array(GetMenuName(), "Classic", "Native", "AIO", "Physics 'n' Flex"));
+                self addOptSlider("Design", ::MenuDesign, Array(GetMenuName(), "Classic", "Native", "AIO", "Basic"));
                 self addOptSlider("Bool Display", ::BoolDisplay, Array("Boxes", "Text", "Text Color"));
                 self addOptSlider("Bool Box Location", ::BoolLocation, Array("Right", "Left"));
                 self addOptIncSlider("Scroll Animation Time (ms)", ::ScrollAnimationTime, 10, Int(self.ScrollAnimationTime * 100), 25, 1);
@@ -105,10 +105,10 @@ MenuTheme(color)
             }
         }
 
-        if(IsDefined(self.menuUI["scroller"]) && self.MenuDesign != GetMenuName())
+        if(IsDefined(self.menuUI["scroller"]) && self.MenuDesign != GetMenuName() && self.MenuDesign != "Basic")
             self.menuUI["scroller"] hudFadeColor(color, 0.5);
 
-        if(self.MenuDesign == "Native" || self.MenuDesign == "Classic" || self.MenuDesign == "Physics 'n' Flex")
+        if(self.MenuDesign == "Native" || self.MenuDesign == "Classic")
         {
             if(IsDefined(self.menuUI["banner"]))
                 self.menuUI["banner"] hudFadeColor(color, 0.5);
@@ -126,11 +126,15 @@ MenuTheme(color)
         }
     }
 
-    if(IsDefined(self.menuInstructionsUI) && IsDefined(self.menuInstructionsUI["outline"]))
-        self.menuInstructionsUI["outline"] hudFadeColor(color, 0.5);
+    instructionsHud = (self.MenuDesign == "AIO") ? "background" : "outline";
+
+    if(IsDefined(self.menuInstructionsUI) && IsDefined(self.menuInstructionsUI[instructionsHud]))
+        self.menuInstructionsUI[instructionsHud] hudFadeColor(color, 0.5);
     
-    if(IsDefined(self.playerInfoHud) && IsDefined(self.playerInfoHud["outline"]))
-        self.playerInfoHud["outline"] hudFadeColor(color, 0.5);
+    infoHud = (self.MenuDesign == "AIO") ? "background" : "outline";
+    
+    if(IsDefined(self.playerInfoHud) && IsDefined(self.playerInfoHud[infoHud]))
+        self.playerInfoHud[infoHud] hudFadeColor(color, 0.5);
 
     col = GetColorVec(color);
     
@@ -203,7 +207,7 @@ SmoothRainbowTheme()
             if(IsDefined(self.menuUI["scroller"]) && (self.MenuDesign != GetMenuName() || IsDefined(self.menuUI["kbString"])))
                 self.menuUI["scroller"].color = color;
 
-            if(self.MenuDesign == "Native" || self.MenuDesign == "Classic" || self.MenuDesign == "Physics 'n' Flex")
+            if(self.MenuDesign == "Native" || self.MenuDesign == "Classic")
             {
                 if(IsDefined(self.menuUI["banner"]))
                     self.menuUI["banner"].color = color;
@@ -221,11 +225,15 @@ SmoothRainbowTheme()
             }
         }
 
-        if(IsDefined(self.menuInstructionsUI) && IsDefined(self.menuInstructionsUI["outline"]))
-            self.menuInstructionsUI["outline"].color = color;
+        instructionsHud = (self.MenuDesign == "AIO") ? "background" : "outline";
+
+        if(IsDefined(self.menuInstructionsUI) && IsDefined(self.menuInstructionsUI[instructionsHud]))
+            self.menuInstructionsUI[instructionsHud].color = color;
         
-        if(IsDefined(self.playerInfoHud) && IsDefined(self.playerInfoHud["outline"]))
-            self.playerInfoHud["outline"].color = color;
+        infoHud = (self.MenuDesign == "AIO") ? "background" : "outline";
+        
+        if(IsDefined(self.playerInfoHud) && IsDefined(self.playerInfoHud[infoHud]))
+            self.playerInfoHud[infoHud].color = color;
         
         if(Is_True(self.ZombieCounter) && IsDefined(self.ZombieCounterHud) && IsDefined(self.ZombieCounterHud[0]))
         {
@@ -257,18 +265,19 @@ RepositionMenu()
 {
     self endon("disconnect");
     
-    adjX = self.menuX;
-    adjY = self.menuY;
+    self SoftLockMenu(122, true);
+    self.menuUI["reposition"] = self createText("default", 1, 5, "[{+actionslot 1}] - Move Up\n[{+actionslot 2}] - Move Down\n[{+actionslot 3}] - Move Left\n[{+actionslot 4}] - Move Right\n[{+frag}] - Increase Offset\n[{+smoke}] - Decrease Offset\n[{+melee}] - Exit", "LEFT", (self.menuX + 4), (self.menuUI["background"].y + 22), 1, (1, 1, 1));
     
-    self SoftLockMenu(120, true);
-    
-    self.menuUI["reposition"] = self createText("default", 1, 5, "[{+melee}] - Exit\n[{+activate}] - Save Position\n[{+actionslot 1}] - Move Up\n[{+actionslot 2}] - Move Down\n[{+actionslot 3}] - Move Left\n[{+actionslot 4}] - Move Right", self.menuX + 4, (self.menuUI["background"].y + 28), 1, (1, 1, 1));
+    offset = 1;
+    offsetY = (self.menuUI["reposition"].y + (CorrectNL_BGHeight(self.menuUI["reposition"].text)) - 10);
+    self.menuUI["offset"] = self createText("default", 1, 5, "Offset Value: ", "LEFT", (self.menuX + 4), offsetY, 1, (1, 1, 1));
+    self.menuUI["offsetValue"] = self createText("default", 1, 5, offset, "LEFT", (self.menuUI["offset"].x + (self.menuUI["offset"] GetTextWidth3arc(self, 4) - 7)), offsetY, 1, (0, 1, 0));
     
     while(self isInMenu(true))
     {
         if(self ActionSlotOneButtonPressed() || self ActionSlotTwoButtonPressed())
         {
-            incValue = self ActionSlotTwoButtonPressed() ? 8 : -8;
+            incValue = self ActionSlotTwoButtonPressed() ? offset : (offset * -1);
             
             foreach(key in GetArrayKeys(self.menuUI))
             {
@@ -289,11 +298,11 @@ RepositionMenu()
                 }
             }
             
-            adjY += incValue;
+            self.menuY += incValue;
         }
         else if(self ActionSlotThreeButtonPressed() || self ActionSlotFourButtonPressed())
         {
-            incValue = self ActionSlotFourButtonPressed() ? 8 : -8;
+            incValue = self ActionSlotFourButtonPressed() ? offset : (offset * -1);
             
             foreach(key in GetArrayKeys(self.menuUI))
             {
@@ -314,12 +323,23 @@ RepositionMenu()
                 }
             }
             
-            adjX += incValue;
+            self.menuX += incValue;
         }
-        else if(self UseButtonPressed())
+        else if(self SecondaryOffhandButtonPressed())
         {
-            self.menuX = adjX;
-            self.menuY = adjY;
+            if(offset > 1)
+                offset--;
+            
+            self.menuUI["offsetValue"] SetValue(offset);
+            wait 0.1;
+        }
+        else if(self FragButtonPressed())
+        {
+            if(offset < 10)
+                offset++;
+            
+            self.menuUI["offsetValue"] SetValue(offset);
+            wait 0.1;
         }
         else if(self MeleeButtonPressed())
         {
@@ -338,8 +358,8 @@ MenuWidthEditor()
     self endon("disconnect");
     
     self SoftLockMenu(120, true);
-
     txtHud = Array("title", "menuName");
+    hud = Array("background", "banner", "separator", "bottomLine", "backgroundouter");
 
     for(a = 0; a < txtHud.size; a++)
     {
@@ -347,16 +367,12 @@ MenuWidthEditor()
             self.menuUI[txtHud[a]] DestroyHud();
     }
     
-    self.menuUI["editwidth"] = self createText("default", 1, 5, "[{+melee}] - Exit\n[{+activate}] - Save Width\n[{+attack}] - Increase Width\n[{+speed_throw}] - Decrease Width\n[{+actionslot 4}] - Increase Offset Value\n[{+actionslot 3}] - Decrease Offset Value", "LEFT", self.menuX + 4, (self.menuUI["background"].y + 25), 1, (1, 1, 1));
+    self.menuUI["editwidth"] = self createText("default", 1, 5, "[{+attack}] - Increase Width\n[{+speed_throw}] - Decrease Width\n[{+actionslot 4}] - Increase Offset\n[{+actionslot 3}] - Decrease Offset\n[{+melee}] - Exit", "LEFT", self.menuX + 4, (self.menuUI["background"].y + 25), 1, (1, 1, 1));
 
+    offset = 1;
     offsetY = (self.menuUI["editwidth"].y + CorrectNL_BGHeight(self.menuUI["editwidth"].text));
     self.menuUI["offset"] = self createText("default", 1, 5, "Offset Value: ", "LEFT", self.menuX + 4, offsetY, 1, (1, 1, 1));
-
-    hud = Array("background", "banner", "separator", "bottomLine", "backgroundouter");
-    width = self.MenuWidth;
-    offset = 1;
-
-    self.menuUI["offsetValue"] = self createText("default", 1, 5, offset, "LEFT", self.menuUI["offset"].x + (self.menuUI["editwidth"] GetTextWidth3arc(self, 2) - 4), offsetY, 1, (0, 1, 0));
+    self.menuUI["offsetValue"] = self createText("default", 1, 5, offset, "LEFT", (self.menuUI["offset"].x + (self.menuUI["offset"] GetTextWidth3arc(self, 4) - 7)), offsetY, 1, (0, 1, 0));
 
     min = 200;
     max = 500;
@@ -367,8 +383,8 @@ MenuWidthEditor()
         {
             value = offset;
 
-            if((width + offset) > max)
-                value = (max - width);
+            if((self.MenuWidth + offset) > max)
+                value = (max - self.MenuWidth);
 
             if(value)
             {
@@ -378,7 +394,7 @@ MenuWidthEditor()
                         self.menuUI[hud[a]] thread hudScaleOverTime(0.05, self.menuUI[hud[a]].width + value, self.menuUI[hud[a]].height);
                 }
 
-                width += value;
+                self.MenuWidth += value;
             }
 
             wait 0.05;
@@ -387,8 +403,8 @@ MenuWidthEditor()
         {
             value = offset;
 
-            if((width - offset) < min)
-                value = (width - min);
+            if((self.MenuWidth - offset) < min)
+                value = (self.MenuWidth - min);
 
             if(value)
             {
@@ -398,7 +414,7 @@ MenuWidthEditor()
                         self.menuUI[hud[a]] thread hudScaleOverTime(0.05, self.menuUI[hud[a]].width - value, self.menuUI[hud[a]].height);
                 }
 
-                width -= value;
+                self.MenuWidth -= value;
             }
 
             wait 0.05;
@@ -419,10 +435,6 @@ MenuWidthEditor()
             self.menuUI["offsetValue"] SetValue(offset);
             wait 0.1;
         }
-        else if(self UseButtonPressed())
-        {
-            self.MenuWidth = width;
-        }
         else if(self MeleeButtonPressed())
         {
             break;
@@ -442,14 +454,22 @@ MenuDesign(design)
     
     self.MenuDesign = design;
 
-    if((design == "Native" || design == "Classic" || design == "Physics 'n' Flex") && Is_True(self.ColoredCursor))
+    if((design == "Native" || design == "Classic") && Is_True(self.ColoredCursor))
         self.ColoredCursor = BoolVar(self.ColoredCursor);
     
-    if((design == "AIO" || design == "Physics 'n' Flex") && Is_True(self.OptionCounter))
+    if((design == "AIO" || design == "Basic") && Is_True(self.OptionCounter))
         self.OptionCounter = BoolVar(self.OptionCounter);
 
     self closeMenu1();
     self openMenu1();
+    self.InstructionsForceRefresh = true;
+
+    if(Is_True(self.ZombieCounter))
+        self.refreshZombieCounter = true;
+    
+    if(Is_True(self.EntityCountDisplay))
+        self.refreshEntityCount = true;
+    
     self SaveMenuTheme();
 }
 
@@ -531,12 +551,8 @@ RepositionMenuInstructions()
 
     self endon("disconnect");
     
-    adjX = self.instructionsX;
-    adjY = self.instructionsY;
-    
-    self closeMenu1();
-    self.DisableMenuControls = true;
-    self SetMenuInstructions(Array("[{+actionslot 1}] - Move Up", "[{+actionslot 2}] - Move Down", "[{+actionslot 3}] - Move Left", "[{+actionslot 4}] - Move Right", "[{+activate}] - Save Position", "[{+melee}] - Exit"));
+    self SoftLockMenu(20, true);
+    self SetMenuInstructions(Array("[{+actionslot 1}] - Move Up", "[{+actionslot 2}] - Move Down", "[{+actionslot 3}] - Move Left", "[{+actionslot 4}] - Move Right", "[{+melee}] - Exit"));
 
     wait 0.1;
     self.RepositionMenuInstructions = true;
@@ -566,7 +582,7 @@ RepositionMenuInstructions()
                 }
             }
             
-            adjY += incValue;
+            self.instructionsY += incValue;
         }
         else if(self ActionSlotThreeButtonPressed() || self ActionSlotFourButtonPressed())
         {
@@ -591,12 +607,7 @@ RepositionMenuInstructions()
                 }
             }
             
-            adjX += incValue;
-        }
-        else if(self UseButtonPressed())
-        {
-            self.instructionsX = adjX;
-            self.instructionsY = adjY;
+            self.instructionsX += incValue;
         }
         else if(self MeleeButtonPressed())
         {
@@ -607,11 +618,10 @@ RepositionMenuInstructions()
     }
     
     wait 0.1;
-    self.DisableMenuControls = undefined;
     self.RepositionMenuInstructions = undefined;
     self SetMenuInstructions();
+    self SoftUnlockMenu();
     self SaveMenuTheme();
-    self openMenu1();
 }
 
 ResetMenuInstructions()
@@ -635,7 +645,7 @@ SpotlightCursor()
 
 ColoredCursor()
 {
-    if(self.MenuDesign == "Native" || self.MenuDesign == "Classic" || self.MenuDesign == "Physics 'n' Flex")
+    if(self.MenuDesign == "Native" || self.MenuDesign == "Classic")
         return self iPrintlnBold("^1ERROR: ^7You Can't Use Colored Cursor With This Design");
     
     self.ColoredCursor = BoolVar(self.ColoredCursor);
@@ -653,7 +663,7 @@ OptionCounter()
     if(Is_True(self.StealthUI))
         return self iPrintlnBold("^1ERROR: ^7You Can't Use The Option Counter While Stealth UI Is Enabled");
     
-    if(self.MenuDesign == "AIO" || self.MenuDesign == "Physics 'n' Flex")
+    if(self.MenuDesign == "AIO" || self.MenuDesign == "Basic")
         return self iPrintlnBold("^1ERROR: ^7You Can't Use The Option Counter With This Design");
     
     self.OptionCounter = BoolVar(self.OptionCounter);
@@ -804,9 +814,6 @@ returnBool(boolVar)
 
 GetMaxOptions()
 {
-    if(self.MenuDesign == "Physics 'n' Flex")
-        return 6;
-    
     if(Is_True(self.StealthUI))
         return 5;
     

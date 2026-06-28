@@ -8,7 +8,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.6.0.8
+    Version:              1.6.0.9
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -49,6 +49,7 @@
 #include scripts\zm\_zm_equipment;
 #include scripts\zm\_zm_laststand;
 #include scripts\zm\_zm_unitrigger;
+#include scripts\shared\music_shared;
 #include scripts\zm\_zm_melee_weapon;
 #include scripts\zm\_zm_placeable_mine;
 #include scripts\zm\gametypes\_globallogic;
@@ -383,15 +384,17 @@ MenuInstructionsDisplay()
         if(self hasMenu() && (!Is_True(self.DisableMenuInstructions) && (!IsDefined(self.menuInstructionsUI["background"]) && !Is_True(self.DisableInstructionsBackground) || !IsDefined(self.menuInstructionsUI["outline"]) && !Is_True(self.DisableInstructionsBackground) || !IsDefined(self.menuInstructionsUI["string"]))))
         {
             alt = Is_True(self.AlternateInstructions);
+            bgAlpha = (self.MenuDesign == "Classic") ? 0.85 : 1;
+            bgColor = (self.MenuDesign == "Classic") ? (25, 25, 25) : (self.MenuDesign == "Apparition") ? (42, 42, 42) : (0, 0, 0);
 
             if(!IsDefined(self.menuInstructionsUI["background"]) && !Is_True(self.DisableInstructionsBackground))
-                self.menuInstructionsUI["background"] = self createRectangle(alt ? "CENTER" : "TOP_LEFT", self.instructionsX, self.instructionsY, 0, 15, (42, 42, 42), 2, 1, "white");
+                self.menuInstructionsUI["background"] = self createRectangle(alt ? "CENTER" : "TOP_LEFT", self.instructionsX, self.instructionsY, 0, 15, bgColor, 2, bgAlpha, "white");
             
             if(!IsDefined(self.menuInstructionsUI["outline"]) && !Is_True(self.DisableInstructionsBackground))
                 self.menuInstructionsUI["outline"] = self createRectangle(alt ? "CENTER" : "TOP_LEFT", alt ? self.instructionsX : (self.instructionsX - 1), alt ? self.instructionsY : (self.instructionsY - 1), 0, 17, self.MainTheme, 1, 1, "white");
             
             if(!IsDefined(self.menuInstructionsUI["string"]))
-                self.menuInstructionsUI["string"] = self createText("default", 1.1, 3, "", alt ? "CENTER" : "LEFT", alt ? self.instructionsX : (self.instructionsX + 1), alt ? self.instructionsY : (self.instructionsY + 7), 1, (255, 255, 255));
+                self.menuInstructionsUI["string"] = self createText("default", 1.1, 3, "", (alt && !Is_True(self.DisableInstructionsBackground)) ? "CENTER" : "LEFT", alt ? self.instructionsX : (self.instructionsX + 1), alt ? self.instructionsY : (self.instructionsY + 7), 1, (255, 255, 255));
         }
 
         if(IsDefined(self.menuInstructionsUI["string"]) && Is_True(self.DisableMenuInstructions) || !self hasMenu() || !Is_Alive(self) && !Is_True(self.refreshInstructionsUI) || Is_True(self.InstructionsForceRefresh))
@@ -459,7 +462,7 @@ MenuInstructionsDisplay()
             self SetInstructionsPosition(str);
         }
 
-        wait 0.1;
+        wait 0.01;
     }
 
     if(Is_True(self.MenuInstructionsDisplay))
@@ -509,7 +512,7 @@ SetInstructionsPosition(str)
     
     switch(self.MenuDesign)
     {
-        case "Physics 'n' Flex":
+        case "Basic":
         case "Classic":
             yOffset = 5;
             xOffset = 0;
@@ -538,7 +541,7 @@ SetInstructionsPosition(str)
     width = Is_True(self.AlternateInstructions) ? (self.menuInstructionsUI["string"] GetTextWidth3arc(self) - 28) : self.menuInstructionsUI["string"] GetTextWidth3arc(self);
     height = IsSubStr(str, "\n") ? (CorrectNL_BGHeight(str) - 5) : CorrectNL_BGHeight(str);
 
-    if(self isInMenu(true) && Is_True(self.AdaptiveMenuInstructions))
+    if(self isInMenu(true) && Is_True(self.AdaptiveMenuInstructions) && !Is_True(self.RepositionMenuInstructions))
     {
         menuWidth = (IsDefined(self.menuUI) && IsDefined(self.menuUI["background"])) ? (self.menuUI["background"].width + widthOffset) : (self.MenuWidth + widthOffset);
 
@@ -552,11 +555,8 @@ SetInstructionsPosition(str)
         self.menuInstructionsUI["outline"] SetShaderValues(undefined, (width + 2), (height + 2));
     }
 
-    if(Is_True(self.RepositionMenuInstructions))
-        return;
-
-    xPos = (self isInMenu(true) && Is_True(self.AdaptiveMenuInstructions)) ? (IsDefined(self.menuUI) && IsDefined(self.menuUI["background"])) ? (self.menuUI["background"].x + xOffset) : (self.menuX + xOffset) : self.instructionsX;
-    yPos = (self isInMenu(true) && Is_True(self.AdaptiveMenuInstructions) && IsDefined(self.menuUI) && IsDefined(self.menuUI["background"])) ? ((self.menuUI["background"].y + self.menuUI["background"].height) + yOffset) : (self.instructionsY - height);
+    xPos = (self isInMenu(true) && Is_True(self.AdaptiveMenuInstructions) && !Is_True(self.RepositionMenuInstructions)) ? (IsDefined(self.menuUI) && IsDefined(self.menuUI["background"])) ? (self.menuUI["background"].x + xOffset) : (self.menuX + xOffset) : self.instructionsX;
+    yPos = (self isInMenu(true) && Is_True(self.AdaptiveMenuInstructions) && !Is_True(self.RepositionMenuInstructions) && IsDefined(self.menuUI) && IsDefined(self.menuUI["background"])) ? ((self.menuUI["background"].y + self.menuUI["background"].height) + yOffset) : (self.instructionsY - height);
 
     if(IsDefined(self.menuInstructionsUI["background"]) && (self.menuInstructionsUI["background"].y != yPos || self.menuInstructionsUI["background"].x != xPos))
     {

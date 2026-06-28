@@ -7,7 +7,7 @@
 
     Menu:                 Apparition
     Developer:            CF4_99
-    Version:              1.6.0.8
+    Version:              1.6.0.9
     Discord:              cf4_99
     YouTube:              https://www.youtube.com/c/CF499
     Project Start Date:   6/10/21
@@ -34,6 +34,37 @@
 
 <details>
     <summary>
+        Version 1.6.0.9
+    </summary>
+
+    - Added: Menu Base -- Small opening animation for options only
+    - Added: Server Modifications -- End Game
+    - Added: Host Menu -- Music Player -- Black Ops Music tracks that will play for the whole lobby
+    - Added: Basic Scripts -- More visions to choose from
+    - Added: Server Modifications/Quick Menu -- Restart Game Slider(Full / Fast)
+
+    - Changed: Menu Base -- Instructions, entity count, zombie counter, and player info display designs should better match the current design menu design being used
+    - Changed: Menu Base -- You no longer have to hit your use/activate button to save the values when using the width and position editors in menu customization
+    - Changed: Menu Base -- Replaced "Physics 'n' Flex" design wtih "Basic" design(much better imo)
+    - Changed: Menu Base -- Reposition Menu -- Now includes a custom offset value for you to decide the amount it moves while you are choosing the position
+    - Changed: Menu Base -- Instructions -- The instructions text will now always align left when the background is disabled(issue with alternate instructions style)
+    - Changed: Spawnables -- Mexican Wave -- It will now spawn at your crosshair position
+    - Changed: HUD -- entity count position will adapt depending on whether zombie counter is enabled or not
+
+    - Fixed: Menu Base -- Server text(all client hud) using the client archive system instead of always being archived -- Caused hud issues
+    - Fixed: Menu Base -- Issue with 'RandomPosText' function -- Used for the 'Moving' doheart style
+    - Fixed: Menu Base -- Soft Lock -- Issue with outline height for the AIO design
+    - Fixed: Menu Base -- Adaptive Menu Instructions -- Should be more responsive and smoother now
+    - Fixed: Menu Base -- Possible issue with saving a players verification
+    - Fixed: Menu Customization -- Issues when repositioning menu instructions
+    - Fixed: Menu Customization -- Reposition Menu Instructions -- Repositioning should be a little smoother now
+    - Fixed: Server Tweakables -- Shoot To Revive -- Improved accuracy of shooting a downed player
+    - Fixed: Visual Effects -- Issues causing a lot of dev errors when developer mode is enabled
+    - Fixed: Aimbot -- Typo that could cause issues with the IsVisible function
+</details>
+
+<details>
+    <summary>
         Version 1.6.0.8
     </summary>
 
@@ -46,7 +77,6 @@
     - Fixed: Black Screen -- Now supports ultra-wide screens
     - Fixed: Light Protector -- A few issues with damage, radius, and targeting -- Should be perfect now
     - Fixed: Death Skull -- Fixed an issue with the skull effects
-
 </details>
 
 <details>

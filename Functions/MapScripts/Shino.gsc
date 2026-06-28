@@ -38,7 +38,7 @@ ShinoHideAndSeek()
 ShinoTheOneSong()
 {
     if(Is_True(level.ShinoTheOneSong))
-        return iPrintlnBold("^1ERROR: ^7The One Song Has Already Been Activated");
+        return self iPrintlnBold("^1ERROR: ^7The One Song Has Already Been Activated");
 
     level.ShinoTheOneSong = true;
     trigger = struct::get("s_phone_egg", "targetname");

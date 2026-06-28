@@ -70,9 +70,9 @@ RunMenuOptions(menu)
                 if(Is_Alive(self))
                     self addOpt("Revive", ::PlayerRevive, self);
 
-                if(self IsHost() || self IsDeveloper())
+                if(self IsHost() || self isDeveloper())
                 {
-                    self addOpt("Restart Game", ::ServerRestartGame);
+                    self addOptSlider("Restart Game", ::ServerRestartGame, Array("Full", "Fast"));
                     self addOpt("Disconnect", ::disconnect);
                 }
             break;
@@ -273,6 +273,7 @@ RunMenuOptions(menu)
         
         case "Server Tweakables":
         case "Edit Power-Ups":
+        case "Edit Pack 'a' Punch":
             self PopulateServerTweakables(menu);
             break;
         
@@ -301,6 +302,7 @@ RunMenuOptions(menu)
             self addMenu(menu);
                 self addOpt("Disconnect", ::disconnect);
                 self addOpt("Player Info", ::newMenu, "Player Info");
+                self addOpt("Music Player", ::newMenu, "Music Player");
                 self addOpt("Custom Map Spawns", ::newMenu, "Custom Map Spawns");
                 self addOpt("Player Score & Overhead Name Color", ::newMenu, "Player Score & Overhead Name Color");
                 self addOptIncSlider("Field Of View Scale", ::FieldOfViewScale, 65, GetDvarFloat("cg_fov"), 85, 1);
@@ -326,6 +328,27 @@ RunMenuOptions(menu)
             self addMenu(menu);
                 self addOptBool(level.DisablePlayerInfo, "Disable", ::DisablePlayerInfo);
                 self addOptBool(level.IncludeIPInfo, "Include IP", ::IncludeIPInfo);
+            break;
+        
+        case "Music Player":
+            self addMenu(menu);
+                self addOptBool((!IsDefined(level.nextsong) || level.nextsong == ""), "Stop Music", ::StopAllMusic);
+                self addOpt("");
+                
+                for(a = 0; a < 99; a++)
+                {
+                    track = ReturnMusicRaw(a);
+
+                    if(!IsDefined(track) || track == "")
+                        continue;
+                    
+                    name = ReturnMusicName(track);
+
+                    if(!IsDefined(name) || name == "")
+                        continue;
+                    
+                    self addOptBool((IsDefined(level.nextsong) && level.nextsong == track), name, ::PlayMusicTrack, track);
+                }
             break;
         
         case "Custom Map Spawns":
@@ -499,7 +522,7 @@ MenuOptionsPlayer(menu, player)
             break;
         
         case "Fun Scripts":
-        case "Sound/Music":
+        case "Sounds & Jingles":
         case "Perk Jingles & Quotes":
         case "Effects Man Options":
         case "Hit Markers":
@@ -584,67 +607,5 @@ MenuOptionsPlayer(menu, player)
                 }
             }
             break;
-    }
-}
-
-PopulateWeaponCategoryMenu(menu, index = -1, player)
-{
-    if(index < 0)
-        return;
-
-    self addMenu(menu);
-
-    weaponClasses = Array("assault", "smg", "lmg", "sniper", "cqb", "pistol", "launcher", "special");
-    weaponReclass = Array("ar", "smg", "lmg", "sniper", "shotgun", "pistol", "launcher", "special");
-
-    foreach(weapon in GetArrayKeys(level.zombie_weapons))
-    {
-        if(!IsDefined(weapon) || weapon == level.weaponnone)
-            continue;
-        
-        if(Is_True(weapon.isgrenadeweapon) || IsSubStr(weapon.name, "knife") || IsSubStr(weapon.name, "upgraded"))
-            continue;
-        
-        zmClass = zm_utility::GetWeaponClassZM(weapon);
-        newClass = undefined;
-
-        if(zmClass == "weapon_pistol")
-        {
-            weapTok = StrTok(weapon.name, "_");
-            newClass = weapTok[0];
-
-            if(!isInArray(weaponReclass, newClass))
-            {
-                zmClass = "weapon_special";
-            }
-            else
-            {
-                for(a = 0; a < weaponReclass.size; a++)
-                {
-                    if(weaponReclass[a] == newClass)
-                        zmClass = "weapon_" + weaponClasses[a];
-                }
-            }
-        }
-
-        if(zmClass != "weapon_" + weaponClasses[index])
-            continue;
-
-        self addOptBool(player HasWeapon1(weapon), (IsDefined(weapon.displayname) && MakeLocalizedString(weapon.displayname) != "") ? weapon.displayname : weapon.name, ::GivePlayerWeapon, weapon, player);
-    }
-
-    if(menu == "Specials")
-    {
-        defaultWeapon = GetWeapon("defaultweapon");
-        minigun = GetWeapon("minigun");
-
-        self addOptBool(player HasWeapon1(defaultWeapon), "Default Weapon", ::GivePlayerWeapon, defaultWeapon, player);
-        self addOptBool(player HasWeapon1(minigun), minigun.displayname, ::GivePlayerWeapon, minigun, player);
-
-        if(ReturnMapName() == "Shadows Of Evil")
-        {
-            teslaGun = GetWeapon("tesla_gun");
-            self addOptBool(player HasWeapon1(teslaGun), teslaGun.displayname, ::GivePlayerWeapon, teslaGun, player);
-        }
     }
 }

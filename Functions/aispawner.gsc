@@ -209,12 +209,7 @@ dog_spawn_factory_logic(favorite_enemy)
 //Margwa
 ServerSpawnMargwa()
 {
-    start = self GetWeaponMuzzlePoint();
-
-    if(!IsDefined(start) || !IsVec(start))
-        start = self GetEye();
-    
-    trace = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+    trace = BulletTrace(self GetEye(), self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
 
     origin = trace["position"];
     surface = trace["surfacetype"];
@@ -512,8 +507,6 @@ wasp_behind_audio()
 
     while(1)
     {
-        players = GetPlayers();
-
         foreach(player in GetPlayers())
         {
             if(IsAlive(player) && !IsDefined(player.revivetrigger))
@@ -545,12 +538,7 @@ function_7085a2e4(einflictor, eattacker, idamage, idflags, smeansofdeath, weapon
 //Civil Protector
 ServerSpawnCivilProtector()
 {
-    start = self GetWeaponMuzzlePoint();
-
-    if(!IsDefined(start) || !IsVec(start))
-        start = self GetEye();
-    
-    trace = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+    trace = BulletTrace(self GetEye(), self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
 
     origin = trace["position"];
     surface = trace["surfacetype"];
@@ -1007,12 +995,7 @@ ServerSpawnMechz(pos)
 {
     if(!IsDefined(pos))
     {
-        start = self GetWeaponMuzzlePoint();
-
-        if(!IsDefined(start) || !IsVec(start))
-            start = self GetEye();
-        
-        trace = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+        trace = BulletTrace(self GetEye(), self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
 
         origin = trace["position"];
         surface = trace["surfacetype"];
@@ -1414,12 +1397,7 @@ function_bb048b27()
 //Sentinel Drone
 ServerSpawnSentinelDrone()
 {
-    start = self GetWeaponMuzzlePoint();
-
-    if(!IsDefined(start) || !IsVec(start))
-        start = self GetEye();
-    
-    trace = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+    trace = BulletTrace(self GetEye(), self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
 
     origin = trace["position"];
     surface = trace["surfacetype"];
@@ -2159,13 +2137,8 @@ ServerSpawnMangler()
 
     if(!IsDefined(var_19764360))
         return;
-
-    start = self GetWeaponMuzzlePoint();
-
-    if(!IsDefined(start) || !IsVec(start))
-        start = self GetEye();
     
-    trace = BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
+    trace = BulletTrace(self GetEye(), self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self);
 
     origin = trace["position"];
     surface = trace["surfacetype"];

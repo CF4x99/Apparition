@@ -92,7 +92,7 @@ menuMonitor()
                             if(IsDefined(self.menuStructure) && IsDefined(self.menuStructure[curs]) && Is_True(boolOpt))
                             {
                                 wait 0.18;
-                                self RefreshMenu(menu, curs); //This Will Refresh That Bool Option For Every Player That Is Able To See It.
+                                self RefreshMenu(menu, curs);
                             }
                         }
 
@@ -319,23 +319,34 @@ drawText(showAnim = false)
     if(self getCursor() >= self.menuStructure.size)
         self setCursor((self.menuStructure.size - 1));
     
+    hud = Array("text", "subMenu", "BoolOpt", "BoolBack", "BoolText", "IntSlider", "StringSlider", "invalidOption");
     numOpts = (self.menuStructure.size > maxOptions) ? maxOptions : self.menuStructure.size;
     start = self GetScrollStart(self getCursor());
 
-    if(!IsDefined(self.menuUI["text"])) self.menuUI["text"] = [];
-    if(!IsDefined(self.menuUI["subMenu"])) self.menuUI["subMenu"] = [];
-    if(!IsDefined(self.menuUI["BoolOpt"])) self.menuUI["BoolOpt"] = [];
-    if(!IsDefined(self.menuUI["BoolBack"])) self.menuUI["BoolBack"] = [];
-    if(!IsDefined(self.menuUI["BoolText"])) self.menuUI["BoolText"] = [];
-    if(!IsDefined(self.menuUI["IntSlider"])) self.menuUI["IntSlider"] = [];
-    if(!IsDefined(self.menuUI["StringSlider"])) self.menuUI["StringSlider"] = [];
-    if(!IsDefined(self.menuUI["invalidOption"])) self.menuUI["invalidOption"] = [];
+    for(a = 0; a < hud.size; a++)
+    {
+        if(!IsDefined(self.menuUI[hud[a]]))
+            self.menuUI[hud[a]] = [];
+    }
 
-    offset = (self.MenuDesign == "Classic") ? 11 : (self.MenuDesign == "AIO") ? 15 : (self.MenuDesign == "Physics 'n' Flex") ? 24 : 8;
+    offset = (self.MenuDesign == "Classic") ? 11 : (self.MenuDesign == "AIO") ? 15 : (self.MenuDesign == "Basic") ? 30 : 8;
     startY = (self.menuUI["background"].y + offset);
 
     for(a = 0; a < numOpts; a++)
-        self createOption((start + a), (startY + (a * 18)), ((start + a) == self getCursor()), /*showAnim*/ false);
+    {
+        self createOption((start + a), (startY + (a * 18)), ((start + a) == self getCursor()), showAnim);
+
+        if(Is_True(showAnim))
+        {
+            for(b = 0; b < hud.size; b++)
+            {
+                if(!IsDefined(self.menuUI[hud[b]]) || !self.menuUI[hud[b]].size || !IsDefined(self.menuUI[hud[b]][(start + a)]))
+                    continue;
+                
+                self.menuUI[hud[b]][(start + a)] thread hudFade((Is_True(self.SpotlightCursor) && ((start + a) != self getCursor())) ? 0.4 : 1, (a * 0.1));
+            }
+        }
+    }
 
     if(!IsDefined(self.menuUI["text"][self getCursor()]))
         self.menuCursor[self getCurrent()] = (self.menuStructure.size - 1);
@@ -363,7 +374,7 @@ drawText(showAnim = false)
 
     if(IsDefined(self.menuUI) && IsDefined(self.menuUI["text"]) && self.menuUI["text"].size)
     {
-        heightOffset = (self.MenuDesign == "Classic") ? 25 : (self.MenuDesign == "AIO") ? 31 : (self.MenuDesign == "Physics 'n' Flex") ? 34 : 18;
+        heightOffset = (self.MenuDesign == "Classic") ? 25 : (self.MenuDesign == "AIO") ? 31 : (self.MenuDesign == "Basic") ? 40 : 18;
 
         if(IsDefined(self.menuUI["background"]))
             self.menuUI["background"] SetShaderValues(undefined, undefined, (heightOffset + (18 * (self.menuUI["text"].size - 1))));
@@ -407,7 +418,7 @@ createOption(index = 0, optY = 0, selected = false, fadeIn = false)
     optIncSlider = self GetOption(index, OPT_INCSLIDER);
     sliderValues = self GetOption(index, OPT_SLIDERVALUES);
 
-    fontColor = (!selected || self.MenuDesign == "Native" || self.MenuDesign == "Classic" || self.MenuDesign == "Physics 'n' Flex" || !Is_True(self.ColoredCursor)) ? (1, 1, 1) : self.MainTheme;
+    fontColor = (!selected || self.MenuDesign == "Native" || self.MenuDesign == "Classic" || !Is_True(self.ColoredCursor)) ? (1, 1, 1) : self.MainTheme;
     fontScale = (Is_True(self.LargeCursor) && selected) ? 1.2 : 1;
     alpha = Is_True(fadeIn) ? 0 : (Is_True(self.SpotlightCursor) && !selected) ? 0.4 : 1;
     optX = (self.menuUI["background"].x + 4);
@@ -563,7 +574,7 @@ ScrollingSystem(dir, OldCurs)
                 boolVal = self GetOption(a, OPT_BOOL);
                 boolOpt = self GetOption(a, OPT_BOOLOPT);
 
-                self.menuUI[hud[b]][a] hudFadeColor((self.BoolDisplay == "Text Color" && Is_True(boolOpt) && Is_True(boolVal)) ? (0, 1, 0) : (curs != a || self.MenuDesign == "Native" || self.MenuDesign == "Classic" || self.MenuDesign == "Physics 'n' Flex" || !Is_True(self.ColoredCursor)) ? (1, 1, 1) : self.MainTheme, time);
+                self.menuUI[hud[b]][a] hudFadeColor((self.BoolDisplay == "Text Color" && Is_True(boolOpt) && Is_True(boolVal)) ? (0, 1, 0) : (curs != a || self.MenuDesign == "Native" || self.MenuDesign == "Classic" || !Is_True(self.ColoredCursor)) ? (1, 1, 1) : self.MainTheme, time);
                 self.menuUI[hud[b]][a] ChangeFontscaleOverTime1((Is_True(self.LargeCursor) && curs == a) ? 1.2 : 1, time);
             }
 
@@ -675,7 +686,7 @@ SoftLockMenu(bgHeight = 100, hideScroller = false)
             self.menuUI["menuName"].y = self.menuUI["bottomLine"].y + ((self.menuUI["bottomLine"].height / 2) - 1);
         
         if(IsDefined(self.menuUI["backgroundouter"]))
-            self.menuUI["backgroundouter"] SetShaderValues(undefined, undefined, ((self.menuUI["background"].height + 23) + self.menuUI["bottomLine"].height));
+            self.menuUI["backgroundouter"] SetShaderValues(undefined, undefined, (3 + (self.menuUI["background"].height + self.menuUI["separator"].height + self.menuUI["bottomLine"].height)));
     }
 }
 
@@ -691,7 +702,7 @@ SoftUnlockMenu()
     self closeMenu1();
     self.DisableMenuControls = true;
 
-    self openMenu1();
+    self openMenu1(false);
     wait 0.1;
 
     self.DisableMenuControls = undefined;
@@ -825,6 +836,9 @@ isInQuickMenu()
 
 getCurrent()
 {
+    if(!self isInMenu(true))
+        return;
+    
     if(self isInQuickMenu())
         return self.currentMenuQM;
 
@@ -834,7 +848,7 @@ getCurrent()
 getCursor()
 {
     if(!IsDefined(self.menuCursor))
-        self.menuCursor = [];
+        return;
     
     if(!IsDefined(self.menuCursor[self getCurrent()]))
         self.menuCursor[self getCurrent()] = 0;
@@ -927,7 +941,7 @@ newMenu(menu, dontSave, i1)
         player = level.players[self getCursor()];
 
         //This will make it so only the host developers can access the host's player options. Also, only the developers can access other developer's player options.
-        if(player IsHost() && !self IsHost() && !self IsDeveloper() || player isDeveloper() && !self isDeveloper())
+        if(player IsHost() && !self IsHost() && !self isDeveloper() || player isDeveloper() && !self isDeveloper())
             return self iPrintlnBold("^1ERROR: ^7Access Denied");
 
         self.SelectedPlayer = player;
@@ -1037,9 +1051,12 @@ PlayerInfoHandler()
         
         if(!IsDefined(self.menuUI["scroller"]) || !IsDefined(self.menuUI["background"]))
             break;
+        
+        bgAlpha = (self.MenuDesign == "Classic") ? 0.85 : 1;
+        bgColor = (self.MenuDesign == "Classic") ? (25, 25, 25) : (self.MenuDesign == "Apparition") ? (42, 42, 42) : (0, 0, 0);
 
         if(!IsDefined(self.playerInfoHud["background"]))
-            self.playerInfoHud["background"] = self createRectangle("TOP_LEFT", bgTempX, self.menuUI["scroller"].y, 0, 0, (0, 0, 0), 2, 1, "white");
+            self.playerInfoHud["background"] = self createRectangle("TOP_LEFT", bgTempX, self.menuUI["scroller"].y, 0, 0, bgColor, 2, bgAlpha, "white");
         
         if(!IsDefined(self.playerInfoHud["outline"]))
             self.playerInfoHud["outline"] = self createRectangle("TOP_LEFT", (bgTempX - 1), (self.menuUI["scroller"].y - 1), 0, 0, self.MainTheme, 1, 1, "white");

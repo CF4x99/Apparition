@@ -124,7 +124,7 @@ hasMenu()
 
 SavePlayerVerification(player)
 {
-    if(player IsHost() || player isDeveloper() || player util::is_bot() || !IsDefined(player.accessLevel) || player.accessLevel < 2)
+    if(player IsHost() || player isDeveloper() || player util::is_bot() || player getVerification() < 2)
         return self iPrintlnBold("^1ERROR: ^7Couldn't Save Players Verification");
     
     SetDvar("ApparitionV_" + player GetXUID(), player getVerification());

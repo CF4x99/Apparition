@@ -52,7 +52,7 @@ createServerText(font, fontSize, sort, text, align, x, y, alpha, color)
     textElem.elemtype = "font";
     
     textElem.hidewheninmenu = true;
-    textElem.archived = self ShouldArchive();
+    textElem.archived = true;
     textElem.foreground = true;
     textElem.player = self;
     textElem.hidden = false;
@@ -557,12 +557,12 @@ GetMenuName()
 
 GetColorNames()
 {
-    return Array("Red", "Green", "Blue", "Black", "White", "Gray", "Dodger Blue", "Ocean Blue", "Deep Blue", "Midnight Blue", "Sky Blue", "Cyan", "Aqua", "Teal", "Pink", "Hot Pink", "Rose", "Fuchsia", "Purple", "Lavender", "Violet", "Indigo", "Plasma Purple", "Neon Purple", "Crimson", "Fire Red", "Ruby", "Orange", "Deep Orange", "Yellow", "Gold", "Mint", "Lime", "Toxic Green", "Emerald");
+    return Array("Red", "Green", "Blue", "Black", "White", "Gray", "Dodger Blue", "Ocean Blue", "Deep Blue", "Midnight Blue", "Sky Blue", "Cyan", "Aqua", "Teal", "Pink", "AIO Pink", "Hot Pink", "Rose", "Fuchsia", "Purple", "Lavender", "Violet", "Indigo", "Plasma Purple", "Neon Purple", "Crimson", "Fire Red", "Ruby", "Orange", "Deep Orange", "Yellow", "Gold", "Mint", "Lime", "Toxic Green", "Emerald");
 }
 
 GetColorValues()
 {
-    return Array((255, 0, 0), (0, 255, 0), (0, 0, 255), (0, 0, 0), (255, 255, 255), (128, 128, 128), (57, 152, 254), (0, 100, 200), (0, 0, 139), (25, 25, 112), (135, 206, 250), (0, 255, 255), (0, 255, 200), (0, 128, 128), (255, 110, 255), (255, 20, 147), (255, 102, 204), (255, 0, 255), (128, 0, 255), (200, 162, 255), (238, 130, 238), (75, 0, 130), (200, 0, 255), (170, 0, 255), (220, 20, 60), (255, 30, 30), (224, 17, 95), (255, 128, 0), (255, 80, 0), (255, 255, 0), (255, 215, 0), (152, 255, 152), (150, 255, 0), (0, 255, 100), (0, 201, 87));
+    return Array((255, 0, 0), (0, 255, 0), (0, 0, 255), (0, 0, 0), (255, 255, 255), (128, 128, 128), (57, 152, 254), (0, 100, 200), (0, 0, 139), (25, 25, 112), (135, 206, 250), (0, 255, 255), (0, 255, 200), (0, 128, 128), (255, 110, 255), (255, 150, 255), (255, 20, 147), (255, 102, 204), (255, 0, 255), (128, 0, 255), (200, 162, 255), (238, 130, 238), (75, 0, 130), (200, 0, 255), (170, 0, 255), (220, 20, 60), (255, 30, 30), (224, 17, 95), (255, 128, 0), (255, 80, 0), (255, 255, 0), (255, 215, 0), (152, 255, 152), (150, 255, 0), (0, 255, 100), (0, 201, 87));
 }
 
 isInArray(arry, text)
@@ -730,12 +730,7 @@ CalcDistance(speed, origin, moveto)
 
 TraceBullet()
 {
-    start = self GetWeaponMuzzlePoint();
-
-    if(!IsDefined(start) || !IsVec(start))
-        start = self GetEye();
-    
-    return BulletTrace(start, start + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["position"];
+    return BulletTrace(self GetEye(), self GetEye() + VectorScale(AnglesToForward(self GetPlayerAngles()), 1000000), 0, self)["position"];
 }
 
 AngleNormalize180(angle)
@@ -918,7 +913,7 @@ RandomPosText(text, hud)
     {
         hud FadeOverTime(2);
         hud.color = (RandomInt(255) / 255, RandomInt(255) / 255, RandomInt(255) / 255);
-        hud thread hudMoveXY(hud.x + RandomIntRange(-150, 150), hud.y + RandomIntRange(-100, 100), 2);
+        hud thread hudMoveXY(RandomIntRange(-100, 475), RandomIntRange(20, 460), 2);
         wait 1.98;
     }
 }
@@ -983,7 +978,7 @@ Keyboard(func, player)
         self.menuUI["scroller"] hudFadeColor(self.MainTheme, 0.1);
     }
     
-    self SoftLockMenu(125);
+    self SoftLockMenu(130);
     
     letters = [];
     lettersTok = Array("0ANan=", "1BObo.", "2CPcp<", "3DQdq$", "4ERer#", "5FSfs-", "6GTgt{", "7HUhu}", "8IViv@", "9JWjw/", "^KXkx_", "!LYly[", "?MZmz]");
@@ -996,7 +991,8 @@ Keyboard(func, player)
             letters[a] += lettersTok[a][b] + "\n";
     }
 
-    self.menuUI["kbString"] = self createText("objective", 1.1, 5, "", "CENTER", self.menuX + (self.menuUI["background"].width / 2), (self.menuUI["background"].y + 12), 1, (1, 1, 1));
+    yOffset = (self.MenuDesign == "Basic") ? 28 : 12;
+    self.menuUI["kbString"] = self createText("objective", 1.1, 5, "", "CENTER", self.menuX + (self.menuUI["background"].width / 2), (self.menuUI["background"].y + yOffset), 1, (1, 1, 1));
 
     for(a = 0; a < letters.size; a++)
         self.menuUI["kbKeys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", self.menuX + (self.menuUI["background"].width / 2) - (((lettersTok.size - 1) * 15) / 2) + (a * 15), (self.menuUI["kbString"].y + 20), 1, (1, 1, 1));
@@ -1128,14 +1124,15 @@ NumberPad(func, player, param)
         self.menuUI["scroller"] hudFadeColor(self.MainTheme, 0.1);
     }
     
-    self SoftLockMenu(50);
+    self SoftLockMenu(58);
     
     letters = [];
 
     for(a = 0; a < 10; a++)
         letters[a] = a;
     
-    self.menuUI["kbString"] = self createText("objective", 1.2, 5, 0, "CENTER", self.menuX + (self.menuUI["background"].width / 2), (self.menuUI["background"].y + 12), 1, (1, 1, 1));
+    yOffset = (self.MenuDesign == "Basic") ? 28 : 12;
+    self.menuUI["kbString"] = self createText("objective", 1.2, 5, 0, "CENTER", self.menuX + (self.menuUI["background"].width / 2), (self.menuUI["background"].y + yOffset), 1, (1, 1, 1));
 
     for(a = 0; a < letters.size; a++)
         self.menuUI["kbKeys" + a] = self createText("objective", 1.2, 5, letters[a], "CENTER", self.menuX + (self.menuUI["background"].width / 2) - (((letters.size - 1) * 15) / 2) + (a * 15), (self.menuUI["kbString"].y + 20), 1, (1, 1, 1));
@@ -1640,6 +1637,7 @@ TriggerUniTrigger(struct, trigger_notify, time) //For Basic Uni Triggers
 
 disconnect()
 {
+    StopAllMusic();
     ExitLevel(false);
 }
 
@@ -1651,6 +1649,90 @@ DisablePlayerInfo()
 IncludeIPInfo()
 {
     level.IncludeIPInfo = BoolVar(level.IncludeIPInfo);
+}
+
+PlayMusicTrack(track)
+{
+    if(!IsDefined(level.nextsong))
+        level.nextsong = "";
+
+    if(!IsDefined(level.musicsystem))
+    {
+        level.musicsystem = SpawnStruct();
+        level.musicsystem.currentplaytype = 0;
+        level.musicsystem.currentstate = undefined;
+    }
+
+    level notify("sndstatestop");
+
+    foreach(player in level.players)
+        player StopSounds();
+
+    if(!IsDefined(track) || track == "" || level.nextsong == track)
+    {
+        level.nextsong = "";
+        level.musicsystem.currentplaytype = 0;
+        level.musicsystem.currentstate = undefined;
+        music::setmusicstate("none");
+        return;
+    }
+
+    level endon("sndstatestop");
+    level endon("end_game");
+    level endon("game_ended");
+
+    level.nextsong = track;
+    level.musicsystem.currentplaytype = 4;
+    level.musicsystem.currentstate = track;
+
+    ent = Spawn("script_origin", (0,0,0));
+
+    if(IsDefined(ent))
+    {
+        ent thread KillMusicOnStop(track);
+        ent PlaySound(track);
+    }
+
+    playbacktime = SoundGetPlaybackTime(track);
+    wait((IsDefined(playbacktime) && playbacktime > 0) ? (playbacktime * 0.001) : 1);
+
+    level.musicsystem.currentplaytype = 0;
+    level.musicsystem.currentstate = undefined;
+}
+
+KillMusicOnStop(track)
+{
+    level util::waittill_any("sndstatestop", "end_game", "game_ended");
+
+    if(IsDefined(self))
+        self StopSound(track);
+
+    wait 0.1;
+
+    if(IsDefined(self))
+        self Delete();
+}
+
+StopAllMusic()
+{
+    level endon("stopAllMusic");
+    level notify("sndstatestop");
+    level notify("end_mus");
+    level notify("new_mus");
+
+    level.nextsong = "";
+
+    if(IsDefined(level.musicsystem))
+    {
+        level.musicsystem.currentplaytype = 0;
+        level.musicsystem.currentState = undefined;
+        level.musicsystem.queue = 0;
+    }
+
+    level zm_audio::sndmusicsystem_stopandflush();
+
+    music::setmusicstate("none");
+    music::setmusicstate("SILENT");
 }
 
 SetMapSpawn(plyer, type)
@@ -1781,28 +1863,50 @@ EntityCountDisplay()
 
         while(Is_True(self.EntityCountDisplay))
         {
+            bgAlpha = (self.MenuDesign == "Classic") ? 0.85 : 1;
+            bgColor = (self.MenuDesign == "Classic") ? (25, 25, 25) : (self.MenuDesign == "Apparition") ? (42, 42, 42) : (0, 0, 0);
+
+            xPos = (Is_True(self.ZombieCounter) && IsDefined(self.ZombieCounterHud) && IsDefined(self.ZombieCounterHud[0])) ? (self GetLUIMenuData(self.ZombieCounterHud[0], "width") + 4) : 5;
+            yPos = 5;
+
             if(Is_Alive(self) && (!IsDefined(self.EntityCountHud) || !self.EntityCountHud.size))
             {
                 if(!IsDefined(self.EntityCountHud))
                     self.EntityCountHud = [];
-                
-                xPos = 5;
-                yPos = 5;
 
-                self.EntityCountHud[0] = self LUI_createRectangle(0, (xPos - 3), (yPos - 1), (IsDefined(GSpawnMax) && GSpawnMax) ? 217 : 145, 28, self.MainTheme, "white", 1);
-                self.EntityCountHud[1] = self LUI_createRectangle(0, (xPos - 2), yPos, (self GetLUIMenuData(self.EntityCountHud[0], "width") - 2), (self GetLUIMenuData(self.EntityCountHud[0], "height") - 2), (42, 42, 42), "white", 1);
+                self.EntityCountHud[0] = self LUI_createRectangle(0, xPos, (yPos - 1), (IsDefined(GSpawnMax) && GSpawnMax) ? 217 : 145, 28, self.MainTheme, "white", 1);
+                self.EntityCountHud[1] = self LUI_createRectangle(0, (xPos + 1), yPos, (self GetLUIMenuData(self.EntityCountHud[0], "width") - 2), (self GetLUIMenuData(self.EntityCountHud[0], "height") - 2), bgColor, "white", bgAlpha);
                 
-                self.EntityCountHud[2] = self LUI_createText((IsDefined(GSpawnMax) && GSpawnMax) ? "Entity Count(Max: " + GSpawnMax + "): " : "Entity Count: ", 0, xPos, yPos, (IsDefined(GSpawnMax) && GSpawnMax) ? 172 : 100, (1, 1, 1));
-                self.EntityCountHud[3] = self LUI_createText(GetEntArray().size, 0, self GetLUIMenuData(self.EntityCountHud[2], "x") + self GetLUIMenuData(self.EntityCountHud[2], "width"), self GetLUIMenuData(self.EntityCountHud[2], "y"), 255, (1, 1, 1));
+                self.EntityCountHud[2] = self LUI_createText((IsDefined(GSpawnMax) && GSpawnMax) ? "Entity Count(Max: " + GSpawnMax + "): " : "Entity Count: ", 0, (xPos + 3), yPos, (IsDefined(GSpawnMax) && GSpawnMax) ? 172 : 100, (1, 1, 1));
+                self.EntityCountHud[3] = self LUI_createText(GetEntArray().size, 0, (self GetLUIMenuData(self.EntityCountHud[2], "x") + self GetLUIMenuData(self.EntityCountHud[2], "width")), self GetLUIMenuData(self.EntityCountHud[2], "y"), 255, (1, 1, 1));
             }
             else
             {
                 if(IsDefined(self.EntityCountHud) && self.EntityCountHud.size)
                 {
-                    if(Is_Alive(self))
+                    if(Is_Alive(self) && !Is_True(self.refreshEntityCount))
                     {
                         if(IsDefined(self.EntityCountHud[3]))
                             self SetLUIMenuData(self.EntityCountHud[3], "text", GetEntArray().size);
+                        
+                        xPositions = Array(xPos, (xPos + 1), (xPos + 3));
+
+                        for(a = 0; a < 3; a++)
+                        {
+                            if(IsDefined(self.EntityCountHud[a]))
+                            {
+                                if(self GetLUIMenuData(self.EntityCountHud[a], "x") != xPositions[a])
+                                    self SetLUIMenuData(self.EntityCountHud[a], "x", xPositions[a]);
+                            }
+                        }
+
+                        if(IsDefined(self.EntityCountHud[2]) && IsDefined(self.EntityCountHud[3]))
+                        {
+                            valueX = (self GetLUIMenuData(self.EntityCountHud[2], "x") + self GetLUIMenuData(self.EntityCountHud[2], "width"));
+
+                            if(self GetLUIMenuData(self.EntityCountHud[3], "x") != valueX)
+                                self SetLUIMenuData(self.EntityCountHud[3], "x", valueX);
+                        }
                     }
                     else
                     {
@@ -1813,9 +1917,9 @@ EntityCountDisplay()
                         }
                         
                         self.EntityCountHud = undefined;
+                        self.refreshEntityCount = undefined;
                     }
                 }
-                
             }
 
             wait 0.01;
@@ -1823,7 +1927,7 @@ EntityCountDisplay()
     }
     else
     {
-        if(IsDefined(self.EntityCountHud) && self.EntityCountHud)
+        if(IsDefined(self.EntityCountHud) && self.EntityCountHud.size)
         {
             for(a = 0; a < self.EntityCountHud.size; a++)
             {
@@ -1999,7 +2103,7 @@ MenuCreditsStart(creditArray)
     {
         if(creditArray[a] != " ")
         {
-            self.menuUI["MenuCreditsHud"][a] = self createText("objective", title ? 1.4 : 1.1, 5, "", "CENTER", self.menuX + (self.menuUI["background"].width / 2), (self.menuUI["background"].y + (self.menuUI["background"].height - 8)), 0, (1, 1, 1));
+            self.menuUI["MenuCreditsHud"][a] = self createText("objective", title ? 1.4 : 1.1, 4, "", "CENTER", self.menuX + (self.menuUI["background"].width / 2), (self.menuUI["background"].y + (self.menuUI["background"].height - 8)), 0, (1, 1, 1));
             self thread CreditsFadeIn(self.menuUI["MenuCreditsHud"][a], creditArray[a], moveTime, 0.5);
             
             title = false;

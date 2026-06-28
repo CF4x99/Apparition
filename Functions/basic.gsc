@@ -24,7 +24,7 @@ PopulateBasicScripts(menu, player)
                 self addOptBool(player.MultiJump, "Multi-Jump", ::MultiJump, player);
                 self addOptBool(player.DisablePlayerHUD, "Disable HUD", ::DisablePlayerHUD, player);
                 self addOpt("Visual Effects", ::newMenu, "Visual Effects");
-                self addOptSlider("Set Vision", ::PlayerSetVision, Array("Default", "zombie_last_stand", "zombie_death"), player);
+                self addOptSlider("Set Vision", ::PlayerSetVision, Array("Default", "zombie_last_stand", "zombie_death", "flashbang", "zm_bgb_candy_bluez", "zm_bgb_candy_greenz", "zm_bgb_candy_purplez", "zm_bgb_candy_yellowz", "zm_bgb_now_you_see_me", "zombie_noire"), player);
                 self addOptSlider("Zombie Charms", ::ZombieCharms, Array("None", "Orange", "Green", "Purple", "Blue"), player);
                 self addOptSlider("Custom Crosshairs", ::CustomCrosshairs, Array("Disable", "+", "@", "x", "o", "> <", "CF4_99", "Extinct", "Daltax", "GBP", "AOC", GetMenuName(), "discord.gg/apparitionbo3", CleanName(player getName())), player);
                 self addOptBool(player.NoExplosiveDamage, "No Explosive Damage", ::NoExplosiveDamage, player);
@@ -703,6 +703,8 @@ SetClientVisualEffects(effect, player)
     if(!IsDefined(type))
         return;
 
+    player notify("kill_full_period_hold");
+
     if(IsDefined(player.ClientVisualEffect))
     {
         if(effect == player.ClientVisualEffect)
@@ -742,11 +744,27 @@ SetClientVisualEffects(effect, player)
         if(IsDefined(effect) && effect != "None")
         {
             if(type == "visionset" || type == "Both")
-                visionset_mgr::activate("visionset", effect, player);
-            
+                visionset_mgr::activate("visionset", effect, player, 1.25, ::full_period_hold, 1);
+
             if(type == "overlay" || type == "Both")
-                visionset_mgr::activate("overlay", effect, player);
+            {
+                if(IsDefined(level.vsmgr["overlay"]) && IsDefined(level.vsmgr["overlay"].info) && IsDefined(level.vsmgr["overlay"].info[effect]) && IsDefined(level.vsmgr["overlay"].info[effect].state) && IsDefined(level.vsmgr["overlay"].info[effect].state.lerp_thread))
+                    lerp = level.vsmgr["overlay"].info[effect].state.lerp_thread;
+                
+                visionset_mgr::activate("overlay", effect, player, ((IsDefined(lerp) && lerp == visionset_mgr::ramp_in_out_thread_per_player || IsDefined(lerp) && lerp == visionset_mgr::ramp_in_out_thread) ? 1.25 : 1), ((IsDefined(lerp) && lerp == visionset_mgr::duration_lerp_thread_per_player) ? 1 : ((IsDefined(lerp) && lerp == visionset_mgr::ramp_in_out_thread_per_player || IsDefined(lerp) && lerp == visionset_mgr::ramp_in_out_thread) ? ::full_period_hold : undefined)), ((IsDefined(lerp) && lerp == visionset_mgr::ramp_in_out_thread_per_player || IsDefined(lerp) && lerp == visionset_mgr::ramp_in_out_thread) ? 1 : undefined));
+            }
         }
+    }
+}
+
+full_period_hold()
+{
+    self endon("disconnect");
+    self endon("kill_full_period_hold");
+
+    while(1)
+    {
+        wait 1;
     }
 }
 
@@ -904,6 +922,9 @@ PlayerRevive(player)
 PlayerDeath(type, player)
 {
     player endon("disconnect");
+
+    if(!Is_Alive(player))
+        return self iPrintlnBold("^1ERROR: ^7Player Isn't Alive");
     
     if(Is_True(player.playerGodmode))
         player Godmode(player);
@@ -912,9 +933,6 @@ PlayerDeath(type, player)
         player DemiGod(player);
     
     player DisableInvulnerability(); //Just to ensure that the player is able to be damaged.
-
-    if(!Is_Alive(player))
-        return self iPrintlnBold("^1ERROR: ^7Player Isn't Alive");
     
     switch(type)
     {
