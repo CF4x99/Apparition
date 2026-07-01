@@ -158,29 +158,62 @@ PopulateWeaponCategoryMenu(menu, index, player)
         if(Is_True(weapon.isgrenadeweapon) || IsSubStr(weapon.name, "knife") || IsSubStr(weapon.name, "upgraded"))
             continue;
         
-        zmClass = zm_utility::GetWeaponClassZM(weapon);
-        newClass = undefined;
+        weapon_table = "gamedata/weapons/zm/" + level.script + "_weapons.csv";
+        if(TableLookup(weapon_table, 0, "weapon_name", 1) == "")
+            weapon_table = "gamedata/weapons/zm/zm_levelcommon_weapons.csv";
 
-        if(zmClass == "weapon_pistol")
+        zmClass = TableLookup(weapon_table, 0, weapon.name, 16);
+        
+        if(!IsDefined(zmClass) || zmClass == "")
         {
-            weapTok = StrTok(weapon.name, "_");
-            newClass = weapTok[0];
+            weapClass = weapon.weapClass;
+            
+            if(weapClass == "rocketlauncher") zmClass = "launcher";
+            else if(weapClass == "spread") zmClass = "cqb";
+            else if(weapClass == "mg") zmClass = "lmg";
+            else zmClass = weapClass;
+            
+            if(!IsDefined(zmClass) || zmClass == "")
+            {
+                weapTok = StrTok(weapon.name, "_");
+                newClass = undefined;
+                
+                weaponReclass2 = Array("ar", "smg", "lmg", "sn", "sg", "pi", "ln", "sp");
 
-            if(!isInArray(weaponReclass, newClass))
-            {
-                zmClass = "weapon_special";
-            }
-            else
-            {
-                for(a = 0; a < weaponReclass.size; a++)
+                foreach(tok in weapTok)
                 {
-                    if(weaponReclass[a] == newClass)
-                        zmClass = "weapon_" + weaponClasses[a];
+                    if(isInArray(weaponReclass, tok))
+                    {
+                        for(a = 0; a < weaponReclass.size; a++)
+                        {
+                            if(weaponReclass[a] == tok)
+                                newClass = weaponClasses[a];
+                        }
+                        break;
+                    }
+                    
+                    if(isInArray(weaponReclass2, tok))
+                    {
+                        for(a = 0; a < weaponReclass2.size; a++)
+                        {
+                            if(weaponReclass2[a] == tok)
+                                newClass = weaponClasses[a];
+                        }
+                        break;
+                    }
                 }
+
+                if(IsDefined(newClass))
+                    zmClass = newClass;
+                else
+                    zmClass = "special";
             }
         }
 
-        if(zmClass != "weapon_" + weaponClasses[index])
+        if(zmClass == "rifle") zmClass = "assault";
+        if(zmClass == "shotgun") zmClass = "cqb";
+        
+        if(zmClass != weaponClasses[index])
             continue;
 
         self addOptBool(player HasWeapon1(weapon), (IsDefined(weapon.displayname) && MakeLocalizedString(weapon.displayname) != "") ? weapon.displayname : weapon.name, ::GivePlayerWeapon, weapon, player);
